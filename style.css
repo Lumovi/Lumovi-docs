@@ -1,0 +1,179 @@
+/*
+ * Lumovi docs: the app's own look. Colors are the app's design tokens
+ * (lumovi/src/renderer/src/styles/index.css), Inter for text and JetBrains Mono
+ * for code, as in the app. Status colors are kept for health, and always come with
+ * a label, as in the app.
+ */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..700&display=swap');
+
+:root {
+  --lumovi-accent: #2a78d6;
+  --lumovi-accent-soft: rgb(42 120 214 / 0.1);
+  --lumovi-line: rgb(12 12 20 / 0.08);
+  --lumovi-line-strong: rgb(12 12 20 / 0.14);
+  --lumovi-surface: #ffffff;
+  --lumovi-surface-2: #fafafb;
+  --lumovi-surface-3: #f0f0f2;
+  --lumovi-text-1: #0b0b0f;
+  --lumovi-text-2: #52525b;
+  --lumovi-text-3: #71717a;
+  --lumovi-good: #0ca30c;
+  --lumovi-warn: #fab219;
+  --lumovi-serious: #ec835a;
+  --lumovi-critical: #d03b3b;
+  --lumovi-neutral: #898781;
+  --lumovi-progress: #2a78d6;
+  --lumovi-good-text: #1a7f37;
+  --lumovi-warn-text: #8a5a00;
+  --lumovi-critical-text: #b42318;
+  --lumovi-shadow-window: 0 0 0 1px rgb(12 12 20 / 0.06), 0 24px 60px -24px rgb(12 12 20 / 0.28),
+    0 18px 40px -28px rgb(42 120 214 / 0.35);
+  --lumovi-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+:root.dark {
+  --lumovi-accent: #3987e5;
+  --lumovi-accent-soft: rgb(57 135 229 / 0.16);
+  --lumovi-line: rgb(255 255 255 / 0.07);
+  --lumovi-line-strong: rgb(255 255 255 / 0.12);
+  --lumovi-surface: #121215;
+  --lumovi-surface-2: #18181c;
+  --lumovi-surface-3: #212126;
+  --lumovi-text-1: #f2f2f4;
+  --lumovi-text-2: #a1a1aa;
+  --lumovi-text-3: #8b8b94;
+  --lumovi-progress: #3987e5;
+  --lumovi-good-text: #3fb950;
+  --lumovi-warn-text: #e3a008;
+  --lumovi-critical-text: #f85149;
+  --lumovi-shadow-window: 0 0 0 1px rgb(255 255 255 / 0.07), 0 40px 100px -30px rgb(0 0 0 / 0.9),
+    0 30px 80px -40px rgb(57 135 229 / 0.35);
+}
+
+/* Code in the app's monospace. */
+code,
+pre,
+kbd,
+.font-mono {
+  font-family: var(--lumovi-mono) !important;
+  font-variant-ligatures: none;
+}
+
+/* Key caps, as in the app's shortcut sheet. */
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding: 0 0.4em;
+  margin: 0 0.08em;
+  border-radius: 6px;
+  border: 1px solid var(--lumovi-line-strong);
+  border-bottom-width: 2px;
+  background: var(--lumovi-surface-2);
+  color: var(--lumovi-text-1);
+  font-size: 0.78em;
+  font-weight: 500;
+  line-height: 1;
+  vertical-align: 0.08em;
+  white-space: nowrap;
+}
+
+/* Screenshots: a window on the page, like the website's. */
+.lumovi-shot {
+  margin: 1.75rem 0;
+}
+.lumovi-shot img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: var(--lumovi-shadow-window);
+}
+
+/* The introduction's lead screenshot sits in a soft glow. */
+.lumovi-hero {
+  position: relative;
+  margin: 0.5rem 0 2.5rem;
+  padding: 1.25rem;
+  border-radius: 20px;
+  background:
+    radial-gradient(60% 70% at 70% 30%, rgb(57 135 229 / 0.18), transparent 70%),
+    radial-gradient(50% 60% at 15% 90%, rgb(29 43 79 / 0.12), transparent 70%),
+    var(--lumovi-surface-2);
+  border: 1px solid var(--lumovi-line);
+}
+:root.dark .lumovi-hero {
+  background:
+    radial-gradient(60% 70% at 70% 30%, rgb(57 135 229 / 0.22), transparent 70%),
+    radial-gradient(50% 60% at 15% 90%, rgb(29 43 79 / 0.55), transparent 70%),
+    #101014;
+}
+.lumovi-hero img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: var(--lumovi-shadow-window);
+}
+
+/* Health, as the app shows it: a colored mark and a label, never color alone. */
+.lumovi-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.1em 0.55em 0.1em 0.45em;
+  border-radius: 999px;
+  border: 1px solid var(--lumovi-line);
+  background: var(--lumovi-surface-2);
+  font-size: 0.85em;
+  font-weight: 500;
+  line-height: 1.6;
+  white-space: nowrap;
+  color: var(--lumovi-text-1);
+}
+.lumovi-status::before {
+  content: '';
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 999px;
+  background: currentColor;
+  flex: none;
+}
+.lumovi-status.healthy::before { background: var(--lumovi-good); }
+.lumovi-status.warning::before { background: var(--lumovi-warn); }
+.lumovi-status.critical::before { background: var(--lumovi-critical); }
+.lumovi-status.progressing::before { background: var(--lumovi-progress); }
+.lumovi-status.neutral::before { background: var(--lumovi-neutral); }
+
+/* A row of facts under a heading: Platform · Requirement. */
+.lumovi-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  margin: 1.5rem 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--lumovi-line);
+  background: var(--lumovi-line);
+}
+.lumovi-facts > div {
+  padding: 0.9rem 1rem;
+  background: var(--lumovi-surface);
+}
+.lumovi-facts dt,
+.lumovi-facts .lumovi-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--lumovi-text-3);
+}
+.lumovi-facts dd,
+.lumovi-facts .lumovi-value {
+  display: block;
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 550;
+  color: var(--lumovi-text-1);
+}
