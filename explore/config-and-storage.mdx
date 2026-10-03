@@ -1,0 +1,71 @@
+---
+title: "Config and storage"
+description: "ConfigMaps and Secrets, and the volumes, claims and storage classes your workloads keep their data on."
+icon: "hard-drive"
+---
+
+The sidebar's **Configuration** and **Storage** sections hold five lists:
+
+| List | Shortcut | Columns |
+| --- | --- | --- |
+| **ConfigMaps** | <kbd>G</kbd> <kbd>F</kbd> | Keys |
+| **Secrets** | <kbd>G</kbd> <kbd>X</kbd> | Type, Keys |
+| **Volume Claims** | <kbd>G</kbd> <kbd>L</kbd> | Capacity, Storage class, Volume |
+| **Volumes** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Capacity, Claim, Storage class, Reclaim |
+| **Storage Classes** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Default, Provisioner, Reclaim, Binding |
+
+Volumes and storage classes aren't in a namespace, so their lists always show all of them. (<kbd>⌘</kbd> is <kbd>Ctrl</kbd> on Windows and Linux.)
+
+## ConfigMaps
+
+Open a ConfigMap and its **Data** section shows each key with its value, as text. Binary values (`binaryData`) are counted in the **Keys** column, and are in the YAML.
+
+## Secrets
+
+Secret values stay hidden until you ask for them.
+
+<Frame caption="A secret's keys, hidden until asked for.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/secret-light-1x.webp" alt="A secret's details next to the Secrets list: three keys with their sizes and hidden values, and Reveal all." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/secret-dark-1x.webp" alt="A secret's details next to the Secrets list: three keys with their sizes and hidden values, and Reveal all." />
+</Frame>
+
+- **The list** shows each secret's type and how many keys it has. Lumovi drops the values before the list reaches the page.
+- **Data** shows each key with its size, and its value as `••••••••`. Reveal one key with its eye button, or all of them with **Reveal all**. Values are decoded from base64 for you.
+- **Copy** next to a key copies its value without revealing it, for pasting somewhere safe.
+- **YAML** hides values too, until you choose **Reveal values**. The `kubectl.kubernetes.io/last-applied-configuration` annotation holds a copy of the values, so it's hidden as well. Under **Annotations** in **Overview**, it reads *Hidden: it holds the secret's values*.
+
+### Editing a secret
+
+When you edit a Secret's YAML, its text values appear decoded, under `stringData`, so you can read and change them as text. Values that aren't text stay base64-encoded under `data`. On save, everything is encoded back into `data`. See [Edit YAML](/changes/yaml).
+
+## Volume claims
+
+<Frame caption="Volume claims, their capacity, storage class and volume.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/storage-light-1x.webp" alt="The Volume Claims list: one claim Pending and five Bound, with their capacity, storage class and volume." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/storage-dark-1x.webp" alt="The Volume Claims list: one claim Pending and five Bound, with their capacity, storage class and volume." />
+</Frame>
+
+A claim is <span className="lumovi-status healthy">Bound</span> when it has a volume, and shows its phase otherwise, like <span className="lumovi-status warning">Pending</span>. Open one for its capacity and the size it asked for, its access and volume modes, and links to its storage class and volume.
+
+**Expand volume…** grows a bound claim. Pick the new size in Mi, Gi or Ti. It starts at about twice the current size, and must be larger than it is now: volumes can't shrink. If the claim's storage class doesn't allow expansion, Lumovi says so instead of trying. See [Actions by kind](/changes/actions).
+
+## Volumes
+
+A volume is <span className="lumovi-status healthy">Bound</span> or <span className="lumovi-status healthy">Available</span> when all is well, and shows its phase otherwise, like <span className="lumovi-status warning">Released</span>. Open one for its capacity, access modes, reclaim policy, storage class, and a link to the claim that holds it.
+
+## Storage classes
+
+Open a storage class for whether it's the **Default**, its provisioner, reclaim policy and binding mode, whether **Volume expansion** is allowed, and its parameters.
+
+<Warning>
+  Deleting a volume claim, a volume or a storage class can lose data, so Lumovi asks you to type its name first. See [Changing things safely](/changes/safely).
+</Warning>
+
+<Columns cols={2}>
+  <Card title="Edit YAML" icon="file-code" href="/changes/yaml">
+    Change any object, checked by the cluster and shown as a diff first.
+  </Card>
+  <Card title="Object details" icon="panel-right" href="/explore/details">
+    Everything the detail panel shows, tab by tab.
+  </Card>
+</Columns>

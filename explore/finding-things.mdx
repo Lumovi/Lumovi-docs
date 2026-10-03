@@ -1,0 +1,105 @@
+---
+title: "Finding things"
+description: "Jump anywhere with the command palette, and narrow any list by health, text or labels."
+icon: "search"
+---
+
+Two habits cover most of it: press <kbd>⌘</kbd><kbd>K</kbd> to go anywhere, and press <kbd>/</kbd> to filter the list you're on. On Windows and Linux, use <kbd>Ctrl</kbd> instead of <kbd>⌘</kbd>.
+
+## The command palette
+
+Press <kbd>⌘</kbd><kbd>K</kbd> (or click **Search…** in the header) and type. Case doesn't matter. Views and commands match when every word you type appears in them, in any order, so `vol cl` finds Volume Claims. Objects match when their name contains what you typed.
+
+<Frame caption="Finding anything in the cluster, or anything to do, from the keyboard.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/command-palette-light-1x.webp" alt="The command palette open over the app, listing matching objects, views and actions." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/command-palette-dark-1x.webp" alt="The command palette open over the app, listing matching objects, views and actions." />
+</Frame>
+
+Results come in groups:
+
+| Group | What's in it |
+| --- | --- |
+| **Actions** | When an object is open: everything you can do to it. Actions you can't take are shown, disabled. |
+| **Objects** | Once you've typed two characters: objects whose names match, among those Lumovi has already loaded in this cluster (up to 20). |
+| **Go to** | Every view: the overview, Workloads, Metrics, Helm releases, API resources, and every kind the cluster serves, found by name, kind, short name or API group. Custom resources included. |
+| **Namespace** | **All namespaces**, and every namespace. |
+| **Clusters** | Every cluster in your kubeconfig, and **All clusters**. Desktop app only. |
+| **Help & appearance** | **Create from YAML**, **Metrics source…**, **Keyboard shortcuts**, the light, dark and system themes, and making this cluster read-only or allowing changes again. |
+
+Move with <kbd>↑</kbd> <kbd>↓</kbd>, press <kbd>↵</kbd> to pick, and <kbd>Esc</kbd> to close.
+
+<Tip>
+  Some views answer to other words too: `prometheus` or `usage history` finds Metrics, `charts` finds Helm releases, and `crds` finds API resources.
+</Tip>
+
+## Go-to keys
+
+Every main view has a two-key shortcut: press <kbd>G</kbd>, then a letter, within about a second. For example <kbd>G</kbd> <kbd>P</kbd> for Pods, <kbd>G</kbd> <kbd>D</kbd> for Deployments. The sidebar shows each view's keys when you hover it, and [Keyboard shortcuts](/reference/keyboard-shortcuts) lists them all.
+
+## Narrowing a list
+
+Every list has the same three tools above it.
+
+### Health
+
+The chips count each [health level](/explore/health) in the list: **Failing**, **Warning**, **In progress**, **Healthy**, **Inactive** (some kinds use their own words, like **Running** for pods). Click one to show only those, and click more to add them. Click it again to clear it.
+
+### Filter
+
+Press <kbd>/</kbd>, or click the filter box, and type. It matches, without case:
+
+- names and namespaces
+- labels, written as `key=value`, like `app=checkout`
+- for events, the reason, message and object's name
+- for custom resources, what the list's columns show
+
+On the Workloads page, the filter also matches each workload's kind and images.
+
+<kbd>↓</kbd> moves from the filter into the list. <kbd>Esc</kbd> leaves the filter.
+
+### Label selector
+
+The label selector is sent to the cluster, which does the filtering, so it's the way to narrow lists in big clusters. It takes Kubernetes' own syntax; press <kbd>↵</kbd> to apply it.
+
+```text
+app=web
+app=web,tier!=cache
+environment in (staging, production)
+!canary
+```
+
+A list stops at 5,000 objects (or `LUMOVI_MAX_LIST_ITEMS`). When there are more, it says so, with **Filter by label**, because a selector lets the cluster send only the ones you want.
+
+## Sorting and pages
+
+- **Sort** by clicking a column's header, and again to reverse it. Lists start sorted by status, the most urgent first; kinds with no status by name, and events by when they were last seen.
+- **Pages** hold 100 rows, or 50, 250 or 500 (**Rows per page**). Use <kbd>←</kbd> <kbd>→</kbd> for the previous and next page.
+
+## Moving through a list
+
+| Keys | Does |
+| --- | --- |
+| <kbd>↑</kbd> <kbd>↓</kbd>, or <kbd>J</kbd> <kbd>K</kbd> | Move through the rows |
+| <kbd>Home</kbd> <kbd>End</kbd> | First and last row |
+| <kbd>PgUp</kbd> <kbd>PgDn</kbd> | Ten rows at a time |
+| <kbd>↵</kbd> | Open the row |
+| <kbd>X</kbd>, <kbd>⇧</kbd><kbd>X</kbd> | Select the row, or a range |
+| <kbd>⌘</kbd><kbd>A</kbd> | Select every row on the page |
+| <kbd>Esc</kbd> | Clear the selection, then close the panel |
+
+## Back and Forward
+
+The filter, health chips, label selector, sort, page and the open object are all part of the page's address. **Back** (<kbd>⌘</kbd><kbd>[</kbd> or <kbd>Alt</kbd><kbd>←</kbd>) and **Forward** (<kbd>⌘</kbd><kbd>]</kbd> or <kbd>Alt</kbd><kbd>→</kbd>) bring each of them back, like in a browser.
+
+<Note>
+  **In your cluster:** these addresses are real links. Copy one from the address bar to share a filtered list, or an open pod, with a teammate.
+</Note>
+
+<Columns cols={2}>
+  <Card title="Keyboard shortcuts" icon="command" href="/reference/keyboard-shortcuts">
+    Every shortcut, in one place.
+  </Card>
+  <Card title="Several at once" icon="list-checks" href="/changes/bulk">
+    Act on the rows you've picked.
+  </Card>
+</Columns>

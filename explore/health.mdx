@@ -1,0 +1,121 @@
+---
+title: "Health and status"
+sidebarTitle: "Health and status"
+description: "How Lumovi decides whether something is healthy, and what every status means."
+icon: "heart-pulse"
+---
+
+Every object Lumovi shows gets a status: a short label that says what's going on, like <span className="lumovi-status critical">CrashLoopBackOff</span> or <span className="lumovi-status warning">Degraded</span>, and a health level behind it. The health level decides the color and icon, where the object sorts, and which filter it's counted under.
+
+## Five levels
+
+| Level | Filter | Means |
+| --- | --- | --- |
+| <span className="lumovi-status critical">Critical</span> | **Failing** | Broken, and won't fix itself: a crash loop, a failed job, a node that isn't ready. |
+| <span className="lumovi-status warning">Warning</span> | **Warning** | Working, but not as it should: degraded, under pressure, pending, terminating. |
+| <span className="lumovi-status progressing">Progressing</span> | **In progress** | On its way: creating containers, reconciling, running a job. |
+| <span className="lumovi-status healthy">Healthy</span> | **Healthy** | Doing what it's meant to. |
+| <span className="lumovi-status neutral">Neutral</span> | **Inactive** | Nothing to worry about: completed, suspended, scaled to zero. |
+
+Lists sort by health, in that order, so the most urgent things are always at the top. The chips above a list count each level and filter by it. Pick **Failing** and **Warning** together to see only the problems.
+
+Some kinds name the chips in their own words: on **Pods** they're **Running**, **Starting** and **Completed** instead of **Healthy**, **In progress** and **Inactive**, and on **Events**, **Normal**.
+
+In the app, a status always comes with an icon and its label, never color alone, and the colors are reserved for health. Charts use a palette checked for color blindness, in both themes.
+
+## Pods
+
+A pod's status is the most specific reason Lumovi can find. It checks, in order:
+
+| When | Status | Level |
+| --- | --- | --- |
+| It's being deleted | <span className="lumovi-status warning">Terminating</span> | Warning |
+| It succeeded | <span className="lumovi-status neutral">Completed</span> | Neutral |
+| It failed | The pod's reason, like `Evicted`, else a container's, like `OOMKilled`, else `Failed` | Critical |
+| A container is waiting to start | The waiting reason, like `ContainerCreating` or `PodInitializing` | Progressing |
+| A container is waiting for any other reason | The reason, like `CrashLoopBackOff`, `ImagePullBackOff` or `ErrImagePull` | Critical |
+| It's pending | Why it can't be scheduled, like `Unschedulable`, else `Pending` | Warning |
+| It's running and every container is ready | <span className="lumovi-status healthy">Running</span> | Healthy |
+| It's running, but a container isn't ready | <span className="lumovi-status warning">Not ready</span> | Warning |
+
+Init containers are checked before the others, so a pod stuck initializing says why. Hover a status for the message behind it.
+
+<Tip>
+  A container that was killed for running out of memory and restarted shows <span className="lumovi-status healthy">Running</span> again, but its card in the pod's details says **Last terminated: OOMKilled (exit code 137)**. Watch the **Restarts** column for pods like this.
+</Tip>
+
+## Workloads
+
+Deployments, StatefulSets, DaemonSets and ReplicaSets compare ready pods with the pods they want:
+
+| When | Status | Level |
+| --- | --- | --- |
+| It wants no pods | <span className="lumovi-status neutral">Scaled to zero</span> | Neutral |
+| Every pod it wants is ready | <span className="lumovi-status healthy">Ready</span> | Healthy |
+| None of them is ready | <span className="lumovi-status critical">Unavailable</span> | Critical |
+| Some are ready | <span className="lumovi-status warning">Degraded</span> | Warning |
+
+| Kind | Statuses |
+| --- | --- |
+| Job | <span className="lumovi-status critical">Failed</span>, <span className="lumovi-status healthy">Complete</span>, or <span className="lumovi-status progressing">Running</span> |
+| CronJob | <span className="lumovi-status healthy">Scheduled</span>, or <span className="lumovi-status neutral">Suspended</span> |
+| HorizontalPodAutoscaler | <span className="lumovi-status healthy">Scaling</span>, <span className="lumovi-status warning">At limit</span> (its `ScalingLimited` condition is `True`: it would go past its range), or <span className="lumovi-status warning">Not scaling</span> (its `ScalingActive` condition is `False`, often because it can't read its metrics) |
+
+## The rest of the built-in kinds
+
+| Kind | Statuses |
+| --- | --- |
+| Node | <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status critical">NotReady</span>, a condition that's on, like <span className="lumovi-status warning">MemoryPressure</span>, or <span className="lumovi-status warning">Cordoned</span> |
+| Namespace | <span className="lumovi-status healthy">Active</span>, or its phase, like <span className="lumovi-status warning">Terminating</span> |
+| Volume claim | <span className="lumovi-status healthy">Bound</span>, or its phase, like <span className="lumovi-status warning">Pending</span> |
+| Volume | <span className="lumovi-status healthy">Bound</span> or <span className="lumovi-status healthy">Available</span>, or its phase, like <span className="lumovi-status warning">Released</span> |
+| Event | <span className="lumovi-status warning">Warning</span> or <span className="lumovi-status neutral">Normal</span> |
+
+Services, ingresses, network policies, ConfigMaps, Secrets and storage classes have no status: there's nothing about them to be healthy or not.
+
+## Custom resources
+
+Kinds that Lumovi has no page for, custom resources included, get a status read from the conventions most controllers follow. A [view](/custom-resources/overview) can spell out its own rules instead, and when one of them applies, it wins. Otherwise Lumovi checks, in order:
+
+<Steps>
+  <Step title="Being deleted">
+    The object has a deletion timestamp: <span className="lumovi-status warning">Terminating</span>.
+  </Step>
+  <Step title="Suspended or paused">
+    `spec.suspend` is set: <span className="lumovi-status neutral">Suspended</span>. `spec.paused` is set: <span className="lumovi-status neutral">Paused</span>.
+  </Step>
+  <Step title="Stalled">
+    A `Stalled` condition is `True`, as [kstatus](https://github.com/kubernetes-sigs/cli-utils/blob/master/pkg/kstatus/README.md) defines it: critical, labeled with its reason, or *Stalled*.
+  </Step>
+  <Step title="Not ready">
+    The object has a readiness condition: the first of `Ready`, `Available`, `Healthy`, `Programmed`, `Established`, `Succeeded` or `Accepted`, in that order. If it's `False`, and the controller isn't still working on it, the object is critical, labeled with the condition's reason, or with *Not ready* (*Not available*, and so on).
+  </Step>
+  <Step title="Still working on it">
+    A `Reconciling` or `Issuing` condition is `True`, or the controller hasn't seen the latest spec yet (`status.observedGeneration` is behind `metadata.generation`): progressing, labeled with the condition's reason, or <span className="lumovi-status progressing">Reconciling</span>.
+  </Step>
+  <Step title="Ready">
+    The readiness condition is `True`: healthy, labeled with its name, like <span className="lumovi-status healthy">Ready</span>. If it's `Unknown`, progressing.
+  </Step>
+  <Step title="A health, phase or state">
+    Without a readiness condition, `status.health.status` (as Argo CD writes it), `status.phase` or `status.state` is shown as it is, and its words decide the level. The first row that matches wins:
+  </Step>
+</Steps>
+
+| Words in the phase | Level |
+| --- | --- |
+| fail, error, unhealthy, degraded, crash, invalid, reject, lost, broken, abort | Critical |
+| pending, progress, creating, provisioning, initializing, starting, deploying, updating, upgrading, installing, reconciling, syncing, waiting, scaling, terminating, deleting, restoring, setting up | Progressing |
+| missing, warn | Warning |
+| suspend, pause, stopped | Neutral |
+| healthy, running, active, ready, available, bound, succeeded or success, complete, established, deployed, synced, online | Healthy |
+
+A phase that matches none of them is neutral. An object with none of these fields shows <span className="lumovi-status neutral">Unknown</span>, and a kind whose objects have none gets no status column at all.
+
+<Columns cols={2}>
+  <Card title="Write a view" icon="puzzle" href="/custom-resources/write-a-view">
+    Give a custom kind status rules of its own.
+  </Card>
+  <Card title="Finding things" icon="search" href="/explore/finding-things">
+    Filter any list by health, text or labels.
+  </Card>
+</Columns>

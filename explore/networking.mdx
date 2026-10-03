@@ -1,0 +1,57 @@
+---
+title: "Networking"
+description: "Services, ingresses and network policies: how traffic reaches your pods, and what's allowed to talk to what."
+icon: "network"
+---
+
+The sidebar's **Network** section has three lists. Like every list, they follow the [namespace](/clusters/namespaces) you picked.
+
+| List | Shortcut | Columns |
+| --- | --- | --- |
+| **Services** | <kbd>G</kbd> <kbd>V</kbd>, or <kbd>⌘</kbd><kbd>4</kbd> in the desktop app | Type, Cluster IP, External, Ports |
+| **Ingresses** | <kbd>G</kbd> <kbd>I</kbd> | Class, Hosts, Address |
+| **Network Policies** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Pod selector, Policy types |
+
+On Windows and Linux, use <kbd>Ctrl</kbd> where these pages say <kbd>⌘</kbd>.
+
+These kinds have no health of their own, so their lists sort by name. To see whether a service has pods behind it, open it.
+
+## Services
+
+<Frame caption="A service, its selector and its ports.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/services-light-1x.webp" alt="The Services list with a LoadBalancer service open: its details, selector and ports." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/services-dark-1x.webp" alt="The Services list with a LoadBalancer service open: its details, selector and ports." />
+</Frame>
+
+Open a service to see:
+
+- **Details**: its type, cluster IP, external address, session affinity and selector.
+- **Ports**: each port's name, port, target, node port and protocol.
+- **Pods**: the pods its selector matches, failing ones first. If this list is empty, the service has nowhere to send traffic.
+- **Logs**: the logs of every pod behind it, merged in the order they were written. Handy for following a request across replicas. See [Logs](/debug/logs).
+- **Events** and **YAML**.
+
+### Reach a service from your computer
+
+<Badge size="sm" color="gray" stroke icon="monitor">Desktop app</Badge>
+
+**Forward a port…** on a service listens on a port on your computer and passes connections to the service's first ready pod, like `kubectl port-forward service/web 8080:80`. It works for services with a selector. See [Port forwarding](/debug/port-forwarding).
+
+## Ingresses
+
+Open an ingress for its class, address and TLS hosts, and its **Rules**: each host and path, and the service and port it sends traffic to (`web:80`).
+
+Using the Gateway API or Istio instead? Their kinds, like `HTTPRoute`, `Gateway` and `VirtualService`, have views with the columns and links that matter for them. See [Built-in views](/custom-resources/built-in-views).
+
+## Network policies
+
+Open a policy for the pods it applies to (its **Pod selector**, or *All pods in namespace*), its policy types, and how many ingress and egress rules it has. The rules themselves are in **YAML**.
+
+<Columns cols={2}>
+  <Card title="Port forwarding" icon="cable" href="/debug/port-forwarding">
+    Reach a pod or service on localhost.
+  </Card>
+  <Card title="Config and storage" icon="hard-drive" href="/explore/config-and-storage">
+    ConfigMaps, Secrets, volumes and storage classes.
+  </Card>
+</Columns>

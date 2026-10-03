@@ -1,0 +1,44 @@
+---
+title: "Events"
+description: "What happened in the cluster, newest first, with a link from each event to the object it's about."
+icon: "activity"
+---
+
+Kubernetes records an event when something happens to an object: a pod is scheduled, an image fails to pull, a probe fails, a node runs low on memory. **Events** lists them, newest first. Open it from the sidebar under **Cluster**, with <kbd>G</kbd> then <kbd>E</kbd>, or with <kbd>⌘</kbd><kbd>6</kbd> in the desktop app (<kbd>Ctrl</kbd><kbd>6</kbd> on Windows and Linux).
+
+<Frame caption="What happened in the cluster, newest first.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/events-light-1x.webp" alt="The Events list: warnings like BackOff, Failed and FailedScheduling among normal events, each with its object, message, count and when it was last seen." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/events-dark-1x.webp" alt="The Events list: warnings like BackOff, Failed and FailedScheduling among normal events, each with its object, message, count and when it was last seen." />
+</Frame>
+
+| Column | Shows |
+| --- | --- |
+| **Type** | <span className="lumovi-status warning">Warning</span> or <span className="lumovi-status neutral">Normal</span> |
+| **Reason** | A short code, like `BackOff`, `FailedScheduling` or `Pulled` |
+| **Object** | The object it's about, like `Pod/checkout-7d9f…`. Click it to open that object. |
+| **Message** | What happened, in words |
+| **Count** | How many times it happened |
+| **Last seen** | When it last happened |
+
+## Only the warnings
+
+The chips above the list count each type. Pick **Warning** to hide the routine events. The overview's **Warnings** tile opens the list this way.
+
+The filter (<kbd>/</kbd>) matches an event's reason, message and object name as well as its labels, so typing `OOMKilled` or a pod's name finds what you're after.
+
+## An object's own events
+
+Every object's detail panel has an **Events** tab with the events about it, newest first. It's often the fastest way to see why a pod won't start or a volume won't bind. The overview lists the latest warnings across the namespace, too.
+
+<Note>
+  Kubernetes keeps events for a limited time (an hour, unless the cluster is set up otherwise), so old ones disappear. For a longer view of what a workload did, see [Usage history](/metrics/usage-history) and its logs.
+</Note>
+
+<Columns cols={2}>
+  <Card title="Overview" icon="layout-dashboard" href="/explore/overview">
+    The latest warnings, next to what needs attention.
+  </Card>
+  <Card title="Health and status" icon="heart-pulse" href="/explore/health">
+    What the statuses on each object mean.
+  </Card>
+</Columns>
