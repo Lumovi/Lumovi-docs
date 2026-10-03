@@ -1,0 +1,121 @@
+---
+title: "Permissions"
+description: "Lumovi does what your own RBAC allows and nothing more: here's what each feature needs."
+icon: "lock-keyhole"
+---
+
+Lumovi acts with your credentials: the ones in your kubeconfig on the desktop, or the identity you signed in with when it runs [in your cluster](/server/overview). It never has more access than you do, and it doesn't need cluster-admin. An account that can only read a few namespaces works fine.
+
+## Asked up front
+
+Before it offers a change, Lumovi asks the cluster whether you're allowed to make it, with a [SelfSubjectAccessReview](https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access) per action (the same check as `kubectl auth can-i`). Kubernetes lets every signed-in account make these checks.
+
+- An action you can't take stays visible, but disabled, and says why: *Your account can't delete pods in shop.*
+- If the cluster can't say, the action stays available and the API server has the final word.
+- Answers are kept for five minutes.
+
+A cluster you made [read-only](/changes/read-only) disables every change regardless, with *Changes are turned off for this cluster.*
+
+## Looking around
+
+Lists and details need `list` and `get` on the kinds you look at. Lumovi refreshes lists by asking again every few seconds (less often for long lists), so it doesn't need `watch`.
+
+| To see | Needs |
+| --- | --- |
+| A list, and an object's details | `list` and `get` on that kind |
+| The namespace menu | `list` on `namespaces`. Without it, type a namespace's name. |
+| The overview | `list` on nodes, pods, workloads and events |
+| Live CPU and memory | `list` on `pods` and `nodes` in the `metrics.k8s.io` group |
+| Logs | `get` on `pods/log` |
+| Custom resources | API discovery, which every account can read, and `list` on the kinds |
+| Field explanations | The cluster's OpenAPI schema, which every account can read |
+
+If a page needs something you can't read, it says **Access denied**, with *Your account isn't allowed to read this. If you only have access to some namespaces, pick one from the namespace menu.*
+
+## Usage history
+
+Charts over time come from a Prometheus-compatible server, reached through the API server's service proxy with your own credentials.
+
+| To | Needs |
+| --- | --- |
+| Find the server automatically | `list` on `services` |
+| Read history from it | `get` on `services/proxy` in the server's namespace |
+
+Without `list` on services, choose the server yourself in **Metrics source**. See [Usage history](/metrics/usage-history).
+
+## Helm releases
+
+Lumovi reads releases from the Secrets (or ConfigMaps) Helm keeps them in, so looking at them needs `list` on `secrets` in their namespaces (or on `configmaps`, for releases kept there), and no `helm`. The built-in `view` ClusterRole doesn't include Secrets, so it isn't enough to see releases.
+
+Changing a release runs your own `helm` with your credentials, so you need whatever Helm needs to change the release's objects. See [Helm releases](/helm/releases).
+
+## Making changes
+
+Each action checks one permission first:
+
+| Action | Checks |
+| --- | --- |
+| Scale (Deployments, StatefulSets, ReplicaSets) | `patch` on the kind |
+| Scale (custom kinds) | `patch` on the kind's `scale` subresource |
+| Restart, change image, roll back, pause or resume a rollout | `patch` on the workload |
+| Suspend or resume a CronJob or Job | `patch` on the kind |
+| Run a CronJob now | `create` on `jobs` |
+| Cordon, uncordon, drain | `patch` on `nodes` |
+| Change an autoscaler's range, expand a volume | `patch` on the kind |
+| Edit labels and annotations | `patch` on the kind |
+| Edit YAML | `update` on the kind |
+| Delete, restart a pod | `delete` on the kind |
+| Evict a pod | `create` on `pods/eviction` |
+| Open a shell | `create` on `pods/exec` |
+| Add a debug container | `patch` on `pods/ephemeralcontainers` |
+| Forward a port | `create` on `pods/portforward` |
+| A view's action | `patch` on the kind, or on its `status` |
+
+A few notes:
+
+- **Draining** cordons the node, then evicts its pods a few at a time, so it also needs `create` on `pods/eviction`. A PodDisruptionBudget can refuse an eviction: the drain shows each pod's progress, with **Retry** for any that fail.
+- **Debug containers** open a shell in the new container, which also needs `pods/exec`.
+- **Create from YAML** and **several at once** don't check first. The cluster checks each object, and the dialog shows what it refused.
+
+<Tip>
+  To check a permission yourself, use `kubectl auth can-i`, for example `kubectl auth can-i create pods/exec -n shop`. Lumovi asks the cluster the same question.
+</Tip>
+
+## An example
+
+A teammate with the built-in `view` role can browse workloads and read logs. To let them see usage history from a Prometheus in `monitoring` too, bind a Role there:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: lumovi-usage-history
+  namespace: monitoring
+rules:
+  - apiGroups: [""]
+    resources: ["services/proxy"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: lumovi-usage-history
+  namespace: monitoring
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: lumovi-usage-history
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: Group
+    name: platform-team
+```
+
+<Columns cols={2}>
+  <Card title="Changing things safely" icon="shield-check" href="/changes/safely">
+    The guard rails on every change.
+  </Card>
+  <Card title="Read-only mode" icon="lock" href="/changes/read-only">
+    Turn changes off for a cluster, whatever RBAC allows.
+  </Card>
+</Columns>

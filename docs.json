@@ -73,6 +73,14 @@
               "get-started/tour",
               "get-started/sign-in"
             ]
+          },
+          {
+            "group": "Clusters",
+            "pages": [
+              "clusters/connect",
+              "clusters/namespaces",
+              "clusters/permissions"
+            ]
           }
         ]
       }
