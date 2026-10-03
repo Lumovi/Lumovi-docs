@@ -1,0 +1,133 @@
+---
+title: "Connect your clusters"
+sidebarTitle: "Connect clusters"
+description: "Lumovi reads clusters from your kubeconfig, the way kubectl does, and tells you whether each one is reachable and why not."
+icon: "plug"
+---
+
+There's nothing to add or import. The desktop app shows every context in your kubeconfig, with the credentials it already has: client certificates, tokens, and credential plugins like `gke-gcloud-auth-plugin`, `aws eks get-token` and `kubelogin`.
+
+<Note>
+  **In your cluster:** Lumovi served from a cluster shows that one cluster, and each person signs in with their own identity. There's no kubeconfig and no cluster list. See [Run it in your cluster](/server/overview).
+</Note>
+
+## Where clusters come from
+
+Lumovi finds your kubeconfig the same way `kubectl` does:
+
+- The files listed in the `KUBECONFIG` environment variable, separated by `:` (`;` on Windows).
+- Otherwise, `~/.kube/config`.
+
+Several files are merged with kubectl's rules:
+
+- Files that are missing or empty are skipped.
+- When two files define a cluster, user or context with the same name, the first file wins.
+- The current context is the first one any file sets.
+- Relative paths in a file (to a certificate, say) are read from that file's folder.
+
+<Warning>
+  A `KUBECONFIG` you export in your shell's startup file (`~/.zshrc`, `~/.bashrc`) reaches Lumovi only when you start it from that shell. Opened from the Dock, Spotlight or a launcher, it doesn't see the variable, and reads `~/.kube/config`. **Loaded from**, at the bottom of the start screen, shows which files were read. To always use your files, see [Setting environment variables](/reference/environment-variables#setting-them).
+</Warning>
+
+If a file can't be read, the start screen says **Your kubeconfig couldn't be read**, with the file and the reason. If no file defines a context, it says **No clusters found**. Fix the file, then choose **Reload**. The kubeconfig is read again each time you reload, so you don't need to restart the app after changing it.
+
+<Tip>
+  Lumovi doesn't manage kubeconfig files. Add contexts with your cloud's CLI or `kubectl config`, then choose **Reload** on the start screen.
+</Tip>
+
+### Credential plugins
+
+Contexts that get their credentials from a plugin (an `exec` entry in the kubeconfig) work as they do in a terminal. Lumovi keeps each context's configuration between requests, so a plugin's cached token is reused instead of asked for again.
+
+On macOS and Linux, apps opened from the Dock or a launcher don't get the `PATH` your shell sets up. So when Lumovi starts, it asks your login shell for its `PATH`, and finds plugins wherever your shell would. If the shell takes longer than five seconds or fails, Lumovi keeps the `PATH` it started with. Windows apps already get the full `PATH`.
+
+If a plugin isn't found, the cluster shows **Credentials failed**, with the message: *The credential plugin "gke-gcloud-auth-plugin" wasn't found. Install it, or make sure it's on your PATH.*
+
+### Clusters on plain HTTP
+
+A cluster served over `http://` (through `kubectl proxy`, for example) has to opt in to unencrypted connections, the same rule as the official JavaScript client. Set `insecure-skip-tls-verify: true` on the cluster in your kubeconfig:
+
+```yaml ~/.kube/config
+clusters:
+  - name: local-proxy
+    cluster:
+      server: http://127.0.0.1:8001
+      insecure-skip-tls-verify: true
+```
+
+Without it, the cluster shows **Plain HTTP blocked**.
+
+## The start screen
+
+Lumovi opens on a list of your clusters, and checks each one as the list appears.
+
+<Frame caption="Every context in the kubeconfig, with its status.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/clusters-light-1x.webp" alt="The start screen listing four clusters with their versions and response times, and one marked Unreachable." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/clusters-dark-1x.webp" alt="The start screen listing four clusters with their versions and response times, and one marked Unreachable." />
+</Frame>
+
+Each row shows:
+
+- A status dot, and the context's name. Your kubeconfig's current context has a **current** badge.
+- The API server's host and the user, like `api.example.com · admin`.
+- **Checking…** while Lumovi asks the cluster for its version, then the version and how long it took to answer (`v1.34.1 · 18 ms`), or what went wrong.
+
+The clusters you opened last are under **Recent**, and the rest under **All clusters**. Type to search, move with <kbd>↑</kbd> <kbd>↓</kbd>, and press <kbd>↵</kbd> to open one. Below the list, **Loaded from** shows which kubeconfig files were read.
+
+### When a cluster can't be reached
+
+The label says what kind of problem it is. Hover it for the full message. If you open the cluster anyway, the page explains what to try, with **Try again**.
+
+| Label | What it means | What to try |
+| --- | --- | --- |
+| **Unreachable** | Can't reach the cluster. | Check that the API server is running and reachable from this machine. A VPN or tunnel may be required. |
+| **Timed out** | The cluster isn't responding. | The API server accepted the connection but didn't answer within 20 seconds. Set `LUMOVI_REQUEST_TIMEOUT_MS` for a slow one. |
+| **Certificate error** | The cluster's certificate couldn't be verified. | The certificate authority in your kubeconfig doesn't match the API server. |
+| **Plain HTTP blocked** | Plain HTTP isn't allowed. | Set `insecure-skip-tls-verify: true` on the cluster, as above. |
+| **Credentials failed** | Couldn't get credentials. | The credential plugin for this context failed. Make sure it's installed and that you're logged in. |
+| **Unauthorized** | Your credentials were rejected. | The token or certificate may have expired. Sign in again, then retry. |
+| **Forbidden** | Access denied. | Your account isn't allowed to read this. If you only have access to some namespaces, pick one from the namespace menu. |
+| **Not found** | Not found. | It may have been deleted, or this API isn't available on the cluster. |
+| **Server error** | The API server returned an error. | This is usually temporary. Retry in a moment. |
+| **Misconfigured** | The context can't be used as it is. | Hover the label for the reason: a context that points at a cluster your kubeconfig doesn't define, for example. |
+
+Expired credentials show up as **Unauthorized**, or as **Credentials failed** when the plugin that gets them fails. Signing in again with your cloud's CLI usually fixes both.
+
+<Frame caption="A cluster that doesn't answer, and what to try.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/unreachable-light-1x.webp" alt="A cluster that can't be reached, with an explanation of what to check and a Try again button." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/unreachable-dark-1x.webp" alt="A cluster that can't be reached, with an explanation of what to check and a Try again button." />
+</Frame>
+
+## Switching clusters
+
+The cluster switcher at the top of the sidebar shows the cluster you're in, its Kubernetes version, and a lock if it's [read-only](/changes/read-only). Open it to:
+
+- Switch to another cluster: type to filter, and pick one.
+- Go back to **All clusters**, the start screen.
+- Turn **Read-only** on or off for this cluster.
+
+You can also switch from the command palette (<kbd>⌘</kbd><kbd>K</kbd>), which lists every cluster and **All clusters**, or use **Go → All Clusters** (<kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd>) in the menu bar. On Windows and Linux, use <kbd>Ctrl</kbd> instead of <kbd>⌘</kbd>.
+
+Each cluster remembers its own [namespace](/clusters/namespaces), so switching back puts you where you were.
+
+## When a cluster stops answering
+
+If a cluster stops responding while you're using it, a banner says *Can't reach production. Checking again every 15 seconds.*, with **Retry now** and **All clusters**. The last data stays on screen, so you can keep reading while it comes back. When a single list fails to refresh, it keeps its rows and says *Couldn't refresh — showing the last data.*, with **Retry**.
+
+## Big or slow clusters
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `LUMOVI_MAX_LIST_ITEMS` | `5000` | The most objects a list loads. Lists are fetched in chunks of 500, and a longer list says so, with a way to filter by label. |
+| `LUMOVI_REQUEST_TIMEOUT_MS` | `20000` | How long the API server has to answer. |
+
+Both are read when the app starts. See [Environment variables](/reference/environment-variables).
+
+<Columns cols={2}>
+  <Card title="Namespaces" icon="layout-grid" href="/clusters/namespaces">
+    Scope every list to one namespace, or see them all.
+  </Card>
+  <Card title="Permissions" icon="lock-keyhole" href="/clusters/permissions">
+    What Lumovi needs from RBAC, feature by feature.
+  </Card>
+</Columns>

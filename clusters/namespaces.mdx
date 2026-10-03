@@ -1,0 +1,54 @@
+---
+title: "Namespaces"
+description: "One namespace menu scopes every list, and each cluster remembers your choice."
+icon: "layout-grid"
+---
+
+The namespace menu sits in the header, next to the search. Whatever you pick there applies everywhere in that cluster: the overview, every list, the Workloads and Metrics pages, and Helm releases.
+
+## Pick a namespace
+
+Open the menu and pick one, or **All namespaces**. Type to find a namespace in a long list. Namespaces that are being deleted have a **Terminating** badge.
+
+You can also switch from the command palette: press <kbd>⌘</kbd><kbd>K</kbd> (<kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) and type the namespace's name. Its **Namespace** group lists **All namespaces** and every namespace.
+
+With **All namespaces**, each row shows its namespace under its name, so you can tell `web` in `shop` from `web` in `staging`.
+
+## Where it starts
+
+When you open a cluster, Lumovi starts in:
+
+1. The namespace you picked last time in that cluster, if any.
+2. Otherwise, the namespace set on the context in your kubeconfig.
+3. Otherwise, **All namespaces**.
+
+Your choice is remembered per cluster, so switching between clusters keeps each one where you left it.
+
+## If you can't list namespaces
+
+Some accounts may use a few namespaces but not list them. When the list can't be read, the menu says *Namespaces couldn't be listed. Type a name to use it.* Type the namespace's name and choose **Use namespace "shop"**. The same works for any namespace that isn't in the list.
+
+<Tip>
+  If a page says **Access denied** with **All namespaces** picked, your account may only be allowed in some namespaces. Pick one of yours from the menu.
+</Tip>
+
+## Cluster-wide kinds
+
+Some kinds don't live in a namespace: nodes, namespaces, volumes, storage classes, and cluster-scoped custom resources. On their pages the menu shows **Cluster-wide**, and the list shows everything, whichever namespace you picked.
+
+The overview's node figures are cluster-wide too. Its workloads, pods and events follow the namespace you picked.
+
+## The Namespaces page
+
+**Namespaces** (in the sidebar under **Cluster**, or <kbd>G</kbd> then <kbd>M</kbd>) lists every namespace with its status: <span className="lumovi-status healthy">Active</span>, or the phase it's in, like <span className="lumovi-status warning">Terminating</span>.
+
+Open one for its labels, annotations and events. Deleting a namespace deletes everything in it, so Lumovi asks you to type its name first. See [Changing things safely](/changes/safely).
+
+<Columns cols={2}>
+  <Card title="Finding things" icon="search" href="/explore/finding-things">
+    The command palette, filters and label selectors.
+  </Card>
+  <Card title="Permissions" icon="lock-keyhole" href="/clusters/permissions">
+    What your account needs, feature by feature.
+  </Card>
+</Columns>
