@@ -1,0 +1,74 @@
+---
+title: "Charts on your computer"
+sidebarTitle: "Local charts"
+description: "Upgrade or install from the chart you're working on: a folder or a packaged .tgz, checked with helm lint before every review."
+icon: "folder-code"
+---
+
+<Badge icon="monitor" size="sm" color="gray" stroke>Desktop app only</Badge>
+
+When you're working on a chart, you can deploy it straight from your computer: change a template, review the dry run against the real cluster, upgrade. Lumovi shows what the chart is, checks it with `helm lint` against your values, and remembers it for the next time.
+
+## Choose the chart
+
+In **Upgrade…** or **Install chart**, pick **A chart on this computer**. Then either:
+
+- **Choose…** → **Chart folder…** or **Packaged chart (.tgz)…**, or
+- type its path and press <kbd>↵</kbd>. `~/` works, like `~/charts/web`.
+
+Lumovi reads the chart with `helm show chart`, and shows its name, version, app version and description. It warns you when something looks off:
+
+| Warning | It means |
+| --- | --- |
+| "web runs the web chart; this one is api." | You picked a different chart than the release runs. |
+| "It's older than the 1.4.2 web runs." | The chart's version is lower than the one deployed. That's allowed, for testing an older version, but rarely what you meant. |
+
+## Subcharts
+
+If the chart has dependencies that aren't in its `charts/` folder yet, Lumovi lists them: "Its charts/ folder is missing redis 19.0.1." **Download dependencies** runs `helm dependency update` on the folder, then checks the chart again.
+
+A packaged `.tgz` has its dependencies inside already.
+
+## Values files beside it
+
+Charts often keep values for each environment next to `values.yaml`, and test values in `ci/`. For a chart folder, **Load values from…** offers each of them:
+
+<Tree>
+  <Tree.Folder name="web" defaultOpen>
+    <Tree.File name="Chart.yaml" />
+    <Tree.File name="values.yaml" />
+    <Tree.File name="values-staging.yaml" highlight />
+    <Tree.File name="values-prod.yaml" highlight />
+    <Tree.Folder name="ci" defaultOpen>
+      <Tree.File name="minimal-values.yaml" highlight />
+    </Tree.Folder>
+    <Tree.Folder name="templates" />
+  </Tree.Folder>
+</Tree>
+
+Every `.yaml` or `.yml` file in the chart's folder except `Chart.yaml` and `values.yaml`, and every one in its `ci/` folder, is listed. Picking one loads it into the editor, where you can change it before reviewing. The file itself isn't changed.
+
+## helm lint, before every review
+
+Lumovi runs `helm lint` on the chart with the values in the editor, and shows what it found: "helm lint found no problems", or a count of errors and warnings with each message. **Check again** runs it once more, against the values as they are now.
+
+It also runs again every time you press **Review**, so you never review a dry run of a chart you haven't linted, and its findings show next to the manifest diff.
+
+## It remembers
+
+When you upgrade or install a release from a chart on your computer, Lumovi remembers which one. The next **Upgrade…** of that release starts on **A chart on this computer**, with the same path, so iterating is: edit, **Upgrade…**, **Review**, **Upgrade**.
+
+The path is kept per cluster, namespace and release, on this computer.
+
+<Note>
+  **In your cluster:** there's no computer of yours for the server to read files from, so this option isn't there. Push the chart to a repository or an OCI registry, and upgrade from that. See [Upgrade and roll back](/helm/upgrade-and-rollback).
+</Note>
+
+<Columns cols={2}>
+  <Card title="Upgrade and roll back" icon="history" href="/helm/upgrade-and-rollback">
+    The whole upgrade flow, and rolling back.
+  </Card>
+  <Card title="Install a chart" icon="package-plus" href="/helm/install">
+    New releases, from anywhere.
+  </Card>
+</Columns>
