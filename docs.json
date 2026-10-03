@@ -221,7 +221,10 @@
   },
   "seo": {
     "metatags": {
-      "og:site_name": "Lumovi Docs"
+      "og:site_name": "Lumovi Docs",
+      "og:image": "https://docs.lumovi.dev/og.png",
+      "og:image:alt": "Lumovi documentation: install Lumovi, connect your clusters, and make the most of every view.",
+      "twitter:card": "summary_large_image"
     }
   },
   "footer": {

@@ -107,7 +107,7 @@ through jsDelivr. When the app changes, the docs show it, without a change here.
 
 ## Logo and colors
 
-The logo, the favicon and the colors are Lumovi's brand, from
+The logo, the favicon, the link preview and the colors are Lumovi's brand, from
 [Lumovi-design](https://github.com/Lumovi/Lumovi-design), along with the
 [guidelines](https://github.com/Lumovi/Lumovi-design/blob/main/guidelines/README.md) for using
 them. Copy new versions from there rather than changing them here:
@@ -117,6 +117,7 @@ them. Copy new versions from there rather than changing them here:
 | `logo/light.svg`                       | `logo/svg/lumovi-logo-on-light.svg`   |
 | `logo/dark.svg`                        | `logo/svg/lumovi-logo-on-dark.svg`    |
 | `favicon.svg`                          | `icons/web/favicon.svg`               |
+| `og.png`, the docs' link preview       | `social/og/lumovi-docs.png`           |
 | `colors` in `docs.json`                | The README's colors for the docs      |
 | The `--lumovi-*` colors in `style.css` | `colors/tokens.css`, its theme tokens |
 
