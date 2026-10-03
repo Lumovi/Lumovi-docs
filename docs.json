@@ -7,9 +7,9 @@
     "version": "1.2.0"
   },
   "colors": {
-    "primary": "#2a78d6",
+    "primary": "#2675d3",
     "light": "#5ea2f0",
-    "dark": "#2a78d6"
+    "dark": "#2675d3"
   },
   "logo": {
     "light": "/logo/light.svg",
