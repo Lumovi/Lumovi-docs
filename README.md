@@ -8,7 +8,7 @@
 [docs.lumovi.com](https://docs.lumovi.com).**
 
 Installing it, using it, running it for your team, and every setting: the source of the docs
-for the calm, fast Kubernetes app for your desktop and your cluster.
+for the calm, fast Kubernetes dashboard, on your desktop or in your cluster.
 
 [![CI](https://github.com/Lumovi/Lumovi-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/Lumovi/Lumovi-docs/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-docs.lumovi.com-2675d3)](https://docs.lumovi.com)
