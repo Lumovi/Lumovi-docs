@@ -108,6 +108,14 @@
               "changes/read-only",
               "changes/undo-and-activity"
             ]
+          },
+          {
+            "group": "Debug",
+            "pages": [
+              "debug/logs",
+              "debug/shell",
+              "debug/port-forwarding"
+            ]
           }
         ]
       }

@@ -1,0 +1,75 @@
+---
+title: "Port forwarding"
+description: "Reach a pod or a service from your own computer on localhost, like kubectl port-forward, and keep track of every forward from the header."
+icon: "cable"
+---
+
+<Badge icon="monitor" color="gray" stroke>Desktop app only</Badge>
+
+Forward a port on your computer to a pod or a service, like `kubectl port-forward`, to open an admin page, query a database or call an API that isn't exposed. Forwards keep running while you work, listed in the header until you stop them.
+
+<Frame caption="Forwarding a local port to a service.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/port-forward-light-1x.webp" alt="The Forward a port dialog for a service: its ports to pick from, the remote and local port, an option to open the address in the browser, and the kubectl port-forward command." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/port-forward-dark-1x.webp" alt="The Forward a port dialog for a service: its ports to pick from, the remote and local port, an option to open the address in the browser, and the kubectl port-forward command." />
+</Frame>
+
+## Start a forward
+
+<Steps>
+  <Step title="Open a pod or a service">
+    A running pod, or a service that selects pods.
+  </Step>
+  <Step title="Choose Forward a port…">
+    From the object's actions, its right-click menu, or the command palette (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux).
+  </Step>
+  <Step title="Pick the port">
+    Pick one of the ports it declares, or type another:
+
+    - For a pod: each container's ports, as _container_ · _name_ · _port_.
+    - For a service: its ports, as _name_ · _port_ → _target port_.
+
+    The local port, **On this computer**, starts as the same number. Ports below 1024 need special rights on many systems, so for those it starts 8000 higher: port 80 becomes 8080, 443 becomes 8443. Change it if you like.
+  </Step>
+  <Step title="Start forwarding">
+    Tick **Open http&#58;//localhost:N in the browser** to open it right away, then choose **Start forwarding**.
+  </Step>
+</Steps>
+
+The equivalent command is shown in the dialog:
+
+```bash
+kubectl port-forward service/web 8080:80 -n shop --context dev
+```
+
+## Your forwards
+
+While any forward runs, a **Port forwards** button in the header shows how many. It lists the forwards of every cluster, each with:
+
+- Its address, `localhost:8080`. Choose it to open it in your browser, or **Copy address**.
+- Where it goes: the service, the pod and the pod's port, with the namespace and cluster.
+- How many connections it has, and any error.
+- **Stop forwarding**.
+
+Forwards stop when you stop them, and when you quit Lumovi.
+
+## How it works
+
+- **Only on your computer.** Forwards listen on `127.0.0.1`, so nothing else on your network can reach them.
+- **To a service's pod.** A forward to a service goes to the first of its pods that's ready. A named target port is looked up in the pod's containers. The pod is picked when the forward starts: if it's replaced, start the forward again.
+- **Port in use.** If the local port is taken, the dialog says so ("Port 8080 on this computer can't be used") and you pick another.
+- **Read-only clusters.** Port forwards don't change the cluster, so they work in [read-only](/changes/read-only) clusters too.
+
+<Note>
+  **In your cluster:** port forwarding isn't offered when Lumovi runs in your cluster, because there's no computer of yours to forward to. Use the desktop app, or `kubectl port-forward`.
+</Note>
+
+Forwarding needs `create` on `pods/portforward` in the namespace. See [Permissions](/clusters/permissions).
+
+<Columns cols={2}>
+  <Card title="Shells and debug containers" icon="square-terminal" href="/debug/shell">
+    A terminal inside the container, or a debug container with tools.
+  </Card>
+  <Card title="Networking" icon="plug" href="/explore/networking">
+    Services, ingresses and network policies.
+  </Card>
+</Columns>
