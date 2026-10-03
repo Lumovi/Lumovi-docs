@@ -1,0 +1,120 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "aspen",
+  "name": "Lumovi",
+  "description": "Lumovi is a calm, fast Kubernetes app. Run it on your desktop against every cluster in your kubeconfig, or in your cluster as a dashboard your whole team signs in to.",
+  "variables": {
+    "version": "1.2.0"
+  },
+  "colors": {
+    "primary": "#2a78d6",
+    "light": "#5ea2f0",
+    "dark": "#2a78d6"
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "/"
+  },
+  "favicon": "/favicon.svg",
+  "fonts": {
+    "family": "Inter"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "appearance": {
+    "default": "system"
+  },
+  "background": {
+    "color": {
+      "light": "#ffffff",
+      "dark": "#0c0c0e"
+    }
+  },
+  "styling": {
+    "eyebrows": "section",
+    "codeblocks": {
+      "theme": {
+        "light": "github-light",
+        "dark": "github-dark-default"
+      }
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Website",
+        "href": "https://lumovi.com"
+      },
+      {
+        "type": "github",
+        "href": "https://github.com/Lumovi/Lumovi"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Download",
+      "href": "https://lumovi.com/#download"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Using Lumovi",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "index"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude"]
+  },
+  "search": {
+    "prompt": "Search the docs…"
+  },
+  "seo": {
+    "metatags": {
+      "og:site_name": "Lumovi Docs"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/Lumovi/Lumovi",
+      "website": "https://lumovi.com"
+    },
+    "links": [
+      {
+        "header": "Lumovi",
+        "items": [
+          { "label": "Website", "href": "https://lumovi.com" },
+          { "label": "Download", "href": "https://lumovi.com/#download" },
+          { "label": "Releases", "href": "https://github.com/Lumovi/Lumovi/releases" }
+        ]
+      },
+      {
+        "header": "Project",
+        "items": [
+          { "label": "GitHub", "href": "https://github.com/Lumovi/Lumovi" },
+          { "label": "Contributing", "href": "https://github.com/Lumovi/Lumovi/blob/main/CONTRIBUTING.md" },
+          { "label": "Security", "href": "https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md" },
+          { "label": "Sponsor", "href": "https://github.com/sponsors/kotapeter" }
+        ]
+      }
+    ]
+  },
+  "errors": {
+    "404": {
+      "redirect": false,
+      "title": "Nothing here",
+      "description": "This page doesn't exist, or it moved. Try the search, or start from the [introduction](/)."
+    }
+  }
+}
