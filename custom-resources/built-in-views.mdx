@@ -1,0 +1,190 @@
+---
+title: "Built-in views"
+description: "The views Lumovi ships for popular projects: the columns, status, links and actions each adds to their custom resources."
+icon: "blocks"
+---
+
+Lumovi ships views for the projects most clusters run. When a cluster serves one of these kinds, its list gets the columns people look at first, its objects get a status that understands the project, related objects are a click away, and the changes its own CLI offers become actions.
+
+Like every change in Lumovi, a view's actions check your permissions first (you need `patch` on the kind), show the equivalent `kubectl patch` command, and are refused in a [read-only](/changes/read-only) cluster. Actions marked **undo** can be taken back from their notification.
+
+<Columns cols={3}>
+  <Card title="cert-manager" href="#cert-manager" icon="shield-check" />
+  <Card title="Argo CD and Rollouts" href="#argo-cd-and-argo-rollouts" icon="git-branch" />
+  <Card title="Flux" href="#flux" icon="workflow" />
+  <Card title="Gateway API" href="#gateway-api" icon="globe" />
+  <Card title="Karpenter" href="#karpenter" icon="boxes" />
+  <Card title="KEDA" href="#keda" icon="gauge" />
+  <Card title="External Secrets" href="#external-secrets" icon="lock" />
+  <Card title="Prometheus operator" href="#prometheus-operator" icon="activity" />
+  <Card title="CloudNativePG" href="#cloudnativepg" icon="database" />
+  <Card title="Istio" href="#istio" icon="network" />
+  <Card title="Velero" href="#velero" icon="archive" />
+  <Card title="Crossplane" href="#crossplane" icon="package" />
+</Columns>
+
+## cert-manager
+
+[cert-manager](https://cert-manager.io): certificates, their requests, and issuers. A certificate is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status progressing">Issuing</span>, or critical with cert-manager's reason.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| Certificate | Hosts, Secret, Expires | Secret, Issuer |
+| CertificateRequest | Approved, Issuer, Requester | Certificate |
+| Issuer, ClusterIssuer | ACME server, Email | |
+
+A certificate's details add when it's valid from, when it expires and renews, its lifetime and failed attempts. **Expires** reads like "in 30d", and sorts by time.
+
+## Argo CD and Argo Rollouts
+
+[Argo CD](https://argo-cd.readthedocs.io) applications, and [Argo Rollouts](https://argoproj.github.io/rollouts). Applications take their status from Argo CD's own health: <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status progressing">Progressing</span>, <span className="lumovi-status critical">Degraded</span>, <span className="lumovi-status warning">Missing</span> or <span className="lumovi-status neutral">Suspended</span>.
+
+| Kind | Columns | Actions |
+| --- | --- | --- |
+| Application | Sync, Repository, Path, Destination | **Sync**, **Refresh** |
+| Rollout | Desired, Ready, Updated, Steps | **Promote**, **Resume** (undo), **Restart**, **Abort** |
+
+- **Sync** starts a sync, like the Sync button in Argo CD. It's offered when no operation is running.
+- **Refresh** asks Argo CD to compare the application with its source again.
+- **Promote** moves a paused rollout past its pause. **Resume** unpauses one that was paused by hand.
+- **Restart** replaces the rollout's pods a few at a time, as its strategy says. It asks first.
+- **Abort** stops a rollout in progress and sends traffic back to the stable version. It's destructive, so it asks first.
+
+Rollouts have the scale subresource, so you can also **Scale** them like a Deployment.
+
+## Flux
+
+[Flux](https://fluxcd.io): what it applies, and where it fetches it from. Statuses follow Flux's conditions: <span className="lumovi-status neutral">Suspended</span>, <span className="lumovi-status critical">Stalled</span>, <span className="lumovi-status progressing">Reconciling</span> or <span className="lumovi-status healthy">Ready</span>.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| Kustomization | Revision, Path, Source | Source |
+| HelmRelease | Chart, Version, Release | Chart source |
+| GitRepository, OCIRepository, HelmRepository, HelmChart, Bucket | URL, Revision, Fetched | |
+
+Every Flux kind has the same three actions, like the `flux` CLI's:
+
+- **Reconcile** asks Flux to reconcile it now, like `flux reconcile`.
+- **Suspend** stops Flux reconciling it (undo).
+- **Resume** turns reconciliation back on, and asks for one right away (undo).
+
+A Helm release that Flux manages links to its HelmRelease from [Helm releases](/helm/releases#releases-flux-manages).
+
+## Gateway API
+
+[Gateway API](https://gateway-api.sigs.k8s.io): gateways and the routes attached to them. A gateway is <span className="lumovi-status healthy">Programmed</span> once its controller has set it up. Routes are <span className="lumovi-status healthy">Accepted</span>, or say why their gateway refused them, or why a backend can't be resolved.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| Gateway | Class, Address, Listeners | Class |
+| HTTPRoute, GRPCRoute, TLSRoute, TCPRoute, UDPRoute | Hostnames, Gateways, Backends | Gateway, Backend |
+| GatewayClass | Controller | |
+
+## Karpenter
+
+[Karpenter](https://karpenter.sh): node pools, and the nodes it launched for them.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| NodePool | Nodes, CPU, Memory, Weight | |
+| NodeClaim | Type, Capacity, Zone, Node | Node, Node pool |
+
+A node pool's details add its node class, CPU and memory limits, consolidation settings, and when its nodes expire.
+
+## KEDA
+
+[KEDA](https://keda.sh): event-driven autoscaling of workloads and jobs. A scaled object is <span className="lumovi-status healthy">Scaling</span> or <span className="lumovi-status healthy">Idle</span>, <span className="lumovi-status neutral">Paused</span>, or critical with KEDA's reason.
+
+| Kind | Columns | Links | Actions |
+| --- | --- | --- | --- |
+| ScaledObject | Target, Min, Max, Triggers | Target, Autoscaler | **Pause**, **Resume** (both undo) |
+| ScaledJob | Max, Triggers | | |
+
+**Pause** sets KEDA's `autoscaling.keda.sh/paused` annotation, and **Resume** removes it.
+
+## External Secrets
+
+[External Secrets](https://external-secrets.io): secrets kept in sync with a vault or a cloud's secret store.
+
+| Kind | Columns | Links | Actions |
+| --- | --- | --- | --- |
+| ExternalSecret | Store, Every, Synced | Secret, Store | **Sync now** |
+| SecretStore, ClusterSecretStore | Capabilities | | |
+
+**Sync now** asks the operator to fetch the secret again right away.
+
+## Prometheus operator
+
+The [Prometheus operator](https://prometheus-operator.dev)'s kinds, as kube-prometheus-stack installs them.
+
+| Kind | Columns |
+| --- | --- |
+| Prometheus, Alertmanager | Version, Replicas, Available, Retention |
+| ServiceMonitor, PodMonitor | Ports, Pod ports, Intervals |
+| PrometheusRule | Groups, Rules, Alerts |
+
+Prometheus and Alertmanager are <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Degraded</span> or <span className="lumovi-status critical">Unavailable</span>, as the operator reports them.
+
+## CloudNativePG
+
+[CloudNativePG](https://cloudnative-pg.io): PostgreSQL clusters and their backups.
+
+| Kind | Columns | Links | Actions |
+| --- | --- | --- | --- |
+| Cluster | Instances, Ready, Primary | Primary | **Restart** |
+| Backup | Cluster, Method, Started | Cluster | |
+| ScheduledBackup | Schedule, Last, Next | Cluster | **Suspend**, **Resume** (both undo) |
+
+**Restart** restarts the instances one at a time, replicas first and the primary last, with a switchover. It asks first.
+
+## Istio
+
+[Istio](https://istio.io): traffic routing and security.
+
+| Kind | Columns |
+| --- | --- |
+| VirtualService | Hosts, Gateways |
+| DestinationRule | Host, Subsets, TLS |
+| Gateway (`networking.istio.io`) | Hosts, Ports |
+| ServiceEntry | Hosts, Location, Resolution |
+| PeerAuthentication, AuthorizationPolicy | mTLS, Action |
+
+## Velero
+
+[Velero](https://velero.io): backups of cluster resources and volumes. Backups and restores are <span className="lumovi-status healthy">Completed</span>, <span className="lumovi-status warning">Partially failed</span>, or critical with Velero's phase.
+
+| Kind | Columns | Actions |
+| --- | --- | --- |
+| Backup, Restore | Started, Expires, Errors, Warnings | |
+| Schedule | Schedule, Last backup, Keep for | **Pause**, **Unpause** (both undo) |
+
+## Crossplane
+
+[Crossplane](https://crossplane.io): the packages that extend it.
+
+| Kind | Columns |
+| --- | --- |
+| Provider, Configuration, Function | Package, Installed, Healthy |
+
+A package is <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status progressing">Installing</span>, or critical with the reason it isn't installed or healthy.
+
+## CustomResourceDefinitions
+
+CustomResourceDefinitions themselves get a view too: their list shows each one's **Kind**, **Group**, **Scope** and **Versions**, and their details add the plural, short names and stored versions.
+
+## Changing a built-in view
+
+Your own view of a kind replaces Lumovi's for that kind. Copy the one you want to change from [Lumovi's views](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views) into `~/.lumovi/views`, edit it, and press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** then shows your file as the kind's view.
+
+## Contributing a view
+
+A view for a popular project is a welcome pull request. Add it to [`src/renderer/src/views`](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views), one file per project, with a comment linking to the project. Give its kinds the few columns people look at first, status rules when the conventions aren't enough, and actions its own CLI offers (and that a patch can do). Lumovi checks every view it ships when it starts, and the tests fail if one has a problem.
+
+<Columns cols={2}>
+  <Card title="Write a view" icon="file-pen-line" href="/custom-resources/write-a-view">
+    A step-by-step guide to your first one.
+  </Card>
+  <Card title="View format" icon="braces" href="/reference/view-format">
+    Every field a view can have.
+  </Card>
+</Columns>

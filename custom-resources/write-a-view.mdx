@@ -1,0 +1,261 @@
+---
+title: "Write a view"
+description: "Give your own custom resources useful columns, a real status, related objects and one-click actions, in a short YAML file."
+icon: "file-pen-line"
+---
+
+A view tells Lumovi how to show a kind: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it relates to, and which changes people make to it. It's a YAML file, and data only: it reads fields with the same JSONPath CRD printer columns use, and changes objects only with the patches it spells out.
+
+This guide builds a view for an in-house `Database` kind, step by step. Swap in your own kind's group and fields as you go.
+
+<Info>
+  The example's custom resource looks like this:
+
+  ```yaml
+  apiVersion: platform.example.com/v1
+  kind: Database
+  metadata:
+    name: orders
+    namespace: shop
+  spec:
+    engine: postgres
+    version: "16"
+    size: 50Gi
+    paused: false
+    credentialsSecret: orders-credentials
+  status:
+    phase: Running
+    endpoint: orders.shop.svc:5432
+    conditions:
+      - type: Ready
+        status: "True"
+        reason: Available
+  ```
+</Info>
+
+<Steps>
+  <Step title="Find the kind and its fields">
+    Open **API resources** in the sidebar and find your kind. Note its API group (`platform.example.com`) and kind (`Database`). Then open an object of it, and look at its **YAML** tab: that's where the paths you'll use come from.
+  </Step>
+
+  <Step title="Create the file">
+    Views live in `~/.lumovi/views`. Every `.yaml` or `.yml` file there is read, and a file can hold several views separated by `---`.
+
+    ```bash
+    mkdir -p ~/.lumovi/views
+    ```
+
+    Create `~/.lumovi/views/databases.yaml` with the smallest view there is:
+
+    ```yaml databases.yaml
+    apiVersion: lumovi.dev/v1alpha1
+    kind: View
+    metadata:
+      name: databases
+    spec:
+      kinds:
+        - { group: platform.example.com, kind: Database }
+      icon: database
+    ```
+
+    In Lumovi, press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** now shows `databases.yaml` as the kind's **View**, and Lumovi uses the database icon for the kind.
+  </Step>
+
+  <Step title="Add columns">
+    Columns come after the name and status, and replace the ones the API server prints.
+
+    ```yaml
+      columns:
+        - { name: Engine, path: .spec.engine }
+        - { name: Version, path: .spec.version }
+        - { name: Size, path: .spec.size }
+        - { name: Endpoint, path: .status.endpoint, default: "—" }
+    ```
+
+    `type` makes a column sort and read better: `number` right-aligns and sorts numerically, `date` reads like "2h ago" and sorts by time, `boolean` shows Yes or No, and `count` shows how many values a path finds.
+  </Step>
+
+  <Step title="Say what healthy means">
+    Status rules are checked in order, and the first that applies decides the status. If none applies, Lumovi falls back to [the usual conventions](/custom-resources/overview#status).
+
+    ```yaml
+      status:
+        - when: { path: .spec.paused }
+          health: neutral
+          label: Paused
+        - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'True' }
+          health: healthy
+          label: Ready
+        - when: { path: .status.phase, in: [Provisioning, Upgrading] }
+          health: progressing
+          label: '{{ .status.phase }}'
+        - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'False' }
+          health: critical
+          label: '{{ .status.conditions[?(@.type=="Ready")].reason ?? "Not ready" }}'
+          detail: '{{ .status.conditions[?(@.type=="Ready")].message }}'
+    ```
+
+    `health` is one of `healthy`, `progressing`, `warning`, `critical` or `neutral`: it picks the color, the icon, the sort order and the filter chip. `label` is what the status says, and `detail` shows on hover. Both are templates: `{{ .path }}` puts a value in, and `??` gives a fallback when the path finds nothing.
+
+    <Tip>
+      Comparisons ignore case, so even an unquoted `equals: True`, which YAML reads as a boolean, matches Kubernetes' `"True"`.
+    </Tip>
+  </Step>
+
+  <Step title="Add details">
+    Details are facts shown in the detail panel's **Details** section. They take the same fields as columns.
+
+    ```yaml
+      details:
+        - { name: Engine, path: .spec.engine }
+        - { name: Endpoint, path: .status.endpoint }
+        - { name: Last backup, path: .status.lastBackup, type: date }
+    ```
+  </Step>
+
+  <Step title="Link related objects">
+    Links appear in the detail panel, and open the object they point to. `kind` is a built-in kind (`Secret`, `Pod`, `Node`…), or a kind and its group (`Certificate.cert-manager.io`). The namespace is this object's unless you set one.
+
+    ```yaml
+      links:
+        - name: Credentials
+          kind: Secret
+          objectName: '{{ .spec.credentialsSecret }}'
+    ```
+
+    A link whose kind or name comes out empty isn't shown.
+  </Step>
+
+  <Step title="Add actions">
+    Actions patch the object, like `kubectl patch`. They show up in the object's **⋯** menu, its right-click menu and the command palette; `primary: true` also makes one a button in the detail panel.
+
+    ```yaml
+      actions:
+        - name: Pause
+          when: { path: .spec.paused, notEquals: true }
+          patch: { spec: { paused: true } }
+          undo: { spec: { paused: false } }
+          done: Paused {{ .metadata.name }}
+
+        - name: Resume
+          primary: true
+          when: { path: .spec.paused, equals: true }
+          patch: { spec: { paused: false } }
+          undo: { spec: { paused: true } }
+          done: Resumed {{ .metadata.name }}
+
+        - name: Rotate credentials
+          icon: key-round
+          confirm: Applications using the old password lose their connections.
+          danger: true
+          patch:
+            metadata:
+              annotations: { platform.example.com/rotate-at: '{{ now }}' }
+          done: Asked to rotate {{ .metadata.name }}'s credentials
+    ```
+
+    - `when` offers an action only when it makes sense.
+    - `undo` is a patch offered as **Undo** in the notification.
+    - `confirm` asks first, with this text. Without it, the action runs at once.
+    - `{{ now }}` is the current time, as Kubernetes writes times: handy for annotations a controller watches.
+
+    Every action checks your permissions first (it needs `patch` on the kind), shows its `kubectl patch` command, and can't run in a read-only cluster.
+  </Step>
+
+  <Step title="Reload and check">
+    Press <kbd>⌘</kbd><kbd>R</kbd>. If something's wrong, **API resources** says so at the top, with the file, the view and the field:
+
+    ```text
+    databases.yaml: databases: spec.status[1].health: is required
+    ```
+
+    A view with a problem isn't used at all, so the kind falls back to Lumovi's own view or the API server's columns until you fix it.
+  </Step>
+</Steps>
+
+## The whole view
+
+<Accordion title="databases.yaml" icon="file-code">
+  ```yaml databases.yaml
+  apiVersion: lumovi.dev/v1alpha1
+  kind: View
+  metadata:
+    name: databases
+  spec:
+    kinds:
+      - { group: platform.example.com, kind: Database }
+    icon: database
+
+    columns:
+      - { name: Engine, path: .spec.engine }
+      - { name: Version, path: .spec.version }
+      - { name: Size, path: .spec.size }
+      - { name: Endpoint, path: .status.endpoint, default: "—" }
+
+    status:
+      - when: { path: .spec.paused }
+        health: neutral
+        label: Paused
+      - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'True' }
+        health: healthy
+        label: Ready
+      - when: { path: .status.phase, in: [Provisioning, Upgrading] }
+        health: progressing
+        label: '{{ .status.phase }}'
+      - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'False' }
+        health: critical
+        label: '{{ .status.conditions[?(@.type=="Ready")].reason ?? "Not ready" }}'
+        detail: '{{ .status.conditions[?(@.type=="Ready")].message }}'
+
+    details:
+      - { name: Engine, path: .spec.engine }
+      - { name: Endpoint, path: .status.endpoint }
+      - { name: Last backup, path: .status.lastBackup, type: date }
+
+    links:
+      - name: Credentials
+        kind: Secret
+        objectName: '{{ .spec.credentialsSecret }}'
+
+    actions:
+      - name: Pause
+        when: { path: .spec.paused, notEquals: true }
+        patch: { spec: { paused: true } }
+        undo: { spec: { paused: false } }
+        done: Paused {{ .metadata.name }}
+      - name: Resume
+        primary: true
+        when: { path: .spec.paused, equals: true }
+        patch: { spec: { paused: false } }
+        undo: { spec: { paused: true } }
+        done: Resumed {{ .metadata.name }}
+      - name: Rotate credentials
+        icon: key-round
+        confirm: Applications using the old password lose their connections.
+        danger: true
+        patch:
+          metadata:
+            annotations: { platform.example.com/rotate-at: '{{ now }}' }
+        done: Asked to rotate {{ .metadata.name }}'s credentials
+  ```
+</Accordion>
+
+## Good to know
+
+- **Quote templates and filters in YAML.** A value that starts with `{{` must be in quotes, or YAML reads it as a map. Quote paths with brackets or double quotes in them too, like `'.status.conditions[?(@.type=="Ready")].status'`.
+- **Your view wins.** If you write a view for a kind Lumovi already has one for, yours replaces it. To tweak a built-in one, copy it from [Lumovi's views](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views) and edit it.
+- **Another folder.** Set `LUMOVI_VIEWS_DIR` to read views from somewhere else, like a folder your team shares in a Git repository.
+- **Limits.** Lumovi reads up to 200 files from the folder (not its subfolders), each up to 256 KB.
+
+<Note>
+  **In your cluster:** views everyone sees come from the chart's `views` value, one entry per file. People can't add their own from the browser. See [Views for everyone](/server/views).
+</Note>
+
+<Columns cols={2}>
+  <Card title="View format" icon="braces" href="/reference/view-format">
+    Every field, path, condition and template, in one place.
+  </Card>
+  <Card title="Built-in views" icon="blocks" href="/custom-resources/built-in-views">
+    Examples from cert-manager, Argo CD, Flux and more.
+  </Card>
+</Columns>
