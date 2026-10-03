@@ -116,6 +116,13 @@
               "debug/shell",
               "debug/port-forwarding"
             ]
+          },
+          {
+            "group": "Metrics",
+            "pages": [
+              "metrics/live-usage",
+              "metrics/usage-history"
+            ]
           }
         ]
       }
