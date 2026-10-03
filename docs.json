@@ -180,6 +180,35 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Reference",
+        "icon": "library",
+        "groups": [
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/keyboard-shortcuts",
+              "reference/view-format",
+              "reference/environment-variables",
+              "reference/resource-kinds",
+              "reference/privacy-and-security"
+            ]
+          },
+          {
+            "group": "Help",
+            "pages": [
+              "reference/troubleshooting",
+              "reference/faq"
+            ]
+          },
+          {
+            "group": "Project",
+            "pages": [
+              "reference/build-from-source"
+            ]
+          }
+        ]
       }
     ]
   },

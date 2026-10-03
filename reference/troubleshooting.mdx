@@ -1,0 +1,192 @@
+---
+title: "Troubleshooting"
+sidebarTitle: "Troubleshooting"
+description: "What each error in Lumovi means, and what to try. Most problems come from the connection to a cluster, and say so."
+icon: "life-buoy"
+---
+
+Lumovi tries to say what went wrong in plain words, and what to try next. On the start screen, each cluster that can't be opened gets a short label; hover it to read the full message. Inside a cluster, an error screen has a title, a hint and **Try again**.
+
+<Frame caption="A cluster that doesn't answer, and what to try.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/unreachable-light-1x.webp" alt="Lumovi showing a cluster it can't reach, with a hint to check the API server, VPN or tunnel, and a Try again button." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/unreachable-dark-1x.webp" alt="Lumovi showing a cluster it can't reach, with a hint to check the API server, VPN or tunnel, and a Try again button." />
+</Frame>
+
+## Connecting to a cluster
+
+| Start screen label | Error screen title |
+| --- | --- |
+| **Unreachable** | Can't reach the cluster |
+| **Timed out** | The cluster isn't responding |
+| **Certificate error** | The cluster's certificate couldn't be verified |
+| **Plain HTTP blocked** | Plain HTTP isn't allowed |
+| **Credentials failed** | Couldn't get credentials |
+| **Unauthorized** | Your credentials were rejected |
+| **Forbidden** | Access denied |
+
+<AccordionGroup>
+  <Accordion title="Unreachable: Can't reach the cluster" icon="wifi-off">
+    Lumovi couldn't open a connection to the API server.
+
+    - Check that the cluster is running, and that this computer can reach it. Many clusters are only reachable over a VPN or a tunnel.
+    - If you have `kubectl`, `kubectl --context <name> get --raw /version` tells you whether the API server answers from this computer.
+    - Choose **Try again**, or **Reload** on the start screen, once the network is back.
+  </Accordion>
+  <Accordion title="Timed out: The cluster isn't responding" icon="clock">
+    The API server accepted the connection, but didn't answer within 20 seconds. That's usually a busy or distant API server.
+
+    Try again in a moment. If it's always slow, give it longer with [`LUMOVI_REQUEST_TIMEOUT_MS`](/reference/environment-variables#setting-them). On macOS, quit Lumovi, then:
+
+    ```bash
+    LUMOVI_REQUEST_TIMEOUT_MS=60000 open -a Lumovi
+    ```
+  </Accordion>
+  <Accordion title="Certificate error: The cluster's certificate couldn't be verified" icon="shield-alert">
+    The certificate authority in your kubeconfig doesn't match the API server's certificate. The full message starts with `TLS handshake failed`.
+
+    This happens when a cluster is recreated or its certificates rotate. Get a fresh kubeconfig entry from wherever the cluster came from, for example `aws eks update-kubeconfig`, `gcloud container clusters get-credentials` or `az aks get-credentials`, then choose **Reload**.
+  </Accordion>
+  <Accordion title="Plain HTTP blocked: Plain HTTP isn't allowed" icon="shield-off">
+    The cluster's address starts with `http://`, for example through `kubectl proxy`. Lumovi only uses unencrypted connections when the kubeconfig says so for that cluster, the same rule as the official JavaScript client:
+
+    ```yaml ~/.kube/config
+    clusters:
+      - name: local-proxy
+        cluster:
+          server: http://127.0.0.1:8001
+          insecure-skip-tls-verify: true
+    ```
+  </Accordion>
+  <Accordion title="Credentials failed: Couldn't get credentials" icon="key-round">
+    The context gets its credentials from a plugin, like `gke-gcloud-auth-plugin`, `aws eks get-token` or `kubelogin`, and the plugin failed.
+
+    - **The credential plugin “…” wasn't found.** Install the plugin, or make sure it's on your `PATH`. On macOS and Linux, Lumovi reads `PATH` from your login shell when it starts, even when you open it from the Dock or a launcher. So the plugin must be on the `PATH` your shell profile sets up. Restart Lumovi after changing it.
+    - **Could not get credentials: …** The plugin ran but failed, most often because you're signed out of your cloud provider. Sign in again (`gcloud auth login`, `aws sso login`, `az login`…), then choose **Try again**.
+  </Accordion>
+  <Accordion title="Unauthorized: Your credentials were rejected" icon="lock">
+    The API server turned down the token or client certificate. Expired credentials end up here. Sign in again, or get a fresh kubeconfig entry, then try again.
+  </Accordion>
+  <Accordion title="Forbidden: Access denied" icon="ban">
+    Your account isn't allowed to read this. If you only have access to some namespaces, pick one from the namespace menu. If your account can't list namespaces, type the name of one you can use. See [Namespaces](/clusters/namespaces) and [Permissions](/clusters/permissions).
+  </Accordion>
+  <Accordion title="Your kubeconfig couldn't be read, or no clusters found" icon="file-x">
+    - **Your kubeconfig couldn't be read.** A file has a syntax error. Lumovi names the file and the first line of the problem. Fix the file, then choose **Reload**.
+    - **No clusters found.** Lumovi found no contexts. Set `KUBECONFIG`, or create `~/.kube/config`, then reload. See [Connecting clusters](/clusters/connect).
+  </Accordion>
+  <Accordion title="Clusters are missing, though kubectl sees them" icon="eye-off">
+    `kubectl` in your terminal uses the `KUBECONFIG` your shell profile exports. Lumovi opened from the Dock, Spotlight or a launcher doesn't see that variable (it takes only `PATH` from your shell), so it reads `~/.kube/config`. **Loaded from**, at the bottom of the start screen, shows which files it read.
+
+    Start Lumovi from your terminal, or set `KUBECONFIG` where apps see it. See [Setting environment variables](/reference/environment-variables#setting-them).
+  </Accordion>
+</AccordionGroup>
+
+## While you work
+
+<AccordionGroup>
+  <Accordion title="A banner says Lumovi can't reach the cluster" icon="cloud-off">
+    **Can't reach … Checking again every 15 seconds.** The connection dropped. The last data stays on screen, and Lumovi reconnects by itself when it can. Choose **Retry now** to check at once, or **All clusters** to open another.
+
+    **Couldn't refresh — showing the last data.** A refresh failed, but what you see is still the latest Lumovi has. Choose **Retry**.
+  </Accordion>
+  <Accordion title="A list stops at 5,000 objects" icon="list-x">
+    Lists load in chunks of 500 and stop at 5,000 objects, so huge clusters stay fast. A note says **Showing the first … of …**. Choose **Filter by label** to narrow the list on the server, pick a namespace, or raise the limit with [`LUMOVI_MAX_LIST_ITEMS`](/reference/environment-variables).
+  </Accordion>
+  <Accordion title="An action is grayed out" icon="ban">
+    Lumovi asks the cluster what you're allowed to do before offering an action, and says why it can't:
+
+    - **Your account can't … in ….** Your RBAC doesn't allow it. See [Permissions](/clusters/permissions).
+    - **Changes are turned off for this cluster.** You, or `LUMOVI_READ_ONLY`, made it read-only. See [Read-only mode](/changes/read-only).
+  </Accordion>
+  <Accordion title="It changed in the meantime" icon="git-pull-request">
+    Someone else changed the object while you were editing its YAML. Lumovi doesn't overwrite their change. Choose **Start over from the latest**, and make your edit again. See [Edit YAML](/changes/yaml).
+  </Accordion>
+  <Accordion title="A shell says the container has no shell" icon="square-terminal">
+    Images built without a shell (distroless ones, say) can't run one. Choose **Debug** to add a debug container with tools to the pod instead. See [Shells and debug containers](/debug/shell).
+
+    **Shells are off** means the cluster is read-only in Lumovi: shells count as changes.
+  </Accordion>
+  <Accordion title="A port can't be forwarded" icon="unplug">
+    **Port … on this computer can't be used (EADDRINUSE).** Something else on your computer listens on that port. Pick another local port. See [Port forwarding](/debug/port-forwarding).
+  </Accordion>
+  <Accordion title="Something went wrong" icon="bug">
+    Lumovi didn't expect this. Choose **Try again** first. When a page fails unexpectedly, its error screen shows what happened, with **Copy details** and **Report issue**, so it can be fixed.
+  </Accordion>
+</AccordionGroup>
+
+## Usage and metrics
+
+<AccordionGroup>
+  <Accordion title="No live CPU or memory" icon="gauge">
+    Live usage comes from [metrics-server](https://github.com/kubernetes-sigs/metrics-server), as for `kubectl top`. Without it, the overview says **Live usage needs metrics-server**, and Lumovi shows requests and limits against capacity instead. Install metrics-server in the cluster to see live usage. See [Live usage](/metrics/live-usage).
+  </Accordion>
+  <Accordion title="No usage history" icon="chart-area">
+    History comes from a Prometheus or VictoriaMetrics in the cluster.
+
+    - **No Prometheus found.** Lumovi looked among the cluster's services and found none that answered. Choose **Choose a service** to pick its namespace, service, port and path (`/select/0/prometheus` for vmselect), or **Look again**.
+    - **Can't read usage history.** The source is there, but reading it failed. Your account needs `get` on `services/proxy` in the source's namespace, because Lumovi reaches it through the API server with your credentials.
+    - **Usage history is off.** It was turned off for this cluster. Choose **Change** to turn it back on.
+
+    See [Usage history](/metrics/usage-history).
+  </Accordion>
+</AccordionGroup>
+
+## Helm
+
+<AccordionGroup>
+  <Accordion title="Lumovi couldn't run helm" icon="package">
+    Looking at releases needs nothing, but changing them runs your own `helm`. Install [Helm](https://helm.sh), or set [`LUMOVI_HELM`](/reference/environment-variables) to where it is. On macOS and Linux, `helm` must be on your login shell's `PATH`.
+  </Accordion>
+  <Accordion title="Helm couldn't do it" icon="circle-alert">
+    The error shown is what `helm` said. A failed upgrade is often a chart or values problem, which the [dry run](/helm/upgrade-and-rollback) usually catches first.
+
+    If the release is managed by Flux, Lumovi says so and links to its `HelmRelease`. Flux puts back changes made any other way, so make the change in Flux instead.
+  </Accordion>
+</AccordionGroup>
+
+## Installing
+
+<AccordionGroup>
+  <Accordion title="Windows says it protected your PC" icon="app-window">
+    The Windows installer isn't code-signed yet. Choose **More info**, then **Run anyway**. You can [check the download](/get-started/desktop#verify-your-download) against the release's checksums first.
+  </Accordion>
+  <Accordion title="The AppImage doesn't start" icon="terminal">
+    Make the file executable first: `chmod +x Lumovi-*.AppImage`. Then run it from a terminal to see any error it prints.
+  </Accordion>
+</AccordionGroup>
+
+## In your cluster
+
+<AccordionGroup>
+  <Accordion title="Pages keep reconnecting" icon="refresh-cw">
+    Each page keeps a WebSocket open to Lumovi, and **Reconnecting to Lumovi…** shows while it's down. If it drops every minute or so, something in front of Lumovi closes idle connections. Give your ingress a long timeout, for example with ingress-nginx:
+
+    ```yaml values.yaml
+    ingress:
+      annotations:
+        nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+        nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
+    ```
+
+    Lumovi also checks each connection every 30 seconds (`LUMOVI_HEARTBEAT_SECONDS`). Keep that shorter than the idle timeouts of the proxies in between. See [Address and ingress](/server/expose).
+  </Accordion>
+  <Accordion title="Everyone was signed out" icon="log-out">
+    Sessions live in Lumovi's memory, so restarting it, as an upgrade does, signs everyone out. With single sign-on, signing in again is a click. Sessions also end after 12 hours, unless you set it otherwise. See [Upgrading](/server/upgrade).
+  </Accordion>
+  <Accordion title="The cluster doesn't accept this token" icon="key-round">
+    The token is wrong, expired or revoked. Create a new one, for example `kubectl create token NAME --namespace NAMESPACE`. Lumovi asks the cluster who a token belongs to with a SelfSubjectReview, which needs Kubernetes 1.28 or later. See [Tokens](/server/auth/tokens).
+  </Accordion>
+  <Accordion title="Your session ended" icon="timer">
+    The token you signed in with expired, or the cluster stopped accepting it. Sign in again to carry on where you were. With single sign-on, Lumovi renews tokens by itself when the provider gives it a refresh token.
+  </Accordion>
+</AccordionGroup>
+
+## Reporting a problem
+
+If none of this helps, please [open an issue](https://github.com/Lumovi/Lumovi/issues/new/choose). In the desktop app, **Help → Report an Issue…** opens the same page. It helps to include:
+
+- your Lumovi version, shown at the bottom of the sidebar,
+- your operating system, and how the cluster is run (EKS, GKE, kind…),
+- what you did, what you expected, and what happened instead,
+- the details from the error screen, which **Copy details** copies.
+
+For security problems, please don't open an issue: see [Reporting a vulnerability](/reference/privacy-and-security#reporting-a-vulnerability).

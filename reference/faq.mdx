@@ -1,0 +1,101 @@
+---
+title: "Frequently asked questions"
+sidebarTitle: "FAQ"
+description: "Short answers to what people ask most about Lumovi."
+icon: "circle-question-mark"
+---
+
+## The basics
+
+<AccordionGroup>
+  <Accordion title="Is Lumovi free?">
+    Yes. Lumovi is free and open source under the [Apache 2.0 license](https://github.com/Lumovi/Lumovi/blob/main/LICENSE), on your desktop and in your cluster. There are no accounts and no telemetry. It's made in spare time; if it saves you time, you can [sponsor its development](https://github.com/sponsors/kotapeter).
+  </Accordion>
+  <Accordion title="Should I use the desktop app or run it in my cluster?">
+    It's the same app either way, so pick what fits:
+
+    | | Desktop app | In your cluster |
+    | --- | --- | --- |
+    | Who uses it | You | Your whole team, in a browser |
+    | Clusters | Every cluster in your kubeconfig | The one it runs in |
+    | Credentials | Your kubeconfig | Each person signs in |
+    | Installing | An app per person | One Helm chart, nothing for users |
+    | Port forwarding | Yes | No |
+    | Charts from your computer | Yes | No |
+
+    Plenty of teams use both. See [Install the desktop app](/get-started/desktop) and [Run it in your cluster](/get-started/in-your-cluster).
+  </Accordion>
+  <Accordion title="Do I need kubectl?">
+    No. Lumovi talks to the API server itself. It still shows the equivalent `kubectl` command for every change, so you can learn it, copy it or script it. [Helm](https://helm.sh) is needed only to change Helm releases; looking at them needs nothing.
+  </Accordion>
+  <Accordion title="Which Kubernetes versions does it support?">
+    Kubernetes 1.25 or later. From 1.27, Lumovi also explains fields from the cluster's own OpenAPI schema. When it runs in your cluster, signing in with a token needs 1.28 or later.
+  </Accordion>
+  <Accordion title="Does it work with EKS, GKE, AKS and other managed clusters?">
+    Yes. Lumovi reads your kubeconfig the way `kubectl` does, with client certificates, tokens and exec credential plugins like `gke-gcloud-auth-plugin`, `aws eks get-token` and `kubelogin`. If `kubectl` can reach a cluster with your kubeconfig, Lumovi can too. See [Connecting clusters](/clusters/connect).
+  </Accordion>
+  <Accordion title="How is it different from other Kubernetes tools?">
+    Lumovi is built around one question: is this cluster healthy, and if not, where should I look first? So it shows problems before everything else, sets usage against capacity, and keeps the details one click away. It's neither a terminal nor a wall of tables.
+
+    When you change something, it's careful: it asks the cluster what you're allowed to do, shows the `kubectl` command, checks edits with a dry run, and offers undo. And it's the same app on your desktop and in your cluster, so a team can share it without installing anything.
+  </Accordion>
+</AccordionGroup>
+
+## Your data and your clusters
+
+<AccordionGroup>
+  <Accordion title="Does Lumovi change my kubeconfig?">
+    No. It reads your kubeconfig and never writes to it. Managing kubeconfig files, like adding contexts or signing in to cloud providers, is deliberately left to the tools made for it.
+  </Accordion>
+  <Accordion title="Does it collect any data?">
+    No. There's no telemetry and no account. The desktop app talks to your clusters, and to a few other places only when you use what needs them, like update checks and chart search. See [Privacy and security](/reference/privacy-and-security) for the full list.
+  </Accordion>
+  <Accordion title="Can I use it without an internet connection?">
+    Lumovi needs to reach your clusters, and nothing else. Without the internet, everything works except looking for new versions, searching Artifact Hub, and fetching charts from public repositories.
+  </Accordion>
+  <Accordion title="Can it change things by accident?">
+    It's built not to. Changes are always explicit: an action, a dialog that names the cluster and shows the command, and a confirmation. Destructive dialogs start on **Cancel**, and risky deletes, or anything in a cluster named like production, ask you to type the name first. For a cluster you only want to look at, turn on [read-only mode](/changes/read-only). See [Changing things safely](/changes/safely).
+  </Accordion>
+  <Accordion title="What permissions do I need?">
+    Only what you want to do. Lumovi acts with your own credentials and RBAC, so a read-only `view` role is enough to look around. It asks the cluster what you may do before offering an action, and says why when you can't. See [Permissions](/clusters/permissions).
+  </Accordion>
+</AccordionGroup>
+
+## Using it
+
+<AccordionGroup>
+  <Accordion title="Can I work with several clusters?">
+    Yes. The desktop app lists every context in your kubeconfig on its start screen, with whether each one answers. Switch between them from the cluster menu at the top of the sidebar, or with <kbd>⌘</kbd><kbd>K</kbd>. Each cluster remembers its own namespace, read-only setting and usage history source.
+
+    Lumovi [in your cluster](/server/overview) shows the one cluster it runs in.
+  </Accordion>
+  <Accordion title="Does it handle big clusters?">
+    Yes. Lists load in chunks of 500 and are paginated and virtualized, so thousands of pods stay smooth. They stop at 5,000 objects by default, with a note saying so; a label selector narrows a list on the server. Busy lists refresh less often.
+  </Accordion>
+  <Accordion title="Does it support my custom resources?">
+    Yes, every kind the cluster serves, found through API discovery. They get the columns `kubectl get` prints and a status read from their conditions. Views for popular projects (cert-manager, Argo CD, Flux, Karpenter and more) add better columns, links and actions, and you can write your own. See [Custom resources](/custom-resources/overview).
+  </Accordion>
+  <Accordion title="Where does usage history come from?">
+    From a Prometheus or VictoriaMetrics in the cluster, which Lumovi finds by itself and reaches through the API server with your own credentials. Live usage comes from metrics-server. See [Usage history](/metrics/usage-history).
+  </Accordion>
+  <Accordion title="Is there a light theme?">
+    Yes. Lumovi follows your system, or you can pick light or dark from the theme button at the bottom of the sidebar, or with <kbd>⌘</kbd><kbd>K</kbd>.
+  </Accordion>
+</AccordionGroup>
+
+## The project
+
+<AccordionGroup>
+  <Accordion title="Who makes Lumovi?">
+    Lumovi was started by [Peter Kota](https://github.com/kotapeter), first as a tool for work: an app to open a cluster and know in a second whether it's healthy. It's developed in the open with its contributors on [GitHub](https://github.com/Lumovi/Lumovi).
+  </Accordion>
+  <Accordion title="How can I help?">
+    - **Report what's wrong, or what's missing**, in an [issue](https://github.com/Lumovi/Lumovi/issues).
+    - **Contribute.** Pull requests are welcome; for anything bigger than a small fix, open an issue first. A [view](/custom-resources/write-a-view) for a popular project is an easy and welcome start. See [Build from source](/reference/build-from-source).
+    - **Sponsor** its development on [GitHub Sponsors](https://github.com/sponsors/kotapeter). The desktop app has a link in **Help → Sponsor Lumovi…** too.
+    - **Star it** on [GitHub](https://github.com/Lumovi/Lumovi), so others find it.
+  </Accordion>
+  <Accordion title="Where do I report a security problem?">
+    Privately, please, through a [GitHub security advisory](https://github.com/Lumovi/Lumovi/security/advisories/new). See [Reporting a vulnerability](/reference/privacy-and-security#reporting-a-vulnerability).
+  </Accordion>
+</AccordionGroup>
