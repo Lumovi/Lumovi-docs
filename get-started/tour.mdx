@@ -1,0 +1,95 @@
+---
+title: "A quick tour"
+sidebarTitle: "Tour"
+description: "Five minutes through the ideas Lumovi is built on: problems first, details next to the list, and every change shown before it's made."
+icon: "map"
+---
+
+This tour follows what you'd do on a day something breaks: see what's wrong, find it, look closer, and fix it. Keyboard shortcuts are shown for macOS; on Windows and Linux, use <kbd>Ctrl</kbd> for <kbd>⌘</kbd>.
+
+<Steps titleSize="h2">
+  <Step title="See how the cluster is doing">
+    Every cluster opens on its **Overview**. Four tiles say how many nodes are ready, how many pods are running, how many workloads are healthy, and how many warnings came in the last hour. Each tile links to its list, filtered to what's wrong when something is.
+
+    Below them, CPU and memory show what's in use next to what's requested, limited and allocatable, with a line of recent usage. **Needs attention** lists the pods and workloads in trouble, and **Recent warnings** the events that explain them.
+
+    <Frame>
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/overview-light-1x.webp" alt="A cluster's overview: nodes, pods and workloads, CPU and memory with their last hour, and what needs attention." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/overview-dark-1x.webp" alt="A cluster's overview: nodes, pods and workloads, CPU and memory with their last hour, and what needs attention." />
+    </Frame>
+
+    The namespace menu at the top scopes every list. It starts in your kubeconfig context's namespace, and remembers your choice per cluster. [More about the overview](/explore/overview).
+  </Step>
+
+  <Step title="Find what's failing">
+    Open **Workloads** (<kbd>G</kbd> then <kbd>W</kbd>). Every Deployment, StatefulSet, DaemonSet, Job and CronJob is in one list, with its status, ready pods and the CPU and memory its pods use. Whatever is failing sorts to the top, whatever its kind.
+
+    <Frame>
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/workloads-light-1x.webp" alt="Every workload, whatever its kind, in one list, with its health." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/workloads-dark-1x.webp" alt="Every workload, whatever its kind, in one list, with its health." />
+    </Frame>
+
+    Statuses read the way you'd say them: <span className="lumovi-status critical">Unavailable</span> <span className="lumovi-status warning">Degraded</span> <span className="lumovi-status progressing">Running</span> <span className="lumovi-status healthy">Ready</span>. The chips above the list keep only what's **Failing**, **Warning**, **In progress**, **Healthy** or **Inactive**. [How health works](/explore/health).
+  </Step>
+
+  <Step title="Look closer">
+    Click a row, or move to it with <kbd>↓</kbd> and press <kbd>↵</kbd>. Its details open next to the list, so you keep your place: the facts that matter for its kind, its pods and why they restart, its events, logs and YAML.
+
+    <Frame>
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/deployment-light-1x.webp" alt="A deployment that's failing, with its pods and why they're restarting." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/deployment-dark-1x.webp" alt="A deployment that's failing, with its pods and why they're restarting." />
+    </Frame>
+
+    With the panel open, <kbd>↑</kbd> and <kbd>↓</kbd> open each row in turn, and <kbd>Esc</kbd> closes it. [The detail panel](/explore/details).
+  </Step>
+
+  <Step title="Read the logs">
+    The **Logs** tab of a workload merges every one of its pods, in the order lines were written, each marked with its pod. Pods that start later join in. Keep only errors or warnings, leave a pod out, or search.
+
+    <Frame>
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/logs-light-1x.webp" alt="The logs of every pod of a deployment, merged as they happened." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/logs-dark-1x.webp" alt="The logs of every pod of a deployment, merged as they happened." />
+    </Frame>
+
+    A pod also has a **Shell** tab, for a terminal in its containers. [Logs](/debug/logs) · [Shells and debug containers](/debug/shell).
+  </Step>
+
+  <Step title="Fix it, safely">
+    The open object's actions are right there: the common ones as buttons, the rest under **⋯** (or <kbd>.</kbd>). Every dialog names the cluster and shows the `kubectl` command it amounts to. Lumovi checks your permissions first, and disables what you can't do, saying why.
+
+    <Frame>
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/scale-light-1x.webp" alt="Scaling a deployment, with what will change." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/scale-dark-1x.webp" alt="Scaling a deployment, with what will change." />
+    </Frame>
+
+    Once it's done, the notification offers **Undo** for changes that can be taken back, like a scale. [Changing things safely](/changes/safely).
+  </Step>
+
+  <Step title="Go anywhere from the keyboard">
+    Press <kbd>⌘</kbd><kbd>K</kbd>. Type a few letters to jump to any view, any object already loaded, a namespace or another cluster, or to run an action on the object you have open.
+
+    <Frame>
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/command-palette-light-1x.webp" alt="Finding anything in the cluster, or anything to do, from the keyboard." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/command-palette-dark-1x.webp" alt="Finding anything in the cluster, or anything to do, from the keyboard." />
+    </Frame>
+
+    Most views also have a <kbd>G</kbd> shortcut, shown when you hover them in the sidebar, and <kbd>?</kbd> lists them all. [Keyboard shortcuts](/reference/keyboard-shortcuts).
+  </Step>
+</Steps>
+
+## Where to next
+
+<Columns cols={2}>
+  <Card title="Usage over time" icon="chart-area" href="/metrics/usage-history">
+    Chart what namespaces, workloads and nodes use, from your Prometheus.
+  </Card>
+  <Card title="Helm releases" icon="package" href="/helm/releases">
+    Every release, its values and revisions, and upgrades reviewed first.
+  </Card>
+  <Card title="Custom resources" icon="puzzle" href="/custom-resources/overview">
+    Certificates, Argo CD apps, Flux kustomizations and every other kind.
+  </Card>
+  <Card title="Read-only mode" icon="lock" href="/changes/read-only">
+    Look around a production cluster with changes turned off.
+  </Card>
+</Columns>

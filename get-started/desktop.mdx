@@ -1,0 +1,149 @@
+---
+title: "Install the desktop app"
+sidebarTitle: "Desktop app"
+description: "Download Lumovi for macOS, Windows or Linux, and open your first cluster in under a minute."
+icon: "monitor"
+---
+
+The desktop app reads clusters from the same place `kubectl` does, and keeps your credentials on your computer. You don't need `kubectl` installed.
+
+<Card title="Download Lumovi" icon="download" href="https://lumovi.com/#download" horizontal cta="lumovi.com">
+  The website picks the right installer for your computer. Every installer is also on the [latest GitHub release](https://github.com/Lumovi/Lumovi/releases/latest).
+</Card>
+
+## Install
+
+<Tabs>
+  <Tab title="macOS" icon="apple">
+    For macOS 12 or later, on Apple silicon and Intel. The app is signed and notarized by Apple.
+
+    <Steps>
+      <Step title="Download the disk image">
+        Pick the one for your Mac:
+
+        | Mac | File |
+        | --- | --- |
+        | Apple silicon (M1 and later) | `Lumovi-<version>-mac-arm64.dmg` |
+        | Intel | `Lumovi-<version>-mac-x64.dmg` |
+
+        Not sure which you have? Choose **Apple menu → About This Mac**, and look at **Chip** or **Processor**.
+      </Step>
+      <Step title="Drag Lumovi to Applications">
+        Open the `.dmg`, and drag **Lumovi** into the **Applications** folder.
+      </Step>
+      <Step title="Open it">
+        Open Lumovi from Applications, Launchpad or Spotlight. It finds your clusters straight away.
+      </Step>
+    </Steps>
+
+    <Note>
+      Prefer a `.zip`? Each release has one for Apple silicon and one for Intel, next to the disk images.
+    </Note>
+  </Tab>
+  <Tab title="Windows" icon="app-window">
+    For Windows 10 or later. One installer covers x64 and arm64.
+
+    <Steps>
+      <Step title="Download the installer">
+        Download `Lumovi-<version>-win.exe`.
+      </Step>
+      <Step title="Run it">
+        Open the installer, and follow its steps. You can choose the folder Lumovi goes in, and it adds a shortcut to your desktop.
+
+        <Warning>
+          The Windows installer isn't code-signed yet, so Windows may say it protected your PC. Choose **More info**, then **Run anyway**. You can check the file first: see [Verify your download](#verify-your-download).
+        </Warning>
+      </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Linux" icon="terminal">
+    For a recent 64-bit distribution, on x64 and arm64.
+
+    | Format | x64 | arm64 |
+    | --- | --- | --- |
+    | AppImage, for any distribution | `linux-x86_64.AppImage` | `linux-arm64.AppImage` |
+    | Debian, Ubuntu | `linux-amd64.deb` | `linux-arm64.deb` |
+    | Fedora, RHEL, openSUSE | `linux-x86_64.rpm` | `linux-aarch64.rpm` |
+
+    Each file name starts with `Lumovi-<version>-`.
+
+    <CodeGroup>
+      ```bash AppImage
+      chmod +x Lumovi-*-linux-x86_64.AppImage
+      ./Lumovi-*-linux-x86_64.AppImage
+      ```
+
+      ```bash Debian and Ubuntu
+      sudo apt install ./Lumovi-*-linux-amd64.deb
+      ```
+
+      ```bash Fedora and RHEL
+      sudo dnf install ./Lumovi-*-linux-x86_64.rpm
+      ```
+    </CodeGroup>
+  </Tab>
+</Tabs>
+
+## Open your first cluster
+
+Lumovi starts on a list of every cluster in your kubeconfig, each with a status: its Kubernetes version and how fast it answered, or why it can't be reached.
+
+<Frame caption="The start screen: every context in your kubeconfig, checked as it opens.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/clusters-light-1x.webp" alt="The Lumovi start screen, listing four clusters with their versions and response times, and one marked Unreachable." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/clusters-dark-1x.webp" alt="The Lumovi start screen, listing four clusters with their versions and response times, and one marked Unreachable." />
+</Frame>
+
+Pick one with the mouse, or with <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>↵</kbd>. The overview opens, and you're in.
+
+<Columns cols={2}>
+  <Card title="Take the tour" icon="map" href="/get-started/tour">
+    Five minutes through the app's main ideas.
+  </Card>
+  <Card title="Connecting clusters" icon="plug" href="/clusters/connect">
+    Multiple kubeconfigs, credential plugins, and what each status means.
+  </Card>
+</Columns>
+
+## Staying up to date
+
+Lumovi keeps itself up to date. It looks for a new version shortly after it starts and every few hours after that, downloads it in the background, and installs it when you quit. When one is ready, a notice says so, with **Restart now** and **What's new**. Close it, and the new version installs when you quit.
+
+- **Help → Check for Updates…** looks right away.
+- **Help → Check for Updates Automatically** turns the background checks off.
+
+New versions come from the project's [GitHub releases](https://github.com/Lumovi/Lumovi/releases), over HTTPS. Each download is checked against the checksum the release lists, and on macOS the new version must carry the same Developer ID signature. A copy that can't update itself says so when you check: install new versions of it from the releases page.
+
+## Verify your download
+
+Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`, and each file has a signed build provenance attestation.
+
+<CodeGroup>
+  ```bash Checksum (macOS, Linux)
+  # In the folder with the installer and SHA256SUMS.txt
+  shasum -a 256 --ignore-missing -c SHA256SUMS.txt
+  ```
+
+  ```powershell Checksum (Windows)
+  Get-FileHash .\Lumovi-{{version}}-win.exe -Algorithm SHA256
+  # Compare with the line for this file in SHA256SUMS.txt
+  ```
+
+  ```bash Provenance (GitHub CLI)
+  gh attestation verify Lumovi-{{version}}-mac-arm64.dmg --repo Lumovi/Lumovi
+  ```
+</CodeGroup>
+
+## Requirements
+
+<div className="lumovi-facts">
+  <div><span className="lumovi-label">macOS</span><span className="lumovi-value">12 or later</span></div>
+  <div><span className="lumovi-label">Windows</span><span className="lumovi-value">10 or later</span></div>
+  <div><span className="lumovi-label">Linux</span><span className="lumovi-value">Recent, 64-bit</span></div>
+  <div><span className="lumovi-label">Kubernetes</span><span className="lumovi-value">1.25 or later</span></div>
+</div>
+
+- **kubectl** isn't needed. Lumovi talks to the API server itself.
+- **[Helm](https://helm.sh)** is needed only to change Helm releases. Looking at them needs nothing.
+- **Kubernetes 1.27 or later** lets Lumovi explain fields from the cluster's own OpenAPI schema. Older clusters work, without the explanations.
+
+Want to build it yourself? See [Build from source](/reference/build-from-source).

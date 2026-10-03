@@ -1,0 +1,91 @@
+---
+title: "Run Lumovi in your cluster"
+sidebarTitle: "In your cluster"
+description: "Install Lumovi with one Helm chart, and give your team a dashboard they open in a browser and sign in to with their own permissions."
+icon: "server"
+---
+
+Lumovi also runs in a cluster, as a dashboard for that cluster. It's the same app as the desktop one, in a browser: people open its address, sign in, and see and change what their own Kubernetes permissions allow. Nobody installs anything, and a link to any page (a pod, a filtered list, a Helm release) can be shared.
+
+<Frame caption="Lumovi served from a cluster, with the menu of who's signed in open.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-account-light-1x.webp" alt="Lumovi served from a cluster: who's signed in, and their groups." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-account-dark-1x.webp" alt="Lumovi served from a cluster: who's signed in, and their groups." />
+</Frame>
+
+This page gets it running in a few minutes, signed in with a token. When you're ready to share it, give it an address and single sign-on.
+
+## Before you start
+
+- A cluster running **Kubernetes 1.28 or later**, for signing in with a token.
+- **[Helm](https://helm.sh)** and **kubectl** on your computer, with access to install into a namespace.
+
+## Try it
+
+<Steps>
+  <Step title="Install the chart">
+    ```bash
+    helm install lumovi oci://ghcr.io/lumovi/charts/lumovi \
+      --namespace lumovi --create-namespace
+    ```
+
+    The chart runs one Lumovi pod. In the default token mode, its service account needs no permissions at all: everyone acts with their own.
+  </Step>
+  <Step title="Open it">
+    Forward a port to it, and open [http://localhost:8080](http://localhost:8080).
+
+    ```bash
+    kubectl port-forward --namespace lumovi service/lumovi 8080:80
+    ```
+  </Step>
+  <Step title="Get a token to sign in with">
+    Lumovi asks for a bearer token the cluster accepts, and sends your requests with it. For a quick look, make a service account that can view everything, and a token for it that's valid for an hour:
+
+    ```bash
+    kubectl create serviceaccount alice --namespace lumovi
+    kubectl create clusterrolebinding alice-view --clusterrole view \
+      --serviceaccount lumovi:alice
+    kubectl create token alice --namespace lumovi
+    ```
+  </Step>
+  <Step title="Sign in">
+    Paste the token and choose **Sign in**. You're on the cluster's overview, with exactly the access the `view` role gives.
+
+    <Frame>
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-sign-in-light-1x.webp" alt="Lumovi served from a cluster: signing in with a token." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-sign-in-dark-1x.webp" alt="Lumovi served from a cluster: signing in with a token." />
+    </Frame>
+  </Step>
+</Steps>
+
+<Check>
+  Lumovi never gives anyone more than their own permissions. Bind a role like `edit` instead of `view`, and the same page offers scaling, restarts and the rest.
+</Check>
+
+## Make it your team's
+
+<Columns cols={2}>
+  <Card title="Give it an address" icon="globe" href="/server/expose">
+    Turn on the chart's ingress, with TLS, so people open it at a URL of its own.
+  </Card>
+  <Card title="Single sign-on" icon="key-round" href="/server/auth/single-sign-on">
+    Sign in with Okta, Entra ID, Google, Keycloak, Dex or any OpenID Connect provider.
+  </Card>
+  <Card title="Behind a proxy" icon="shield" href="/server/auth/proxy">
+    Let oauth2-proxy or Pomerium sign people in, and pass on who they are.
+  </Card>
+  <Card title="Keep it safe" icon="lock" href="/server/security">
+    What to know about impersonation, sessions and read-only mode.
+  </Card>
+</Columns>
+
+## How it differs from the desktop app
+
+It's the same app, so nearly everything in these docs applies to both. Served from a cluster:
+
+- **It shows one cluster**, the one it runs in. There's no list of clusters to switch between.
+- **There's no port forwarding**, since there's no computer of yours to forward a port to.
+- **Charts come from repositories, registries or URLs**, never from files on your computer.
+- **Preferences belong to each browser**: the theme, whether you've made the cluster read-only for yourself, and where usage history comes from.
+- **A few shortcuts belong to the browser**: <kbd>⌘</kbd><kbd>N</kbd> and <kbd>⌘</kbd><kbd>1</kbd>…<kbd>6</kbd> (<kbd>Ctrl</kbd> on Windows and Linux). The command palette (<kbd>⌘</kbd><kbd>K</kbd>) has those commands.
+
+[Lumovi in your cluster](/server/overview) covers how it works, and [Helm values](/server/helm-values) lists every setting.
