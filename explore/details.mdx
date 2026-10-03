@@ -1,0 +1,108 @@
+---
+title: "Object details"
+sidebarTitle: "Object details"
+description: "The detail panel opens next to the list with the facts that matter for each kind, its pods, logs, events and YAML."
+icon: "panel-right"
+---
+
+Click any row, or move to it with <kbd>↑</kbd> <kbd>↓</kbd> and press <kbd>↵</kbd>, and its details open in a panel next to the list. The list stays where it was, so you can keep comparing. While the panel is open, moving through the list with the arrow keys opens each row in turn.
+
+<Frame caption="A pod's details next to the list: its containers, their usage and state.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/pod-light-1x.webp" alt="A pod's details next to the list: its containers, their usage and state." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/pod-dark-1x.webp" alt="A pod's details next to the list: its containers, their usage and state." />
+</Frame>
+
+## The header
+
+At the top: the object's kind, namespace and age, its name (with a button to copy it), and its status. Below them are the actions you'll use most for that kind, like **Scale**, **Restart**, **Shell** or **Cordon**, and **⋯** for the rest. Press <kbd>.</kbd> to open that menu from the keyboard. (<kbd>⌘</kbd> is <kbd>Ctrl</kbd> on Windows and Linux.)
+
+| Control | Shortcut |
+| --- | --- |
+| **More actions** (**⋯**) | <kbd>.</kbd> |
+| Delete | <kbd>⌘</kbd><kbd>⌫</kbd> |
+| **Expand panel** / **Restore panel** | |
+| **Close** | <kbd>Esc</kbd> |
+
+Drag the panel's edge to make it wider or narrower, or focus the edge and use <kbd>←</kbd> <kbd>→</kbd>. It starts 600 pixels wide, and remembers the width you choose.
+
+## Tabs
+
+Each kind gets the tabs that make sense for it:
+
+| Tab | Shown for |
+| --- | --- |
+| **Overview** | Everything |
+| **Pods** | Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs, services, nodes, and custom kinds that scale pods (like Argo Rollouts) |
+| **Logs** | Pods, and the same kinds as **Pods** except nodes. A workload's or service's logs merge every pod's. |
+| **Shell** | Pods |
+| **Metrics** | Pods, nodes, and Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs and CronJobs |
+| **Events** | Everything but events |
+| **YAML** | Everything |
+
+### Overview
+
+**Details** comes first: when the object was created, **Controlled by** (a link to its owner, like the ReplicaSet behind a pod), and the facts that matter for its kind. A Deployment shows its replicas, strategy and selector; a Service its type, IPs and selector; a node its OS, kernel, runtime and kubelet.
+
+Then a section for what's particular to the kind:
+
+| Kind | Section |
+| --- | --- |
+| Pods | **Containers**: each one's image, state, restarts, usage against requests and limits, and its last termination |
+| Nodes | **Capacity** and **Taints** |
+| Workloads | **Pod template**: each container's image |
+| Services | **Ports** |
+| Ingresses | **Rules**: host, path and backend |
+| ConfigMaps, Secrets | **Data**, with Secret values hidden until revealed |
+
+Then **Conditions**, **Labels** and **Annotations**, when it has them. Conditions show at a glance which are healthy, with their reason, message and when they changed.
+
+Names of related objects (a pod's node, a claim's volume, an owner) are links: click one to open it.
+
+### Custom resources and other kinds
+
+For kinds without a page of their own, the Overview shows the object's **Spec**, **Status** and other fields as a tree. Short values are inline, nested ones are indented, and deep ones start folded.
+
+Hover a field's name to read what it means. The explanation comes from the kind's OpenAPI schema, which clusters serve from Kubernetes 1.27. If a [view](/custom-resources/overview) covers the kind, its facts go in **Details**, and the objects it relates to are in **Related**.
+
+<Frame caption="A cert-manager certificate, shown with Lumovi's view of it.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/custom-resource-light-1x.webp" alt="A cert-manager Certificate open in the detail panel, with its details, related Secret and Issuer, and its spec as a tree." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/custom-resource-dark-1x.webp" alt="A cert-manager Certificate open in the detail panel, with its details, related Secret and Issuer, and its spec as a tree." />
+</Frame>
+
+### Pods
+
+The pods the object runs or selects (or, for a node, every pod on it), with their status, ready containers and restarts, failing ones first. Click one to open it.
+
+### Events
+
+The events about this object, newest first. Often the quickest answer to "why won't it start?"
+
+### YAML
+
+The whole object, syntax highlighted. **Copy YAML** copies it, and **Edit** opens it for [editing](/changes/yaml), checked by the cluster and shown as a diff before it's saved. For a Secret, values stay hidden until you choose **Reveal values**.
+
+## Right-click a row
+
+Every row has a menu with the object's actions, and:
+
+- **Open**
+- **Copy name** and **Copy namespace/name**
+- **Copy kubectl describe**, a ready-to-run command for this object
+- **Copy kubectl logs**, for pods
+
+## Links to an open object
+
+The open object is part of the address, so **Back** (<kbd>⌘</kbd><kbd>[</kbd>) and **Forward** (<kbd>⌘</kbd><kbd>]</kbd>) move between objects you opened, the way a browser does.
+
+<Note>
+  **In your cluster:** every page, and every open object, has an address you can share. Send a teammate the link to a failing pod, and it opens on the same pod for them, with their own permissions.
+</Note>
+
+<Columns cols={2}>
+  <Card title="Edit YAML" icon="file-code" href="/changes/yaml">
+    Change any object, with a dry run and a diff first.
+  </Card>
+  <Card title="Actions by kind" icon="zap" href="/changes/actions">
+    Everything the panel's buttons and menu can do.
+  </Card>
+</Columns>

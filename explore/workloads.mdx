@@ -1,0 +1,87 @@
+---
+title: "Workloads"
+description: "Every Deployment, StatefulSet, DaemonSet, Job and CronJob in one list, with the ones in trouble first."
+icon: "boxes"
+---
+
+**Workloads** lists everything that runs pods, whatever its kind, so a failing Job and a degraded Deployment sort to the top together. Open it from the sidebar, with <kbd>G</kbd> then <kbd>W</kbd>, or with <kbd>⌘</kbd><kbd>2</kbd> in the desktop app (<kbd>Ctrl</kbd><kbd>2</kbd> on Windows and Linux).
+
+<Frame caption="Every workload, whatever its kind, in one list, with its health.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/workloads-light-1x.webp" alt="The Workloads page: Jobs, Deployments, DaemonSets, StatefulSets and pods in one list, failing ones first, with their status, pods, CPU, memory and images." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/workloads-dark-1x.webp" alt="The Workloads page: Jobs, Deployments, DaemonSets, StatefulSets and pods in one list, failing ones first, with their status, pods, CPU, memory and images." />
+</Frame>
+
+## What's in the list
+
+Every Deployment, StatefulSet, DaemonSet and CronJob, plus the Jobs, ReplicaSets and pods that nothing manages.
+
+Objects that only exist to run another are left out, so each workload appears once: the ReplicaSets a Deployment runs, and the Jobs a CronJob starts. The **Jobs** tab still lists every Job, the command palette (<kbd>⌘</kbd><kbd>K</kbd>) finds any ReplicaSet, and every pod links to what controls it.
+
+| Column | Shows |
+| --- | --- |
+| **Name** | The workload's name, with its namespace when you're looking at all of them |
+| **Type** | Deployment, StatefulSet, DaemonSet, Job, CronJob, ReplicaSet or Pod |
+| **Status** | Its [health](/explore/health), like <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status warning">Degraded</span> or <span className="lumovi-status critical">Failed</span> |
+| **Pods** | Ready pods of those wanted (`1/3`), for Jobs how many are done (`0/1 done`), and for CronJobs how many runs are active. An autoscaler's range follows, like `2–10`. |
+| **CPU**, **Memory** | Live usage added up over the workload's pods, when [metrics-server](/metrics/live-usage) is there |
+| **Images** | The container images it runs |
+| **Age** | How long ago it was created |
+
+Lists sort by status first, the most urgent at the top. Click any column to sort by it instead.
+
+## One kind at a time
+
+The tabs above the list show each kind on its own, with a count, and with the columns that matter for that kind:
+
+| Tab | Columns | Shortcut |
+| --- | --- | --- |
+| **All** | The list above | <kbd>G</kbd> <kbd>W</kbd> |
+| **Deployments** | Ready, Images | <kbd>G</kbd> <kbd>D</kbd> |
+| **StatefulSets** | Ready, Images | <kbd>G</kbd> <kbd>S</kbd> |
+| **DaemonSets** | Ready, Images | <kbd>G</kbd> <kbd>A</kbd> |
+| **Jobs** | Completions, Duration | <kbd>G</kbd> <kbd>J</kbd> |
+| **CronJobs** | Schedule (in words), Next run, Last run, Active | <kbd>G</kbd> <kbd>C</kbd> |
+
+ReplicaSets and HorizontalPodAutoscalers have lists of their own too. They aren't in the sidebar, so find them by name in the command palette.
+
+## Narrow it down
+
+- **Health.** The chips above the list (**Failing**, **Warning**, **In progress**, **Healthy**, **Inactive**) show only workloads in that state. Pick several to combine them.
+- **Filter.** Press <kbd>/</kbd> and type. **Filter workloads** matches names, namespaces, kinds, labels written as `key=value`, and images, so `nginx:1.27` finds everything running that image.
+- **Label selector.** Type a selector like `app=web,tier!=cache` and press <kbd>↵</kbd>. The cluster does the filtering, which helps in big clusters.
+
+More in [Finding things](/explore/finding-things).
+
+## Open a workload
+
+Click a row, or move to it with <kbd>↑</kbd> <kbd>↓</kbd> and press <kbd>↵</kbd>. Its details open next to the list.
+
+<Frame caption="A failing deployment, with its pods and why they're restarting.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/deployment-light-1x.webp" alt="A deployment that's failing, with its pods and why they're restarting." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/deployment-dark-1x.webp" alt="A deployment that's failing, with its pods and why they're restarting." />
+</Frame>
+
+- **Overview** has its replicas (wanted, updated and available), update strategy and selector, the images in its pod template, its conditions, labels and annotations.
+- **Pods** lists the pods it runs, failing ones first.
+- **Logs** streams every pod's logs, merged in the order they were written. See [Logs](/debug/logs).
+- **Metrics** charts its CPU and memory over time against its requests and limits. See [Usage history](/metrics/usage-history).
+- **Events** and **YAML**, as for any object.
+
+A CronJob has no **Pods** or **Logs** tab: its runs are Jobs, which the **Jobs** tab lists.
+
+The panel is described in full in [Object details](/explore/details).
+
+## Act on it
+
+The common actions are buttons in the panel, and the rest are under **⋯** (or press <kbd>.</kbd>): scale, restart, change images, roll back, pause a rollout, run a CronJob now, suspend or resume. Right-click a row for the same actions without opening it.
+
+To act on several at once, pick rows with <kbd>X</kbd> or Shift-click, and choose from the bar that appears. Restart, suspend, resume and delete work across kinds.
+
+<Columns cols={2}>
+  <Card title="Actions by kind" icon="zap" href="/changes/actions">
+    Everything you can do to a workload, and what each does.
+  </Card>
+  <Card title="Several at once" icon="list-checks" href="/changes/bulk">
+    Restart, suspend or delete many workloads together.
+  </Card>
+</Columns>

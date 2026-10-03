@@ -81,6 +81,21 @@
               "clusters/namespaces",
               "clusters/permissions"
             ]
+          },
+          {
+            "group": "Explore",
+            "pages": [
+              "explore/overview",
+              "explore/workloads",
+              "explore/pods",
+              "explore/nodes",
+              "explore/networking",
+              "explore/config-and-storage",
+              "explore/events",
+              "explore/details",
+              "explore/health",
+              "explore/finding-things"
+            ]
           }
         ]
       }

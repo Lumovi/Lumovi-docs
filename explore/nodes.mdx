@@ -1,0 +1,73 @@
+---
+title: "Nodes"
+description: "Every node's health and load, what runs on it, and safe ways to take it out of service."
+icon: "server"
+---
+
+**Nodes** lists the machines in the cluster, with the ones in trouble first. Open it from the sidebar under **Cluster**, with <kbd>G</kbd> then <kbd>N</kbd>, or with <kbd>⌘</kbd><kbd>5</kbd> in the desktop app (<kbd>Ctrl</kbd><kbd>5</kbd> on Windows and Linux). Nodes aren't in a namespace, so the list always shows all of them.
+
+<Frame caption="Nodes, their usage and conditions: one under memory pressure, one not ready.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/nodes-light-1x.webp" alt="The Nodes list: four nodes with their roles, CPU and memory meters and versions, one under memory pressure and one not ready." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/nodes-dark-1x.webp" alt="The Nodes list: four nodes with their roles, CPU and memory meters and versions, one under memory pressure and one not ready." />
+</Frame>
+
+## The list
+
+| Column | Shows |
+| --- | --- |
+| **Status** | Whether the node is ready, and anything wrong with it |
+| **Roles** | Its roles, like `control-plane` |
+| **CPU**, **Memory** | Meters of live use against what the node can give its pods. Without [metrics-server](/metrics/live-usage), the node's allocatable capacity. |
+| **Version** | The kubelet's Kubernetes version |
+| **Age** | How long ago it joined |
+
+A node's status is one of:
+
+| Status | Means |
+| --- | --- |
+| <span className="lumovi-status healthy">Ready</span> | It's ready, with no pressure and nothing turned off. |
+| <span className="lumovi-status critical">NotReady</span> | Its `Ready` condition isn't `True`: the node isn't healthy, or has stopped reporting. |
+| <span className="lumovi-status warning">MemoryPressure</span> | Another of its conditions is `True`, and the label names it, like `MemoryPressure`, `DiskPressure` or `PIDPressure`. |
+| <span className="lumovi-status warning">Cordoned</span> | It's marked unschedulable, so no new pods go there. |
+
+## Open a node
+
+<Frame caption="A node under memory pressure, with what runs on it and ways to drain it.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/node-light-1x.webp" alt="A node under memory pressure: its details, CPU and memory against capacity, its taint and conditions, and a Cordon button." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/node-dark-1x.webp" alt="A node under memory pressure: its details, CPU and memory against capacity, its taint and conditions, and a Cordon button." />
+</Frame>
+
+**Overview** has:
+
+- **Details**: its internal IP, OS image, kernel, container runtime, kubelet version, architecture, pod CIDR, and whether it's **Schedulable**.
+- **Capacity**: CPU and memory in use against what's allocatable, and how many pods can be scheduled on it.
+- **Taints**, when it has any.
+- **Conditions**, labels and annotations.
+
+**Pods** lists every pod running on the node, from every namespace, failing ones first. **Metrics** charts its CPU and memory over time against its capacity, when Lumovi has found your [usage history](/metrics/usage-history). **Events** and **YAML** are there as for any object. A node has no **Logs** tab: that would be everything on it.
+
+## Take a node out of service
+
+| Action | What it does |
+| --- | --- |
+| **Cordon** | Marks the node unschedulable. Pods on it keep running, and no new ones arrive. Undo it from the notification. |
+| **Uncordon** | Makes it schedulable again. |
+| **Drain…** | Cordons it, then evicts its pods so they're rescheduled elsewhere. |
+
+A drain, like `kubectl drain --ignore-daemonsets`, leaves DaemonSet pods and static pods where they are. Two options cover the pods that would otherwise stop it:
+
+- **Delete local data**, for pods with `emptyDir` volumes, whose data is lost (`--delete-emptydir-data`).
+- **Evict pods without a controller**, for pods that nothing will recreate (`--force`).
+
+**Drain** stays disabled until the options the node's pods need are ticked. Evictions respect PodDisruptionBudgets, and the dialog shows each pod's progress, with **Retry** for any a budget refused. In a cluster named like production, you type the node's name first.
+
+Pick several nodes with <kbd>X</kbd> to cordon or uncordon them together. More in [Actions by kind](/changes/actions).
+
+<Columns cols={2}>
+  <Card title="Actions by kind" icon="zap" href="/changes/actions">
+    Every action, with what it runs and what it can undo.
+  </Card>
+  <Card title="Live usage" icon="gauge" href="/metrics/live-usage">
+    Where the CPU and memory figures come from.
+  </Card>
+</Columns>
