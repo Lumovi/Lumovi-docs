@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: A problem with Lumovi itself
+    url: https://github.com/Lumovi/Lumovi/issues/new/choose
+    about: Bugs and ideas for the app go to the Lumovi repository.
+  - name: Report a security vulnerability
+    url: https://github.com/Lumovi/Lumovi/security/advisories/new
+    about: Please report vulnerabilities privately.
