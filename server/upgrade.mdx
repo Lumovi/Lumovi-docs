@@ -1,0 +1,73 @@
+---
+title: "Upgrade Lumovi in your cluster"
+sidebarTitle: "Upgrade"
+description: "Move to a new version of Lumovi by upgrading its Helm chart, and roll back if you need to."
+icon: "circle-arrow-up"
+---
+
+The desktop app updates itself. In a cluster, Lumovi is upgraded like anything else Helm installed: you upgrade its chart. The chart is released with Lumovi itself, so the chart's version is the app's.
+
+## Upgrade
+
+<Steps>
+  <Step title="See what's new">
+    Each version's changes are in the [changelog](/changelog) and on [GitHub releases](https://github.com/Lumovi/Lumovi/releases).
+  </Step>
+  <Step title="Upgrade the chart">
+    <CodeGroup>
+      ```bash With your values file
+      helm upgrade lumovi oci://ghcr.io/lumovi/charts/lumovi \
+        --namespace lumovi --values values.yaml
+      ```
+
+      ```bash To a particular version
+      helm upgrade lumovi oci://ghcr.io/lumovi/charts/lumovi \
+        --namespace lumovi --values values.yaml --version {{version}}
+      ```
+
+      ```bash Keeping the values you set before
+      helm upgrade lumovi oci://ghcr.io/lumovi/charts/lumovi \
+        --namespace lumovi --reuse-values
+      ```
+    </CodeGroup>
+
+    Without `--version`, Helm installs the latest. The image's tag follows the chart unless you set `image.tag`.
+  </Step>
+  <Step title="Check it started">
+    ```bash
+    kubectl rollout status --namespace lumovi deployment/lumovi
+    kubectl logs --namespace lumovi deployment/lumovi
+    ```
+
+    The first line of the log names the version that's running.
+  </Step>
+</Steps>
+
+## What people see
+
+Sessions live in Lumovi's memory, so a new pod signs everyone out. Open pages reconnect to the new pod by themselves, and show the sign-in page. With single sign-on, signing in again is a click; with tokens, people paste one again. Behind an [authenticating proxy](/server/auth/proxy), Lumovi keeps no sessions of its own, so nobody notices more than a reconnect.
+
+The same goes for any change that replaces the pod: changing a setting, or the [views everyone sees](/server/views).
+
+<Note>
+  For the same reason the chart runs one replica. More than one would need sticky sessions, and each replica would still keep its own sessions.
+</Note>
+
+## Roll back
+
+Helm keeps the previous revision, so going back is one command:
+
+```bash
+helm rollback lumovi --namespace lumovi
+```
+
+`helm history lumovi --namespace lumovi` lists the revisions, and `helm rollback lumovi <revision> --namespace lumovi` goes back to a particular one.
+
+<Columns cols={2}>
+  <Card title="Changelog" icon="book-open" href="/changelog">
+    What changed in each version.
+  </Card>
+  <Card title="Helm values" icon="sliders-horizontal" href="/server/helm-values">
+    Every setting the chart has.
+  </Card>
+</Columns>

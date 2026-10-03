@@ -1,0 +1,75 @@
+---
+title: "Run it without Kubernetes"
+sidebarTitle: "With Docker"
+description: "Run the Lumovi image anywhere containers run, showing one cluster from a kubeconfig."
+icon: "container"
+---
+
+The image also runs on its own, outside the cluster it shows: on a machine of its own, say, as a dashboard for a cluster a team shares. Give it a kubeconfig, and it shows one of its contexts to everyone who signs in, the same way it would from inside the cluster.
+
+```bash
+docker run --rm -p 8080:8080 \
+  -v "$PWD/kubeconfig:/kubeconfig:ro" -e KUBECONFIG=/kubeconfig \
+  -e LUMOVI_CONTEXT=production \
+  ghcr.io/lumovi/lumovi
+```
+
+Then open [http://localhost:8080](http://localhost:8080).
+
+- `LUMOVI_CONTEXT` picks the context to show; without it, the kubeconfig's current context.
+- The cluster is called by its context's name, unless `LUMOVI_CLUSTER_NAME` says otherwise.
+- Lumovi listens on port 8080 (`LUMOVI_PORT`), and answers `/healthz` for health checks.
+
+Every setting is an environment variable here: see [Configuration](/server/configuration).
+
+## Whose credentials it uses
+
+That depends on how people sign in, exactly as in a cluster:
+
+- **With tokens** (the default), people's requests carry their own tokens. The kubeconfig only says where the cluster is and how to trust its certificate.
+- **With single sign-on or a proxy**, Lumovi uses the kubeconfig's credentials to impersonate people. Give it a service account's, with permission to impersonate users and groups, and nothing more.
+
+<Warning>
+  The image has only Node.js and helm, so credential plugins like `aws eks get-token`, `gke-gcloud-auth-plugin` or `kubelogin` aren't in it. Use a kubeconfig whose user has a token or a client certificate.
+</Warning>
+
+Paths in a kubeconfig (to a certificate, say) are read relative to the kubeconfig's own folder, so mount those files next to it, or embed them with the `*-data` fields. The image runs as a non-root user (UID 65532), so make sure that user can read what you mount.
+
+## With single sign-on
+
+```bash
+docker run --rm -p 8080:8080 \
+  -v "$PWD/kubeconfig:/kubeconfig:ro" -e KUBECONFIG=/kubeconfig \
+  -e LUMOVI_CONTEXT=production \
+  -e LUMOVI_URL=https://lumovi.example.com \
+  -e LUMOVI_AUTH=oidc \
+  -e LUMOVI_OIDC_ISSUER=https://dex.example.com \
+  -e LUMOVI_OIDC_CLIENT_ID=lumovi \
+  -e LUMOVI_OIDC_CLIENT_SECRET \
+  -e LUMOVI_USERNAME_PREFIX=oidc: \
+  -e LUMOVI_GROUPS_PREFIX=oidc: \
+  ghcr.io/lumovi/lumovi
+```
+
+`-e LUMOVI_OIDC_CLIENT_SECRET` without a value passes the variable on from your shell, so the secret stays out of your shell history. Put TLS in front of Lumovi with a reverse proxy, and set `LUMOVI_URL` to the address people open. See [Single sign-on](/server/auth/single-sign-on) for registering Lumovi with your provider.
+
+## Pin a version
+
+Without a tag, Docker pulls `latest`, the latest release. Pin a version to know what runs:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -v "$PWD/kubeconfig:/kubeconfig:ro" -e KUBECONFIG=/kubeconfig \
+  ghcr.io/lumovi/lumovi:{{version}}
+```
+
+Sessions live in Lumovi's memory, so restarting the container signs everyone out.
+
+<Columns cols={2}>
+  <Card title="Configuration" icon="settings-2" href="/server/configuration">
+    Every environment variable.
+  </Card>
+  <Card title="Security" icon="shield-check" href="/server/security">
+    What Lumovi is trusted with, and how to contain it.
+  </Card>
+</Columns>

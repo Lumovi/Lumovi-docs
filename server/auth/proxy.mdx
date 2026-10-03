@@ -1,0 +1,93 @@
+---
+title: "Sign in through an authenticating proxy"
+sidebarTitle: "Authenticating proxy"
+description: "Put Lumovi behind a proxy like oauth2-proxy or Pomerium, which signs people in and names them in request headers."
+icon: "route"
+---
+
+An authenticating proxy, like [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/) or [Pomerium](https://www.pomerium.com), signs people in and names them in request headers. Lumovi reads those headers on every request and acts as whoever they name, impersonating them in the cluster so their RBAC applies.
+
+Use this when you already sign people in to internal tools with a proxy, or your provider isn't one Lumovi can talk to directly.
+
+<Danger>
+  Lumovi trusts the proxy's headers completely. Anyone who can reach Lumovi without going through the proxy can name themselves anyone. Make sure nothing but the proxy can reach it.
+</Danger>
+
+## Set it up
+
+<Steps>
+  <Step title="Put the proxy in front of Lumovi">
+    Point your proxy at the `lumovi` Service, port 80, and have it pass on who signed in, and their groups. The proxy must pass WebSockets through: each page keeps one open.
+
+    With oauth2-proxy, `--pass-user-headers` sends the person's email address in `X-Forwarded-Email`, and their groups in `X-Forwarded-Groups`.
+  </Step>
+  <Step title="Configure Lumovi, and keep everything else out">
+    ```yaml values.yaml
+    auth:
+      mode: proxy
+      proxy:
+        userHeader: X-Forwarded-Email # oauth2-proxy with --pass-user-headers
+        groupsHeader: X-Forwarded-Groups # comma-separated
+        signOutUrl: https://lumovi.example.com/oauth2/sign_out
+      # Put before the names the proxy sends, so they can't be the cluster's own.
+      usernamePrefix: 'proxy:'
+      groupsPrefix: 'proxy:'
+    networkPolicy:
+      enabled: true
+      from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: oauth2-proxy
+    ```
+
+    The network policy lets only the proxy's pods reach Lumovi. Your cluster's network plugin has to enforce network policies for it to work. Leave the chart's ingress off: your ingress sends people to the proxy, and the proxy sends them on to Lumovi.
+
+    <Warning>
+      With `networkPolicy.enabled` and an empty `from`, the policy lets anything in on Lumovi's port. Always name the proxy.
+    </Warning>
+  </Step>
+  <Step title="Give people roles">
+    Bind roles to the names the proxy sends, with the prefixes you chose:
+
+    ```yaml
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+      name: platform-team
+    roleRef: { apiGroup: rbac.authorization.k8s.io, kind: ClusterRole, name: edit }
+    subjects:
+      - { apiGroup: rbac.authorization.k8s.io, kind: Group, name: 'proxy:platform' }
+    ```
+  </Step>
+</Steps>
+
+## The headers
+
+<ResponseField name="auth.proxy.userHeader" type="string" default="X-Forwarded-User">
+  The request header that names the person. A request without it gets a page that says **Lumovi doesn't know who you are**, and asks people to have whoever runs Lumovi check the proxy.
+</ResponseField>
+
+<ResponseField name="auth.proxy.groupsHeader" type="string" default="X-Forwarded-Groups">
+  The request header that lists their groups, separated by commas.
+</ResponseField>
+
+<ResponseField name="auth.proxy.signOutUrl" type="string">
+  Where signing out of the proxy is, like `https://lumovi.example.com/oauth2/sign_out`. Lumovi has no session of its own behind a proxy, so signing out means signing out of the proxy.
+</ResponseField>
+
+Lumovi never acts as one of Kubernetes' own users or groups (`system:…`), whatever the proxy says. It leaves out groups whose names start with `system:`, and refuses a user whose name does.
+
+## What it means for the cluster
+
+Behind a proxy, Lumovi impersonates people, so the chart gives its service account permission to impersonate users and groups, cluster-wide. Whoever can reach Lumovi's pod, or read its service account's token, can act as anyone. Keep Lumovi in a namespace only cluster administrators can exec into. See [Security](/server/security).
+
+There are no Lumovi sessions behind a proxy: it reads the headers on every request. Restarting Lumovi doesn't sign anyone out, and how long people stay signed in is up to the proxy.
+
+<Columns cols={2}>
+  <Card title="Security" icon="shield-check" href="/server/security">
+    Hardening Lumovi when it impersonates people.
+  </Card>
+  <Card title="Single sign-on" icon="log-in" href="/server/auth/single-sign-on">
+    Or let Lumovi talk to your provider directly.
+  </Card>
+</Columns>

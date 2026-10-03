@@ -1,0 +1,262 @@
+---
+title: "Helm values"
+description: "Every setting of the Lumovi Helm chart, its default, and what it does."
+icon: "sliders-horizontal"
+---
+
+Set these in a values file, and install or upgrade with `--values values.yaml`. The chart checks them against its schema, and refuses settings that don't make sense before anything is installed.
+
+To see the defaults, with a comment on each:
+
+```bash
+helm show values oci://ghcr.io/lumovi/charts/lumovi
+```
+
+## The cluster and its address
+
+<ResponseField name="clusterName" type="string" default="in-cluster">
+  What Lumovi calls the cluster: in its pages, their addresses and titles. No slashes or spaces.
+</ResponseField>
+
+<ResponseField name="url" type="string">
+  The address people open Lumovi at, like `https://lumovi.example.com`. [Single sign-on](/server/auth/single-sign-on) needs it, as the provider sends people back there. With `https:`, cookies are sent over HTTPS only.
+</ResponseField>
+
+<ResponseField name="basePath" type="string" default="/">
+  Where Lumovi is below that address, when it shares a host with other apps: `/lumovi`, say. The ingress path and health checks follow it. See [Give Lumovi an address](/server/expose).
+</ResponseField>
+
+## Sign-in
+
+<ResponseField name="auth.mode" type="string" default="token">
+  How people sign in: `token`, `oidc` or `proxy`.
+
+  - `token`: with a token the cluster accepts. Each person's requests carry their own token, and Lumovi's service account needs no permissions. See [Tokens](/server/auth/tokens).
+  - `oidc`: with an OpenID Connect provider. Lumovi impersonates whoever signs in, unless `auth.oidc.forwardToken` is set. See [Single sign-on](/server/auth/single-sign-on).
+  - `proxy`: behind an authenticating proxy that names people in request headers. Lumovi impersonates them. See [Authenticating proxy](/server/auth/proxy).
+</ResponseField>
+
+<ResponseField name="auth.oidc.issuer" type="string">
+  The provider's issuer URL, where `/.well-known/openid-configuration` is. Required with `oidc`.
+</ResponseField>
+
+<ResponseField name="auth.oidc.clientId" type="string">
+  Lumovi's client ID at the provider. Required with `oidc`.
+</ResponseField>
+
+<ResponseField name="auth.oidc.clientSecret" type="string">
+  The client's secret, from which the chart makes a Secret. Leave it empty for a public client, or use `existingSecret` instead.
+</ResponseField>
+
+<ResponseField name="auth.oidc.existingSecret" type="string">
+  A Secret in Lumovi's namespace with the client's secret under the key `client-secret`. Takes the place of `clientSecret`.
+</ResponseField>
+
+<ResponseField name="auth.oidc.scopes" type="string" default="openid email profile">
+  The scopes Lumovi asks for, separated by spaces. Add `groups` if your provider needs it to put groups in the ID token, and `offline_access` for refresh tokens when passing tokens on.
+</ResponseField>
+
+<ResponseField name="auth.oidc.usernameClaim" type="string" default="email">
+  The ID token claim that names people.
+</ResponseField>
+
+<ResponseField name="auth.oidc.groupsClaim" type="string" default="groups">
+  The ID token claim that lists their groups.
+</ResponseField>
+
+<ResponseField name="auth.oidc.providerName" type="string">
+  The provider's name on the sign-in button: `Okta` makes it **Sign in with Okta**. Unset, the button says **Sign in with single sign-on**.
+</ResponseField>
+
+<ResponseField name="auth.oidc.forwardToken" type="string">
+  `id` or `access`: the token people's requests carry, when the API server trusts the provider itself (its `--oidc-*` flags, a structured authentication configuration, EKS's OIDC identity providers…). Lumovi then needs no permissions, and renews tokens with refresh tokens. Unset, it impersonates people. See [When the API server trusts the provider](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider).
+</ResponseField>
+
+<ResponseField name="auth.proxy.userHeader" type="string" default="X-Forwarded-User">
+  The request header in which the proxy names people.
+</ResponseField>
+
+<ResponseField name="auth.proxy.groupsHeader" type="string" default="X-Forwarded-Groups">
+  The request header in which the proxy lists their groups, separated by commas.
+</ResponseField>
+
+<ResponseField name="auth.proxy.signOutUrl" type="string">
+  Where signing out of the proxy is, like `https://lumovi.example.com/oauth2/sign_out`.
+</ResponseField>
+
+<ResponseField name="auth.usernamePrefix" type="string">
+  Put before the names of the users Lumovi impersonates, like the API server's `--oidc-username-prefix`: `oidc:` makes `alice@example.com` `oidc:alice@example.com` in RBAC.
+</ResponseField>
+
+<ResponseField name="auth.groupsPrefix" type="string">
+  Put before the names of their groups.
+</ResponseField>
+
+<ResponseField name="auth.sessionHours" type="number" default="12">
+  How long a session lasts, in hours: more than 0, at most 168 (a week). Sessions live in Lumovi's memory, so a restart signs people out sooner.
+</ResponseField>
+
+## What people can do
+
+<ResponseField name="readOnly" type="boolean" default="false">
+  When `true`, nobody changes anything through Lumovi, whatever their RBAC allows. Each person can also make it read-only for themselves. See [Read-only mode](/changes/read-only).
+</ResponseField>
+
+<ResponseField name="metrics.source" type="string" default="auto">
+  Where usage history comes from, unless people choose another source in their browser:
+
+  - `auto`: Lumovi looks for Prometheus or VictoriaMetrics among the cluster's services.
+  - `off`: no usage history.
+  - A service, as `namespace/service:port`: `monitoring/prometheus-operated:9090`. For vmselect, with its path after the port: `vm/vmselect:8481/select/0/prometheus`.
+
+  See [Usage history](/metrics/usage-history).
+</ResponseField>
+
+<ResponseField name="helm.allowPrivateCharts" type="boolean" default="false">
+  When `true`, charts may come from addresses inside private networks, such as a ChartMuseum or Harbor in your network. When `false`, Lumovi fetches charts only from public addresses. See [Security](/server/security#charts-and-private-networks).
+</ResponseField>
+
+<ResponseField name="helm.artifactHubUrl" type="string" default="https://artifacthub.io">
+  The Artifact Hub Lumovi searches for charts to install.
+</ResponseField>
+
+<ResponseField name="views" type="object" default="{}">
+  Views everyone sees, by file name: each key is a file name ending in `.yaml` or `.yml`, and its value the file's contents. See [Views for everyone](/server/views).
+</ResponseField>
+
+## Kubernetes objects
+
+<ResponseField name="serviceAccount.create" type="boolean" default="true">
+  Whether the chart makes Lumovi's service account.
+</ResponseField>
+
+<ResponseField name="serviceAccount.name" type="string">
+  The service account's name: the release's full name unless set. Required when `serviceAccount.create` is `false`.
+</ResponseField>
+
+<ResponseField name="serviceAccount.annotations" type="object" default="{}">
+  Annotations for the service account.
+</ResponseField>
+
+<ResponseField name="rbac.create" type="boolean" default="true">
+  Whether the chart lets Lumovi's service account impersonate users and groups, which it needs with `oidc` (unless tokens are passed on) and `proxy`. In other modes, the chart makes no RBAC objects either way. Set it to `false` to manage that permission yourself.
+</ResponseField>
+
+<ResponseField name="replicaCount" type="integer" default="1">
+  How many Lumovi pods to run. Sessions live in each pod's memory: more than one needs sticky sessions.
+</ResponseField>
+
+<ResponseField name="service.type" type="string" default="ClusterIP">
+  `ClusterIP`, `NodePort` or `LoadBalancer`.
+</ResponseField>
+
+<ResponseField name="service.port" type="integer" default="80">
+  The Service's port. Lumovi itself listens on 8080.
+</ResponseField>
+
+<ResponseField name="service.annotations" type="object" default="{}">
+  Annotations for the Service.
+</ResponseField>
+
+<ResponseField name="ingress.enabled" type="boolean" default="false">
+  Whether the chart makes an Ingress for Lumovi.
+</ResponseField>
+
+<ResponseField name="ingress.className" type="string">
+  The Ingress' class, like `nginx`.
+</ResponseField>
+
+<ResponseField name="ingress.hosts" type="string[]" default="[lumovi.example.com]">
+  The hosts to serve Lumovi at, each with one rule for `basePath`.
+</ResponseField>
+
+<ResponseField name="ingress.tls" type="object[]" default="[]">
+  The Ingress' `tls`, as it is: `[{ secretName: lumovi-tls, hosts: [lumovi.example.com] }]`.
+</ResponseField>
+
+<ResponseField name="ingress.annotations" type="object" default="{}">
+  Annotations for the Ingress. Pages keep a WebSocket open, so give the ingress controller a long read timeout, like `nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"`.
+</ResponseField>
+
+<ResponseField name="networkPolicy.enabled" type="boolean" default="false">
+  Whether the chart makes a NetworkPolicy that only lets in what `networkPolicy.from` allows, on Lumovi's port. Behind a proxy, use it to let in only the proxy.
+</ResponseField>
+
+<ResponseField name="networkPolicy.from" type="object[]" default="[]">
+  The NetworkPolicy's `from`: who may reach Lumovi. Empty, anything may, on Lumovi's port.
+</ResponseField>
+
+## The pod
+
+<ResponseField name="image.repository" type="string" default="ghcr.io/lumovi/lumovi">
+  The image to run.
+</ResponseField>
+
+<ResponseField name="image.tag" type="string">
+  The image's tag: the chart's version unless set.
+</ResponseField>
+
+<ResponseField name="image.pullPolicy" type="string" default="IfNotPresent">
+  `Always`, `IfNotPresent` or `Never`.
+</ResponseField>
+
+<ResponseField name="imagePullSecrets" type="object[]" default="[]">
+  Secrets for pulling the image, for a copy in a private registry.
+</ResponseField>
+
+<ResponseField name="resources" type="object">
+  The container's resources. By default it requests `50m` of CPU and `128Mi` of memory, and is limited to `512Mi` of memory.
+</ResponseField>
+
+<ResponseField name="podSecurityContext" type="object">
+  The pod's security context. By default: non-root, as user and group 65532, with the `RuntimeDefault` seccomp profile.
+</ResponseField>
+
+<ResponseField name="securityContext" type="object">
+  The container's security context. By default: no privilege escalation, a read-only root filesystem, and every capability dropped.
+</ResponseField>
+
+<ResponseField name="extraEnv" type="object[]" default="[]">
+  More environment variables, as a container's `env`. See [Configuration](/server/configuration) for the ones Lumovi reads.
+</ResponseField>
+
+<ResponseField name="podAnnotations" type="object" default="{}">
+  Annotations for the pod.
+</ResponseField>
+
+<ResponseField name="podLabels" type="object" default="{}">
+  Labels for the pod.
+</ResponseField>
+
+<ResponseField name="nodeSelector" type="object" default="{}">
+  The pod's node selector.
+</ResponseField>
+
+<ResponseField name="tolerations" type="object[]" default="[]">
+  The pod's tolerations.
+</ResponseField>
+
+<ResponseField name="affinity" type="object" default="{}">
+  The pod's affinity.
+</ResponseField>
+
+<ResponseField name="priorityClassName" type="string">
+  The pod's priority class.
+</ResponseField>
+
+<ResponseField name="nameOverride" type="string">
+  Replaces the chart's name in the objects' names.
+</ResponseField>
+
+<ResponseField name="fullnameOverride" type="string">
+  Replaces the objects' full name. Installed as `lumovi`, they're all called `lumovi`.
+</ResponseField>
+
+<Columns cols={2}>
+  <Card title="Configuration" icon="settings-2" href="/server/configuration">
+    The environment variables the chart sets, for running the image another way.
+  </Card>
+  <Card title="Install" icon="download" href="/server/install">
+    Install or upgrade with a values file.
+  </Card>
+</Columns>
