@@ -123,6 +123,15 @@
               "metrics/live-usage",
               "metrics/usage-history"
             ]
+          },
+          {
+            "group": "Helm",
+            "pages": [
+              "helm/releases",
+              "helm/upgrade-and-rollback",
+              "helm/install",
+              "helm/local-charts"
+            ]
           }
         ]
       }

@@ -1,0 +1,79 @@
+---
+title: "Install a chart"
+description: "Find a chart on Artifact Hub, or name one in a repository or registry, and install it after a dry run shows what it makes."
+icon: "package-plus"
+---
+
+**Install chart**, at the top of **Helm releases**, installs a new release with your own `helm`. Like an upgrade, it's reviewed as a server-side dry run before anything is created.
+
+<Frame caption="Finding a chart on Artifact Hub to install.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/helm-install-light-1x.webp" alt="Finding a chart on Artifact Hub to install." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/helm-install-dark-1x.webp" alt="Finding a chart on Artifact Hub to install." />
+</Frame>
+
+<Steps>
+  <Step title="Name the release">
+    Type a **Release name**, and the **Namespace** to install it in. The namespace starts as the one you picked in the namespace menu, or `default`.
+
+    Tick **Create the namespace if it doesn't exist** for a new one (`--create-namespace`).
+  </Step>
+  <Step title="Find the chart">
+    <Tabs>
+      <Tab title="Search Artifact Hub" icon="search">
+        Type what you're looking for in **Search Artifact Hub** and press <kbd>↵</kbd>. Up to 20 matches show, with their repository, latest version, app version and description. Pick one, and its name, repository and version fill in.
+      </Tab>
+      <Tab title="Type it" icon="keyboard">
+        | Chart | Repository URL |
+        | --- | --- |
+        | A name, like `nginx` | The repository it's in, like `https://charts.example.com` |
+        | An OCI reference, like `oci://ghcr.io/org/charts/web` | Empty |
+        | A packaged chart's URL, like `https://example.com/web-1.2.0.tgz` | Empty |
+
+        With a repository URL, **List its versions** offers every version the repository has. Leave **Version** empty for the latest.
+      </Tab>
+      <Tab title="On this computer" icon="folder-code">
+        **A chart on this computer** installs from a chart folder or a packaged `.tgz`. See [Charts on your computer](/helm/local-charts). Desktop app only.
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Set values">
+    The editor starts empty: the chart's defaults apply as they are. Add only what you want to change.
+
+    **Start from the chart's defaults** fills the editor with the chart's own `values.yaml`, so you can see everything it lets you set, and edit from there.
+  </Step>
+  <Step title="Review, then install">
+    **Review** (or <kbd>⌘</kbd><kbd>S</kbd> in the editor; Ctrl+S on Windows and Linux) runs the install as a server-side dry run. You see that the cluster accepts it, the manifest it would create, and the chart's notes. Then **Install**, or **Back to editing**.
+  </Step>
+</Steps>
+
+The dialog shows the command it runs, like:
+
+```bash
+helm install web nginx --repo https://charts.example.com --version 18.1.0 \
+  --values values.yaml --create-namespace --namespace shop --kube-context dev
+```
+
+Once it's installed, it shows in the list like any other release, with its resources' live status.
+
+## Artifact Hub
+
+Lumovi talks to [Artifact Hub](https://artifacthub.io) only when you search it. To search another instance, set `LUMOVI_ARTIFACT_HUB_URL` (the chart's `helm.artifactHubUrl` when it runs in your cluster).
+
+## Where charts may come from
+
+<Note>
+  **In your cluster:** charts come from repositories, registries or URLs, never from files on the server. Lumovi fetches them only from public addresses, so that anyone signed in can't make it reach services inside the cluster's network. To install from a ChartMuseum or Harbor on your network, the administrator sets `helm.allowPrivateCharts: true`. See [Helm values](/server/helm-values).
+</Note>
+
+The desktop app installs from anywhere your computer can reach, your own network included.
+
+On a [read-only](/changes/read-only) cluster, Lumovi refuses to install anything.
+
+<Columns cols={2}>
+  <Card title="Charts on your computer" icon="folder-code" href="/helm/local-charts">
+    Install the chart you're working on, checked with helm lint.
+  </Card>
+  <Card title="Helm releases" icon="package" href="/helm/releases">
+    Read what a release made, its values and its history.
+  </Card>
+</Columns>
