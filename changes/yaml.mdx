@@ -1,0 +1,85 @@
+---
+title: "Edit YAML"
+description: "Change any object as YAML, like kubectl edit, with the cluster checking your change and showing it as a diff before anything is saved."
+icon: "file-code"
+---
+
+When an action doesn't cover what you need, edit the object's YAML. It works like `kubectl edit`, with two differences: the cluster checks your change before it's saved, and a change someone made in the meantime is caught instead of overwritten.
+
+<Frame caption="A change to a ConfigMap's YAML, checked by the cluster and shown before it's saved.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/yaml-light-1x.webp" alt="The YAML tab of a ConfigMap showing a reviewed change: The cluster accepts this change, with a diff of the added and removed lines." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/yaml-dark-1x.webp" alt="The YAML tab of a ConfigMap showing a reviewed change: The cluster accepts this change, with a diff of the added and removed lines." />
+</Frame>
+
+## Edit an object
+
+<Steps>
+  <Step title="Open the editor">
+    Open the object, then choose **Edit YAML** from its actions, or **Edit** in its **YAML** tab.
+  </Step>
+  <Step title="Make your change">
+    The editor shows the object without its `status` and the metadata the server manages (`uid`, `creationTimestamp`, `generation`, `resourceVersion` and `managedFields`), so you only see what you can change.
+  </Step>
+  <Step title="Review it">
+    Press <kbd>⌘</kbd><kbd>S</kbd>, or choose **Review changes**. Lumovi sends your change to the cluster as a dry run: the API server checks it the way it checks a real save, and saves nothing.
+
+    If the cluster accepts it, you see **The cluster accepts this change**, with how many lines were added and removed, and a diff. If it doesn't, you see why, and you're still editing.
+  </Step>
+  <Step title="Apply it">
+    Choose **Apply** to save the change, or **Back to editing** to keep working on it. **Cancel** leaves the editor without saving.
+  </Step>
+</Steps>
+
+On Windows and Linux, press <kbd>Ctrl</kbd><kbd>S</kbd> instead.
+
+The equivalent command is `kubectl edit`, with the object, its namespace and the context. Like every change, the edit shows up in the **Activity** log.
+
+## In the editor
+
+- The YAML must describe a single object.
+- The editor has search and undo, and <kbd>Tab</kbd> indents.
+- <kbd>Esc</kbd> doesn't close the panel while you're editing, so you won't lose your change by accident. The panel stays on the **YAML** tab until you apply or cancel.
+- Your edit applies to the version you started from, even while the panel refreshes around you.
+
+## When someone else changed it
+
+Lumovi saves your edit against the version you started from, the same way `kubectl` does. If the object changed in the meantime (someone else edited it, or a controller updated it), the cluster refuses the save, and Lumovi says so instead of overwriting their change.
+
+Choose **Start over from the latest** to load the current version, then make your change again.
+
+## Secrets
+
+Secret values are base64-encoded in the cluster. In the editor, you edit them as text:
+
+- Values that are text appear decoded, under `stringData`.
+- Values that aren't valid text (a binary keystore, say) stay base64-encoded, under `data`.
+- When you save, Lumovi encodes everything back into `data`.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api
+  namespace: shop
+type: Opaque
+stringData:
+  username: admin
+  password: s3cret-value
+```
+
+<Warning>
+  While you edit a Secret, its values are on screen in plain text. Outside the editor, the **YAML** tab hides them until you choose **Reveal values**.
+</Warning>
+
+## Permissions and read-only clusters
+
+Editing needs `update` on the object. Without it, **Edit** is disabled and says why. In a [read-only](/changes/read-only) cluster, editing is off, and so are the dry runs behind **Review changes**.
+
+<Columns cols={2}>
+  <Card title="Create from YAML" icon="file-plus" href="/changes/create">
+    New objects, from a template or pasted, checked before any is created.
+  </Card>
+  <Card title="Changing things safely" icon="shield-check" href="/changes/safely">
+    The guard rails around every change.
+  </Card>
+</Columns>

@@ -1,0 +1,97 @@
+---
+title: "Create from YAML"
+sidebarTitle: "Create from YAML"
+description: "Create one object or several from YAML, starting from a template or pasted, with the cluster checking all of them before any is created."
+icon: "file-plus"
+---
+
+Create anything the cluster serves from YAML: a quick Deployment to try something, a ConfigMap, or a whole set of objects pasted from a file. Nothing is created until the cluster has checked every one of them.
+
+<Frame caption="Creating objects from YAML, starting from a template.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/create-light-1x.webp" alt="The Create from YAML dialog with template buttons, a YAML editor holding a Deployment, and the kubectl create command." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/create-dark-1x.webp" alt="The Create from YAML dialog with template buttons, a YAML editor holding a Deployment, and the kubectl create command." />
+</Frame>
+
+## Open it
+
+- Press <kbd>⌘</kbd><kbd>N</kbd> (<kbd>Ctrl</kbd><kbd>N</kbd> on Windows and Linux), or choose **File → New from YAML…**
+- Choose the **+** button (**Create from YAML**) in the header.
+- In the command palette (<kbd>⌘</kbd><kbd>K</kbd>), choose **Create from YAML**.
+
+<Note>
+  **In your cluster:** browsers keep <kbd>⌘</kbd><kbd>N</kbd> for a new window, so use the **+** button or the command palette.
+</Note>
+
+## Create objects
+
+<Steps>
+  <Step title="Start from a template, or paste your own">
+    The editor starts with a Deployment. Choose another template to start from it instead, or replace the text with your own YAML.
+  </Step>
+  <Step title="Add more objects if you like">
+    Separate objects with a line of `---`, as in any multi-document YAML file.
+  </Step>
+  <Step title="Create them">
+    Choose **Create**, or press <kbd>⌘</kbd><kbd>S</kbd> in the editor. Lumovi checks everything, then creates each object, and shows the result for each one.
+  </Step>
+</Steps>
+
+When everything is created, a notification confirms it, with an **Open** button that takes you to the first new object.
+
+## Templates
+
+Each template is a small, working starting point. Choosing one replaces what's in the editor.
+
+| Template | What it makes |
+| --- | --- |
+| **Deployment** | `web`: two replicas of `nginx:1.27`, on port 80 |
+| **Service** | `web`: port 80, to pods labeled `app: web` |
+| **ConfigMap** | `settings`, with one key, `LOG_LEVEL` |
+| **Secret** | `credentials`, with a `password` written as text under `stringData` |
+| **Job** | `hello`: runs `echo hello` in `busybox:1.37` |
+| **CronJob** | `hello`: runs `date` in `busybox:1.37` every 15 minutes |
+| **Namespace** | `playground` |
+
+The Deployment and Service templates go together: create both, and the service reaches the deployment's pods.
+
+## Namespaces
+
+New objects go to the namespace you picked in the namespace menu, or to `default` when you're looking at all namespaces. An object that names its own namespace in `metadata.namespace` goes there instead. The dialog's header says where new objects go.
+
+## How it's checked
+
+Lumovi checks your YAML in this order, and stops at the first problem:
+
+<Steps>
+  <Step title="The YAML parses">
+    Each document must be valid YAML, and say what `kind` it is. There must be something to create.
+  </Step>
+  <Step title="The cluster serves the kind">
+    Each object's kind and `apiVersion` must be one the cluster serves. If a custom resource's CustomResourceDefinition is in the same YAML, create the CRD first, then the resources.
+  </Step>
+  <Step title="The cluster accepts every object">
+    Every object is sent as a dry run (`dryRun=All`). If the cluster refuses any of them, nothing is created, and you see why for each one.
+  </Step>
+  <Step title="Each object is created">
+    Then the objects are created one by one, in order, with the outcome of each shown.
+  </Step>
+</Steps>
+
+The equivalent command is `kubectl create -f objects.yaml`, with the namespace and context.
+
+<Tip>
+  Because everything is checked first, a typo in the fifth object doesn't leave you with the first four created and the rest missing.
+</Tip>
+
+## Read-only clusters
+
+In a [read-only](/changes/read-only) cluster, the dialog opens, but says that changes are turned off, and **Create** stays disabled.
+
+<Columns cols={2}>
+  <Card title="Edit YAML" icon="file-code" href="/changes/yaml">
+    Change an existing object, with a dry run and a diff first.
+  </Card>
+  <Card title="Install a Helm chart" icon="package" href="/helm/install">
+    For whole applications, find a chart on Artifact Hub instead.
+  </Card>
+</Columns>
