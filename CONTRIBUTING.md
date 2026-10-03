@@ -52,6 +52,9 @@ the [website](https://github.com/Lumovi/Lumovi-website)'s list of pages it links
 
 - **Write like the app.** Plain, calm, short sentences, in the second person. No hype. Explain
   what happens and why, not only which button to press.
+- **It's Lumovi:** one word, capital L. Not LUMOVI, LumoVi or Lumovi App (environment
+  variables like `LUMOVI_READ_ONLY` aside). It's a Kubernetes dashboard you run on your desktop
+  or in your cluster.
 - **Be exact.** Every label, default, limit and behavior should match Lumovi. When in
   doubt, check its [source](https://github.com/Lumovi/Lumovi/tree/main/src), or try it
   against the demo clusters. Leave out what you can't confirm.
@@ -101,6 +104,21 @@ through jsDelivr. When the app changes, the docs show it, without a change here.
 - Pages use the 1440 px files (`-1x.webp`). `screenshots.js` swaps in the 2880 px ones when a
   screenshot is zoomed. Mintlify drops `srcSet` from images, so this is how both sizes are used.
 - `loading="lazy"` keeps the browser from downloading the theme that isn't showing.
+
+## Logo and colors
+
+The logo, the favicon and the colors are Lumovi's brand, from
+[Lumovi-design](https://github.com/Lumovi/Lumovi-design), along with the
+[guidelines](https://github.com/Lumovi/Lumovi-design/blob/main/guidelines/README.md) for using
+them. Copy new versions from there rather than changing them here:
+
+| Here                                   | From Lumovi-design                    |
+| -------------------------------------- | ------------------------------------- |
+| `logo/light.svg`                       | `logo/svg/lumovi-logo-on-light.svg`   |
+| `logo/dark.svg`                        | `logo/svg/lumovi-logo-on-dark.svg`    |
+| `favicon.svg`                          | `icons/web/favicon.svg`               |
+| `colors` in `docs.json`                | The README's colors for the docs      |
+| The `--lumovi-*` colors in `style.css` | `colors/tokens.css`, its theme tokens |
 
 ## Checking your change
 
