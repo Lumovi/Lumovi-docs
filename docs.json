@@ -132,6 +132,14 @@
               "helm/install",
               "helm/local-charts"
             ]
+          },
+          {
+            "group": "Custom resources",
+            "pages": [
+              "custom-resources/overview",
+              "custom-resources/built-in-views",
+              "custom-resources/write-a-view"
+            ]
           }
         ]
       }
