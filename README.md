@@ -40,12 +40,13 @@ for the calm, fast Kubernetes dashboard, on your desktop or in your cluster.
 
 The site is built with [Mintlify](https://mintlify.com). Besides the pages:
 
-| File                        | What it does                                                                  |
-| --------------------------- | ----------------------------------------------------------------------------- |
-| `docs.json`                 | Navigation, theme, colors, and the current Lumovi version (`{{version}}`)     |
-| `style.css`                 | Lumovi's own look: its colors, key caps, screenshots and health labels        |
-| `screenshots.js`            | Shows screenshots at full size when one is zoomed                             |
-| `.github/scripts/check.mjs` | Checks what Mintlify doesn't: screenshots, icons, page metadata and variables |
+| File                             | What it does                                                                                           |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `docs.json`                      | Navigation, theme, colors, and the current Lumovi version (`{{version}}`)                              |
+| `style.css`                      | Lumovi's own look: its colors, key caps, screenshots and health labels                                 |
+| `logo/`, `favicon.svg`, `og.png` | Lumovi's logo, favicon and link preview, from [Lumovi-design](https://github.com/Lumovi/Lumovi-design) |
+| `screenshots.js`                 | Shows screenshots at full size when one is zoomed                                                      |
+| `.github/scripts/check.mjs`      | Checks what Mintlify doesn't: screenshots, icons, page metadata and variables                          |
 
 Screenshots aren't kept here. Lumovi takes them of its demo clusters, in light and dark,
 and the pages show them straight from
