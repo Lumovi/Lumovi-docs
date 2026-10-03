@@ -1,0 +1,24 @@
+name: Something's wrong in the docs
+description: A mistake, something out of date, or a page that's hard to follow
+labels: [bug]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Which page?
+      placeholder: https://docs.lumovi.com/explore/workloads
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What's wrong?
+      description: What does the page say, and what's true instead? Quote the part if you can.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Lumovi version
+      description: If it's about how the app behaves.
+      placeholder: '1.2.0'

@@ -1,0 +1,16 @@
+name: Something's missing from the docs
+description: A question the docs don't answer, or a feature they don't explain
+labels: [enhancement]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: What were you trying to find out?
+      description: What did you want to do, and where did you look?
+    validations:
+      required: true
+  - type: textarea
+    id: where
+    attributes:
+      label: Where would you expect it?
+      description: A page it belongs on, or a new one.
