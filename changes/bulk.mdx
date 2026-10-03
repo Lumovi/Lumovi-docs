@@ -1,0 +1,82 @@
+---
+title: "Several at once"
+description: "Pick rows in any list, then restart, cordon, suspend or delete them together, with progress for each object and a retry for any that fail."
+icon: "check-check"
+---
+
+Restarting ten pods, cordoning three nodes or cleaning up a batch of finished jobs takes one action, not ten. Pick the rows, choose what to do, and watch each object's progress.
+
+<Frame caption="Several pods picked, to act on them at once.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/bulk-light-1x.webp" alt="The pods list with several rows checked, and a bar at the bottom showing how many are selected and the actions for them." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/bulk-dark-1x.webp" alt="The pods list with several rows checked, and a bar at the bottom showing how many are selected and the actions for them." />
+</Frame>
+
+## Pick rows
+
+Selecting works in every list, and on the **Workloads** page across kinds.
+
+| To | Do this |
+| --- | --- |
+| Pick a row | Tick its checkbox, or press <kbd>X</kbd> on the focused row |
+| Pick a range | <kbd>Shift</kbd>-click a checkbox, or press <kbd>⇧</kbd><kbd>X</kbd> |
+| Pick every row on the page | <kbd>⌘</kbd><kbd>A</kbd> (<kbd>Ctrl</kbd><kbd>A</kbd> on Windows and Linux) |
+| Clear the selection | <kbd>Esc</kbd>, or the **×** in the selection bar |
+
+A bar at the bottom of the list says how many rows you picked, and offers the actions that apply to at least one of them.
+
+<Tip>
+  Narrow the list first, with the filter (<kbd>/</kbd>), a health chip or a label selector, then press <kbd>⌘</kbd><kbd>A</kbd> to pick everything that's left. See [Finding things](/explore/finding-things).
+</Tip>
+
+## What you can do
+
+| Action | For | Like |
+| --- | --- | --- |
+| **Restart** | Deployments, StatefulSets, DaemonSets, and pods a controller manages | `kubectl rollout restart` for workloads; `kubectl delete` for pods, which their controllers replace |
+| **Cordon**, **Uncordon** | Nodes | `kubectl cordon`, `kubectl uncordon` |
+| **Suspend**, **Resume** | CronJobs and Jobs | `kubectl patch … -p '{"spec":{"suspend":true}}'` |
+| **Delete** | Any kind | `kubectl delete` |
+
+If an action applies to only some of the rows you picked, the dialog says how many it leaves out, like "Left out: 2 of the selected, which restart doesn't apply to." Those rows are left alone.
+
+## Run it
+
+<Steps>
+  <Step title="Choose the action">
+    Choose it in the selection bar. The dialog lists every object it will change, and the equivalent `kubectl` commands: one line for each namespace and kind.
+  </Step>
+  <Step title="Confirm">
+    Confirm, and the changes run, four at a time. Each object shows its own progress, and the reason if it fails.
+  </Step>
+  <Step title="Retry what failed">
+    If some couldn't be changed, the dialog says how many ("2 of 12 couldn't be changed; see why below.") and the button becomes **Retry failed**. It runs the action again, only for those.
+  </Step>
+</Steps>
+
+When everything succeeds, a notification confirms it, like "Restarted 12 pods".
+
+## Deleting many at once
+
+Bulk delete removes each object the way a single delete does by default: anything an object owns is deleted after it. There's no force option, and no choice of what happens to owned objects. For those, delete one at a time. See [Actions by kind](/changes/actions).
+
+Some deletes ask you to type what's being done before they run:
+
+- Deleting Namespaces, Nodes, PersistentVolumes, PersistentVolumeClaims, StorageClasses or CustomResourceDefinitions.
+- Deleting anything in a cluster whose name looks like production. See [Changing things safely](/changes/safely#hard-to-do-by-accident).
+
+You type the action and what it's for, like `delete namespaces`, `delete volume claims` or, on the Workloads page, `delete workloads`.
+
+## Good to know
+
+- **No undo.** Changes made together can't be undone from their notification. Each one is in the **Activity** log, with its command.
+- **Permissions are checked by the cluster.** Bulk actions don't check your permissions before they start. Objects you can't change fail with the cluster's reason, and the rest go ahead.
+- **Read-only clusters.** In a [read-only](/changes/read-only) cluster, the actions in the selection bar are disabled.
+
+<Columns cols={2}>
+  <Card title="Actions by kind" icon="mouse-pointer-click" href="/changes/actions">
+    Everything you can do to one object, with all its options.
+  </Card>
+  <Card title="Undo and activity" icon="undo-2" href="/changes/undo-and-activity">
+    Take changes back, and see everything you changed this session.
+  </Card>
+</Columns>

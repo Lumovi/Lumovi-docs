@@ -1,0 +1,88 @@
+---
+title: "Read-only mode"
+sidebarTitle: "Read-only mode"
+description: "Turn changes off for one cluster, or for all of them, so you can look around without any chance of changing something."
+icon: "lock"
+---
+
+Read-only mode is for the clusters you only want to look at: production on a busy day, a customer's cluster, a shared machine. Lumovi shows everything as usual, and changes nothing.
+
+<Frame caption="A cluster made read-only: Lumovi won't change anything in it until allowed.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/read-only-light-1x.webp" alt="A deployment in a read-only cluster: a Read-only badge next to its actions, and its actions menu open with every action disabled and the note that changes are turned off for this cluster." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/read-only-dark-1x.webp" alt="A deployment in a read-only cluster: a Read-only badge next to its actions, and its actions menu open with every action disabled and the note that changes are turned off for this cluster." />
+</Frame>
+
+## For one cluster
+
+<Tabs>
+  <Tab title="Cluster switcher" icon="lock">
+    Open the cluster switcher at the top of the sidebar, and turn on **Read-only**. Its caption reads "Lumovi won't change" and the cluster's name.
+  </Tab>
+  <Tab title="Command palette" icon="command">
+    Press <kbd>⌘</kbd><kbd>K</kbd> (<kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux), and choose **Make** _cluster_ **read-only**. The same command reads **Allow changes to** _cluster_ when it's already read-only.
+  </Tab>
+</Tabs>
+
+A read-only cluster has a lock next to its name. Next to an object's actions, a **Read-only** badge says changes are off; choose it, then **Allow changes**, to turn them back on.
+
+Lumovi remembers which clusters you made read-only, by their kubeconfig context name.
+
+## For every cluster
+
+Set `LUMOVI_READ_ONLY` to `1` (or `true`) in the environment Lumovi starts in. Every cluster is read-only, and it can't be turned off from the app: the switch is disabled, with the caption "Set by LUMOVI_READ_ONLY". That makes it a good fit for shared machines, demos and screen shares.
+
+<CodeGroup>
+  ```bash macOS
+  # Quit Lumovi first, so it starts with the variable.
+  LUMOVI_READ_ONLY=1 open -a Lumovi
+  ```
+
+  ```bash Linux (.deb, .rpm)
+  LUMOVI_READ_ONLY=1 lumovi
+  ```
+
+  ```bash Linux (AppImage)
+  LUMOVI_READ_ONLY=1 ./Lumovi-*-linux-x86_64.AppImage
+  ```
+</CodeGroup>
+
+To set it for every launch, or on Windows, see [Setting environment variables](/reference/environment-variables#setting-them).
+
+## What it turns off
+
+It isn't only the buttons. The part of Lumovi that talks to your clusters (the desktop app's main process, or the server when Lumovi runs in your cluster) refuses every change to a read-only cluster, whatever asks for it:
+
+> production is read-only in Lumovi. Allow changes to it to continue.
+
+| | In a read-only cluster |
+| --- | --- |
+| Actions: scale, restart, drain, delete, labels… | Off |
+| [Edit YAML](/changes/yaml), including its dry runs | Off |
+| [Create from YAML](/changes/create) | Off |
+| [Several at once](/changes/bulk) | Off |
+| [Helm](/helm/upgrade-and-rollback) upgrades, installs, rollbacks and uninstalls | Off |
+| [Shells](/debug/shell) and debug containers | Off: a shell can change a container |
+| [Port forwards](/debug/port-forwarding) | On: they don't change the cluster |
+| Lists, details, logs, metrics, YAML, Helm releases | On |
+
+Actions that are off stay visible, disabled, with "Changes are turned off for this cluster."
+
+## In your cluster
+
+When Lumovi runs in your cluster as a shared dashboard, read-only works at two levels:
+
+- **For everyone.** Set `readOnly: true` in the Helm chart's values (`LUMOVI_READ_ONLY=true` when you run the image another way). Nobody changes anything through Lumovi, whatever their RBAC allows. The switch shows "For everyone, on this server". See [Helm values](/server/helm-values).
+- **For yourself.** Anyone can make the cluster read-only for themselves from the cluster switcher or the command palette. It's kept in their browser, and the server enforces it for them.
+
+<Note>
+  Read-only mode is a guard rail in Lumovi, not a permission. To keep someone from changing a cluster at all, give their account read-only RBAC, like the built-in `view` ClusterRole. See [Permissions](/clusters/permissions).
+</Note>
+
+<Columns cols={2}>
+  <Card title="Changing things safely" icon="shield-check" href="/changes/safely">
+    The other guard rails, for when changes are on.
+  </Card>
+  <Card title="Environment variables" icon="terminal" href="/reference/environment-variables">
+    Everything Lumovi reads from its environment.
+  </Card>
+</Columns>

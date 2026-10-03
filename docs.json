@@ -96,6 +96,18 @@
               "explore/health",
               "explore/finding-things"
             ]
+          },
+          {
+            "group": "Make changes",
+            "pages": [
+              "changes/safely",
+              "changes/actions",
+              "changes/yaml",
+              "changes/create",
+              "changes/bulk",
+              "changes/read-only",
+              "changes/undo-and-activity"
+            ]
           }
         ]
       }

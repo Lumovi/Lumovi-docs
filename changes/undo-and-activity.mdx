@@ -1,0 +1,61 @@
+---
+title: "Undo and activity"
+sidebarTitle: "Undo and activity"
+description: "Take a change back from its notification, and see every change you made this session, with its kubectl command."
+icon: "undo-2"
+---
+
+Every change Lumovi makes is confirmed by a notification, and recorded in the **Activity** log. Many can be taken back with one click.
+
+## Notifications
+
+When a change is done, a notification at the bottom right says what happened, in plain words: "Scaled storefront to 5 replicas", "Cordoned worker-2".
+
+- A notification stays for six seconds, or ten when something went wrong.
+- It stays as long as the pointer is over it, so you have time to read it and act.
+- Some notifications have a button: **Undo**, or **Open** for something new, like the job **Run now** started or the objects **Create from YAML** made.
+
+## Undo
+
+**Undo** in a change's notification makes the opposite change. It's a change like any other: it has its own command, and its own line in the Activity log.
+
+| Change | What Undo does |
+| --- | --- |
+| Scale | Scales back to the previous number of replicas |
+| Cordon, Uncordon | Uncordons, or cordons, the node again |
+| Pause rollout, Resume rollout | Resumes, or pauses, the rollout again |
+| Suspend, Resume | Resumes, or suspends, the CronJob or Job again |
+| Change image | Puts the previous images back |
+| Edit replica range | Puts the autoscaler's previous range back |
+| Edit labels | Puts the previous labels and annotations back |
+| A view's action | Applies the undo the view spells out, when it has one |
+
+If the undo fails (someone changed the object in between, say), a notification says "Couldn't undo", with the reason.
+
+Restarts, rollbacks, drains, deletes, YAML edits and [changes to several objects at once](/changes/bulk) have no Undo. Restarts and rollbacks can be followed by another rollback, from **Roll back…**. See [Actions by kind](/changes/actions).
+
+## The Activity log
+
+The **Activity** button in the header (a clock with an arrow) opens **Changes this session**: every change you made from Lumovi, newest first. A count on the button shows how many are new since you last looked.
+
+Each entry shows:
+
+- **What happened**, like "Restarted checkout". Choose it to open the object, when it's in the cluster you're looking at.
+- **When**, and the cluster, when it's another one than you're looking at.
+- **Its status**: In progress, Done or Failed, with the reason if it failed.
+- **The kubectl command** that does the same thing, with **Copy command**.
+
+The log covers actions, YAML edits, objects created from YAML, changes to several objects at once, undos and Helm changes. **Clear** empties it.
+
+<Note>
+  The log lives only as long as the session: it's empty again when you restart Lumovi, or reload the page when it runs in your cluster. For a lasting record of who changed what, use the cluster's audit log.
+</Note>
+
+<Columns cols={2}>
+  <Card title="Changing things safely" icon="shield-check" href="/changes/safely">
+    The guard rails around every change.
+  </Card>
+  <Card title="Actions by kind" icon="mouse-pointer-click" href="/changes/actions">
+    Everything you can do to each kind, and the options.
+  </Card>
+</Columns>

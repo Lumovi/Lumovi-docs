@@ -1,0 +1,93 @@
+---
+title: "Changing things safely"
+sidebarTitle: "Safe changes"
+description: "The guard rails around every change Lumovi makes: permissions up front, the kubectl command shown, dry runs, typed confirmations and undo."
+icon: "shield-check"
+---
+
+Lumovi can change your clusters: scale, restart, roll back, drain, edit, delete. Each of those goes through the same guard rails, so you always know what's about to happen, and where.
+
+<Frame caption="Deleting in a cluster named like production asks for the object's name first.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/delete-light-1x.webp" alt="A delete dialog in a production cluster, with the PRODUCTION badge, a field to type the name, and the equivalent kubectl command." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/delete-dark-1x.webp" alt="A delete dialog in a production cluster, with the PRODUCTION badge, a field to type the name, and the equivalent kubectl command." />
+</Frame>
+
+## Your permissions, up front
+
+Before it offers an action, Lumovi asks the cluster whether your account may do it, with a SelfSubjectAccessReview, the same check `kubectl auth can-i` makes. Actions you can't take stay visible but disabled, and say why:
+
+> Your account can't delete pods in shop.
+
+The answers are cached for a few minutes. If the cluster can't answer, the action stays enabled and the cluster decides when you try. Either way, nothing gets past RBAC: Lumovi only ever acts as you, with your own permissions.
+
+See [Permissions](/clusters/permissions) for what each feature needs.
+
+## Nothing surprising
+
+Every dialog says what it changes and where:
+
+- **The object and the cluster.** The header names the object, its kind and namespace, and the cluster it's in.
+- **The equivalent command.** Under **Equivalent command**, the `kubectl` command that does the same thing, ready to copy. It's a good way to learn kubectl, and a record of what happened.
+- **What will happen.** Dialogs explain the effect in plain words: how a restart rolls out, which pods a drain evicts, whether a deleted pod comes back.
+
+A few of the commands Lumovi shows:
+
+```bash
+kubectl scale deployment/web --replicas=3 -n shop --context dev
+kubectl rollout undo deployment/web --to-revision=4 -n shop --context dev
+kubectl patch cronjob/hello --type=merge -p '{"spec":{"suspend":true}}' -n shop --context dev
+kubectl drain node-1 --ignore-daemonsets --delete-emptydir-data --context dev
+kubectl debug -it web-1 --image=busybox:1.37 --container=debugger-ab12c --target=web -n shop --context dev
+```
+
+Every change you make also lands in the **Activity** log, with its command. See [Undo and activity](/changes/undo-and-activity).
+
+## Checked by the cluster first
+
+Changes you write yourself are checked by the API server before anything is saved:
+
+- **YAML edits** are sent as a server-side dry run first, and shown as a diff. Only **Apply** saves them. See [Edit YAML](/changes/yaml).
+- **New objects** from **Create from YAML** are all dry-run first. If any of them is refused, none is created. See [Create from YAML](/changes/create).
+- **Helm upgrades and installs** run as `helm … --dry-run=server` first, and show what the manifest would change. See [Upgrade and roll back](/helm/upgrade-and-rollback).
+
+## Changes made meanwhile are caught
+
+A YAML edit is saved against the version you started from. If someone changed the object in the meantime, the cluster refuses the save, and Lumovi says so instead of overwriting their change. **Start over from the latest** loads the current version.
+
+## Hard to do by accident
+
+<AccordionGroup>
+  <Accordion title="Destructive dialogs start on Cancel" icon="ban">
+    Delete, drain and other destructive dialogs open with the focus on **Cancel**, or on the field where you type the name. A stray <kbd>↵</kbd> never deletes anything.
+  </Accordion>
+  <Accordion title="Risky deletes ask you to type the name" icon="keyboard">
+    Deleting a Namespace, Node, PersistentVolume, PersistentVolumeClaim, StorageClass or CustomResourceDefinition asks you to type its name first. These are hard to recover from: a namespace takes everything in it along, and deleting a CRD deletes every object of its kind.
+
+    For several objects at once, you type what's being done instead, like `delete namespaces`. See [Several at once](/changes/bulk).
+  </Accordion>
+  <Accordion title="Production clusters get an extra check" icon="shield-check">
+    When a context's name looks like production, every dialog shows a **PRODUCTION** badge next to the cluster's name, and every delete and drain asks you to type the name first, whatever the kind.
+
+    A name looks like production when it contains `prod`, `production`, `prd` or `live` as a word of its own. These match: `prod`, `eu-prod-1`, `live_cluster`, `gke_acme_us-central1_production`. These don't: `product-demo`, `delivery`.
+  </Accordion>
+  <Accordion title="Dialogs say what can't be taken back" icon="eye">
+    Each delete explains its consequence. Deleting a pod says whether its controller replaces it. Deleting a volume claim warns that the data may go too, depending on the reclaim policy. Deleting a node explains that its pods keep running until its kubelet registers it again.
+  </Accordion>
+</AccordionGroup>
+
+## Easy to take back
+
+Scaling, cordoning, pausing a rollout, suspending, changing images, changing an autoscaler's range and editing labels can be undone from the notification that confirms them. See [Undo and activity](/changes/undo-and-activity).
+
+## Read-only when you want it
+
+Turn changes off for one cluster from the cluster switcher, or for every cluster with `LUMOVI_READ_ONLY=1`. It isn't only the buttons: the part of Lumovi that talks to clusters refuses changes too. See [Read-only mode](/changes/read-only).
+
+<Columns cols={2}>
+  <Card title="Actions by kind" icon="mouse-pointer-click" href="/changes/actions">
+    Everything you can do to each kind, and the options each action has.
+  </Card>
+  <Card title="Read-only mode" icon="lock" href="/changes/read-only">
+    Look without touching, for one cluster or all of them.
+  </Card>
+</Columns>
