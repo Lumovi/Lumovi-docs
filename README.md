@@ -11,7 +11,7 @@ Installing it, using it, running it for your team, and every setting: the source
 for the calm, fast Kubernetes app for your desktop and your cluster.
 
 [![CI](https://github.com/Lumovi/Lumovi-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/Lumovi/Lumovi-docs/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/docs-docs.lumovi.com-2a78d6)](https://docs.lumovi.com)
+[![Docs](https://img.shields.io/badge/docs-docs.lumovi.com-2675d3)](https://docs.lumovi.com)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 </div>

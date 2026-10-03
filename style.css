@@ -1,14 +1,14 @@
 /*
- * Lumovi docs: the app's own look. Colors are the app's design tokens
- * (lumovi/src/renderer/src/styles/index.css), Inter for text and JetBrains Mono
- * for code, as in the app. Status colors are kept for health, and always come with
- * a label, as in the app.
+ * Lumovi docs: the app's own look. Colors are the app's theme tokens, from the brand's
+ * colors/tokens.css (https://github.com/Lumovi/Lumovi-design/tree/main/colors), Inter for
+ * text and JetBrains Mono for code, as in the app. Status colors are kept for health, and
+ * always come with a label, as in the app.
  */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400..700&display=swap');
 
 :root {
-  --lumovi-accent: #2a78d6;
-  --lumovi-accent-soft: rgb(42 120 214 / 0.1);
+  --lumovi-accent: #2675d3;
+  --lumovi-accent-soft: rgb(38 117 211 / 0.1);
   --lumovi-line: rgb(12 12 20 / 0.08);
   --lumovi-line-strong: rgb(12 12 20 / 0.14);
   --lumovi-surface: #ffffff;
@@ -22,12 +22,12 @@
   --lumovi-serious: #ec835a;
   --lumovi-critical: #d03b3b;
   --lumovi-neutral: #898781;
-  --lumovi-progress: #2a78d6;
+  --lumovi-progress: #2675d3;
   --lumovi-good-text: #1a7f37;
   --lumovi-warn-text: #8a5a00;
   --lumovi-critical-text: #b42318;
   --lumovi-shadow-window: 0 0 0 1px rgb(12 12 20 / 0.06), 0 24px 60px -24px rgb(12 12 20 / 0.28),
-    0 18px 40px -28px rgb(42 120 214 / 0.35);
+    0 18px 40px -28px rgb(38 117 211 / 0.35);
   --lumovi-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
