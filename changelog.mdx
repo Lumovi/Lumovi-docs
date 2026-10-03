@@ -1,0 +1,74 @@
+---
+title: "Changelog"
+description: "What's new in each version of Lumovi. The desktop app updates itself; the Helm chart's version is the app's."
+icon: "history"
+rss: true
+---
+
+Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
+
+<Update label="October 2, 2026" description="1.2.0" tags={["In your cluster"]}>
+  ## Lumovi in your cluster
+
+  Lumovi now also runs in a cluster, as a dashboard for it that your team opens in a browser. It's the same app, with each person signing in and seeing and changing what their own RBAC allows. Nobody installs anything, and a link to any page (a pod, its logs, a release) can be shared.
+
+  - **A container image and a Helm chart.** `ghcr.io/lumovi/lumovi` for `linux/amd64` and `linux/arm64`, installed with `oci://ghcr.io/lumovi/charts/lumovi`.
+  - **Three ways to sign in.** With a token the cluster accepts, with single sign-on (OpenID Connect), or through an authenticating proxy.
+  - **Your own permissions, always.** With single sign-on, Lumovi impersonates people, or, when the API server trusts the provider itself, passes their own tokens on and renews them.
+
+  ```bash
+  helm install lumovi oci://ghcr.io/lumovi/charts/lumovi \
+    --namespace lumovi --create-namespace
+  ```
+
+  Get started with [Run it in your cluster](/get-started/in-your-cluster). [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.2.0)
+</Update>
+
+<Update label="October 2, 2026" description="1.1.1" tags={["Project"]}>
+  ## A home of its own
+
+  Lumovi has moved to its own organization on GitHub, [Lumovi/Lumovi](https://github.com/Lumovi/Lumovi). The **Help** menu links there, and new versions come from there.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.1.1)
+</Update>
+
+<Update label="October 1, 2026" description="1.1.0" tags={["Desktop app"]}>
+  ## Automatic updates
+
+  - **Lumovi updates itself.** New versions download in the background and install when you restart or quit, with a notice when one is ready.
+  - **Help → Check for Updates…** looks right away, and **Help → Check for Updates Automatically** turns the background checks off.
+  - **Help → Sponsor Lumovi…** opens the project's GitHub Sponsors page.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.1.0)
+</Update>
+
+<Update label="October 1, 2026" description="1.0.0" tags={["Desktop app"]}>
+  ## The first version
+
+  A Kubernetes app for macOS, Windows and Linux.
+
+  ### Seeing what's going on
+
+  - **Overview** with node, pod, workload and warning health, CPU and memory against capacity, per-node usage, and what needs attention.
+  - **Workloads** of every kind in one list, with status, ready pods, autoscaler ranges and usage, and tables for 19 resource kinds with health, sorting, filters, label selectors and virtual scrolling.
+  - **A detail panel** with kind-specific facts, containers, conditions, related pods, events, logs and YAML. Secret values stay hidden until revealed.
+  - **Custom resources** and every other kind, found through API discovery, with views for cert-manager, Argo CD and Rollouts, Flux, Gateway API, Karpenter, KEDA, External Secrets, the Prometheus operator, CloudNativePG, Istio, Velero and Crossplane, and your own.
+  - **Logs** streamed as they're written, merged across a workload's pods, with search and filters.
+  - **Usage history** from Prometheus or VictoriaMetrics, with a Metrics page and a Metrics tab on pods, workloads and nodes.
+  - **Helm releases**, read from where Helm keeps them, with values, resources, notes and diffs between revisions.
+
+  ### Changing things
+
+  - **Actions** to scale, restart, change images, roll back, pause and resume rollouts, run CronJobs, suspend and resume, cordon, uncordon and drain, evict, force-delete, change autoscaler ranges, expand volumes, and edit labels and YAML.
+  - **Shells, debug containers and port forwards.**
+  - **Helm upgrades and installs**, reviewed as a server-side dry run first, and **rollbacks and uninstalls**, all with your own `helm`.
+  - **Bulk actions** with progress per object and a retry for failures, and **create from YAML** with templates.
+  - **Guard rails**: permission checks, the `kubectl` command in every dialog, typed confirmation for risky deletes, undo, an activity log and read-only mode.
+
+  ### Around the app
+
+  - **A command palette**, keyboard shortcuts for every view, and light and dark themes.
+  - **Calm errors**: banners when a cluster stops responding, last data kept on screen, and error pages with details to copy or report.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.0.0)
+</Update>
