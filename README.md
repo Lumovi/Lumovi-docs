@@ -5,18 +5,18 @@
 # Lumovi docs
 
 **The documentation for [Lumovi](https://github.com/Lumovi/Lumovi), at
-[docs.lumovi.com](https://docs.lumovi.com).**
+[docs.lumovi.dev](https://docs.lumovi.dev).**
 
 Installing it, using it, running it for your team, and every setting: the source of the docs
 for the calm, fast Kubernetes dashboard, on your desktop or in your cluster.
 
 [![CI](https://github.com/Lumovi/Lumovi-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/Lumovi/Lumovi-docs/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/docs-docs.lumovi.com-2675d3)](https://docs.lumovi.com)
+[![Docs](https://img.shields.io/badge/docs-docs.lumovi.dev-2675d3)](https://docs.lumovi.dev)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
 </div>
 
-<a href="https://docs.lumovi.com">
+<a href="https://docs.lumovi.dev">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/docs-dark.png" />
     <img src=".github/assets/docs-light.png" alt="The Lumovi docs: the introduction, “Your clusters, at a glance”, next to the sidebar of guides, with a screenshot of a cluster's overview in Lumovi." />
@@ -27,16 +27,16 @@ for the calm, fast Kubernetes dashboard, on your desktop or in your cluster.
 
 | Section                                                               | Folder              | What it covers                                                          |
 | --------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------- |
-| [Get started](https://docs.lumovi.com)                                | `get-started/`      | The desktop app, Lumovi in your cluster, a tour, and signing in         |
-| [Clusters](https://docs.lumovi.com/clusters/connect)                  | `clusters/`         | Kubeconfigs, namespaces, and the permissions each feature needs         |
-| [Explore](https://docs.lumovi.com/explore/overview)                   | `explore/`          | The overview, every list, the detail panel, health, and finding things  |
-| [Make changes](https://docs.lumovi.com/changes/safely)                | `changes/`          | Actions, YAML, creating objects, bulk changes and the guard rails       |
-| [Debug](https://docs.lumovi.com/debug/logs)                           | `debug/`            | Logs, shells, debug containers and port forwards                        |
-| [Metrics](https://docs.lumovi.com/metrics/live-usage)                 | `metrics/`          | Live usage, and usage history from Prometheus or VictoriaMetrics        |
-| [Helm](https://docs.lumovi.com/helm/releases)                         | `helm/`             | Releases, upgrades and rollbacks, installs, and charts on your computer |
-| [Custom resources](https://docs.lumovi.com/custom-resources/overview) | `custom-resources/` | Every kind the cluster serves, built-in views, and writing your own     |
-| [In your cluster](https://docs.lumovi.com/server/overview)            | `server/`           | Installing the chart, sign-in, security, and every setting              |
-| [Reference](https://docs.lumovi.com/reference/keyboard-shortcuts)     | `reference/`        | Shortcuts, the view format, kinds, troubleshooting and the FAQ          |
+| [Get started](https://docs.lumovi.dev)                                | `get-started/`      | The desktop app, Lumovi in your cluster, a tour, and signing in         |
+| [Clusters](https://docs.lumovi.dev/clusters/connect)                  | `clusters/`         | Kubeconfigs, namespaces, and the permissions each feature needs         |
+| [Explore](https://docs.lumovi.dev/explore/overview)                   | `explore/`          | The overview, every list, the detail panel, health, and finding things  |
+| [Make changes](https://docs.lumovi.dev/changes/safely)                | `changes/`          | Actions, YAML, creating objects, bulk changes and the guard rails       |
+| [Debug](https://docs.lumovi.dev/debug/logs)                           | `debug/`            | Logs, shells, debug containers and port forwards                        |
+| [Metrics](https://docs.lumovi.dev/metrics/live-usage)                 | `metrics/`          | Live usage, and usage history from Prometheus or VictoriaMetrics        |
+| [Helm](https://docs.lumovi.dev/helm/releases)                         | `helm/`             | Releases, upgrades and rollbacks, installs, and charts on your computer |
+| [Custom resources](https://docs.lumovi.dev/custom-resources/overview) | `custom-resources/` | Every kind the cluster serves, built-in views, and writing your own     |
+| [In your cluster](https://docs.lumovi.dev/server/overview)            | `server/`           | Installing the chart, sign-in, security, and every setting              |
+| [Reference](https://docs.lumovi.dev/reference/keyboard-shortcuts)     | `reference/`        | Shortcuts, the view format, kinds, troubleshooting and the FAQ          |
 
 The site is built with [Mintlify](https://mintlify.com). Besides the pages:
 
@@ -64,7 +64,7 @@ node .github/scripts/check.mjs  # screenshots, icons, page metadata and variable
 ```
 
 CI runs the last three on every pull request. What's merged to `main` goes live at
-[docs.lumovi.com](https://docs.lumovi.com).
+[docs.lumovi.dev](https://docs.lumovi.dev).
 
 ## Contributing
 

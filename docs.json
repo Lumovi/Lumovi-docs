@@ -45,7 +45,7 @@
     "links": [
       {
         "label": "Website",
-        "href": "https://lumovi.com"
+        "href": "https://lumovi.dev"
       },
       {
         "type": "github",
@@ -55,7 +55,7 @@
     "primary": {
       "type": "button",
       "label": "Download",
-      "href": "https://lumovi.com/#download"
+      "href": "https://lumovi.dev/#download"
     }
   },
   "navigation": {
@@ -227,14 +227,14 @@
   "footer": {
     "socials": {
       "github": "https://github.com/Lumovi/Lumovi",
-      "website": "https://lumovi.com"
+      "website": "https://lumovi.dev"
     },
     "links": [
       {
         "header": "Lumovi",
         "items": [
-          { "label": "Website", "href": "https://lumovi.com" },
-          { "label": "Download", "href": "https://lumovi.com/#download" },
+          { "label": "Website", "href": "https://lumovi.dev" },
+          { "label": "Download", "href": "https://lumovi.dev/#download" },
           { "label": "Releases", "href": "https://github.com/Lumovi/Lumovi/releases" }
         ]
       },

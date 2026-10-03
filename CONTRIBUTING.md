@@ -42,7 +42,7 @@ icon: 'plug-zap'
 ---
 ```
 
-**Keep pages where they are.** [lumovi.com](https://lumovi.com) links to pages by
+**Keep pages where they are.** [lumovi.dev](https://lumovi.dev) links to pages by
 their path and shows their titles, and links to a few headings (_Verify your download_,
 _Verify the image_, _Thousands of pods_). Renaming one breaks those links. When a page has to
 move, add a [redirect](https://mintlify.com/docs/create/redirects) in `docs.json`, and update
@@ -138,7 +138,7 @@ and dark.
 3. Open a pull request that says what changed and why. For a change you can see, a screenshot
    helps.
 
-What's merged to `main` goes live at [docs.lumovi.com](https://docs.lumovi.com).
+What's merged to `main` goes live at [docs.lumovi.dev](https://docs.lumovi.dev).
 
 ## When Lumovi is released (maintainers)
 
