@@ -67,7 +67,11 @@
           {
             "group": "Get started",
             "pages": [
-              "index"
+              "index",
+              "get-started/desktop",
+              "get-started/in-your-cluster",
+              "get-started/tour",
+              "get-started/sign-in"
             ]
           }
         ]

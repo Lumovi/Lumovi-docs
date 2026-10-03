@@ -1,0 +1,83 @@
+---
+title: "Signing in to your team's Lumovi"
+sidebarTitle: "Signing in"
+description: "Open your team's Lumovi, sign in, and see and change what your own account may, with nothing to install."
+icon: "log-in"
+---
+
+When Lumovi runs in a cluster, it's a web page. Open the address your team gave you, sign in, and the cluster's overview opens. Everything you see, and every change you can make, is what your own Kubernetes account allows: Lumovi never gives anyone more.
+
+## Sign in
+
+How you sign in depends on how your team set Lumovi up. The sign-in page shows the right way.
+
+<Tabs>
+  <Tab title="Single sign-on" icon="key-round">
+    Choose **Sign in with …** (your company's provider, like Okta or Google), and sign in there as you usually do. You come back to Lumovi, signed in.
+
+    <Frame>
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-single-sign-on-light-1x.webp" alt="Lumovi served from a cluster: signing in with single sign-on." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-single-sign-on-dark-1x.webp" alt="Lumovi served from a cluster: signing in with single sign-on." />
+    </Frame>
+  </Tab>
+  <Tab title="Token" icon="ticket">
+    Paste a bearer token the cluster accepts, and choose **Sign in**. You see and change what that token allows, as `kubectl` would with it.
+
+    Your team may give you a token, or you can make one with access you already have. A service account's, for example:
+
+    ```bash
+    kubectl create token NAME --namespace NAMESPACE
+    ```
+
+    <Note>
+      Tokens expire. When yours does, or is revoked, the session ends and Lumovi asks for another.
+    </Note>
+  </Tab>
+  <Tab title="Company login" icon="building-2">
+    Some teams put Lumovi behind a proxy that signs everyone in for the whole company. There's no Lumovi sign-in page: once you're through the company's login, you're in.
+
+    If Lumovi says it **doesn't know who you are**, the proxy didn't pass your name on. Ask whoever runs Lumovi to check it.
+  </Tab>
+</Tabs>
+
+## Who you are, and what you can do
+
+Your initials, at the bottom of the sidebar, open a menu that shows who you're signed in as, and the groups the cluster knows you by. Your access comes from the roles bound to that name and those groups.
+
+<Frame caption="Who's signed in, and their groups.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-account-light-1x.webp" alt="Lumovi served from a cluster: who's signed in, and their groups." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-account-dark-1x.webp" alt="Lumovi served from a cluster: who's signed in, and their groups." />
+</Frame>
+
+- Actions you aren't allowed to take are turned off, with the reason, like "Your account can't delete pods in shop."
+- If you can only see some namespaces, pick one from the namespace menu, or type its name.
+- **Sign out** is in the same menu. Behind a company login, it signs you out of the proxy, if your team set that up.
+
+## Good to know
+
+<AccordionGroup>
+  <Accordion title="Links can be shared" icon="link">
+    Every page has its own address: a pod, a filtered list, a Helm release. Copy it from the address bar and send it. Whoever opens it signs in, and sees it if their account may.
+  </Accordion>
+  <Accordion title="Sessions end" icon="timer">
+    A session lasts 12 hours unless your team changed that. It also ends when Lumovi restarts, after an upgrade say. You come back to the sign-in page, and land where you were. Behind a company login, Lumovi keeps no session of its own: the proxy decides when you sign in again.
+  </Accordion>
+  <Accordion title="If the connection drops" icon="wifi-off">
+    A banner says **Reconnecting to Lumovi…**, and the page keeps what it showed. It picks up again as soon as the server answers. If it goes on, the server may be down, or a proxy in front of it may not pass WebSockets.
+  </Accordion>
+  <Accordion title="Your preferences stay in your browser" icon="sliders-horizontal">
+    The theme, whether you've made the cluster read-only for yourself, and where usage history comes from are kept in your browser. Changing them doesn't affect anyone else.
+  </Accordion>
+  <Accordion title="A few shortcuts belong to the browser" icon="keyboard">
+    Browsers keep <kbd>⌘</kbd><kbd>N</kbd> and <kbd>⌘</kbd><kbd>1</kbd>…<kbd>6</kbd> for themselves. The command palette (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) has those commands. Everything else is the same as in the [desktop app](/reference/keyboard-shortcuts).
+  </Accordion>
+</AccordionGroup>
+
+<Columns cols={2}>
+  <Card title="Take the tour" icon="map" href="/get-started/tour">
+    Five minutes through the app's main ideas.
+  </Card>
+  <Card title="Changing things safely" icon="shield-check" href="/changes/safely">
+    What Lumovi checks before it changes anything.
+  </Card>
+</Columns>
