@@ -1,0 +1,69 @@
+---
+title: "Privacy and security"
+sidebarTitle: "Privacy and security"
+description: "What Lumovi connects to, where your credentials stay, and how the desktop app is built to keep them contained."
+icon: "shield"
+---
+
+Lumovi has no telemetry and no accounts. It doesn't send anything about you or your clusters anywhere you didn't ask it to.
+
+## What it connects to
+
+<div className="lumovi-facts">
+  <div><span className="lumovi-label">Telemetry</span><span className="lumovi-value">None</span></div>
+  <div><span className="lumovi-label">Accounts</span><span className="lumovi-value">None</span></div>
+  <div><span className="lumovi-label">Credentials</span><span className="lumovi-value">Stay on your computer</span></div>
+  <div><span className="lumovi-label">License</span><span className="lumovi-value">Apache 2.0</span></div>
+</div>
+
+The desktop app talks to:
+
+- **The clusters in your kubeconfig**, with the credentials in it.
+- **The Prometheus or VictoriaMetrics you use for [usage history](/metrics/usage-history)**, reached through the cluster's API server with your own credentials. Nothing is port-forwarded or exposed for it.
+- **[Artifact Hub](https://artifacthub.io)**, only when you search it for a chart to install.
+- **The chart repositories and registries you choose**, when you upgrade or install a Helm release from one.
+- **GitHub**, to look for new versions of Lumovi. **Help → Check for Updates Automatically** turns that off.
+
+That's all. Links to anything else, like a release's notes, open in your browser.
+
+## Your credentials
+
+Kubeconfig credentials stay in the app's main process: tokens, client keys and the output of credential plugins. The page you see never has them. Every request to a cluster is made by the main process, after it checks what the page asked for.
+
+Lumovi reads your kubeconfig and never changes it. Managing kubeconfig files, like adding contexts or signing in to a cloud provider, is left to the tools made for it.
+
+## How the app is built
+
+- **The page is sandboxed.** It runs with context isolation, no Node.js integration and a strict Content Security Policy. It can't navigate away or open new windows.
+- **Every request is checked.** The main process only answers calls from the app's own page, and validates every argument.
+- **Changes go through a small set of operations.** Each is checked against what you've made read-only, and refused for those clusters, or for all of them with `LUMOVI_READ_ONLY`. See [Read-only mode](/changes/read-only).
+- **Links are limited.** Only `https://` links, and `http://localhost:<port>` for your own [port forwards](/debug/port-forwarding), are handed to the operating system.
+- **Updates are verified.** New versions come from the project's GitHub releases over HTTPS. Each download is checked against the SHA-512 checksum the release lists, and on macOS the new version must carry the same Developer ID signature.
+
+The source is [on GitHub](https://github.com/Lumovi/Lumovi), so you can check any of this. Every release's installers come with checksums and signed build provenance: see [Verify your download](/get-started/desktop#verify-your-download).
+
+## Secrets on screen
+
+Lumovi is careful with what it shows:
+
+- **Lists of Secrets carry only the names of their keys.** Values are blanked before they reach the page.
+- **Values stay hidden until you reveal them.** An open Secret shows each key with its size, and `••••••••` for its value. Reveal one key, or all of them, when you need to. Copying a value works without revealing it.
+- **The YAML is hidden too.** The YAML tab hides values until you choose **Reveal values**, and so does the `last-applied-configuration` annotation, which holds a copy of them.
+
+See [Config and storage](/explore/config-and-storage) for how Secrets are shown and edited.
+
+## What it keeps on your computer
+
+The app keeps its settings locally: your theme, the window's size and place, which clusters you made read-only and where each one's usage history comes from. It also remembers conveniences like the namespace you picked per cluster, your recent clusters and the custom resources you opened. None of it leaves your computer.
+
+The [activity log](/changes/undo-and-activity) of the changes you made lives in memory, and is gone when you quit.
+
+## In your cluster
+
+When Lumovi runs in a cluster for a team, people sign in, and it acts with their own permissions. That has its own model: how sign-in works, what its service account may do, and how to keep it locked down. See [Security](/server/security).
+
+## Reporting a vulnerability
+
+Please report vulnerabilities privately, through a [GitHub security advisory](https://github.com/Lumovi/Lumovi/security/advisories/new) or as the [security policy](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md) describes. Please don't open a public issue.
+
+Include what you found, how to reproduce it, and the impact you expect. You'll get an acknowledgement within a few days. Security fixes go into the latest release.

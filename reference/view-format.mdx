@@ -1,0 +1,328 @@
+---
+title: "View format"
+description: "Every field a Lumovi view can have: kinds, columns, status rules, details, links and actions, with the paths, conditions and templates they use."
+icon: "braces"
+---
+
+A view is a YAML document of kind `View`. This page lists everything it can say. For a guided introduction, see [Write a view](/custom-resources/write-a-view).
+
+```yaml
+apiVersion: lumovi.dev/v1alpha1
+kind: View
+metadata:
+  name: cert-manager-certificates
+spec:
+  kinds:
+    - { group: cert-manager.io, kind: Certificate }
+  icon: shield-check
+  columns:
+    - { name: Hosts, path: '.spec.dnsNames[*]' }
+    - { name: Secret, path: .spec.secretName }
+    - { name: Expires, path: .status.notAfter, type: date }
+  status:
+    - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'True' }
+      health: healthy
+      label: Ready
+    - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'False' }
+      health: critical
+      label: '{{ .status.conditions[?(@.type=="Ready")].reason ?? "Not ready" }}'
+      detail: '{{ .status.conditions[?(@.type=="Ready")].message }}'
+  details:
+    - { name: Issuer, path: .spec.issuerRef.name }
+    - { name: Renews, path: .status.renewalTime, type: date }
+  links:
+    - name: Secret
+      kind: Secret
+      objectName: '{{ .spec.secretName }}'
+    - name: Issuer
+      kind: '{{ .spec.issuerRef.kind ?? "Issuer" }}.cert-manager.io'
+      objectName: '{{ .spec.issuerRef.name }}'
+```
+
+## Files
+
+| | Desktop app | In your cluster |
+| --- | --- | --- |
+| **Where** | `~/.lumovi/views`, or the folder in `LUMOVI_VIEWS_DIR` | The chart's `views` value, mounted at `/etc/lumovi/views` |
+| **Which files** | Every `.yaml` and `.yml` file in the folder (not in subfolders), up to 200, each up to 256 KB | The same |
+| **Reloading** | Press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux) | Change the chart's `views` value and upgrade the release |
+
+A file can hold several views, separated by `---`. A view of yours for a kind replaces Lumovi's view of it.
+
+## The document
+
+<ResponseField name="apiVersion" type="string" required>
+  Always `lumovi.dev/v1alpha1`.
+</ResponseField>
+
+<ResponseField name="kind" type="string" required>
+  Always `View`.
+</ResponseField>
+
+<ResponseField name="metadata.name" type="string" required>
+  The view's name. It appears in problem messages, so make it recognizable.
+</ResponseField>
+
+<ResponseField name="spec" type="object" required>
+  What the view says, below. Any field it doesn't know is a problem, so typos don't go unnoticed.
+</ResponseField>
+
+## spec
+
+<ResponseField name="kinds" type="list" required>
+  The kinds it's for, at least one. Each is a `kind` and its API `group`. Leave out `group` for the core group's kinds (`Secret`, `Pod`…).
+
+  ```yaml
+  kinds:
+    - { group: source.toolkit.fluxcd.io, kind: GitRepository }
+    - { group: source.toolkit.fluxcd.io, kind: HelmRepository }
+  ```
+</ResponseField>
+
+<ResponseField name="icon" type="string">
+  The kind's icon, one of the [icons](#icons) below.
+</ResponseField>
+
+<ResponseField name="columns" type="list of fields">
+  List columns, shown after the name and status. They replace the columns the API server prints for the kind. See [Fields](#fields).
+</ResponseField>
+
+<ResponseField name="status" type="list of rules">
+  How to tell whether an object is healthy. The first rule that applies decides. With no rule that applies, Lumovi reads the status from [the usual conventions](/custom-resources/overview#status). See [Status rules](#status-rules).
+</ResponseField>
+
+<ResponseField name="details" type="list of fields">
+  Facts in the detail panel's **Details** section. See [Fields](#fields).
+</ResponseField>
+
+<ResponseField name="links" type="list of links">
+  Related objects, opened from the detail panel. See [Links](#links).
+</ResponseField>
+
+<ResponseField name="actions" type="list of actions">
+  Changes people can make, as patches. See [Actions](#actions).
+</ResponseField>
+
+## Fields
+
+Columns and details are both fields.
+
+<ResponseField name="name" type="string" required>
+  The column's header, or the fact's name.
+</ResponseField>
+
+<ResponseField name="path" type="path" required>
+  Where its value is. See [Paths](#paths).
+</ResponseField>
+
+<ResponseField name="type" type="string" default="string">
+  How it's shown and sorted:
+
+  | Type | Shown as | Sorted |
+  | --- | --- | --- |
+  | `string` | Text | Alphabetically |
+  | `number` | Right-aligned | As numbers |
+  | `date` | "in 30d", "2h ago" | By time |
+  | `boolean` | Yes or No | No before Yes |
+  | `count` | How many values the path finds, or how many items a list has | As numbers |
+</ResponseField>
+
+<ResponseField name="default" type="string">
+  What to show when the path finds nothing.
+</ResponseField>
+
+## Paths
+
+Paths are the part of kubectl's JSONPath that CRD printer columns use, starting with a dot.
+
+| Path | Finds |
+| --- | --- |
+| `.spec.secretName` | A field |
+| `.metadata.labels['app.kubernetes.io/name']` | A key with dots or slashes (or `labels.app\.kubernetes\.io/name`) |
+| `.spec.containers[0].image`, `[-1]` | An item of a list, counting from the end when negative |
+| `.spec.hosts[*]`, `.metadata.labels.*` | Every item of a list, or every value of a map |
+| `.status.conditions[?(@.type=="Ready")].status` | Items that match: `==` or `!=` a string, number, `true`, `false` or `null` |
+| `.spec.parts[?(@.spare)]` | Items where a field is set (and not false) |
+
+A path can also be written `{.spec.x}` or `$.spec.x`. When a path finds several values, they're shown joined with commas.
+
+<Tip>
+  In YAML, quote paths that contain brackets or double quotes, and anything that starts with `{`: `'.status.conditions[?(@.type=="Ready")].status'`.
+</Tip>
+
+## Status rules
+
+<ResponseField name="when" type="condition">
+  When the rule applies. See [Conditions](#conditions). A rule without one always applies, which makes it a good last rule.
+</ResponseField>
+
+<ResponseField name="health" type="string" required>
+  One of `healthy`, `progressing`, `warning`, `critical` or `neutral`. It decides the color, the icon, where the object sorts, and which filter chip counts it.
+</ResponseField>
+
+<ResponseField name="label" type="template" required>
+  What the status says, like `Ready` or `'{{ .status.phase }}'`.
+</ResponseField>
+
+<ResponseField name="detail" type="template">
+  More about it, shown on hover.
+</ResponseField>
+
+## Conditions
+
+A condition reads one value at `path`, and compares it:
+
+```yaml
+when: { path: .status.phase, equals: Running }             # or notEquals
+when: { path: .status.phase, in: [Failed, Error] }
+when: { path: .status.message, matches: 'timeout|refused' } # a regular expression, ignoring case
+when: { path: .spec.suspend, exists: true }                 # or false
+when: { path: .spec.suspend }                               # set, and not false, 0 or empty
+```
+
+| Operator | Holds when the value |
+| --- | --- |
+| `equals` | Is this string, number, boolean or null |
+| `notEquals` | Isn't |
+| `in` | Is any of these (a list, not empty) |
+| `matches` | Matches this regular expression, ignoring case |
+| `exists` | Is set (`true`), or isn't (`false`) |
+| (none) | Is set, and not false, 0 or empty |
+
+Comparisons ignore case, so `equals: True` matches Kubernetes' `"True"` even though YAML reads an unquoted `True` as a boolean. When a path finds several values, the first is compared.
+
+Conditions combine with `all` and `any`, nested as deep as you need:
+
+```yaml
+when:
+  all:
+    - { path: .spec.suspend, notEquals: true }
+    - any:
+        - { path: .status.phase, equals: Running }
+        - { path: .status.phase, equals: Succeeded }
+```
+
+A condition has exactly one of `path`, `all` or `any`.
+
+## Templates
+
+Labels, details, links, action texts and patches can include values from the object.
+
+| Template | Gives |
+| --- | --- |
+| `{{ .path }}` | The value at a path; several are joined with commas |
+| `{{ .spec.issuerRef.kind ?? "Issuer" }}` | The value, or this text when the path finds nothing |
+| `{{ .spec.target.name ?? .metadata.name }}` | The value, or another path's |
+| `{{ now }}` | The current time, as Kubernetes writes times (most useful in patches) |
+
+## Links
+
+<ResponseField name="name" type="string" required>
+  What the object is to this one, like `Secret` or `Issuer`.
+</ResponseField>
+
+<ResponseField name="kind" type="template" required>
+  How Lumovi names its kind: a built-in kind (`Secret`, `Pod`, `Node`…), or a kind and its API group (`ClusterIssuer.cert-manager.io`).
+</ResponseField>
+
+<ResponseField name="objectName" type="template" required>
+  Its name.
+</ResponseField>
+
+<ResponseField name="namespace" type="template">
+  Its namespace. This object's unless set, and none for cluster-wide kinds.
+</ResponseField>
+
+A link whose kind or name comes out empty isn't shown.
+
+## Actions
+
+Actions patch the object, like `kubectl patch`.
+
+```yaml
+actions:
+  - name: Reconcile
+    icon: refresh-cw
+    primary: true                                  # a button in the detail panel, not only in its menu
+    when: { path: .spec.suspend, notEquals: true } # only offered when this holds
+    patch:
+      metadata:
+        annotations: { reconcile.fluxcd.io/requestedAt: '{{ now }}' }
+    done: Asked Flux to reconcile {{ .metadata.name }} # the notification
+
+  - name: Suspend
+    patch: { spec: { suspend: true } }
+    undo: { spec: { suspend: null } }              # offered as Undo in the notification
+    done: Suspended {{ .metadata.name }}
+
+  - name: Abort
+    danger: true
+    confirm: The rollout stops and traffic goes back to the stable version. # asks first
+    subresource: status                            # patches the status subresource
+    patch: { status: { abort: true } }
+```
+
+<ResponseField name="name" type="string" required>
+  The action's name, in menus and on its button.
+</ResponseField>
+
+<ResponseField name="patch" type="object or list" required>
+  A merge patch (an object), or, with `type: json`, a list of JSON patch operations. Templates work inside it.
+</ResponseField>
+
+<ResponseField name="type" type="string" default="merge">
+  `merge` or `json`. A merge patch is an object, and a JSON patch is a list; anything else is a problem.
+</ResponseField>
+
+<ResponseField name="subresource" type="string">
+  `status`, to patch the object's status subresource.
+</ResponseField>
+
+<ResponseField name="undo" type="object or list">
+  A patch that takes the change back, offered as **Undo** in the notification. Same type as `patch`.
+</ResponseField>
+
+<ResponseField name="confirm" type="template">
+  Asks first, with this text. Without it, the action runs at once.
+</ResponseField>
+
+<ResponseField name="done" type="template">
+  The notification once it's done.
+</ResponseField>
+
+<ResponseField name="when" type="condition">
+  Offer the action only when this holds.
+</ResponseField>
+
+<ResponseField name="primary" type="boolean">
+  Also show it as a button in the detail panel, not only in its menu.
+</ResponseField>
+
+<ResponseField name="danger" type="boolean">
+  It's destructive: it's shown in red, and its confirmation starts on **Cancel**.
+</ResponseField>
+
+<ResponseField name="icon" type="string">
+  One of the [icons](#icons).
+</ResponseField>
+
+Your account needs `patch` on the kind (or on its `status`, with `subresource: status`) for an action to be enabled. Like every change, it shows the equivalent `kubectl patch` command and is refused in a read-only cluster.
+
+## Icons
+
+Views can use these [Lucide](https://lucide.dev/icons) icons, for the kind and for actions:
+
+`activity`, `archive`, `bell`, `box`, `boxes`, `cloud`, `database`, `gauge`, `git-branch`, `globe`, `key-round`, `layers`, `lock`, `network`, `package`, `puzzle`, `radar`, `refresh-cw`, `rocket`, `route`, `server`, `shield-check`, `timer`, `workflow`
+
+## Problems
+
+Lumovi checks every view before using it. A view with a problem isn't used at all, and **API resources** lists the problem at the top, saying where it is:
+
+| Message | Cause |
+| --- | --- |
+| `views.yaml: should start with apiVersion: lumovi.dev/v1alpha1 and kind: View` | The document isn't a view |
+| `views.yaml (document 2): needs metadata.name` | The second view in the file has no name |
+| `views.yaml: my-view: spec.columns[0].path: is required` | A column without a path |
+| `views.yaml: my-view: spec.colums: isn't something a view has` | A misspelled field |
+| `views.yaml: my-view: spec.icon: should be one of activity, archive, …` | An icon that isn't on the list |
+| `views.yaml: my-view: spec.actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |

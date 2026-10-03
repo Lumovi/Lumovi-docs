@@ -1,0 +1,131 @@
+---
+title: "Keyboard shortcuts"
+sidebarTitle: "Shortcuts"
+description: "Every view is a keystroke away. Here is every shortcut Lumovi knows, grouped by where you use it."
+icon: "keyboard"
+---
+
+Lumovi works from the keyboard as well as the mouse. Press <kbd>?</kbd> anywhere to see the shortcut sheet. It's also in the command palette, and in the desktop app's **Help** menu.
+
+<Frame caption="The shortcut sheet, one keystroke away.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/shortcuts-light-1x.webp" alt="The Lumovi keyboard shortcuts sheet, grouped into General, Lists, Open object and Go to." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/shortcuts-dark-1x.webp" alt="The Lumovi keyboard shortcuts sheet, grouped into General, Lists, Open object and Go to." />
+</Frame>
+
+<Note>
+  Shortcuts are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>. Lumovi accepts either key on every platform.
+</Note>
+
+## General
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>⌘</kbd><kbd>K</kbd> | Open the [command palette](/explore/finding-things). On the start screen, it searches your clusters instead. |
+| <kbd>/</kbd> | Filter the list |
+| <kbd>⌘</kbd><kbd>R</kbd> | Refresh now |
+| <kbd>⌘</kbd><kbd>[</kbd> or <kbd>Alt</kbd><kbd>←</kbd> | Back |
+| <kbd>⌘</kbd><kbd>]</kbd> or <kbd>Alt</kbd><kbd>→</kbd> | Forward |
+| <kbd>?</kbd> | Keyboard shortcuts |
+
+### Desktop app only
+
+These come from the app's menus, so they work in the desktop app. A browser keeps <kbd>⌘</kbd><kbd>N</kbd> and <kbd>⌘</kbd><kbd>1</kbd>…<kbd>6</kbd> for its own windows and tabs, so when Lumovi runs [in your cluster](/server/overview), use the command palette for those instead.
+
+| Shortcut | What it does | Menu |
+| --- | --- | --- |
+| <kbd>⌘</kbd><kbd>N</kbd> | Create from YAML | **File → New from YAML…** |
+| <kbd>⌘</kbd><kbd>1</kbd> … <kbd>⌘</kbd><kbd>6</kbd> | Overview, Workloads, Pods, Services, Nodes, Events | **Go** |
+| <kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd> | All clusters (back to the start screen) | **Go → All Clusters** |
+| <kbd>⌘</kbd><kbd>/</kbd> | Keyboard shortcuts | **Help → Keyboard Shortcuts** |
+
+## Go to a view
+
+Press <kbd>G</kbd>, then a letter, within a second or so. Hover an item in the sidebar to see its letter.
+
+| Keys | View | Keys | View |
+| --- | --- | --- | --- |
+| <kbd>G</kbd> <kbd>O</kbd> | Overview | <kbd>G</kbd> <kbd>J</kbd> | Jobs |
+| <kbd>G</kbd> <kbd>W</kbd> | Workloads | <kbd>G</kbd> <kbd>C</kbd> | CronJobs |
+| <kbd>G</kbd> <kbd>U</kbd> | Metrics | <kbd>G</kbd> <kbd>V</kbd> | Services |
+| <kbd>G</kbd> <kbd>H</kbd> | Helm releases | <kbd>G</kbd> <kbd>I</kbd> | Ingresses |
+| <kbd>G</kbd> <kbd>N</kbd> | Nodes | <kbd>G</kbd> <kbd>F</kbd> | ConfigMaps |
+| <kbd>G</kbd> <kbd>M</kbd> | Namespaces | <kbd>G</kbd> <kbd>X</kbd> | Secrets |
+| <kbd>G</kbd> <kbd>E</kbd> | Events | <kbd>G</kbd> <kbd>L</kbd> | Volume Claims |
+| <kbd>G</kbd> <kbd>P</kbd> | Pods | | |
+| <kbd>G</kbd> <kbd>D</kbd> | Deployments | | |
+| <kbd>G</kbd> <kbd>S</kbd> | StatefulSets | | |
+| <kbd>G</kbd> <kbd>A</kbd> | DaemonSets | | |
+
+ReplicaSets, Autoscalers, Network Policies, Volumes, Storage Classes and API resources have no letter. Open them from the sidebar, or type their name into <kbd>⌘</kbd><kbd>K</kbd>.
+
+<Tip>
+  Single-key shortcuts like <kbd>G</kbd>, <kbd>/</kbd> and <kbd>?</kbd> don't fire while you type in a field, or while a dialog or menu is open, so they never get in your way.
+</Tip>
+
+## Lists
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>↑</kbd> <kbd>↓</kbd> or <kbd>J</kbd> <kbd>K</kbd> | Move through the rows |
+| <kbd>Home</kbd> <kbd>End</kbd> | First or last row |
+| <kbd>PgUp</kbd> <kbd>PgDn</kbd> | Jump ten rows |
+| <kbd>←</kbd> <kbd>→</kbd> | Previous or next page |
+| <kbd>↵</kbd> | Open the focused row in the detail panel |
+| <kbd>X</kbd> | Select the focused row |
+| <kbd>⇧</kbd><kbd>X</kbd> | Select a range of rows |
+| <kbd>⌘</kbd><kbd>A</kbd> | Select every row on the page |
+| <kbd>Esc</kbd> | Clear the selection, then close the detail panel |
+
+While the detail panel is open, moving through the list opens each row in turn. In the filter box, <kbd>↓</kbd> moves into the list and <kbd>Esc</kbd> leaves the box. See [Several at once](/changes/bulk) for what to do with a selection.
+
+## The open object
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>.</kbd> | Open the actions menu: scale, restart, edit… |
+| <kbd>⌘</kbd><kbd>⌫</kbd> | Delete the open object |
+| <kbd>Esc</kbd> | Close the detail panel |
+
+The panel's edge can be dragged to resize it, or focused and moved with <kbd>←</kbd> <kbd>→</kbd>. Lumovi remembers its width. See [Object details](/explore/details).
+
+## Editing YAML
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>⌘</kbd><kbd>S</kbd> | Review changes: the cluster checks the edit and shows a diff |
+| <kbd>Tab</kbd> | Indent |
+| <kbd>⌘</kbd><kbd>F</kbd> | Search the YAML |
+| <kbd>⌘</kbd><kbd>Z</kbd> / <kbd>⌘</kbd><kbd>⇧</kbd><kbd>Z</kbd> | Undo and redo |
+
+<kbd>Esc</kbd> doesn't close the panel while you're editing, so a stray keystroke never loses your work. See [Edit YAML](/changes/yaml).
+
+## Charts
+
+On the [Metrics](/metrics/usage-history) page and in every **Metrics** tab:
+
+| Shortcut | What it does |
+| --- | --- |
+| Drag across a chart | Zoom in on that stretch of time |
+| <kbd>←</kbd> <kbd>→</kbd>, <kbd>Home</kbd> <kbd>End</kbd> | Read the values at earlier or later points in time |
+| <kbd>Esc</kbd> | Hide the readout |
+| Click a legend item | Show or hide that series |
+| <kbd>Alt</kbd> or <kbd>⇧</kbd> and click a legend item (or <kbd>⌘</kbd> on macOS) | Show only that series; do it again to show them all |
+
+## Logs
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>Esc</kbd> in the search box | Clear the search |
+
+Everything else in the log viewer is a button or a chip. See [Logs](/debug/logs).
+
+## Start screen and command palette
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>↑</kbd> <kbd>↓</kbd> | Move through clusters or results |
+| <kbd>↵</kbd> | Open the cluster, or run the result |
+| <kbd>Esc</kbd> | Close the palette |
+| <kbd>?</kbd> | All shortcuts, once you've left the search box (in it, <kbd>?</kbd> is part of what you type) |
+
+The command palette finds views, objects, namespaces and clusters, and the actions for the open object. See [Search, filters and ⌘K](/explore/finding-things).

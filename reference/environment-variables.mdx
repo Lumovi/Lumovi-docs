@@ -1,0 +1,117 @@
+---
+title: "Environment variables"
+sidebarTitle: "Environment variables"
+description: "Settings the desktop app reads from its environment when it starts, and how to set them on each system."
+icon: "variable"
+---
+
+Most people never need these. Lumovi works out of the box with your kubeconfig, and the app's own settings cover the rest. Environment variables are for what you want fixed before the app opens: a machine where nothing may change, a slow API server, a `helm` in an unusual place.
+
+Lumovi reads them once, when it starts. Restart it after changing one.
+
+<Note>
+  This page is about the desktop app. Lumovi [in your cluster](/server/overview) has its own settings, set through the Helm chart: see [Configuration](/server/configuration).
+</Note>
+
+## Variables
+
+<ResponseField name="KUBECONFIG" type="path list" default="~/.kube/config">
+  Where your clusters come from, as for `kubectl`. List several files separated by `:` (`;` on Windows), and Lumovi merges them the way `kubectl` does: the first file to define a name wins, and so does the first `current-context`. Files that are missing or empty are skipped, and relative paths in a file are read from that file's folder. See [Connecting clusters](/clusters/connect).
+</ResponseField>
+
+<ResponseField name="LUMOVI_READ_ONLY" type="1 or true">
+  Makes every cluster read-only, whatever is set in the app. The read-only switch then reads **Set by LUMOVI_READ_ONLY** and can't be turned off. The app's main process enforces it, not just the buttons, and it covers shells and Helm too. Useful on shared machines. See [Read-only mode](/changes/read-only).
+</ResponseField>
+
+<ResponseField name="LUMOVI_MAX_LIST_ITEMS" type="number" default="5000">
+  The most objects a list loads. Lists are fetched in chunks of 500 and stop here, with a note saying so. Filter by label to see the rest, or raise the limit for a very large cluster.
+</ResponseField>
+
+<ResponseField name="LUMOVI_REQUEST_TIMEOUT_MS" type="milliseconds" default="20000">
+  How long the API server has to answer a request. Raise it for a slow or distant API server that shows **The cluster isn't responding**.
+</ResponseField>
+
+<ResponseField name="LUMOVI_VIEWS_DIR" type="path" default="~/.lumovi/views">
+  Where your own [views](/custom-resources/write-a-view) are. Every `.yaml` and `.yml` file in it is read.
+</ResponseField>
+
+<ResponseField name="LUMOVI_HELM" type="path" default="helm">
+  The `helm` to run when you change a Helm release. Without it, Lumovi runs the `helm` on your login shell's `PATH`. See [Helm releases](/helm/releases).
+</ResponseField>
+
+<ResponseField name="LUMOVI_ARTIFACT_HUB_URL" type="URL" default="https://artifacthub.io">
+  The Artifact Hub to search when you [install a chart](/helm/install).
+</ResponseField>
+
+<Info>
+  You don't need to set `PATH` for credential plugins. On macOS and Linux, apps opened from the Dock or a launcher don't see the `PATH` your shell sets up, so Lumovi asks your login shell for it when it starts. That's how `gke-gcloud-auth-plugin`, `aws`, `kubelogin` and `helm` are found. Other variables aren't read from your shell profile: set them as below.
+</Info>
+
+## Setting them
+
+<Tabs>
+  <Tab title="macOS" icon="apple">
+    Quit Lumovi first. Then start it from Terminal with the variables in front of the command:
+
+    ```bash
+    LUMOVI_READ_ONLY=1 open -a Lumovi
+    ```
+
+    Apps started with `open` get the environment of the shell that ran it. If Lumovi is already running, `open` brings that copy to the front instead, without the new settings.
+
+    To have every launch from the Dock or Spotlight pick a variable up, set it for your session:
+
+    ```bash
+    launchctl setenv LUMOVI_READ_ONLY 1
+    ```
+
+    This lasts until you log out or restart. `launchctl unsetenv LUMOVI_READ_ONLY` removes it.
+  </Tab>
+  <Tab title="Linux" icon="terminal">
+    Start Lumovi from a terminal with the variables in front of the command. The `.deb` and `.rpm` packages install it as `lumovi`:
+
+    ```bash
+    LUMOVI_READ_ONLY=1 lumovi
+    ```
+
+    For the AppImage, run the file itself:
+
+    ```bash
+    LUMOVI_READ_ONLY=1 ./Lumovi-*-linux-x86_64.AppImage
+    ```
+
+    To have every launch from your desktop pick a variable up, set it where your desktop session reads its environment (for example `~/.profile`), then log out and back in.
+  </Tab>
+  <Tab title="Windows" icon="app-window">
+    Set the variable for your account, then start Lumovi again from the Start menu:
+
+    ```powershell
+    setx LUMOVI_READ_ONLY 1
+    ```
+
+    Or set it without a terminal: search the Start menu for **environment variables**, choose **Edit environment variables for your account**, and add it there. That's also where you change or remove it later.
+
+    `setx` only affects programs started after it runs, so quit Lumovi before starting it again.
+  </Tab>
+</Tabs>
+
+## Examples
+
+<CodeGroup>
+  ```bash Look, don't touch
+  # A shared machine: nothing can be changed through Lumovi.
+  LUMOVI_READ_ONLY=1 open -a Lumovi
+  ```
+
+  ```bash Several kubeconfigs
+  KUBECONFIG="$HOME/.kube/config:$HOME/.kube/staging.yaml" open -a Lumovi
+  ```
+
+  ```bash A slow API server
+  LUMOVI_REQUEST_TIMEOUT_MS=60000 open -a Lumovi
+  ```
+
+  ```bash A huge cluster
+  LUMOVI_MAX_LIST_ITEMS=20000 open -a Lumovi
+  ```
+</CodeGroup>

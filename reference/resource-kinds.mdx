@@ -1,0 +1,106 @@
+---
+title: "Resource kinds"
+sidebarTitle: "Resource kinds"
+description: "The 19 kinds Lumovi has pages of its own for, what their lists show and what you can do with them, and how it handles every other kind."
+icon: "boxes"
+---
+
+Lumovi shows every kind your cluster serves. Nineteen common kinds have pages of their own, with columns, a health status and actions made for them. Everything else, custom resources included, is found through API discovery and shown with the columns `kubectl get` prints.
+
+## At a glance
+
+| Kind | API | Where to find it | Go to |
+| --- | --- | --- | --- |
+| Nodes | `v1` | Sidebar → Cluster | <kbd>G</kbd> <kbd>N</kbd> |
+| Namespaces | `v1` | Sidebar → Cluster | <kbd>G</kbd> <kbd>M</kbd> |
+| Events | `v1` | Sidebar → Cluster | <kbd>G</kbd> <kbd>E</kbd> |
+| Pods | `v1` | Sidebar | <kbd>G</kbd> <kbd>P</kbd> |
+| Deployments | `apps/v1` | Workloads tab | <kbd>G</kbd> <kbd>D</kbd> |
+| StatefulSets | `apps/v1` | Workloads tab | <kbd>G</kbd> <kbd>S</kbd> |
+| DaemonSets | `apps/v1` | Workloads tab | <kbd>G</kbd> <kbd>A</kbd> |
+| ReplicaSets | `apps/v1` | <kbd>⌘</kbd><kbd>K</kbd>, or **Controlled by** on their pods | |
+| Jobs | `batch/v1` | Workloads tab | <kbd>G</kbd> <kbd>J</kbd> |
+| CronJobs | `batch/v1` | Workloads tab | <kbd>G</kbd> <kbd>C</kbd> |
+| Autoscalers (HorizontalPodAutoscaler) | `autoscaling/v2` | <kbd>⌘</kbd><kbd>K</kbd> | |
+| Services | `v1` | Sidebar → Network | <kbd>G</kbd> <kbd>V</kbd> |
+| Ingresses | `networking.k8s.io/v1` | Sidebar → Network | <kbd>G</kbd> <kbd>I</kbd> |
+| Network Policies | `networking.k8s.io/v1` | Sidebar → Network | |
+| ConfigMaps | `v1` | Sidebar → Configuration | <kbd>G</kbd> <kbd>F</kbd> |
+| Secrets | `v1` | Sidebar → Configuration | <kbd>G</kbd> <kbd>X</kbd> |
+| Volume Claims (PersistentVolumeClaim) | `v1` | Sidebar → Storage | <kbd>G</kbd> <kbd>L</kbd> |
+| Volumes (PersistentVolume) | `v1` | Sidebar → Storage | |
+| Storage Classes | `storage.k8s.io/v1` | Sidebar → Storage | |
+
+Every list starts with **Name**, then **Status** for kinds that have one, then the kind's own columns, and ends with **Age**. [Health and status](/explore/health) explains how each status is worked out.
+
+Every kind except Events can also be given new labels and annotations (**Edit labels…**), edited as YAML (**Edit YAML**), and deleted (**Delete…**). The tables below list what each kind adds. See [Actions by kind](/changes/actions) for how each one works.
+
+## Workloads
+
+The **Workloads** page lists Deployments, StatefulSets, DaemonSets, Jobs and CronJobs together, with a tab for each kind. See [Workloads](/explore/workloads).
+
+| Kind | Columns | Status | Actions |
+| --- | --- | --- | --- |
+| Pods | Ready, Restarts, CPU, Memory, Node | The waiting or terminated reason, such as <span className="lumovi-status critical">CrashLoopBackOff</span>, or <span className="lumovi-status healthy">Running</span> | Shell, Debug…, Forward a port…, Restart, Evict… |
+| Deployments | Ready, Images | <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status warning">Degraded</span>, <span className="lumovi-status critical">Unavailable</span>, <span className="lumovi-status neutral">Scaled to zero</span> | Scale, Restart, Change image…, Roll back…, Pause rollout, Resume rollout |
+| StatefulSets | Ready, Images | As Deployments | Scale, Restart, Change image…, Roll back… |
+| DaemonSets | Ready, Images | As Deployments | Restart, Change image…, Roll back… |
+| ReplicaSets | Ready, Images | As Deployments | Scale |
+| Jobs | Completions, Duration | <span className="lumovi-status progressing">Running</span>, <span className="lumovi-status healthy">Complete</span>, <span className="lumovi-status critical">Failed</span> | Suspend, Resume |
+| CronJobs | Schedule (in words), Next run, Last run, Active | <span className="lumovi-status healthy">Scheduled</span>, <span className="lumovi-status neutral">Suspended</span> | Run now, Suspend, Resume, Change image… |
+| Autoscalers | Target, Replicas | <span className="lumovi-status healthy">Scaling</span>, <span className="lumovi-status warning">At limit</span>, <span className="lumovi-status warning">Not scaling</span> | Edit replica range |
+
+- **Restart** on a pod deletes it so its controller makes a new one, so it's offered only for pods something manages. **Forward a port…** is in the desktop app only.
+- **Suspend** isn't offered for a Job that has finished.
+
+## Cluster
+
+| Kind | Columns | Status | Actions |
+| --- | --- | --- | --- |
+| Nodes | Roles, CPU, Memory, Version | <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status critical">NotReady</span>, a condition like <span className="lumovi-status warning">MemoryPressure</span>, or <span className="lumovi-status warning">Cordoned</span> | Cordon, Uncordon, Drain… |
+| Namespaces | | <span className="lumovi-status healthy">Active</span>, or its phase, such as <span className="lumovi-status warning">Terminating</span> | |
+| Events | Type, Reason, Object, Message, Count, Last seen | <span className="lumovi-status warning">Warning</span> or <span className="lumovi-status neutral">Normal</span> | None |
+
+The CPU and Memory columns of nodes are meters of live usage. Without [metrics-server](/metrics/live-usage), they show what's allocatable instead. Events have a list of their own, sorted by when they were last seen, with no Name or Age.
+
+## Network
+
+| Kind | Columns | Status | Actions |
+| --- | --- | --- | --- |
+| Services | Type, Cluster IP, External, Ports | | Forward a port… (for services with a selector) |
+| Ingresses | Class, Hosts, Address | | |
+| Network Policies | Pod selector, Policy types | | |
+
+## Configuration
+
+| Kind | Columns | Status | Actions |
+| --- | --- | --- | --- |
+| ConfigMaps | Keys | | |
+| Secrets | Type, Keys | | |
+
+Lists of Secrets carry only the names of their keys. Values are read when you open one, and stay hidden until you reveal them. See [Config and storage](/explore/config-and-storage).
+
+## Storage
+
+| Kind | Columns | Status | Actions |
+| --- | --- | --- | --- |
+| Volume Claims | Capacity, Storage class, Volume | <span className="lumovi-status healthy">Bound</span>, or its phase | Expand volume… |
+| Volumes | Capacity, Claim, Storage class, Reclaim | <span className="lumovi-status healthy">Bound</span>, <span className="lumovi-status healthy">Available</span>, or its phase | |
+| Storage Classes | Default, Provisioner, Reclaim, Binding | | |
+
+## Every other kind
+
+Custom resources, and Kubernetes' own less common kinds (Leases, PodDisruptionBudgets, CustomResourceDefinitions…), are found through API discovery. They're all in **API resources**, in the sidebar and the command palette, grouped by API group like `kubectl api-resources`.
+
+- **Names.** Lumovi names a kind with its API group, like `Certificate.cert-manager.io`. <kbd>⌘</kbd><kbd>K</kbd> finds a kind by its name, short name or group.
+- **Columns.** The ones the API server prints for the kind, as `kubectl get` shows them (a CRD's printer columns), unless a [view](/custom-resources/built-in-views) gives it better ones.
+- **Status.** Read from the conventions most controllers follow: `Ready`-like conditions, `Stalled` and `Reconciling`, a spec the controller hasn't caught up with, suspension, or a phase. A view can set its own rules.
+- **Actions.** Edit labels, edit YAML and delete, like any kind. Kinds with the scale subresource (an Argo Rollout, say) can be scaled like Deployments, and views add actions of their own, like **Sync** or **Reconcile**.
+- **Sidebar.** The custom resources you opened last in a cluster are listed under **Custom resources**, and you can pin any of these kinds to the sidebar.
+
+<Frame caption="Every kind the cluster serves, custom resources included.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/api-resources-light-1x.webp" alt="The API resources page in Lumovi, listing every kind the cluster serves, grouped by API group." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/api-resources-dark-1x.webp" alt="The API resources page in Lumovi, listing every kind the cluster serves, grouped by API group." />
+</Frame>
+
+Read more in [Custom resources](/custom-resources/overview).

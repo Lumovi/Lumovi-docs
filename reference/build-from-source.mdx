@@ -1,0 +1,152 @@
+---
+title: "Build from source and contribute"
+sidebarTitle: "Build from source"
+description: "Build Lumovi yourself, run it against demo clusters with no Kubernetes needed, and find your way around the code."
+icon: "hammer"
+---
+
+Lumovi is open source under the Apache 2.0 license, on [GitHub](https://github.com/Lumovi/Lumovi). It's written in TypeScript: an Electron app with a React interface, and a small Node.js server for running it in a cluster.
+
+## Build the app
+
+You need [Node.js](https://nodejs.org) 24 or later (the repository's `.nvmrc` asks for 26) and npm.
+
+<Steps>
+  <Step title="Get the code">
+    ```bash
+    git clone https://github.com/Lumovi/Lumovi
+    cd Lumovi
+    nvm use   # if you use nvm: picks the Node.js version in .nvmrc
+    npm ci
+    ```
+  </Step>
+  <Step title="Build the installers">
+    ```bash
+    npm run dist
+    ```
+
+    The installers for your platform land in `release/`: a `.dmg` and `.zip` on macOS, an `.exe` on Windows, and an AppImage, `.deb` and `.rpm` on Linux. `npm run package` builds an unpacked app there instead, which is quicker.
+  </Step>
+</Steps>
+
+<Note>
+  A copy you build yourself isn't signed or notarized. For everyday use, the [official releases](/get-started/desktop) are signed on macOS, come with checksums and provenance, and keep themselves up to date.
+</Note>
+
+## Run it while you work on it
+
+```bash
+npm run dev:mock    # the app against built-in demo clusters, no Kubernetes needed
+npm run dev         # the app against your own kubeconfig
+npm run dev:server  # Lumovi served, as in a cluster, against the demo clusters
+```
+
+`dev` and `dev:mock` reload as you change the code. The demo clusters are the ones the tests use: a busy one with every kind of problem, an empty one without metrics, one with 2,500 pods, and contexts that fail in every way a real one can.
+
+<Warning>
+  The app can change clusters. Try your work against the demo clusters or a local [kind](https://kind.sigs.k8s.io) cluster, not production. `LUMOVI_READ_ONLY=1 npm run dev` keeps every cluster read-only.
+</Warning>
+
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` / `dev:mock` | Run with hot reload (your clusters / the demo clusters) |
+| `npm run dev:server` | Build and serve Lumovi against the demo clusters |
+| `npm run serve` | Run the built server (`out/server`) |
+| `npm run mock-cluster` | Start the demo clusters alone, and print a kubeconfig for them |
+| `npm run verify` | Everything CI checks: format, lint, types, e2e tests with coverage |
+| `npm run test:e2e` | Build with coverage instrumentation, and run the e2e tests |
+| `npm run test:linux` | The same, on Linux in Docker, as CI runs it |
+| `npm run coverage` | The e2e tests, plus a coverage report in `coverage/` |
+| `npm run coverage:check` | Fail unless every file, line, branch and function is covered |
+| `npm run lint` / `typecheck` / `format` | Static checks |
+| `npm run package` | Build an unpacked app for this platform in `release/` |
+| `npm run dist` | Build installers for this platform |
+
+## How it's built
+
+<Tree>
+  <Tree.Folder name="src" defaultOpen>
+    <Tree.Folder name="main" openable={false} />
+    <Tree.Folder name="backend" openable={false} />
+    <Tree.Folder name="server" openable={false} />
+    <Tree.Folder name="preload" openable={false} />
+    <Tree.Folder name="renderer" openable={false} />
+    <Tree.Folder name="shared" openable={false} />
+  </Tree.Folder>
+  <Tree.Folder name="charts" openable={false} />
+  <Tree.Folder name="tests" defaultOpen>
+    <Tree.Folder name="e2e" openable={false} />
+    <Tree.Folder name="web" openable={false} />
+    <Tree.Folder name="mock-cluster" openable={false} />
+    <Tree.Folder name="mock-oidc" openable={false} />
+    <Tree.Folder name="integration" openable={false} />
+  </Tree.Folder>
+  <Tree.Folder name="docs" openable={false} />
+  <Tree.Folder name="scripts" openable={false} />
+</Tree>
+
+| Folder | What's in it |
+| --- | --- |
+| `src/main` | The Electron main process: the window, menus, updates and IPC |
+| `src/backend` | Kubeconfigs, API requests, Helm, shells and logs, for the desktop app and the server alike |
+| `src/server` | Lumovi served from a cluster: sign-in, the page, a WebSocket for each page |
+| `src/preload` | The narrow, typed bridge the page gets as `window.lumovi` |
+| `src/renderer` | The React interface (Tailwind CSS, TanStack Query, Radix, cmdk), and the [built-in views](/custom-resources/built-in-views) |
+| `src/shared` | Types and the resource registry every side uses |
+| `charts` | The Helm chart that runs the server |
+| `tests` | The e2e and web tests, the mock API server and OpenID Connect provider, and integration tests |
+| `docs` | The server's and views' references, and the screenshots these docs show |
+| `scripts` | Coverage tooling, screenshots and icon rendering |
+
+A few ideas hold it together:
+
+- **One page, two hosts.** The interface talks to its host through one typed API: over IPC in the desktop app, over a WebSocket when served. Both answer from the same handlers. What only one can do, like port forwards on the desktop or sessions on the server, is an optional part of that API, which the page shows only when it's there.
+- **Credentials never reach the page.** It runs sandboxed, with context isolation, no Node.js access and a strict Content Security Policy. Every IPC call is checked for its sender and validated in the main process, the only place that talks to clusters. See [Privacy and security](/reference/privacy-and-security).
+- **Plain REST.** Authentication comes from [`@kubernetes/client-node`](https://github.com/kubernetes-client/javascript), and requests are plain REST calls with gzip, so any API path, metrics and logs included, works the same way.
+- **Status colors are for health.** They always come with an icon and a label, and charts use a palette checked for color blindness in both themes.
+
+## Tests
+
+Lumovi keeps **100% end-to-end coverage** of statements, branches, functions and lines, enforced in CI.
+
+- **End-to-end tests** drive the real Electron app with Playwright, against a mock API server with the demo clusters. Coverage is collected from all three Electron processes, the server and the page, and merged across Linux, macOS and Windows. The test windows stay invisible and never take focus, so you can keep working; set `LUMOVI_E2E_FOREGROUND=1` to watch them.
+- **Web tests** start the server against the same mock clusters and a mock OpenID Connect provider, and drive the page in Chromium: every way of signing in, sessions ending, the WebSocket dropping and coming back, shells, logs and Helm.
+- **Integration tests** check the same app against a real three-node [kind](https://kind.sigs.k8s.io) cluster with metrics-server and kube-prometheus-stack. They change things for real and check the result with `kubectl`. They need Docker, kind, `kubectl` and Helm:
+
+  ```bash
+  npm run kind:up            # create the cluster (a few minutes)
+  npm run test:integration   # build, then run the integration tests
+  npm run kind:down          # delete the cluster
+  ```
+
+  The cluster gets its own kubeconfig in `.kind/`. Your `~/.kube/config` isn't read or changed.
+
+## Contributing
+
+Bug reports, ideas and pull requests are welcome. The [contributing guide](https://github.com/Lumovi/Lumovi/blob/main/CONTRIBUTING.md) has the details; in short:
+
+<Steps>
+  <Step title="Agree on the approach">
+    For anything bigger than a small fix, open an [issue](https://github.com/Lumovi/Lumovi/issues) first. Lumovi is for looking after workloads, clusters and Helm releases; managing kubeconfig files is out of scope.
+  </Step>
+  <Step title="Make a focused change">
+    Branch from `main`, and match the style of the code around it: TypeScript in strict mode, Prettier and ESLint, and the design tokens for anything visual.
+  </Step>
+  <Step title="Test it like a user">
+    Add or update end-to-end tests in `tests/e2e/` (and `tests/web/` for what's different when served). Tests drive the real app through its interface. A new cluster state goes in the demo fixture, `tests/mock-cluster/fixtures/`, when it's realistic.
+  </Step>
+  <Step title="Check it">
+    Run `npm run verify`. Screenshots help for interface changes: on a Mac, `npm run screenshots -- overview pods` takes those two, light and dark.
+  </Step>
+  <Step title="Open a pull request">
+    Describe what changed and why.
+  </Step>
+</Steps>
+
+<Tip>
+  A [view](/custom-resources/write-a-view) for a popular project is a welcome first contribution. Add it to `src/renderer/src/views`, one file per project, with a comment linking to the project. Lumovi checks every view it ships when it starts, and the tests fail if one has a problem.
+</Tip>
+
+Found a security problem? Please report it privately: see [Reporting a vulnerability](/reference/privacy-and-security#reporting-a-vulnerability).
