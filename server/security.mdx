@@ -1,0 +1,105 @@
+---
+title: "Security in your cluster"
+sidebarTitle: "Security"
+description: "What Lumovi can do when it runs in your cluster, what it never does, and how to keep it contained."
+icon: "shield-check"
+---
+
+Lumovi never gives anyone more than their own permissions: every request reaches the API server as the person who made it, and the API server applies their RBAC. What Lumovi itself is trusted with depends on how people sign in.
+
+| Sign-in | What Lumovi holds | What its service account may do |
+| --- | --- | --- |
+| [Token](/server/auth/tokens) | Each person's token, in memory, while they're signed in | Nothing |
+| [Single sign-on, tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) | Each person's token and refresh token, in memory | Nothing |
+| [Single sign-on](/server/auth/single-sign-on) | Who people are, in memory | Impersonate any user or group |
+| [Authenticating proxy](/server/auth/proxy) | Nothing: it reads the proxy's headers on every request | Impersonate any user or group |
+
+## Impersonation
+
+With single sign-on that doesn't pass people's own tokens on, or behind a proxy, Lumovi's service account may impersonate anyone. Whoever can exec into its pod, or read its service account's token, can then act as anyone in the cluster. Treat Lumovi like any other component with cluster-wide power:
+
+- **Keep it in a namespace of its own**, one only cluster administrators can exec into, read Secrets in, or change workloads in.
+- **Use prefixes** (`auth.usernamePrefix` and `auth.groupsPrefix`), so no name or group from a provider or proxy is one of yours by accident.
+- **Behind a proxy, let nothing else reach Lumovi.** It trusts the proxy's headers completely. Turn on `networkPolicy` with the proxy's pods in `from`.
+
+Lumovi never acts as one of Kubernetes' own users or groups (`system:…`), whatever a provider or proxy says. It leaves out groups that start with `system:`, and refuses users whose names (with their prefix) do.
+
+When the API server trusts your provider, [pass people's tokens on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) instead: Lumovi then needs no permissions at all.
+
+## Sessions and cookies
+
+- **The browser holds only a random ID**, 32 bytes, in the `lumovi-session` cookie. It's `HttpOnly`, `SameSite=Lax`, and `Secure` when `url` starts with `https:` or the proxy in front sends `X-Forwarded-Proto: https`.
+- **Sessions live in Lumovi's memory.** Restarting it signs everyone out, and nothing about them is written to disk. For the same reason the chart runs one replica.
+- **Sessions last 12 hours** unless `auth.sessionHours` says otherwise, at most a week. People signing out end their session in every tab.
+- **Single sign-on uses the authorization code flow with PKCE.** The state, PKCE verifier and nonce stay in a short-lived cookie, signed by Lumovi, for at most 10 minutes. The ID token's signature is checked against the provider's keys, and its issuer, audience and nonce against what Lumovi expects.
+- **Only Lumovi's own pages can sign in with a token, sign out, or connect.** Those requests, and the WebSocket, must come from Lumovi's own origin.
+
+## The page
+
+Pages are served with a strict Content Security Policy (scripts only from Lumovi itself, no frames, no plugins), and with headers that keep them out of other sites' frames (`X-Frame-Options: DENY`), stop content-type sniffing, and send no referrers.
+
+## Charts and private networks
+
+People choose where charts come from when they install or upgrade a Helm release, and Lumovi fetches them from inside the cluster's network, where it can reach services they can't, and cloud metadata endpoints. So it fetches charts only from public addresses. A repository, registry or chart URL whose host is, or resolves to, a private address is refused:
+
+| Refused | |
+| --- | --- |
+| `0.0.0.0/8`, `127.0.0.0/8`, `::`, `::1` | This host and loopback |
+| `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7` | Private networks |
+| `100.64.0.0/10` | Shared address space, used by some pod networks |
+| `169.254.0.0/16`, `fe80::/10` | Link-local, including cloud metadata endpoints |
+
+If your charts live in your own network, such as a ChartMuseum or Harbor, allow private addresses with `helm.allowPrivateCharts: true`. Anyone signed in can then make Lumovi reach services inside the cluster's network.
+
+Charts never come from files: there's no computer of the user's to read them from.
+
+## Read-only
+
+- `readOnly: true` keeps everyone from changing anything through Lumovi, whatever their permissions.
+- Each person can also make Lumovi read-only for themselves, in their own browser.
+
+Lumovi's server enforces it, not only the page: it refuses changes, shells and Helm changes while it's on. See [Read-only mode](/changes/read-only).
+
+## The pod
+
+The chart runs Lumovi with these defaults, which you can tighten further but shouldn't need to loosen:
+
+```yaml Chart defaults
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+```
+
+The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. It writes only to `/tmp`, an `emptyDir`: helm's caches, and for each run of helm a kubeconfig that acts as the person who asked (readable only by Lumovi, and removed after). Each image is signed with a build provenance attestation; see [Verify the image](/server/install#verify-the-image).
+
+## Hardening checklist
+
+<Check>Pick [token](/server/auth/tokens) sign-in, or single sign-on with [tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider), when you can: Lumovi then needs no permissions.</Check>
+<Check>Run Lumovi in its own namespace, which only cluster administrators can exec into or read Secrets in.</Check>
+<Check>Set `auth.usernamePrefix` and `auth.groupsPrefix` when Lumovi impersonates people.</Check>
+<Check>Behind a proxy, turn on `networkPolicy` and name only the proxy in `from`.</Check>
+<Check>Serve it over HTTPS, and set `url` to the `https:` address, so cookies are sent over HTTPS only.</Check>
+<Check>Leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
+<Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
+
+## Reporting a vulnerability
+
+Please report vulnerabilities privately, through [GitHub security advisories](https://github.com/Lumovi/Lumovi/security/advisories/new), not in a public issue. See [SECURITY.md](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md).
+
+<Columns cols={2}>
+  <Card title="Privacy and security" icon="lock" href="/reference/privacy-and-security">
+    The security model of the desktop app, and what Lumovi connects to.
+  </Card>
+  <Card title="Helm values" icon="sliders-horizontal" href="/server/helm-values">
+    Every setting the chart has.
+  </Card>
+</Columns>

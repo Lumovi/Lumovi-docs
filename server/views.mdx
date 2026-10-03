@@ -1,0 +1,45 @@
+---
+title: "Views for everyone"
+sidebarTitle: "Shared views"
+description: "Give the custom resources your team uses better columns, statuses, links and actions, for everyone who signs in."
+icon: "layout-template"
+---
+
+A [view](/custom-resources/overview) tells Lumovi how to show a kind: which columns matter, how to tell whether an object is healthy, which facts to show, what it links to, and which changes people make to it. Lumovi ships views for popular projects; see [Built-in views](/custom-resources/built-in-views).
+
+In your cluster, the views everyone sees go in the chart's `views` value, one entry per file name:
+
+```yaml values.yaml
+views:
+  team-certificates.yaml: |
+    apiVersion: lumovi.dev/v1alpha1
+    kind: View
+    metadata: { name: team-certificates }
+    spec:
+      kinds: [{ group: cert-manager.io, kind: Certificate }]
+      columns: [{ name: Issuer, path: .spec.issuerRef.name }]
+```
+
+Each entry is a file, named with `.yaml` or `.yml` at the end, with one or more views separated by `---`, exactly as you'd write them for the desktop app. See [Write a view](/custom-resources/write-a-view) and the [view format](/reference/view-format).
+
+## How it works
+
+- The chart puts the files in a ConfigMap, and mounts it at `/etc/lumovi/views`, where Lumovi reads them (`LUMOVI_VIEWS_DIR`).
+- A view of a kind replaces Lumovi's own view of that kind.
+- A change to `views` rolls out a new pod, which reads them. That signs everyone out, as any restart does.
+- Views are the server's, for everyone. People can't add views of their own from a browser.
+
+## Check them
+
+**API resources** (in the sidebar, or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) shows which view each kind uses, and lists anything wrong with the views. A view with a problem isn't used at all, and the problem says where it is.
+
+Views are data only. They read fields with JSONPath, and change objects only with the patches they spell out. Their actions go through the same checks as Lumovi's own: the cluster is asked first whether the person may make the change, the equivalent `kubectl` command is shown, and a read-only Lumovi stays read-only.
+
+<Columns cols={2}>
+  <Card title="Write a view" icon="layout-template" href="/custom-resources/write-a-view">
+    A step-by-step guide, from columns to actions.
+  </Card>
+  <Card title="View format" icon="book-open" href="/reference/view-format">
+    Every field a view can have.
+  </Card>
+</Columns>

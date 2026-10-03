@@ -1,0 +1,112 @@
+---
+title: "Give Lumovi an address"
+sidebarTitle: "Address and ingress"
+description: "Put Lumovi behind an ingress with TLS, at a host of its own or below a path, and keep its WebSocket open."
+icon: "globe"
+---
+
+A port-forward is fine for a try. For your team, give Lumovi an address of its own: with the chart's ingress, or with your own ingress, gateway or load balancer in front of the `lumovi` Service.
+
+## With the chart's ingress
+
+<CodeGroup>
+  ```yaml values.yaml
+  url: https://lumovi.example.com
+  clusterName: production
+
+  ingress:
+    enabled: true
+    className: nginx
+    hosts: [lumovi.example.com]
+    tls:
+      - secretName: lumovi-tls
+        hosts: [lumovi.example.com]
+    annotations:
+      # Pages keep a WebSocket open: don't let the ingress close it after a minute.
+      nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+      nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
+  ```
+
+  ```bash Apply it
+  helm upgrade --install lumovi oci://ghcr.io/lumovi/charts/lumovi \
+    --namespace lumovi --values values.yaml
+  ```
+</CodeGroup>
+
+The chart makes one rule per host in `ingress.hosts`, for the path in `basePath` (`/` unless set), sent to the Service's `http` port. `tls` and `annotations` are passed to the Ingress as they are, so a cert-manager annotation such as `cert-manager.io/cluster-issuer` works too.
+
+## Keep the WebSocket open
+
+Each page keeps one WebSocket open to Lumovi, at `api/socket` below the base path. Whatever stands in front of Lumovi must pass WebSockets through, and not close them while they're quiet.
+
+- **Lumovi pings every page every 30 seconds**, so a quiet connection still carries something. Keep that shorter than the idle timeout of every proxy in front of it. `LUMOVI_HEARTBEAT_SECONDS` changes it: set it with `extraEnv`.
+- **Raise read and send timeouts.** ingress-nginx closes a connection after 60 seconds without data by default. The annotations above make that an hour.
+
+When the connection drops, pages say **Reconnecting to Lumovi…** and try again. If that goes on, a proxy in front of Lumovi may not be passing WebSockets.
+
+```yaml values.yaml
+extraEnv:
+  # Ping pages every 20 seconds, for a proxy that closes quiet connections after 30.
+  - name: LUMOVI_HEARTBEAT_SECONDS
+    value: '20'
+```
+
+## The address people open
+
+<ResponseField name="url" type="string">
+  The address people open Lumovi at, like `https://lumovi.example.com`. [Single sign-on](/server/auth/single-sign-on) needs it, as the provider sends people back there. When it starts with `https:`, Lumovi's cookies are sent over HTTPS only.
+</ResponseField>
+
+<ResponseField name="basePath" type="string" default="/">
+  Where Lumovi is below that address, when it shares a host with other apps: `/lumovi`, say. Its pages, its health check and the chart's ingress path all move below it, and the address without the trailing slash leads there too.
+</ResponseField>
+
+<ResponseField name="clusterName" type="string" default="in-cluster">
+  What Lumovi calls the cluster: in its pages, their addresses and titles. No slashes or spaces.
+</ResponseField>
+
+```yaml values.yaml: below a path
+url: https://tools.example.com/lumovi
+basePath: /lumovi
+ingress:
+  enabled: true
+  hosts: [tools.example.com]
+```
+
+## Behind TLS
+
+Terminate TLS at the ingress or the load balancer; Lumovi itself serves plain HTTP on port 8080. Its cookies get the `Secure` flag when `url` starts with `https:`, or when the proxy in front of it sends `X-Forwarded-Proto: https`.
+
+## With your own ingress, gateway or load balancer
+
+Leave `ingress.enabled` off, and point yours at the `lumovi` Service, port 80 (named `http`). Or change the Service itself:
+
+<CodeGroup>
+  ```yaml A load balancer
+  service:
+    type: LoadBalancer
+    annotations: {}
+  ```
+
+  ```yaml A node port
+  service:
+    type: NodePort
+  ```
+</CodeGroup>
+
+## Health checks
+
+Lumovi answers `GET /healthz` (below the base path) with `200 ok`, for load balancers and probes. The chart's readiness probe checks it every 10 seconds, and its liveness probe every 20, restarting Lumovi after three failures in a row.
+
+```bash
+curl https://lumovi.example.com/healthz
+```
+
+<Columns cols={2}>
+  <Card title="Single sign-on" icon="log-in" href="/server/auth/single-sign-on">
+    Now that it has an address, sign people in with your identity provider.
+  </Card>
+  <Card title="Helm values" icon="sliders-horizontal" href="/server/helm-values">
+    Every setting the chart has.
+  </Card>
+</Columns>

@@ -1,0 +1,127 @@
+---
+title: "Install Lumovi in your cluster"
+sidebarTitle: "Install"
+description: "Install Lumovi with its Helm chart, open it, and sign in with a token, in a few minutes."
+icon: "download"
+---
+
+You need [Helm](https://helm.sh) and `kubectl` on your computer, and an account that can create namespaces, service accounts and role bindings. The cluster needs Kubernetes 1.25 or later, and 1.28 or later to sign in with tokens, as below.
+
+## Try it in five minutes
+
+<Steps>
+  <Step title="Install the chart">
+    ```bash
+    helm install lumovi oci://ghcr.io/lumovi/charts/lumovi \
+      --namespace lumovi --create-namespace
+    ```
+
+    This creates a deployment with one Lumovi pod, a `lumovi` Service on port 80, and a service account. With the default sign-in (tokens), that service account needs no permissions, and the chart gives it none.
+  </Step>
+  <Step title="Open it">
+    Forward a port from your computer to the Service:
+
+    ```bash
+    kubectl port-forward --namespace lumovi service/lumovi 8080:80
+    ```
+
+    Then open [http://localhost:8080](http://localhost:8080). The chart's notes, printed after `helm install`, say the same for your settings.
+  </Step>
+  <Step title="Get a token to sign in with">
+    Any bearer token the cluster accepts works. To try it, make a service account that can view everything, and a token for it:
+
+    ```bash
+    kubectl create serviceaccount alice --namespace lumovi
+    kubectl create clusterrolebinding alice-view --clusterrole view \
+      --serviceaccount lumovi:alice
+    kubectl create token alice --namespace lumovi
+    ```
+
+    The token is valid for an hour. `kubectl create token` takes `--duration` for a longer one, up to what your API server allows.
+  </Step>
+  <Step title="Sign in">
+    Paste the token into **Token** and choose **Sign in**. Lumovi asks the cluster whose token it is, and opens the cluster's overview. You see what the `view` role allows: most objects, but not Secrets, and nothing you can change.
+
+    <Frame caption="Signing in with a token.">
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-sign-in-light-1x.webp" alt="The Lumovi sign-in page, with a field to paste a token, a Sign in button, and the kubectl command that creates a service account's token." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/server-sign-in-dark-1x.webp" alt="The Lumovi sign-in page, with a field to paste a token, a Sign in button, and the kubectl command that creates a service account's token." />
+    </Frame>
+  </Step>
+</Steps>
+
+<Tip>
+  For people to make changes, bind them a role that allows them, like `edit`, or `admin` in their own namespaces. Lumovi asks the cluster what each person may do, and turns off what they can't, saying why. See [Permissions](/clusters/permissions).
+</Tip>
+
+## Keep your settings in a values file
+
+For anything past a first try, keep the chart's settings in a file, and install or upgrade from it. Every setting is in [Helm values](/server/helm-values).
+
+<CodeGroup>
+  ```yaml values.yaml
+  # What Lumovi calls the cluster, in its pages and their titles.
+  clusterName: production
+
+  # The address people open it at.
+  url: https://lumovi.example.com
+
+  ingress:
+    enabled: true
+    className: nginx
+    hosts: [lumovi.example.com]
+    tls:
+      - secretName: lumovi-tls
+        hosts: [lumovi.example.com]
+    annotations:
+      # Pages keep a WebSocket open: don't let the ingress close it after a minute.
+      nginx.ingress.kubernetes.io/proxy-read-timeout: '3600'
+      nginx.ingress.kubernetes.io/proxy-send-timeout: '3600'
+  ```
+
+  ```bash Install or upgrade
+  helm upgrade --install lumovi oci://ghcr.io/lumovi/charts/lumovi \
+    --namespace lumovi --create-namespace \
+    --values values.yaml
+  ```
+</CodeGroup>
+
+The chart's version is the app's, so `--version {{version}}` installs Lumovi {{version}}. Without it, Helm installs the latest.
+
+## Check that it's running
+
+Lumovi writes a line to its log when it starts, saying which cluster it shows, where, and how people sign in:
+
+```bash
+kubectl logs --namespace lumovi deployment/lumovi
+```
+
+```text
+2026-10-02T10:52:14.120Z Lumovi {{version}} shows production (https://10.96.0.1:443) at http://localhost:8080/; people sign in with a token
+```
+
+After that, the log records who signs in and out, and what failed. A setting that doesn't make sense stops Lumovi before it starts, and the log says which one and why, like:
+
+```text
+LUMOVI_URL must be set for single sign-on: the provider sends people back there.
+```
+
+The chart checks the same things where it can, so `helm install` fails first with the same advice.
+
+## Verify the image
+
+Each release of the image is signed with a build provenance attestation. With the [GitHub CLI](https://cli.github.com):
+
+```bash
+gh attestation verify oci://ghcr.io/lumovi/lumovi:{{version}} --repo Lumovi/Lumovi
+```
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Give it an address" icon="globe" href="/server/expose">
+    An ingress with TLS, at its own host or below a path.
+  </Card>
+  <Card title="Choose how people sign in" icon="log-in" href="/server/auth/single-sign-on">
+    Tokens, single sign-on, or an authenticating proxy.
+  </Card>
+</Columns>

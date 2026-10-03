@@ -142,6 +142,44 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "In your cluster",
+        "icon": "server",
+        "groups": [
+          {
+            "group": "Run it in your cluster",
+            "pages": [
+              "server/overview",
+              "server/install",
+              "server/expose",
+              "server/upgrade"
+            ]
+          },
+          {
+            "group": "Sign-in",
+            "pages": [
+              "server/auth/tokens",
+              "server/auth/single-sign-on",
+              "server/auth/proxy"
+            ]
+          },
+          {
+            "group": "Operate",
+            "pages": [
+              "server/security",
+              "server/views",
+              "server/docker"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "server/helm-values",
+              "server/configuration"
+            ]
+          }
+        ]
       }
     ]
   },
