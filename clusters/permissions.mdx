@@ -28,6 +28,9 @@ Lists and details need `list` and `get` on the kinds you look at. Lumovi refresh
 | Live CPU and memory | `list` on `pods` and `nodes` in the `metrics.k8s.io` group |
 | Logs | `get` on `pods/log` |
 | Custom resources | API discovery, which every account can read, and `list` on the kinds |
+| An add-on's page | `list` on each of its kinds |
+| Karpenter's overview | `list` on node pools, node claims and nodes, and on pods in every namespace |
+| The **Map** tab | `list` in the object's namespace on what it shows: pods, workloads, services, ingresses, network policies, autoscalers, disruption budgets, ConfigMaps, Secrets, service accounts and volume claims (and Gateway API gateways and routes, when the cluster serves them). Also `list` on nodes, persistent volumes and storage classes. A kind it can't list still appears where it's referenced, without a status. |
 | Field explanations | The cluster's OpenAPI schema, which every account can read |
 
 If a page needs something you can't read, it says **Access denied**, with *Your account isn't allowed to read this. If you only have access to some namespaces, pick one from the namespace menu.*
@@ -38,8 +41,9 @@ Charts over time come from a Prometheus-compatible server, reached through the A
 
 | To | Needs |
 | --- | --- |
-| Find the server automatically | `list` on `services` |
+| Find the server automatically | `list` on `services`, in every namespace |
 | Read history from it | `get` on `services/proxy` in the server's namespace |
+| See [right-sizing](/metrics/right-sizing) recommendations | The two above, `list` on Deployments, StatefulSets, DaemonSets, pods and HorizontalPodAutoscalers where you look, `list` on nodes, and `list` on VerticalPodAutoscalers when the cluster serves them |
 
 Without `list` on services, choose the server yourself in **Metrics source**. See [Usage history](/metrics/usage-history).
 
@@ -69,7 +73,9 @@ Each action checks one permission first:
 | Open a shell | `create` on `pods/exec` |
 | Add a debug container | `patch` on `pods/ephemeralcontainers` |
 | Forward a port | `create` on `pods/portforward` |
-| A view's action | `patch` on the kind, or on its `status` |
+| Apply a right-sizing recommendation | `patch` on the workload |
+| A view's action that changes the object | `patch` on the kind, or on its `status` |
+| A view's action that creates something, like **Back up now** | `create` on the kind it creates |
 
 A few notes:
 
