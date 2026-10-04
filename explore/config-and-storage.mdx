@@ -25,8 +25,8 @@ Open a ConfigMap and its **Data** section shows each key with its value, as text
 Secret values stay hidden until you ask for them.
 
 <Frame caption="A secret's keys, hidden until asked for.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/secret-light-1x.webp" alt="A secret's details next to the Secrets list: three keys with their sizes and hidden values, and Reveal all." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/secret-dark-1x.webp" alt="A secret's details next to the Secrets list: three keys with their sizes and hidden values, and Reveal all." />
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/secret-light-1x.webp" alt="A secret's details next to the Secrets list: three keys with their sizes and hidden values, and Reveal all." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/secret-dark-1x.webp" alt="A secret's details next to the Secrets list: three keys with their sizes and hidden values, and Reveal all." />
 </Frame>
 
 - **The list** shows each secret's type and how many keys it has. Lumovi drops the values before the list reaches the page.
@@ -41,8 +41,8 @@ When you edit a Secret's YAML, its text values appear decoded, under `stringData
 ## Volume claims
 
 <Frame caption="Volume claims, their capacity, storage class and volume.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/storage-light-1x.webp" alt="The Volume Claims list: one claim Pending and five Bound, with their capacity, storage class and volume." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/storage-dark-1x.webp" alt="The Volume Claims list: one claim Pending and five Bound, with their capacity, storage class and volume." />
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/storage-light-1x.webp" alt="The Volume Claims list: one claim Pending and five Bound, with their capacity, storage class and volume." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/storage-dark-1x.webp" alt="The Volume Claims list: one claim Pending and five Bound, with their capacity, storage class and volume." />
 </Frame>
 
 A claim is <span className="lumovi-status healthy">Bound</span> when it has a volume, and shows its phase otherwise, like <span className="lumovi-status warning">Pending</span>. Open one for its capacity and the size it asked for, its access and volume modes, and links to its storage class and volume.
