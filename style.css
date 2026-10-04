@@ -79,7 +79,7 @@ kbd,
   text-wrap: balance;
 }
 #page-title {
-  letter-spacing: -0.04em;
+  letter-spacing: -0.045em;
 }
 
 /* Blue is only for what you can act on, so the section's name above the title is quiet text. */
