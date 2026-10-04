@@ -10,7 +10,7 @@ import { join, relative } from 'node:path'
 
 const ROOT = new URL('../..', import.meta.url).pathname
 const SCREENSHOTS =
-  'https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/screenshots.json'
+  'https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/screenshots.json'
 // The Lucide version Mintlify serves icons from.
 const ICONS = 'https://unpkg.com/lucide-static@1.16.0/tags.json'
 

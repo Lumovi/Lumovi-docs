@@ -86,13 +86,13 @@ through jsDelivr. When the app changes, the docs show it, without a change here.
   <img
     className="block dark:hidden"
     loading="lazy"
-    src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/overview-light-1x.webp"
+    src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-light-1x.webp"
     alt="…"
   />
   <img
     className="hidden dark:block"
     loading="lazy"
-    src="https://cdn.jsdelivr.net/gh/KubeStacks/KubeStacks@main/docs/screenshots/overview-dark-1x.webp"
+    src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-dark-1x.webp"
     alt="…"
   />
 </Frame>
