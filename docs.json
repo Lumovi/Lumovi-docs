@@ -139,6 +139,7 @@
             "group": "Custom resources",
             "pages": [
               "custom-resources/overview",
+              "custom-resources/add-ons",
               "custom-resources/built-in-views",
               "custom-resources/write-a-view"
             ]

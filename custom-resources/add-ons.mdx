@@ -1,0 +1,175 @@
+---
+title: "Add-ons"
+description: "Each tool your cluster runs gets an entry in the sidebar, leading to everything of its kinds in one list, what's failing first, with a tab for each kind."
+icon: "package"
+---
+
+An add-on gathers the kinds of one tool, like Flux, cert-manager or Karpenter, under one entry in the sidebar. Its page lists everything of those kinds together, the way [Workloads](/explore/workloads) does: one list, what's failing first, and a tab for each kind.
+
+Lumovi ships add-ons for 32 tools, from Argo CD to Velero, and shows the ones your cluster runs. However many CRDs a cluster has, the tools on it are a click away. See [Built-in views](/custom-resources/built-in-views) for every add-on and what it covers.
+
+<Frame caption="Flux's add-on: everything Flux runs in one list, what's failing first, and a tab for each of its kinds.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/add-on-light-1x.webp" alt="Flux's add-on page: tabs for All, Kustomizations, HelmReleases and GitRepositories, and one list of five objects with their type, status and message, a Kustomization that failed to build first." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/add-on-dark-1x.webp" alt="Flux's add-on page: tabs for All, Kustomizations, HelmReleases and GitRepositories, and one list of five objects with their type, status and message, a Kustomization that failed to build first." />
+</Frame>
+
+## In the sidebar
+
+An add-on shows up once the cluster serves one of its tool's kinds. Lumovi looks at what the cluster serves again every minute, so a tool you just installed appears on its own, and one you removed goes away.
+
+- **Under Add-ons.** Most add-ons sit in a section of their own, by name, between **Pinned** and **Custom resources**.
+- **With Kubernetes' own kinds.** Add-ons that extend what Kubernetes does sit at the end of that section: **Cilium**, **Gateway API**, **Linkerd** and **Traefik** under **Network**, **Sealed Secrets** under **Configuration**, and **Longhorn**, **Rook Ceph** and **Volume Snapshots** under **Storage**.
+
+An add-on's entry stays highlighted on its page and on its kinds' lists. Its kinds are left out of the kinds you opened lately, under **Custom resources**, since they're a click away already. To keep one of them at hand anyway, [pin it](/custom-resources/overview#a-short-sidebar-however-many-crds).
+
+The command palette (<kbd>⌘</kbd><kbd>K</kbd>) finds add-ons too, marked **Add-on**: by their name, or by the name of any of their kinds, so typing `certificates` offers **cert-manager**. (⌘ is Ctrl on Windows and Linux.)
+
+## The add-on's page
+
+### Tabs
+
+**All** comes first, then a tab for each of the tool's kinds that the cluster serves, in the add-on's order, with how many objects it has. A kind's tab is its usual list, with its view's columns and actions, and the add-on's tabs stay above it. When there are more tabs than fit, they scroll sideways.
+
+Counts and lists follow the [namespace](/clusters/namespaces) you picked. Kinds without namespaces are always the whole cluster's, and when all of a tool's kinds are, like Karpenter's, the namespace picker says **Cluster-wide**.
+
+### Everything in one list
+
+**All** lists every object of the tool's kinds:
+
+| Column | Shows |
+| --- | --- |
+| **Name** | The object's name, with its namespace when you're looking at all of them |
+| **Type** | Its kind, with the kind's icon |
+| **Status** | Its [health](/explore/health), from its kind's [view](/custom-resources/overview#views) or the usual conventions |
+| **Message** | What the status says beyond its label, like why it failed. Shown when any object has one. |
+| **Age** | How long ago it was created |
+
+The list sorts by status, so what's failing comes first: <span className="lumovi-status critical">Failing</span>, then <span className="lumovi-status warning">Warning</span>, <span className="lumovi-status progressing">In progress</span>, <span className="lumovi-status healthy">Healthy</span> and <span className="lumovi-status neutral">Inactive</span>. Click any column to sort by it instead.
+
+- **Health.** The chips above the list (**Failing**, **Warning**, **In progress**, **Healthy**, **Inactive**) show only objects in that state, with how many there are. Pick several to combine them.
+- **Filter.** Press <kbd>/</kbd> and type. **Filter Flux** (named after the tool) matches names, namespaces, kinds, labels written as `key=value`, and what the status says.
+- **Label selector.** Type a selector like `app=web` and press <kbd>↵</kbd>. The cluster filters every kind's list with it.
+
+Click a row to open its details, with what its kind's view adds: details, links, tabs for related objects, and actions. To act on several objects at once, pick rows with <kbd>X</kbd> or Shift-click, and choose from the bar that appears. See [Several at once](/changes/bulk).
+
+### When something's missing
+
+- **Nothing yet.** With no objects, the page says **Nothing from Flux in shop** (or **in this cluster**), and which kinds would show up here.
+- **A kind it couldn't list.** When you can't list one of the kinds, a line above the list says **Couldn't list**, which kind, and why. The other kinds still show.
+- **A long list.** Lists that are too long to load whole are cut short, and the page says some objects may be missing. Choose a namespace, or use **Filter by label**.
+- **A tool the cluster doesn't have.** An add-on's page opened from a link, in a cluster without the tool, says **This cluster doesn't have it**: none of its kinds are served there.
+
+## Karpenter
+
+[Karpenter](https://karpenter.sh)'s add-on opens on an overview of its own instead of a list: its node pools against their limits, the nodes they launched and the ones launching, the mix of instance types, capacity types and zones, what's being disrupted, and the pods waiting for a node. Its first tab is **Overview**, and its kinds' tabs (NodePools, NodeClaims, and the node classes) follow.
+
+<Frame caption="Karpenter's node pools against their limits, the nodes they launched, and what's being replaced or waiting for a node.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/karpenter-light-1x.webp" alt="Karpenter's overview: tiles for node pools ready, nodes ready, launching and being replaced; three node pools with their CPU and memory against their limits; nodes grouped by node pool with their usage and one still launching; and the mix of instance types, capacity types and zones." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/karpenter-dark-1x.webp" alt="Karpenter's overview: tiles for node pools ready, nodes ready, launching and being replaced; three node pools with their CPU and memory against their limits; nodes grouped by node pool with their usage and one still launching; and the mix of instance types, capacity types and zones." />
+</Frame>
+
+The overview counts only the nodes Karpenter launched: the ones labeled `karpenter.sh/nodepool`.
+
+### The four numbers
+
+| Tile | Shows | Below it |
+| --- | --- | --- |
+| **Node pools ready** | Ready node pools, of all of them | **All ready**, or how many aren't |
+| **Nodes ready** | Ready nodes, of all the nodes Karpenter launched | How many are on spot, like *2 of 3 on spot*, or how many aren't ready |
+| **Launching** | Node claims launched but not yet registered as nodes | How many pods are waiting for a node, or **No pods waiting** |
+| **Being replaced** | Node claims terminating, being replaced or drifted | **Drifted or terminating**, or **Nothing to replace** |
+
+Each tile opens the list behind it. **Node pools ready** and **Nodes ready** open filtered to what isn't ready when something isn't, and **Nodes ready** opens Nodes with the label selector `karpenter.sh/nodepool`. **Launching** opens the node claims, filtered to the ones in progress while some are launching.
+
+### Node pools
+
+Each node pool, by name, with its status, how many nodes it has, and how much of its CPU and memory limits its nodes take, like *24 of 64 cores*. A node pool without a limit says *no limit*, with a dashed track.
+
+Under its name, a node pool says what it launches: its capacity types and instance families, like *Spot, on-demand · m6i, c6i*. These come from its requirements on `karpenter.sh/capacity-type` (on-demand when it has none), and on `karpenter.k8s.aws/instance-family`, `karpenter.k8s.aws/instance-category`, `karpenter.azure.com/sku-family` or `node.kubernetes.io/instance-type`, the first it has. A node pool that isn't ready shows why instead.
+
+### Nodes
+
+Karpenter's nodes, grouped by node pool, each with its instance type, capacity type and zone. With [metrics-server](/metrics/live-usage), each has meters for its CPU and memory use; without it, its status and how many cores it has. Node claims still on their way are listed with their node pool, as **Launching**, with how long ago they started.
+
+### Node mix
+
+How many nodes there are of each **instance type**, **capacity type** and **zone**, the most common first.
+
+### Disruption
+
+The node claims Karpenter is replacing, or could do without, with how long they've been that way:
+
+| Status | Means |
+| --- | --- |
+| <span className="lumovi-status progressing">Terminating</span> | It's being deleted |
+| <span className="lumovi-status progressing">Being replaced</span> | Karpenter tainted its node `karpenter.sh/disrupted`, to replace it |
+| <span className="lumovi-status warning">Drifted</span> | It no longer matches its node pool or node class; Karpenter's message says what changed |
+| <span className="lumovi-status neutral">Consolidatable</span> | Its pods fit elsewhere, or on a cheaper node |
+
+When there are none, it says *Nothing is being disrupted.*
+
+### Waiting for a node
+
+The pods the scheduler couldn't place anywhere, which Karpenter launches nodes for, with the scheduler's message. When there are none: *No pods are waiting for a node.*
+
+**Nodes** (for each node pool), **Disruption** and **Waiting for a node** show six rows, with **Show all** for the rest. Click anything to open it.
+
+The overview reads node pools, node claims and nodes, and pods in every namespace, so it needs `list` on all four. A card whose list you can't read says why, and the others still show.
+
+## Your own add-ons
+
+An add-on is a short YAML document of kind `AddOn`, kept with your [views](/custom-resources/write-a-view), in `~/.lumovi/views`:
+
+```yaml platform.yaml
+apiVersion: lumovi.dev/v1alpha1
+kind: AddOn
+metadata:
+  name: platform
+spec:
+  label: Platform
+  icon: database
+  kinds:
+    - { group: platform.example.com, kind: Database }
+    - { group: platform.example.com, kind: DatabaseBackup }
+```
+
+Press <kbd>⌘</kbd><kbd>R</kbd>, and **Platform** appears under **Add-ons**, with a tab for each kind.
+
+- **`kinds`** are the tabs, in order. `kind: '*'` with a `group` is every kind of that group, each with a tab.
+- **`icon`** is one of the [view icons](/reference/view-format#icons).
+- **`category`** puts it at the end of one of Kubernetes' sections instead: `cluster`, `network`, `config` or `storage`.
+- Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be in an add-on.
+
+An add-on only groups kinds. How each kind looks, its columns, status and actions, comes from its view.
+
+### Replacing one of Lumovi's
+
+Give yours the same `metadata.name` as Lumovi's, like `flux` or `cert-manager` ([Built-in views](/custom-resources/built-in-views) gives each one's name). Yours replaces it whole: its label, icon, place and kinds. The kinds' views stay as they are.
+
+```yaml
+apiVersion: lumovi.dev/v1alpha1
+kind: AddOn
+metadata:
+  name: flux
+spec:
+  label: GitOps
+  icon: git-branch
+  kinds:
+    - { group: kustomize.toolkit.fluxcd.io, kind: Kustomization }
+    - { group: helm.toolkit.fluxcd.io, kind: HelmRelease }
+```
+
+If something's wrong with an add-on, **API resources** says so at the top, as it does for views. Every field is in the [view format](/reference/view-format#add-ons).
+
+<Note>
+  **In your cluster:** add-ons everyone sees go in the chart's `views` value, with the views. People can't add their own from a browser. See [Views for everyone](/server/views).
+</Note>
+
+<Columns cols={2}>
+  <Card title="Built-in views" icon="blocks" href="/custom-resources/built-in-views">
+    Every add-on Lumovi ships, and what its views add.
+  </Card>
+  <Card title="View format" icon="braces" href="/reference/view-format#add-ons">
+    Every field an add-on can have.
+  </Card>
+</Columns>
