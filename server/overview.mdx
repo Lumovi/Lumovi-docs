@@ -91,13 +91,13 @@ In a browser, every page has a real address: a list with its filters and sort or
   <div><span className="lumovi-label">Writes to</span><span className="lumovi-value">/tmp only</span></div>
 </div>
 
-The image has Node.js, helm and Lumovi, and nothing else. Each release is signed with a build provenance attestation, which the [GitHub CLI](https://cli.github.com) checks:
+The image has Node.js, helm and Lumovi, and nothing else. When people install, upgrade or roll back a Helm release through Lumovi, it runs that helm (Helm 4.3.0 in Lumovi {{version}}), whatever helm they have on their own computers. Each release is signed with a build provenance attestation, which the [GitHub CLI](https://cli.github.com) checks:
 
 ```bash
 gh attestation verify oci://ghcr.io/lumovi/lumovi:{{version}} --repo Lumovi/Lumovi
 ```
 
-The Helm chart is `oci://ghcr.io/lumovi/charts/lumovi`. It's released with Lumovi itself, so the chart's version is the app's.
+The Helm chart is `oci://ghcr.io/lumovi/charts/lumovi`. It's released with Lumovi itself, so the chart's version is the app's, and it's attested the same way: see [Verify the image](/server/install#verify-the-image).
 
 ## Requirements
 

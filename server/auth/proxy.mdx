@@ -20,6 +20,8 @@ Use this when you already sign people in to internal tools with a proxy, or your
     Point your proxy at the `lumovi` Service, port 80, and have it pass on who signed in, and their groups. The proxy must pass WebSockets through: each page keeps one open.
 
     With oauth2-proxy, `--pass-user-headers` sends the person's email address in `X-Forwarded-Email`, and their groups in `X-Forwarded-Groups`.
+
+    If the proxy sends Lumovi a different `Host` header than the address people open (the Service's name, say), also set `url` to that address. Lumovi accepts pages' connections only from its own origin, and `url` tells it which that is. See [Security](/server/security#sessions-and-cookies).
   </Step>
   <Step title="Configure Lumovi, and keep everything else out">
     ```yaml values.yaml
@@ -40,7 +42,7 @@ Use this when you already sign people in to internal tools with a proxy, or your
               app.kubernetes.io/name: oauth2-proxy
     ```
 
-    The network policy lets only the proxy's pods reach Lumovi. Your cluster's network plugin has to enforce network policies for it to work. Leave the chart's ingress off: your ingress sends people to the proxy, and the proxy sends them on to Lumovi.
+    The network policy lets only the proxy's pods reach Lumovi. A `podSelector` on its own matches pods in Lumovi's namespace, so this works when the proxy runs there too; for a proxy in another namespace, see [below](#a-proxy-in-another-namespace). Your cluster's network plugin has to enforce network policies for it to work. Leave the chart's ingress off: your ingress sends people to the proxy, and the proxy sends them on to Lumovi.
 
     <Warning>
       With `networkPolicy.enabled` and an empty `from`, the policy lets anything in on Lumovi's port. Always name the proxy.
@@ -60,6 +62,24 @@ Use this when you already sign people in to internal tools with a proxy, or your
     ```
   </Step>
 </Steps>
+
+## A proxy in another namespace
+
+When the proxy runs in a namespace of its own, name that namespace and the proxy's pods in the same entry of `from`. Kubernetes labels every namespace with its name, in `kubernetes.io/metadata.name`:
+
+```yaml values.yaml
+networkPolicy:
+  enabled: true
+  from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: oauth2-proxy
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: oauth2-proxy
+```
+
+In one entry, both have to match: the proxy's pods, in that namespace. As two entries (a `-` before each), either would do, so every pod in the proxy's namespace could reach Lumovi.
 
 ## The headers
 

@@ -24,7 +24,7 @@ auth:
     On the sign-in page, under **Token**, then **Sign in**.
   </Step>
   <Step title="Lumovi asks the cluster whose it is">
-    It sends a SelfSubjectReview with the token, and the API server answers with the user and groups the token belongs to. A token the cluster rejects gets **The cluster doesn't accept this token.**
+    It sends a SelfSubjectReview with the token, and the API server answers with the user and groups the token belongs to. Those are the name and groups Lumovi's account menu shows, exactly as the cluster knows them. A token the cluster rejects gets **The cluster doesn't accept this token.**
   </Step>
   <Step title="A session starts">
     Lumovi keeps the token in its memory, and gives the browser a random session ID in a cookie. From then on, every request that person makes carries their token.
@@ -60,6 +60,8 @@ The sign-in page shows people how to make a service account's token, with a butt
 - **The session reaches its length.** Sessions last 12 hours unless `auth.sessionHours` says otherwise, at most a week.
 - **Someone signs out**, from the account menu at the bottom of the sidebar. That ends their session in every tab.
 - **Lumovi restarts.** Sessions live in its memory, so an upgrade signs everyone out.
+
+Closing the browser doesn't end a session: its cookie lasts as long as the session does.
 
 Once it's pasted, Lumovi keeps the token in its memory and sends it only to the API server. The browser holds only the session ID, in a cookie scripts can't read.
 

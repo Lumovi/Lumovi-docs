@@ -53,6 +53,18 @@ The same goes for any change that replaces the pod: changing a setting, or the [
   For the same reason the chart runs one replica. More than one would need sticky sessions, and each replica would still keep its own sessions.
 </Note>
 
+## When the client secret changes
+
+A change to a Secret's contents doesn't replace the pod. Lumovi reads the single sign-on client's secret from an environment variable, when the pod starts, so it keeps the old one until it restarts. That's the case when you change `auth.oidc.clientSecret` and upgrade (the chart changes its Secret, not the pod), and when you change the Secret that `auth.oidc.existingSecret` names.
+
+Restart Lumovi so it reads the new secret:
+
+```bash
+kubectl rollout restart --namespace lumovi deployment/lumovi
+```
+
+Like any restart, this signs everyone out.
+
 ## Roll back
 
 Helm keeps the previous revision, so going back is one command:
