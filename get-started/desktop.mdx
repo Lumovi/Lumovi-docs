@@ -15,7 +15,7 @@ The desktop app reads clusters from the same place `kubectl` does, and keeps you
 
 <Tabs>
   <Tab title="macOS" icon="apple">
-    For macOS 12 or later, on Apple silicon and Intel. The app is signed and notarized by Apple.
+    For macOS 13 (Ventura) or later, on Apple silicon and Intel. The app is signed and notarized by Apple.
 
     <Steps>
       <Step title="Download the disk image">
@@ -48,7 +48,7 @@ The desktop app reads clusters from the same place `kubectl` does, and keeps you
         Download `Lumovi-<version>-win.exe`.
       </Step>
       <Step title="Run it">
-        Open the installer, and follow its steps. You can choose the folder Lumovi goes in, and it adds a shortcut to your desktop.
+        Open the installer, and follow its steps. It asks whether to install Lumovi only for you or for anyone who uses the computer; installing it for everyone needs an administrator. You can choose the folder Lumovi goes in, and it adds a shortcut to your desktop.
 
         <Warning>
           The Windows installer isn't code-signed yet, so Windows may say it protected your PC. Choose **More info**, then **Run anyway**. You can check the file first: see [Verify your download](#verify-your-download).
@@ -108,8 +108,10 @@ Pick one with the mouse, or with <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>↵</kbd
 
 Lumovi keeps itself up to date. It looks for a new version shortly after it starts and every few hours after that, downloads it in the background, and installs it when you quit. When one is ready, a notice says so, with **Restart now** and **What's new**. Close it, and the new version installs when you quit.
 
-- **Help → Check for Updates…** looks right away.
+- **Help → Check for Updates…** looks right away, and says what it found: *Lumovi is up to date*, *Downloading Lumovi …*, or *Couldn't check for updates*, with the reason.
 - **Help → Check for Updates Automatically** turns the background checks off.
+
+On Linux, the AppImage replaces itself. A `.deb` or `.rpm` install updates through your package manager, so installing a new version asks for an administrator password.
 
 New versions come from the project's [GitHub releases](https://github.com/Lumovi/Lumovi/releases), over HTTPS. Each download is checked against the checksum the release lists, and on macOS the new version must carry the same Developer ID signature. A copy that can't update itself says so when you check: install new versions of it from the releases page.
 
@@ -136,7 +138,7 @@ Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`, 
 ## Requirements
 
 <div className="lumovi-facts">
-  <div><span className="lumovi-label">macOS</span><span className="lumovi-value">12 or later</span></div>
+  <div><span className="lumovi-label">macOS</span><span className="lumovi-value">13 (Ventura) or later</span></div>
   <div><span className="lumovi-label">Windows</span><span className="lumovi-value">10 or later</span></div>
   <div><span className="lumovi-label">Linux</span><span className="lumovi-value">Recent, 64-bit</span></div>
   <div><span className="lumovi-label">Kubernetes</span><span className="lumovi-value">1.25 or later</span></div>

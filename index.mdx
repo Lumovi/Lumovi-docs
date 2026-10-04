@@ -38,6 +38,9 @@ It's the same app either way. Pick the one that fits, or use both.
   <Card title="Usage next to capacity" icon="gauge" href="/metrics/live-usage">
     Live CPU and memory against requests, limits and what's allocatable.
   </Card>
+  <Card title="A map of every object" icon="waypoints" href="/explore/map">
+    What leads to it, from gateway to service, and what it uses and runs on.
+  </Card>
   <Card title="Safe changes" icon="shield-check" href="/changes/safely">
     Scale, restart, roll back or drain, with the `kubectl` command shown, and undo.
   </Card>
@@ -50,14 +53,20 @@ It's the same app either way. Pick the one that fits, or use both.
   <Card title="Usage history" icon="chart-area" href="/metrics/usage-history">
     Charts from your Prometheus or VictoriaMetrics, found for you.
   </Card>
+  <Card title="Right-sizing" icon="scale" href="/metrics/right-sizing">
+    What each workload should request, from a week of its usage, and why.
+  </Card>
   <Card title="Helm releases" icon="package" href="/helm/releases">
     Values, revisions and diffs, read in place. Upgrade with a dry run first.
   </Card>
   <Card title="Custom resources" icon="puzzle" href="/custom-resources/overview">
-    Every kind the cluster serves, with views for popular projects.
+    Every kind the cluster serves, with a status and the actions that matter.
+  </Card>
+  <Card title="Add-ons" icon="package" href="/custom-resources/add-ons">
+    A page for each tool your cluster runs, from Argo CD and cert-manager to Velero.
   </Card>
   <Card title="Keyboard first" icon="command" href="/reference/keyboard-shortcuts">
-    <kbd>⌘</kbd><kbd>K</kbd> goes anywhere. Every view has a shortcut.
+    <kbd>⌘</kbd><kbd>K</kbd> goes anywhere, and the pages you use most have a shortcut.
   </Card>
 </Columns>
 
@@ -87,14 +96,14 @@ It's the same app either way. Pick the one that fits, or use both.
   <div><span className="lumovi-label">Kubernetes</span><span className="lumovi-value">1.25 or later</span></div>
   <div><span className="lumovi-label">kubectl</span><span className="lumovi-value">Not needed</span></div>
   <div><span className="lumovi-label">Helm</span><span className="lumovi-value">Only to change releases</span></div>
-  <div><span className="lumovi-label">Desktop</span><span className="lumovi-value">macOS 12+, Windows 10+, 64-bit Linux</span></div>
+  <div><span className="lumovi-label">Desktop</span><span className="lumovi-value">macOS 13+, Windows 10+, 64-bit Linux</span></div>
 </div>
 
 Live usage needs [metrics-server](https://github.com/kubernetes-sigs/metrics-server), and usage history needs a Prometheus or VictoriaMetrics in the cluster. Everything else works without them, and without metrics-server, Lumovi shows requests and limits against capacity instead.
 
 ## Free and open source
 
-Lumovi is free under the Apache 2.0 license, with no telemetry and no accounts. It talks to your clusters, and otherwise only to GitHub to look for new versions (which you can turn off) and to Artifact Hub when you search it for charts. See [Privacy and security](/reference/privacy-and-security).
+Lumovi is free under the Apache 2.0 license, with no telemetry and no accounts. It talks to your clusters, and otherwise only to GitHub to look for new versions (which you can turn off), to Artifact Hub when you search it for charts, and to the chart repositories and registries you install or upgrade from. See [Privacy and security](/reference/privacy-and-security).
 
 <Columns cols={2}>
   <Card title="Star it on GitHub" icon="star" href="https://github.com/Lumovi/Lumovi" horizontal>
