@@ -1,13 +1,13 @@
 ---
 title: "Views for everyone"
 sidebarTitle: "Shared views"
-description: "Give the custom resources your team uses better columns, statuses, links and actions, for everyone who signs in."
+description: "Give the custom resources your team uses better columns, statuses, links and actions, and its tools an entry in the sidebar, for everyone who signs in."
 icon: "layout-template"
 ---
 
-A [view](/custom-resources/overview) tells Lumovi how to show a kind: which columns matter, how to tell whether an object is healthy, which facts to show, what it links to, and which changes people make to it. Lumovi ships views for popular projects; see [Built-in views](/custom-resources/built-in-views).
+A [view](/custom-resources/overview#views) tells Lumovi how to show a kind: which columns matter, how to tell whether an object is healthy, which facts to show, what it links to and what belongs to it, and which changes people make to it. An [add-on](/custom-resources/add-ons) gives a tool an entry in the sidebar, with all its kinds on one page. Lumovi ships both for popular tools; see [Built-in views](/custom-resources/built-in-views).
 
-In your cluster, the views everyone sees go in the chart's `views` value, one entry per file name:
+In your cluster, the views and add-ons everyone sees go in the chart's `views` value, one entry per file name:
 
 ```yaml values.yaml
 views:
@@ -18,28 +18,36 @@ views:
     spec:
       kinds: [{ group: cert-manager.io, kind: Certificate }]
       columns: [{ name: Issuer, path: .spec.issuerRef.name }]
+  platform.yaml: |
+    apiVersion: lumovi.dev/v1alpha1
+    kind: AddOn
+    metadata: { name: platform }
+    spec:
+      label: Platform
+      kinds: [{ group: platform.example.com, kind: Database }]
 ```
 
-Each entry is a file, named with `.yaml` or `.yml` at the end, with one or more views separated by `---`, exactly as you'd write them for the desktop app. See [Write a view](/custom-resources/write-a-view) and the [view format](/reference/view-format).
+Each entry is a file, named with `.yaml` or `.yml` at the end, with one or more views and add-ons separated by `---`, exactly as you'd write them for the desktop app. See [Write a view](/custom-resources/write-a-view), [Add-ons](/custom-resources/add-ons) and the [view format](/reference/view-format).
 
 ## How it works
 
 - The chart puts the files in a ConfigMap, and mounts it at `/etc/lumovi/views`, where Lumovi reads them (`LUMOVI_VIEWS_DIR`).
-- A view of a kind replaces Lumovi's own view of that kind.
+- A view of a kind replaces Lumovi's own view of that kind, one kind at a time.
+- An add-on replaces Lumovi's add-on with the same name, like `flux` or `cert-manager`.
 - A change to `views` rolls out a new pod, which reads them. That signs everyone out, as any restart does.
-- Views are the server's, for everyone. People can't add views of their own from a browser.
+- Views and add-ons are the server's, for everyone. People can't add their own from a browser.
 
 ## Check them
 
-**API resources** (in the sidebar, or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) shows which view each kind uses, and lists anything wrong with the views. A view with a problem isn't used at all, and the problem says where it is.
+**API resources** (in the sidebar, or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) shows which view each kind uses, and lists anything wrong with the views and add-ons. One with a problem isn't used at all, and the problem says where it is. At the bottom, it says how many views come from Lumovi and how many from this server, and where they are, like *101 views from Lumovi, 2 from this server. This server's are in /etc/lumovi/views*.
 
-Views are data only. They read fields with JSONPath, and change objects only with the patches they spell out. Their actions go through the same checks as Lumovi's own: the cluster is asked first whether the person may make the change, the equivalent `kubectl` command is shown, and a read-only Lumovi stays read-only.
+Views are data only. They read fields with JSONPath, and change objects only with the patches and new objects they spell out. Their actions go through the same checks as Lumovi's own: the cluster is asked first whether the person may make the change, the equivalent `kubectl` command is shown, and a read-only Lumovi stays read-only.
 
 <Columns cols={2}>
   <Card title="Write a view" icon="layout-template" href="/custom-resources/write-a-view">
     A step-by-step guide, from columns to actions.
   </Card>
   <Card title="View format" icon="book-open" href="/reference/view-format">
-    Every field a view can have.
+    Every field a view or an add-on can have.
   </Card>
 </Columns>

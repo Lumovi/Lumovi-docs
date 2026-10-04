@@ -4,7 +4,7 @@ description: "Give your own custom resources useful columns, a real status, rela
 icon: "file-pen-line"
 ---
 
-A view tells Lumovi how to show a kind: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it relates to, and which changes people make to it. It's a YAML file, and data only: it reads fields with the same JSONPath CRD printer columns use, and changes objects only with the patches it spells out.
+A view tells Lumovi how to show a kind: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it relates to, and which changes people make to it. It's a YAML file, and data only: it reads fields with the same JSONPath CRD printer columns use, and changes objects only with the patches and objects it spells out.
 
 This guide builds a view for an in-house `Database` kind, step by step. Swap in your own kind's group and fields as you go.
 
@@ -31,6 +31,8 @@ This guide builds a view for an in-house `Database` kind, step by step. Swap in 
         status: "True"
         reason: Available
   ```
+
+  Its operator labels each database's pods with `platform.example.com/database: orders`, and keeps its backups as `DatabaseBackup` objects labeled the same way.
 </Info>
 
 <Steps>
@@ -39,7 +41,7 @@ This guide builds a view for an in-house `Database` kind, step by step. Swap in 
   </Step>
 
   <Step title="Create the file">
-    Views live in `~/.lumovi/views`. Every `.yaml` or `.yml` file there is read, and a file can hold several views separated by `---`.
+    Views live in `~/.lumovi/views`. Every `.yaml` or `.yml` file there is read, and a file can hold several views (and [add-ons](/custom-resources/add-ons)) separated by `---`.
 
     ```bash
     mkdir -p ~/.lumovi/views
@@ -114,7 +116,7 @@ This guide builds a view for an in-house `Database` kind, step by step. Swap in 
   </Step>
 
   <Step title="Link related objects">
-    Links appear in the detail panel, and open the object they point to. `kind` is a built-in kind (`Secret`, `Pod`, `Node`…), or a kind and its group (`Certificate.cert-manager.io`). The namespace is this object's unless you set one.
+    Links point to single objects, and appear under **Related** in the detail panel's **Overview**: click one to open it. `kind` is a built-in kind (`Secret`, `Pod`, `Node`…), or a kind and its group (`Certificate.cert-manager.io`). The namespace is this object's unless you set one.
 
     ```yaml
       links:
@@ -124,6 +126,24 @@ This guide builds a view for an in-house `Database` kind, step by step. Swap in 
     ```
 
     A link whose kind or name comes out empty isn't shown.
+  </Step>
+
+  <Step title="List what belongs to it">
+    Related lists are the objects of another kind that belong to this one, found by their labels or a field selector. Each is a tab in the detail panel, with the kind's usual columns.
+
+    ```yaml
+      related:
+        - name: Instances
+          kind: Pod
+          labels: { platform.example.com/database: '{{ .metadata.name }}' }
+        - name: Backups
+          kind: DatabaseBackup.platform.example.com
+          labels: { platform.example.com/database: '{{ .metadata.name }}' }
+    ```
+
+    - A list of pods becomes the panel's **Pods** tab, under its own name (**Instances** here), and brings **Logs** and **Metrics** tabs for those pods.
+    - Every list needs `labels` or a `fieldSelector`, like `'spec.nodeName={{ .status.nodeName }}'`.
+    - Lists look in this object's namespace unless you set a `namespace`. A list whose templates come out empty isn't shown, since it would find the wrong objects.
   </Step>
 
   <Step title="Add actions">
@@ -156,10 +176,68 @@ This guide builds a view for an in-house `Database` kind, step by step. Swap in 
 
     - `when` offers an action only when it makes sense.
     - `undo` is a patch offered as **Undo** in the notification.
-    - `confirm` asks first, with this text. Without it, the action runs at once.
+    - `confirm` asks first, with this text. Without it (and without inputs, or an object to create), the action runs at once.
     - `{{ now }}` is the current time, as Kubernetes writes times: handy for annotations a controller watches.
+  </Step>
 
-    Every action checks your permissions first (it needs `patch` on the kind), shows its `kubectl patch` command, and can't run in a read-only cluster.
+  <Step title="Ask for a value">
+    An action can ask for values before it runs: text, a number, or a choice. Its templates use them as `{{ input.name }}`.
+
+    ```yaml
+        - name: Resize
+          icon: scaling
+          inputs:
+            - name: size
+              label: New size
+              default: '{{ .spec.size }}'
+          patch: { spec: { size: '{{ input.size }}' } }
+          undo: { spec: { size: '{{ .spec.size }}' } }
+          done: Resized {{ .metadata.name }} to {{ input.size }}
+    ```
+
+    **Resize…** opens a dialog with a **New size** field, starting at the current size. The `undo` is filled in from the database as it was before, so **Undo** puts the old size back. A number input (`type: number`) gives a number, and a choice (`type: choice`) is one of its `options`, or of the values a `from` path finds.
+  </Step>
+
+  <Step title="Create objects">
+    An action can create another object instead of patching this one, with `create` in place of `patch`:
+
+    ```yaml
+        - name: Back up now
+          icon: archive
+          create:
+            apiVersion: platform.example.com/v1
+            kind: DatabaseBackup
+            metadata:
+              generateName: '{{ .metadata.name }}-'
+              labels: { platform.example.com/database: '{{ .metadata.name }}' }
+            spec:
+              database: '{{ .metadata.name }}'
+          done: Started a backup of {{ .metadata.name }}
+    ```
+
+    **Back up now…** shows the backup as YAML before it's created, with the name it will get, in the database's namespace. Once it's created, **Open** in the notification opens it. A value that's a whole template copies what it finds, so `spec: '{{ .spec }}'` would copy the object's whole spec. Creating can't be undone from the notification.
+
+    Every action checks your permissions first: it needs `patch` on the kind (or on its `status`, with `subresource: status`), or `create` on the kind it creates. It shows the equivalent command, `kubectl patch` or `kubectl create`, and can't run in a read-only cluster.
+  </Step>
+
+  <Step title="Give it a place in the sidebar">
+    An add-on gathers your kinds under one entry in the sidebar, with everything of them in one list and a tab for each. Add it to the same file, after a `---`:
+
+    ```yaml
+    ---
+    apiVersion: lumovi.dev/v1alpha1
+    kind: AddOn
+    metadata:
+      name: platform
+    spec:
+      label: Platform
+      icon: database
+      kinds:
+        - { group: platform.example.com, kind: Database }
+        - { group: platform.example.com, kind: DatabaseBackup }
+    ```
+
+    See [Add-ons](/custom-resources/add-ons).
   </Step>
 
   <Step title="Reload and check">
@@ -217,6 +295,14 @@ This guide builds a view for an in-house `Database` kind, step by step. Swap in 
         kind: Secret
         objectName: '{{ .spec.credentialsSecret }}'
 
+    related:
+      - name: Instances
+        kind: Pod
+        labels: { platform.example.com/database: '{{ .metadata.name }}' }
+      - name: Backups
+        kind: DatabaseBackup.platform.example.com
+        labels: { platform.example.com/database: '{{ .metadata.name }}' }
+
     actions:
       - name: Pause
         when: { path: .spec.paused, notEquals: true }
@@ -237,18 +323,50 @@ This guide builds a view for an in-house `Database` kind, step by step. Swap in 
           metadata:
             annotations: { platform.example.com/rotate-at: '{{ now }}' }
         done: Asked to rotate {{ .metadata.name }}'s credentials
+      - name: Resize
+        icon: scaling
+        inputs:
+          - name: size
+            label: New size
+            default: '{{ .spec.size }}'
+        patch: { spec: { size: '{{ input.size }}' } }
+        undo: { spec: { size: '{{ .spec.size }}' } }
+        done: Resized {{ .metadata.name }} to {{ input.size }}
+      - name: Back up now
+        icon: archive
+        create:
+          apiVersion: platform.example.com/v1
+          kind: DatabaseBackup
+          metadata:
+            generateName: '{{ .metadata.name }}-'
+            labels: { platform.example.com/database: '{{ .metadata.name }}' }
+          spec:
+            database: '{{ .metadata.name }}'
+        done: Started a backup of {{ .metadata.name }}
+  ---
+  apiVersion: lumovi.dev/v1alpha1
+  kind: AddOn
+  metadata:
+    name: platform
+  spec:
+    label: Platform
+    icon: database
+    kinds:
+      - { group: platform.example.com, kind: Database }
+      - { group: platform.example.com, kind: DatabaseBackup }
   ```
 </Accordion>
 
 ## Good to know
 
 - **Quote templates and filters in YAML.** A value that starts with `{{` must be in quotes, or YAML reads it as a map. Quote paths with brackets or double quotes in them too, like `'.status.conditions[?(@.type=="Ready")].status'`.
-- **Your view wins.** If you write a view for a kind Lumovi already has one for, yours replaces it. To tweak a built-in one, copy it from [Lumovi's views](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views) and edit it.
+- **Your view wins, kind by kind.** If you write a view for a kind Lumovi already has one for, yours replaces it for that kind; Lumovi's view still covers its other kinds. To tweak a built-in one, copy it from [Lumovi's views](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views) and edit it.
+- **Every kind of a group.** `kind: '*'` with a `group` covers every kind of that group. A view for a kind itself wins over one for its group, and yours win over Lumovi's. See [Which view a kind uses](/reference/view-format#which-view-a-kind-uses).
 - **Another folder.** Set `LUMOVI_VIEWS_DIR` to read views from somewhere else, like a folder your team shares in a Git repository.
 - **Limits.** Lumovi reads up to 200 files from the folder (not its subfolders), each up to 256 KB.
 
 <Note>
-  **In your cluster:** views everyone sees come from the chart's `views` value, one entry per file. People can't add their own from the browser. See [Views for everyone](/server/views).
+  **In your cluster:** views and add-ons everyone sees come from the chart's `views` value, one entry per file. People can't add their own from the browser. See [Views for everyone](/server/views).
 </Note>
 
 <Columns cols={2}>
