@@ -122,7 +122,8 @@
             "group": "Metrics",
             "pages": [
               "metrics/live-usage",
-              "metrics/usage-history"
+              "metrics/usage-history",
+              "metrics/right-sizing"
             ]
           },
           {
