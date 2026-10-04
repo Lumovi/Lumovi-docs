@@ -14,7 +14,7 @@ Click any row, or move to it with <kbd>↑</kbd> <kbd>↓</kbd> and press <kbd>�
 
 ## The header
 
-At the top: the object's kind, namespace and age, its name (with a button to copy it), and its status. Below them are the actions you'll use most for that kind, like **Scale**, **Restart**, **Shell** or **Cordon**, and **⋯** for the rest. Press <kbd>.</kbd> to open that menu from the keyboard. (<kbd>⌘</kbd> is <kbd>Ctrl</kbd> on Windows and Linux.)
+At the top: the object's kind, namespace and age, its name (with a button to copy it), and its status. Below them are up to two of the actions you'll use most for that kind, like **Scale**, **Restart**, **Shell** or **Cordon** (or **Edit YAML**, for kinds without one), and **⋯** for the rest. Press <kbd>.</kbd> to open that menu from the keyboard. (<kbd>⌘</kbd> is <kbd>Ctrl</kbd> on Windows and Linux.)
 
 | Control | Shortcut |
 | --- | --- |
@@ -32,10 +32,12 @@ Each kind gets the tabs that make sense for it:
 | Tab | Shown for |
 | --- | --- |
 | **Overview** | Everything |
-| **Pods** | Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs, services, nodes, and custom kinds that scale pods (like Argo Rollouts) |
+| **Pods** | Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs, services with a selector, nodes, custom kinds that scale pods (like Argo Rollouts), and custom kinds whose [view](/custom-resources/overview#views) relates pods to them. A view can name the tab, like CloudNativePG's **Instances**. |
 | **Logs** | Pods, and the same kinds as **Pods** except nodes. A workload's or service's logs merge every pod's. |
 | **Shell** | Pods |
-| **Metrics** | Pods, nodes, and Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs and CronJobs |
+| **Metrics** | Pods, nodes, Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs and CronJobs, and custom kinds with pods |
+| A view's lists | Custom kinds whose view relates other objects to them: a tab for each, like a node pool's **Nodes** or a Kafka cluster's **Topics** |
+| **Map** | Everything but events and namespaces |
 | **Events** | Everything but events |
 | **YAML** | Everything |
 
@@ -62,7 +64,7 @@ Names of related objects (a pod's node, a claim's volume, an owner) are links: c
 
 For kinds without a page of their own, the Overview shows the object's **Spec**, **Status** and other fields as a tree. Short values are inline, nested ones are indented, and deep ones start folded.
 
-Hover a field's name to read what it means. The explanation comes from the kind's OpenAPI schema, which clusters serve from Kubernetes 1.27. If a [view](/custom-resources/overview) covers the kind, its facts go in **Details**, and the objects it relates to are in **Related**.
+Hover a field's name to read what it means. The explanation comes from the kind's OpenAPI schema, which clusters serve from Kubernetes 1.27. If a [view](/custom-resources/overview) covers the kind, its facts go in **Details**, and the objects it links to are in **Related**. Lists a view relates to the object, like a node pool's nodes, get tabs of their own.
 
 <Frame caption="A cert-manager certificate, shown with Lumovi's view of it.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/custom-resource-light-1x.webp" alt="A cert-manager Certificate open in the detail panel, with its details, related Secret and Issuer, and its spec as a tree." />
@@ -73,20 +75,24 @@ Hover a field's name to read what it means. The explanation comes from the kind'
 
 The pods the object runs or selects (or, for a node, every pod on it), with their status, ready containers and restarts, failing ones first. Click one to open it.
 
+### Map
+
+How the object is connected: above it, what leads to it, like the ingress, service and autoscaler in front of a Deployment; below it, what it owns, uses and runs on, down to its pods' nodes. Missing references stand out, and clicking a card opens that object's own map. See [Map](/explore/map).
+
 ### Events
 
 The events about this object, newest first. Often the quickest answer to "why won't it start?"
 
 ### YAML
 
-The whole object, syntax highlighted. **Copy YAML** copies it, and **Edit** opens it for [editing](/changes/yaml), checked by the cluster and shown as a diff before it's saved. For a Secret, values stay hidden until you choose **Reveal values**.
+The whole object, syntax highlighted. **Copy YAML** copies it, and **Edit** opens it for [editing](/changes/yaml), checked by the cluster and shown as a diff before it's saved. For a Secret, values stay hidden until you choose **Reveal values**, and **Hide values** hides them again.
 
 ## Right-click a row
 
 Every row has a menu with the object's actions, and:
 
 - **Open**
-- **Copy name** and **Copy namespace/name**
+- **Copy name** and, for objects in a namespace, **Copy namespace/name**
 - **Copy kubectl describe**, a ready-to-run command for this object
 - **Copy kubectl logs**, for pods
 
