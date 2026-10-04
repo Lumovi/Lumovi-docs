@@ -27,7 +27,7 @@ Objects that only exist to run another are left out, so each workload appears on
 | **Images** | The container images it runs |
 | **Age** | How long ago it was created |
 
-Lists sort by status first, the most urgent at the top. Click any column to sort by it instead.
+Lists sort by status first, the most urgent at the top. Click a column's header to sort by it instead; every column but **Images** sorts.
 
 ## One kind at a time
 
@@ -65,6 +65,7 @@ Click a row, or move to it with <kbd>↑</kbd> <kbd>↓</kbd> and press <kbd>↵
 - **Pods** lists the pods it runs, failing ones first.
 - **Logs** streams every pod's logs, merged in the order they were written. See [Logs](/debug/logs).
 - **Metrics** charts its CPU and memory over time against its requests and limits. See [Usage history](/metrics/usage-history).
+- **Map** shows how it's connected: what leads to it, like its services, ingresses and autoscaler, and what it uses and runs on, down to the nodes. See [Map](/explore/map).
 - **Events** and **YAML**, as for any object.
 
 A CronJob has no **Pods** or **Logs** tab: its runs are Jobs, which the **Jobs** tab lists.
@@ -73,7 +74,7 @@ The panel is described in full in [Object details](/explore/details).
 
 ## Act on it
 
-The common actions are buttons in the panel, and the rest are under **⋯** (or press <kbd>.</kbd>): scale, restart, change images, roll back, pause a rollout, run a CronJob now, suspend or resume. Right-click a row for the same actions without opening it.
+The common actions are buttons in the panel, like **Scale** and **Restart** for a Deployment or **Run now** for a CronJob, and the rest are under **⋯** (or press <kbd>.</kbd>): change images, roll back, pause a rollout, suspend or resume. [Actions by kind](/changes/actions#which-actions-are-buttons) lists which are buttons. Right-click a row for the same actions without opening it.
 
 To act on several at once, pick rows with <kbd>X</kbd> or Shift-click, and choose from the bar that appears. Restart, suspend, resume and delete work across kinds.
 

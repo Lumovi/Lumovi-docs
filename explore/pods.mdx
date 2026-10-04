@@ -52,22 +52,28 @@ After the containers come the pod's conditions, labels and annotations.
 | **Logs** | The pod's logs as they're written, with search and filters, and its previous run's. See [Logs](/debug/logs). |
 | **Shell** | A terminal in any running container. See [Shells and debug containers](/debug/shell). |
 | **Metrics** | Its CPU and memory over time, against requests and limits. See [Usage history](/metrics/usage-history). |
+| **Map** | What it's connected to: the workload that runs it, the services that reach it, the ConfigMaps, Secrets and volume claims it uses, and its node. See [Map](/explore/map). |
 | **Events** | What happened to it, like failed image pulls and probe failures. |
 | **YAML** | The whole object, to read, copy or edit. See [Edit YAML](/changes/yaml). |
 
 ## What you can do
 
-From the panel, the **⋯** menu (<kbd>.</kbd>), the row's right-click menu or the command palette:
+From the panel, the **⋯** menu (<kbd>.</kbd>), the row's right-click menu or the command palette. **Shell** and **Restart** are buttons at the top of the panel, when they apply.
 
 - **Shell** and **Debug…**, to look inside. A debug container works even in images with no shell.
 - **Forward a port…**, to reach the pod from your computer. <Badge size="sm" color="gray" stroke icon="monitor">Desktop app</Badge>
 - **Restart**, for a pod something manages: it's deleted and its controller makes a new one.
 - **Evict…**, through the Eviction API, so PodDisruptionBudgets are respected.
-- **Delete…**, with **Force** for a pod stuck terminating.
+- **Delete…**, with **Force: skip graceful shutdown**, already ticked for a pod stuck terminating.
 
 Each one is described in [Actions by kind](/changes/actions). Right-click a pod for **Copy kubectl logs** too, alongside **Copy name** and **Copy kubectl describe**.
 
 ## Thousands of pods
+
+<Frame caption="Thousands of pods, listed as fast as a handful.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/large-cluster-light-1x.webp" alt="The Pods list of a load-test cluster with 2,500 running pods: 100 rows per page, page 1 of 25." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/large-cluster-dark-1x.webp" alt="The Pods list of a load-test cluster with 2,500 running pods: 100 rows per page, page 1 of 25." />
+</Frame>
 
 Lists load in chunks of 500 and only draw the rows on screen, so a cluster with thousands of pods scrolls as smoothly as one with ten. Long lists refresh less often, and a list stops at 5,000 objects with a note saying so. Use a label selector to see the rest, or raise the limit with `LUMOVI_MAX_LIST_ITEMS`.
 

@@ -14,7 +14,7 @@ Open an object and its actions are right there. Each one checks your permissions
     The common actions are buttons at the top of the panel. The rest are under **More actions** (**⋯**), or press <kbd>.</kbd>
   </Card>
   <Card title="On the row" icon="list-checks">
-    Right-click any row for its actions, plus **Copy name**, **Copy kubectl describe** and, for pods, **Copy kubectl logs**.
+    Right-click any row for its actions, plus **Open**, **Copy name**, **Copy namespace/name**, **Copy kubectl describe** and, for pods, **Copy kubectl logs**.
   </Card>
   <Card title="In the command palette" icon="command">
     With an object open, <kbd>⌘</kbd><kbd>K</kbd> lists its actions first. Type a few letters of the action and press <kbd>↵</kbd>.
@@ -48,6 +48,25 @@ An action you can't take stays in the menu, disabled, with the reason: your acco
 
 Actions only show when they apply: **Uncordon** on a cordoned node, **Resume rollout** on a paused deployment, **Shell** on a running pod.
 
+## Which actions are buttons
+
+The detail panel shows up to two actions as buttons, those that depend on the object's state first. Every action is also in **⋯**.
+
+| Kind | Buttons |
+| --- | --- |
+| Deployments | **Scale**, **Restart**. While a rollout is paused: **Resume rollout**, **Scale**. |
+| StatefulSets | **Scale**, **Restart** |
+| DaemonSets | **Restart** |
+| ReplicaSets | **Scale** |
+| Pods | **Shell** on a running pod, and **Restart** on one a controller manages |
+| CronJobs | **Run now**. While suspended: **Resume**, **Run now**. |
+| Jobs | **Resume**, while suspended |
+| Nodes | **Cordon**, or **Uncordon** on a cordoned node |
+| Autoscalers | **Edit replica range** |
+| Custom resources | **Scale**, with the scale subresource, and the actions their view puts first |
+
+Anything with no button of its own, like a Service, a Secret, or a Job that isn't suspended, shows **Edit YAML** instead. Events have no actions at all. Everything else, like **Pause rollout**, **Suspend**, **Drain…** and **Delete…**, is in the menu only.
+
 ## Workloads
 
 <AccordionGroup>
@@ -73,7 +92,7 @@ Actions only show when they apply: **Uncordon** on a cordoned node, **Resume rol
   <Accordion title="Change image…" icon="box">
     For Deployments, StatefulSets, DaemonSets and CronJobs. Each container has its own field, init containers included. For a Deployment, images it ran before are offered as suggestions.
 
-    Pods are replaced with the new images, following the rollout strategy. For a CronJob, jobs it starts from then on use the new images.
+    Pods are replaced with the new images, following the rollout strategy. For a CronJob, jobs it starts from then on use the new images. Confirm with **Update**, like `kubectl set image`.
 
     Undo restores the previous images.
   </Accordion>
@@ -102,7 +121,7 @@ Actions only show when they apply: **Uncordon** on a cordoned node, **Resume rol
     <Note>**Desktop app only:** a browser has no computer of yours to forward a port to.</Note>
   </Accordion>
   <Accordion title="Restart" icon="rotate-cw">
-    For pods that a controller manages. Lumovi deletes the pod: it shuts down gracefully, and its controller starts a new one to replace it. The button reads **Restart pod**.
+    For pods that a controller manages. Lumovi deletes the pod: it shuts down gracefully, and its controller starts a new one to replace it. The action is **Restart**, like a workload's; the dialog's button reads **Restart pod**.
   </Accordion>
   <Accordion title="Evict…" icon="log-out">
     Evicts the pod through the Eviction API. Unlike a delete, evictions respect PodDisruptionBudgets: if the eviction would leave too few pods running, the cluster refuses, and nothing changes. The dialog says whether a controller will start a replacement.
@@ -159,7 +178,7 @@ Actions only show when they apply: **Uncordon** on a cordoned node, **Resume rol
 
 <AccordionGroup>
   <Accordion title="Edit replica range" icon="sliders-horizontal">
-    For HorizontalPodAutoscalers: set **Minimum replicas** and **Maximum replicas**. The minimum is at least 1, and can't be above the maximum. The dialog says what happens next: the workload scales up to a new minimum, down to a new maximum, or stays put when it's within the new range.
+    For HorizontalPodAutoscalers: set the **Minimum** and **Maximum** replicas, and choose **Save**. The minimum is at least 1, and can't be above the maximum. The dialog says what happens next: the workload scales up to a new minimum, down to a new maximum, or stays put when it's within the new range.
 
     Undo puts the previous range back.
   </Accordion>
@@ -196,7 +215,15 @@ Actions only show when they apply: **Uncordon** on a cordoned node, **Resume rol
 
 ## Custom resources
 
-Custom kinds that serve the scale subresource can be scaled like Deployments. Views add actions of their own, like **Sync** for an Argo CD application or **Reconcile** for a Flux Kustomization. They go through the same checks as Lumovi's own: permissions first, the `kubectl patch` command shown, a confirmation when the view asks for one, and undo when it spells one out. See [Built-in views](/custom-resources/built-in-views).
+Custom kinds that serve the scale subresource can be scaled like Deployments. Views add actions of their own, like **Sync** for an Argo CD application or **Reconcile** for a Flux Kustomization. They go through the same checks as Lumovi's own: permissions first, the equivalent command shown, and undo when the view spells one out.
+
+Most view actions patch the object, with the `kubectl patch` command shown, and run at once. Some ask first, and their names end in **…**:
+
+- **A confirmation**, in the view's own words, when it asks for one.
+- **Values to fill in**: text, a number, or one of a few choices, like the replica count **Pause at…** keeps a KEDA ScaledObject at.
+- **A new object to create**, like the Backup that **Back up now…** makes for a CloudNativePG cluster. The dialog shows the object's YAML before it's created, and the command is `kubectl create -f` with its name. Lumovi checks that you may create that kind, rather than change the object, and the notification has **Open** to go to it.
+
+The dialog's button is the action's name. See [Built-in views](/custom-resources/built-in-views), and [Write a view](/custom-resources/write-a-view) to add actions of your own.
 
 ## What can be undone
 
@@ -209,7 +236,7 @@ Custom kinds that serve the scale subresource can be scaled like Deployments. Vi
 | Change image | Restores the previous images |
 | Edit replica range | Restores the previous range |
 | Edit labels | Restores the previous labels and annotations |
-| A view's action | When the view spells out an undo |
+| A view's action | When the view spells out an undo (never for actions that create an object) |
 
 See [Undo and activity](/changes/undo-and-activity).
 

@@ -13,7 +13,7 @@ Lumovi works from the keyboard as well as the mouse. Press <kbd>?</kbd> anywhere
 </Frame>
 
 <Note>
-  Shortcuts are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>. Lumovi accepts either key on every platform.
+  Shortcuts are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>. On a Mac, most shortcuts also work with <kbd>Ctrl</kbd>, but the ones that are only in the menus (<kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd>, <kbd>⌘</kbd><kbd>/</kbd>) and the editors' (<kbd>⌘</kbd><kbd>S</kbd>, <kbd>⌘</kbd><kbd>F</kbd>, <kbd>⌘</kbd><kbd>Z</kbd>) need <kbd>⌘</kbd>.
 </Note>
 
 ## General
@@ -29,7 +29,7 @@ Lumovi works from the keyboard as well as the mouse. Press <kbd>?</kbd> anywhere
 
 ### Desktop app only
 
-These come from the app's menus, so they work in the desktop app. A browser keeps <kbd>⌘</kbd><kbd>N</kbd> and <kbd>⌘</kbd><kbd>1</kbd>…<kbd>6</kbd> for its own windows and tabs, so when Lumovi runs [in your cluster](/server/overview), use the command palette for those instead.
+These are in the app's menus, and work in the desktop app. A browser keeps <kbd>⌘</kbd><kbd>N</kbd> and <kbd>⌘</kbd><kbd>1</kbd>…<kbd>6</kbd> for its own windows and tabs, so when Lumovi runs [in your cluster](/server/overview), use the command palette for those instead.
 
 | Shortcut | What it does | Menu |
 | --- | --- | --- |
@@ -56,7 +56,7 @@ Press <kbd>G</kbd>, then a letter, within a second or so. Hover an item in the s
 | <kbd>G</kbd> <kbd>S</kbd> | StatefulSets | | |
 | <kbd>G</kbd> <kbd>A</kbd> | DaemonSets | | |
 
-ReplicaSets, Autoscalers, Network Policies, Volumes, Storage Classes and API resources have no letter. Open them from the sidebar, or type their name into <kbd>⌘</kbd><kbd>K</kbd>.
+ReplicaSets, Autoscalers, Network Policies, Volumes, Storage Classes, API resources, [Right-sizing](/metrics/right-sizing), [add-on](/custom-resources/add-ons) pages and custom resources have no letter. Open them from the sidebar, or type their name into <kbd>⌘</kbd><kbd>K</kbd>.
 
 <Tip>
   Single-key shortcuts like <kbd>G</kbd>, <kbd>/</kbd> and <kbd>?</kbd> don't fire while you type in a field, or while a dialog or menu is open, so they never get in your way.
@@ -88,16 +88,36 @@ While the detail panel is open, moving through the list opens each row in turn. 
 
 The panel's edge can be dragged to resize it, or focused and moved with <kbd>←</kbd> <kbd>→</kbd>. Lumovi remembers its width. See [Object details](/explore/details).
 
+## Dialogs
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>↵</kbd> | Confirm, once the dialog is ready: the same as its main button |
+| <kbd>Esc</kbd> | Cancel, and change nothing |
+
+Dialogs that delete, drain or uninstall open with the focus on **Cancel**, or on the field where you type the name, so a stray <kbd>↵</kbd> never confirms them. See [Changing things safely](/changes/safely).
+
 ## Editing YAML
 
 | Shortcut | What it does |
 | --- | --- |
 | <kbd>⌘</kbd><kbd>S</kbd> | Review changes: the cluster checks the edit and shows a diff |
-| <kbd>Tab</kbd> | Indent |
+| <kbd>Tab</kbd> / <kbd>⇧</kbd><kbd>Tab</kbd> | Indent, or take the indent back |
 | <kbd>⌘</kbd><kbd>F</kbd> | Search the YAML |
 | <kbd>⌘</kbd><kbd>Z</kbd> / <kbd>⌘</kbd><kbd>⇧</kbd><kbd>Z</kbd> | Undo and redo |
 
 <kbd>Esc</kbd> doesn't close the panel while you're editing, so a stray keystroke never loses your work. See [Edit YAML](/changes/yaml).
+
+The editors in **Create from YAML** and in Helm's upgrade and install dialogs work the same way: there, <kbd>⌘</kbd><kbd>S</kbd> creates the objects, or reviews the values.
+
+## The map
+
+In an object's [Map](/explore/map) tab:
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>Tab</kbd> | Move from card to card, tracing each card's chain on the map |
+| <kbd>↵</kbd> | Open the card's object on a map of its own, or, on a card of pods, show each pod |
 
 ## Charts
 
@@ -105,7 +125,7 @@ On the [Metrics](/metrics/usage-history) page and in every **Metrics** tab:
 
 | Shortcut | What it does |
 | --- | --- |
-| Drag across a chart | Zoom in on that stretch of time |
+| Drag across a chart | Zoom in on that stretch of time (not on [Right-sizing](/metrics/right-sizing)'s charts, which always show their week) |
 | <kbd>←</kbd> <kbd>→</kbd>, <kbd>Home</kbd> <kbd>End</kbd> | Read the values at earlier or later points in time |
 | <kbd>Esc</kbd> | Hide the readout |
 | Click a legend item | Show or hide that series |
