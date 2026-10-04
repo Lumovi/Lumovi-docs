@@ -32,7 +32,7 @@ This works only inside a cluster. Outside one, Lumovi doesn't start:
 LUMOVI_FLEET_SECRETS reads Secrets of the cluster Lumovi runs in, and it isn't running in one (KUBERNETES_SERVICE_HOST isn't set).
 ```
 
-Secrets that can't be listed leave their clusters out until they can be, and the log says why, once:
+Secrets that can't be listed now keep the clusters they last described, as a kubeconfig file that can't be read does, and the log says why, once:
 
 ```text
 Fleet: Secrets for argocd in argocd can't be listed: …
