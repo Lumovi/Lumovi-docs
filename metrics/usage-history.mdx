@@ -6,7 +6,11 @@ icon: "chart-area"
 
 Lumovi finds the Prometheus or VictoriaMetrics in your cluster and charts what the cluster used, from the last 15 minutes to the last week. It asks through the API server with your own credentials, so nothing needs to be port-forwarded or exposed.
 
-History shows up in two places: the **Metrics** page, which ranks and compares, and a **Metrics** tab on pods, workloads and nodes.
+History shows up in a few places:
+
+- **The Metrics page.** Its **Usage** tab ranks and compares, and its **Right-sizing** tab works out what each workload should request from a week of it. See [Right-sizing](/metrics/right-sizing).
+- **A Metrics tab** on pods, workloads and nodes.
+- **The overview**, whose CPU and memory cards show the last hour. See [Overview](/explore/overview).
 
 <Frame caption="The Metrics page: six hours of CPU, by namespace.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/metrics-light-1x.webp" alt="Usage over the last six hours from Prometheus, by namespace." />
@@ -18,7 +22,9 @@ History shows up in two places: the **Metrics** page, which ranks and compares, 
 - **A Prometheus-compatible server in the cluster.** Prometheus (as kube-prometheus-stack, the Prometheus chart or kube-prometheus install it) or VictoriaMetrics, single-node or cluster.
 - **cAdvisor's metrics, scraped.** CPU, memory and network charts use the kubelet's `container_*` series. kube-prometheus-stack scrapes them out of the box.
 - **kube-state-metrics**, for restarts. It also places pods on nodes when cAdvisor's series don't carry a `node` label.
-- **Permission to reach it.** Your account needs `get` on `services/proxy` in the namespace the server runs in, and `list` on services to find it.
+- **Permission to reach it.** Your account needs `get` on `services/proxy` in the namespace the server runs in, and `list` on services across the cluster to find it.
+
+[Right-sizing](/metrics/right-sizing) needs a little more: 7 days of history (a day at the least), cAdvisor's CPU throttling series (`container_cpu_cfs_periods_total` and `container_cpu_cfs_throttled_periods_total`), and kube-state-metrics to see OOM kills over the whole week.
 
 ## How Lumovi finds it
 
@@ -35,12 +41,14 @@ You usually don't have to do anything. Unless you've chosen a source, Lumovi loo
     | 80 | VictoriaMetrics' `vmselect` | One named `http`, else 8481, with the path `/select/0/prometheus` |
     | 60 | Anything else with Prometheus in its name or labels | As for 90 |
 
-    Services in a namespace named `monitoring`, `prometheus`, `observability` or `victoria-metrics` get 5 more.
+    Services in a namespace named `monitoring`, `prometheus`, `observability` or `victoria-metrics` get 5 more. When none of a service's ports has a name or number it expects, its first port is used. Services without ports are skipped.
   </Step>
   <Step title="It asks the best four">
     In order, it sends each a trivial query. The first that answers is used. Its name and version show on the chip at the top of every chart.
   </Step>
 </Steps>
+
+Lumovi looks once per session, and again when you save the metrics source or choose **Look again** where a chart would be.
 
 If yours runs under a name Lumovi doesn't recognize, or you have several and want another, choose it yourself.
 
@@ -75,28 +83,31 @@ The choice is kept per cluster.
 
 ## The Metrics page
 
-Open it from the sidebar, or press <kbd>G</kbd> then <kbd>U</kbd>. It ranks what uses the most, and shows how that changed.
+Open it from the sidebar, or press <kbd>G</kbd> then <kbd>U</kbd>. It has two tabs: **Usage**, which ranks what uses the most and shows how that changed, and **Right-sizing**, which works out what each workload should request. This section is about **Usage**. For the other, see [Right-sizing](/metrics/right-sizing).
 
 | Control | Options |
 | --- | --- |
 | **Time range** | 15m, 1h (the default), 6h, 24h, 7d |
 | **Metric** | CPU, Memory, Network in, Network out, Restarts |
-| **Group by** | Namespace, Workload, Pod, Node (not for restarts) |
+| **By** | Namespace, Workload, Pod, Node (not for restarts) |
 | **Filter** | Words separated by commas, any of which may match, like `shop, data` |
-| **Series shown** | The top 3, 5 or 7 (the default); the rest are added up as **Other** |
+| **Top** | How many groups the chart shows: 3, 5 or 7 (the default). The rest are added up as **Other**. |
 | **Chart** | Stacked or lines. Restarts are always bars. |
 
-Under the chart:
+Lumovi remembers the time range you pick, and the **Metrics** tabs start from it too.
 
-- **Summary tiles.** **Now**, **Average** and **Peak** for the total, and either **Of allocatable, on average** (for the whole cluster) or the busiest group. For restarts: how many there were, how many pods (or workloads…) restarted, which restarted most, and how many times.
+Above the chart, **summary tiles**: **Now**, **Average** and **Peak** for the total, and either **Of allocatable, on average** (for the whole cluster) or the busiest group. For restarts: how many there were, how many pods (or workloads…) restarted, which restarted most, and how many times. When the chart stacks up the whole cluster, with no namespace or filter picked, a line marks what the nodes can allocate.
+
+Below it:
+
 - **A distribution.** How the groups spread out. **Click a band to filter** the table to it.
-- **A ranked table** of every group, with its now, average and peak, sortable.
+- **Ranked by average** (or **Ranked by restarts**): every group with its now, average and peak, and its share of the total, sortable. A workload has no peak, since its pods' peaks don't add up to one. It shows 50 at a time, with a button for more. Click a row to open it, on its **Metrics** tab when it has one.
 
 The page follows the namespace menu, and keeps everything you pick in its address, so Back and Forward restore it.
 
 ## The Metrics tab
 
-Pods, Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs, CronJobs and Nodes have a **Metrics** tab in their detail panel.
+Pods, Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs, CronJobs and Nodes have a **Metrics** tab in their detail panel. So do custom resources that run pods, like an Argo Rollout, or that their [view](/custom-resources/overview) relates to pods.
 
 <Frame caption="A pod's Metrics tab: CPU and memory against its requests and limits.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/pod-metrics-light-1x.webp" alt="A pod's CPU and memory over time, against its requests and limits." />
@@ -108,14 +119,18 @@ Pods, Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs, CronJobs and Nod
 | **Pod** | CPU and memory per container, against the pod's requests and limit; network; restarts |
 | **Workload** | CPU and memory per pod, against each pod's requests and limit; network; restarts |
 | **Node** | CPU and memory by namespace, against what the node can allocate; network |
+| **Custom resource** | CPU and memory per pod, for the pods it has now, against what one of them requests; network; restarts |
 
 A limit line appears only when every container has a limit, since without one there's no ceiling to draw.
 
+Each chart's header shows its total **Now**, **Avg** and **Peak**, where they add up. **Show as table** lists each series' latest, average and peak value instead of the chart, and **Show as chart** goes back.
+
 ## Reading the charts
 
-- **Zoom in** by dragging across any chart. **Reset zoom** goes back to the range you picked.
+- **Zoom in** by dragging across a chart on the **Usage** tab or in a **Metrics** tab. The stretch you picked shows next to the time range, and stays put rather than refreshing. **Reset zoom** goes back to the range you picked. Right-sizing's charts always show their week, and don't zoom.
 - **Read values** by hovering, or with <kbd>←</kbd> <kbd>→</kbd>, <kbd>Home</kbd> and <kbd>End</kbd> when the chart has focus. <kbd>Esc</kbd> hides the readout.
-- **Show or hide a series** by clicking it in the legend. Alt-, ⌘- or Shift-click shows only that one.
+- **Show or hide a series** by clicking it in the legend, when a chart has more than one. Alt-, ⌘- or Shift-click shows only that one, and **Show all** brings the others back.
+- **Lines across a chart** mark requests, limits or what's allocatable, each with its label and value. When lines are close together, their labels go above and below them in turn, so they don't overlap. A line far above the data, more than three times its peak, would flatten the chart, so it's noted at the top instead, like *↑ Allocatable 27.53, above the chart*.
 
 Each range has its own resolution, and charts refresh on their own while you look:
 
@@ -135,7 +150,15 @@ Where a chart would be, Lumovi says why, and what to do:
 | --- | --- | --- |
 | **No Prometheus found** | No service looked like Prometheus or VictoriaMetrics | **Choose a service**, if yours runs under another name |
 | **Usage history is off** | Someone chose **Don't use history** for this cluster | **Change** |
-| **Can't read usage history** | The source stopped answering, or your account can't reach it | **Look again**, or check you have `get` on `services/proxy` |
+| **Can't read usage history** | Lumovi couldn't look for a source, or the one it found or you chose didn't answer | Read the message under it, then **Look again** or **Choose a service** |
+
+Under **Can't read usage history**, a message says what went wrong. When several services looked like Prometheus and none of them answered, it's about the first.
+
+| Message | Try |
+| --- | --- |
+| Your account can't list services, so Lumovi can't look for Prometheus. Choose its service instead. | **Choose a service**, or ask for `list` on services across the cluster |
+| Your account can't reach monitoring/prometheus through the API server (it needs get on services/proxy). | Ask for `get` on `services/proxy` in that namespace. See [Permissions](/clusters/permissions#usage-history). |
+| monitoring/prometheus didn't answer PromQL: … | Check that it's running, and that the port and path are right. "It answered, but not like Prometheus" means they lead to something else, like a web page. |
 
 A chart that's empty for a time usually means Prometheus has no samples for it: the object wasn't running yet, or cAdvisor isn't scraped. Restarts come from kube-state-metrics, so without it that chart stays empty.
 
