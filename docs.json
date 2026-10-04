@@ -93,6 +93,7 @@
               "explore/config-and-storage",
               "explore/events",
               "explore/details",
+              "explore/map",
               "explore/health",
               "explore/finding-things"
             ]
