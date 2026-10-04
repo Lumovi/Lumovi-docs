@@ -90,6 +90,8 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   </Accordion>
   <Accordion title="A list stops at 5,000 objects" icon="list-x">
     Lists load in chunks of 500 and stop at 5,000 objects, so huge clusters stay fast. A note says **Showing the first … of …**. Choose **Filter by label** to narrow the list on the server, pick a namespace, or raise the limit with [`LUMOVI_MAX_LIST_ITEMS`](/reference/environment-variables).
+
+    On the Workloads page and add-on pages, the note says *Some lists are too long to load whole*, and a kind that can't be listed at all says *Couldn't list …* above the rest.
   </Accordion>
   <Accordion title="An action is grayed out" icon="ban">
     Lumovi asks the cluster what you're allowed to do before offering an action, and says why it can't:
@@ -108,8 +110,16 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   <Accordion title="A port can't be forwarded" icon="unplug">
     **Port … on this computer can't be used (EADDRINUSE).** Something else on your computer listens on that port. Pick another local port. See [Port forwarding](/debug/port-forwarding).
   </Accordion>
+  <Accordion title="The map shows a card as Not found" icon="waypoints">
+    The object refers to something that isn't there: a ConfigMap or Secret it mounts, the service account it runs as, an ingress's backend service, or the node a pod is on. The card is dashed, and can't be opened. Create what's missing, or fix the reference.
+
+    A card without a status is different: Lumovi couldn't list that kind, usually because your account can't, so it doesn't know whether the object exists. See [Map](/explore/map).
+  </Accordion>
   <Accordion title="Something went wrong" icon="bug">
-    Lumovi didn't expect this. Choose **Try again** first. When a page fails unexpectedly, its error screen shows what happened, with **Copy details** and **Report issue**, so it can be fixed.
+    Lumovi didn't expect this. Choose **Try again** first. When a page itself fails, its screen says *Lumovi ran into an unexpected problem. Your clusters were not changed.*, with **Reload**, **Back to clusters**, **Copy details**, and **Report issue**, which opens a GitHub issue with the error filled in. A detail panel that fails says *This object couldn't be displayed* (or *This release couldn't be displayed*) the same way, and the list next to it keeps working.
+  </Accordion>
+  <Accordion title="This page doesn't exist" icon="compass">
+    An address Lumovi doesn't know, like an old link, says **This page doesn't exist**, with **Go to the overview**, or **Back to clusters** outside a cluster. For a custom kind, a page saying the cluster *doesn't serve* it means the cluster doesn't have that kind: *Its CustomResourceDefinition may have been removed, or never installed in this cluster.*
   </Accordion>
 </AccordionGroup>
 
@@ -122,11 +132,25 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   <Accordion title="No usage history" icon="chart-area">
     History comes from a Prometheus or VictoriaMetrics in the cluster.
 
-    - **No Prometheus found.** Lumovi looked among the cluster's services and found none that answered. Choose **Choose a service** to pick its namespace, service, port and path (`/select/0/prometheus` for vmselect), or **Look again**.
-    - **Can't read usage history.** The source is there, but reading it failed. Your account needs `get` on `services/proxy` in the source's namespace, because Lumovi reaches it through the API server with your credentials.
+    - **No Prometheus found.** None of the cluster's services looks like Prometheus or VictoriaMetrics. If yours runs under another name, choose **Choose a service** to pick its namespace, service, port and path (`/select/0/prometheus` for vmselect). **Look again** searches again, after you install one, say.
+    - **Can't read usage history.** There's a source, or something that looked like one, but reading it failed. The message under it says why:
+      - *Your account can't list services, so Lumovi can't look for Prometheus.* Choose its service yourself, or ask for `list` on services.
+      - *Your account can't reach … through the API server (it needs get on services/proxy).* Lumovi reaches the source through the API server with your credentials, so you need `get` on `services/proxy` in its namespace.
+      - *… didn't answer PromQL* or *It answered, but not like Prometheus.* The service, port or path isn't a PromQL endpoint. Choose the right one.
     - **Usage history is off.** It was turned off for this cluster. Choose **Change** to turn it back on.
 
     See [Usage history](/metrics/usage-history).
+  </Accordion>
+  <Accordion title="Right-sizing has no recommendation" icon="scale">
+    Right-sizing needs usage history, and enough of it. A workload's note says what's missing:
+
+    - **Too new**: it has less than a day of history. Recommendations need a day, and grow more confident up to a week.
+    - **No usage**: Prometheus has no CPU and memory samples for its containers in the last week, or it had no pods.
+    - **Autoscaled**: a VerticalPodAutoscaler sets its requests, so Lumovi leaves it to it.
+
+    If Prometheus couldn't answer for some namespaces, an alert names them, with **Try again**: the other namespaces still get their recommendations. A namespace that keeps failing usually asks more of Prometheus than its query limits or timeout allow.
+
+    If **Apply…** is grayed out, your account can't change the workload, or the cluster is read-only. If the dialog says the API server refused the change, a quota, a LimitRange or an admission webhook turned it down: untick the change it refuses, or fix the cause first. See [Right-sizing](/metrics/right-sizing).
   </Accordion>
 </AccordionGroup>
 

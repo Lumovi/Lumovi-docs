@@ -9,7 +9,10 @@ Lumovi is open source under the Apache 2.0 license, on [GitHub](https://github.c
 
 ## Build the app
 
-You need [Node.js](https://nodejs.org) 24 or later (the repository's `.nvmrc` asks for 26) and npm.
+You need [Node.js](https://nodejs.org) 24 or later (the repository's `.nvmrc` asks for 26) and npm. To package the app, you also need:
+
+- **On a Mac:** Xcode 26 or later. Lumovi's icon is compiled by Xcode's `actool`, and packaging stops without it.
+- **On Linux:** `rpm`, to build the `.rpm` (`sudo apt-get install rpm` on Debian and Ubuntu).
 
 <Steps>
   <Step title="Get the code">
@@ -25,12 +28,14 @@ You need [Node.js](https://nodejs.org) 24 or later (the repository's `.nvmrc` as
     npm run dist
     ```
 
-    The installers for your platform land in `release/`: a `.dmg` and `.zip` on macOS, an `.exe` on Windows, and an AppImage, `.deb` and `.rpm` on Linux. `npm run package` builds an unpacked app there instead, which is quicker.
+    The installers for your platform land in `release/`, for x64 and arm64: a `.dmg` and `.zip` on macOS, one `.exe` on Windows, and an AppImage, `.deb` and `.rpm` on Linux. `npm run package` builds an unpacked app there instead, which is quicker.
   </Step>
 </Steps>
 
 <Note>
-  A copy you build yourself isn't signed or notarized. For everyday use, the [official releases](/get-started/desktop) are signed on macOS, come with checksums and provenance, and keep themselves up to date.
+  A copy you build yourself isn't signed or notarized. For everyday use, the [official releases](/get-started/desktop) are signed on macOS and come with checksums and provenance.
+
+  The installers `npm run dist` makes look for new versions the way the official ones do, on Lumovi's [GitHub releases](https://github.com/Lumovi/Lumovi/releases). To keep running your own build, turn off **Help → Check for Updates Automatically**. An app from `npm run package` can't update itself.
 </Note>
 
 ## Run it while you work on it
@@ -53,14 +58,20 @@ npm run dev:server  # Lumovi served, as in a cluster, against the demo clusters
 | --- | --- |
 | `npm run dev` / `dev:mock` | Run with hot reload (your clusters / the demo clusters) |
 | `npm run dev:server` | Build and serve Lumovi against the demo clusters |
+| `npm run build` | Build the app and the server into `out/` |
+| `npm run start` | Run the built app |
 | `npm run serve` | Run the built server (`out/server`) |
 | `npm run mock-cluster` | Start the demo clusters alone, and print a kubeconfig for them |
-| `npm run verify` | Everything CI checks: format, lint, types, e2e tests with coverage |
+| `npm run verify` | Format, lint, types, views, and e2e tests with coverage, as CI checks them |
 | `npm run test:e2e` | Build with coverage instrumentation, and run the e2e tests |
 | `npm run test:linux` | The same, on Linux in Docker, as CI runs it |
 | `npm run coverage` | The e2e tests, plus a coverage report in `coverage/` |
 | `npm run coverage:check` | Fail unless every file, line, branch and function is covered |
 | `npm run lint` / `typecheck` / `format` | Static checks |
+| `npm run views:check` | Check Lumovi's views and add-ons against the CRDs of their tools |
+| `npm run crds` | Fetch those CRDs again, at the versions `tests/views/crds/sources.json` pins |
+| `npm run test:kind` | Create a local kind cluster, and run the integration tests against it |
+| `npm run screenshots` | Take the screenshots in `docs/screenshots` again |
 | `npm run package` | Build an unpacked app for this platform in `release/` |
 | `npm run dist` | Build installers for this platform |
 
@@ -79,11 +90,13 @@ npm run dev:server  # Lumovi served, as in a cluster, against the demo clusters
   <Tree.Folder name="tests" defaultOpen>
     <Tree.Folder name="e2e" openable={false} />
     <Tree.Folder name="web" openable={false} />
+    <Tree.Folder name="views" openable={false} />
     <Tree.Folder name="mock-cluster" openable={false} />
     <Tree.Folder name="mock-oidc" openable={false} />
     <Tree.Folder name="integration" openable={false} />
   </Tree.Folder>
   <Tree.Folder name="docs" openable={false} />
+  <Tree.Folder name="build" openable={false} />
   <Tree.Folder name="scripts" openable={false} />
 </Tree>
 
@@ -93,12 +106,13 @@ npm run dev:server  # Lumovi served, as in a cluster, against the demo clusters
 | `src/backend` | Kubeconfigs, API requests, Helm, shells and logs, for the desktop app and the server alike |
 | `src/server` | Lumovi served from a cluster: sign-in, the page, a WebSocket for each page |
 | `src/preload` | The narrow, typed bridge the page gets as `window.lumovi` |
-| `src/renderer` | The React interface (Tailwind CSS, TanStack Query, Radix, cmdk), and the [built-in views](/custom-resources/built-in-views) |
+| `src/renderer` | The React interface (Tailwind CSS, TanStack Query, Radix, cmdk), and Lumovi's [views and add-ons](/custom-resources/built-in-views), in `src/renderer/src/views` |
 | `src/shared` | Types and the resource registry every side uses |
-| `charts` | The Helm chart that runs the server |
-| `tests` | The e2e and web tests, the mock API server and OpenID Connect provider, and integration tests |
-| `docs` | The server's and views' references, and the screenshots these docs show |
-| `scripts` | Coverage tooling, screenshots and icon rendering |
+| `charts` | The Helm chart that runs the server, whose image the `Dockerfile` builds |
+| `tests` | The e2e and web tests, the views' checks against their tools' CRDs, the mock API server and OpenID Connect provider, and integration tests |
+| `docs` | The development guide, and the screenshots these docs show. The rest of the documentation is here. |
+| `build` | The app's icons and the installers' artwork, from [Lumovi's design repository](https://github.com/Lumovi/Lumovi-design) |
+| `scripts` | The demo clusters for `dev:mock` and `dev:server`, Linux test runs, coverage tooling, the views' CRDs, screenshots, and the Helm chart's version |
 
 A few ideas hold it together:
 
@@ -113,7 +127,8 @@ Lumovi keeps **100% end-to-end coverage** of statements, branches, functions and
 
 - **End-to-end tests** drive the real Electron app with Playwright, against a mock API server with the demo clusters. Coverage is collected from all three Electron processes, the server and the page, and merged across Linux, macOS and Windows. The test windows stay invisible and never take focus, so you can keep working; set `LUMOVI_E2E_FOREGROUND=1` to watch them.
 - **Web tests** start the server against the same mock clusters and a mock OpenID Connect provider, and drive the page in Chromium: every way of signing in, sessions ending, the WebSocket dropping and coming back, shells, logs and Helm.
-- **Integration tests** check the same app against a real three-node [kind](https://kind.sigs.k8s.io) cluster with metrics-server and kube-prometheus-stack. They change things for real and check the result with `kubectl`. They need Docker, kind, `kubectl` and Helm:
+- **View checks** (`npm run views:check`) check every kind, path, template, link, related list and action in Lumovi's views and add-ons against the CRDs of their tools, pinned in `tests/views/crds/sources.json`. A misremembered field fails here, rather than showing nothing in the app.
+- **Integration tests** check the same app against a real three-node [kind](https://kind.sigs.k8s.io) cluster with metrics-server and kube-prometheus-stack. They change things for real and check the result with `kubectl`, and they install the image with the Helm chart and sign in to it, behind a proxy and with a token. They need Docker, kind, `kubectl` and Helm:
 
   ```bash
   npm run kind:up            # create the cluster (a few minutes)
@@ -121,7 +136,7 @@ Lumovi keeps **100% end-to-end coverage** of statements, branches, functions and
   npm run kind:down          # delete the cluster
   ```
 
-  The cluster gets its own kubeconfig in `.kind/`. Your `~/.kube/config` isn't read or changed.
+  `npm run test:kind` creates the cluster and runs the tests in one go. The cluster gets its own kubeconfig in `.kind/`. Your `~/.kube/config` isn't read or changed.
 
 ## Contributing
 
@@ -145,8 +160,25 @@ Bug reports, ideas and pull requests are welcome. The [contributing guide](https
   </Step>
 </Steps>
 
-<Tip>
-  A [view](/custom-resources/write-a-view) for a popular project is a welcome first contribution. Add it to `src/renderer/src/views`, one file per project, with a comment linking to the project. Lumovi checks every view it ships when it starts, and the tests fail if one has a problem.
-</Tip>
+### Adding a tool
+
+Lumovi shows what popular operators run through [views and add-ons](/custom-resources/built-in-views), written as YAML in `src/renderer/src/views/<tool>.yaml`, in the [view format](/reference/view-format). An add-on gives a tool its entry in the sidebar and lists its kinds; views say how each kind is shown. Adding a tool needs no code, and is a welcome first contribution.
+
+<Steps>
+  <Step title="Pin the tool's CRDs">
+    Add its release to `tests/views/crds/sources.json`, under the add-on's name, with the URLs of its CRD manifests, and run `npm run crds -- <name>`. That keeps what the check needs in `tests/views/crds/<name>.json`.
+  </Step>
+  <Step title="Write the add-on and its views">
+    In `src/renderer/src/views/<name>.yaml`, write the `AddOn`, then a `View` for each kind worth more than the generic columns. Status rules help most: say what healthy, in progress, failing and paused look like for this tool.
+  </Step>
+  <Step title="Check them">
+    Run `npm run views:check`. Labels and annotations aren't in schemas, so check those against the tool's documentation, or a real cluster.
+  </Step>
+  <Step title="Look at it">
+    Put the file in `~/.lumovi/views` while running `npm run dev` against a cluster with the tool installed. Views are read again when you refresh (<kbd>⌘</kbd><kbd>R</kbd>; <kbd>Ctrl</kbd><kbd>R</kbd> on Windows and Linux).
+  </Step>
+</Steps>
+
+To ask for a tool instead, open a [Support a tool](https://github.com/Lumovi/Lumovi/issues/new?template=tool_request.yml) issue.
 
 Found a security problem? Please report it privately: see [Reporting a vulnerability](/reference/privacy-and-security#reporting-a-vulnerability).

@@ -36,6 +36,7 @@ Lumovi reads your kubeconfig and never changes it. Managing kubeconfig files, li
 
 - **The page is sandboxed.** It runs with context isolation, no Node.js integration and a strict Content Security Policy. It can't navigate away or open new windows.
 - **Every request is checked.** The main process only answers calls from the app's own page, and validates every argument.
+- **No browser permissions.** The page can't use the camera, notifications or anything else a website could ask for. It can only copy to the clipboard.
 - **Changes go through a small set of operations.** Each is checked against what you've made read-only, and refused for those clusters, or for all of them with `LUMOVI_READ_ONLY`. See [Read-only mode](/changes/read-only).
 - **Links are limited.** Only `https://` links, and `http://localhost:<port>` for your own [port forwards](/debug/port-forwarding), are handed to the operating system.
 - **Updates are verified.** New versions come from the project's GitHub releases over HTTPS. Each download is checked against the SHA-512 checksum the release lists, and on macOS the new version must carry the same Developer ID signature.
@@ -54,7 +55,20 @@ See [Config and storage](/explore/config-and-storage) for how Secrets are shown 
 
 ## What it keeps on your computer
 
-The app keeps its settings locally: your theme, the window's size and place, which clusters you made read-only and where each one's usage history comes from. It also remembers conveniences like the namespace you picked per cluster, your recent clusters and the custom resources you opened. None of it leaves your computer.
+The desktop app keeps two kinds of things on your computer, and none of it leaves it:
+
+- **Settings**, in `settings.json`: your theme, the window's size and place, which clusters you made read-only, where each one's usage history comes from, and whether Lumovi looks for new versions by itself.
+- **Conveniences** the page remembers: the namespace you picked per cluster, your recent clusters, the kinds you pinned to the sidebar and the custom resources you opened last, the detail panel's width, the time range metrics charts open with, and which chart on your computer each Helm release was last deployed from.
+
+Both live in Lumovi's folder for app data:
+
+| System | Folder |
+| --- | --- |
+| macOS | `~/Library/Application Support/Lumovi` |
+| Windows | `%APPDATA%\Lumovi` |
+| Linux | `~/.config/Lumovi`, or `$XDG_CONFIG_HOME/Lumovi` |
+
+Lumovi also reads your own [views](/custom-resources/write-a-view) from `~/.lumovi/views`, or the folder `LUMOVI_VIEWS_DIR` names. It never writes there. When you upgrade or install a Helm release, the values go to `helm` in a temporary folder, which Lumovi deletes as soon as `helm` is done.
 
 The [activity log](/changes/undo-and-activity) of the changes you made lives in memory, and is gone when you quit.
 
