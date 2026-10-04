@@ -1,31 +1,110 @@
 ---
 title: "Built-in views"
-description: "The views Lumovi ships for popular projects: the columns, status, links and actions each adds to their custom resources."
+description: "The add-ons and views Lumovi ships for 32 popular tools: each tool's entry in the sidebar, and the columns, status, links, related tabs and actions its custom resources get."
 icon: "blocks"
 ---
 
-Lumovi ships views for the projects most clusters run. When a cluster serves one of these kinds, its list gets the columns people look at first, its objects get a status that understands the project, related objects are a click away, and the changes its own CLI offers become actions.
+Lumovi ships an add-on and views for the tools most clusters run. When a cluster serves one of a tool's kinds:
 
-Like every change in Lumovi, a view's actions check your permissions first (you need `patch` on the kind), show the equivalent `kubectl patch` command, and are refused in a [read-only](/changes/read-only) cluster. Actions marked **undo** can be taken back from their notification.
+- **Its add-on** gives the tool an entry in the sidebar. It leads to everything of the tool's kinds in one list, what's failing first, with a tab for each kind. See [Add-ons](/custom-resources/add-ons).
+- **Its views** give each kind the columns people look at first, a status that understands the tool, links to the objects it points to, tabs for the objects that belong to it, and the changes its own CLI offers, as actions.
 
-<Columns cols={3}>
-  <Card title="cert-manager" href="#cert-manager" icon="shield-check" />
-  <Card title="Argo CD and Rollouts" href="#argo-cd-and-argo-rollouts" icon="git-branch" />
-  <Card title="Flux" href="#flux" icon="workflow" />
-  <Card title="Gateway API" href="#gateway-api" icon="globe" />
-  <Card title="Karpenter" href="#karpenter" icon="boxes" />
-  <Card title="KEDA" href="#keda" icon="gauge" />
-  <Card title="External Secrets" href="#external-secrets" icon="lock" />
-  <Card title="Prometheus operator" href="#prometheus-operator" icon="activity" />
-  <Card title="CloudNativePG" href="#cloudnativepg" icon="database" />
-  <Card title="Istio" href="#istio" icon="network" />
-  <Card title="Velero" href="#velero" icon="archive" />
-  <Card title="Crossplane" href="#crossplane" icon="package" />
-</Columns>
+Each section below names the add-on, where it sits in the sidebar, and its kinds in the order of their tabs, then what each kind's view adds. A kind without a view shows the columns the API server prints, and a status read from [the usual conventions](/custom-resources/overview#status).
+
+A related tab of pods takes its place as the detail panel's **Pods** tab, under its own name, and comes with **Logs** and **Metrics** tabs for those pods.
+
+Like every change in Lumovi, a view's actions check your permissions first: `patch` on the kind (or on its `status`), or `create` on the kind an action creates. They show the equivalent command, `kubectl patch` or `kubectl create`, and are refused in a [read-only](/changes/read-only) cluster. In the tables:
+
+- An action whose name ends in **…** asks first.
+- **undo**: it can be taken back from its notification.
+- **asks**: it asks for a value, like which instance becomes the primary.
+- **creates**: it creates an object, shown as YAML before it's created.
+
+| Tool | In the sidebar |
+| --- | --- |
+| [Argo CD and Argo Rollouts](#argo-cd-and-argo-rollouts) | **Argo CD** and **Argo Rollouts**, under **Add-ons** |
+| [Argo Workflows](#argo-workflows) | **Argo Workflows**, under **Add-ons** |
+| [cert-manager](#cert-manager) | **cert-manager**, under **Add-ons** |
+| [Cilium](#cilium) | **Cilium**, under **Network** |
+| [CloudNativePG](#cloudnativepg) | **CloudNativePG**, under **Add-ons** |
+| [Cluster API](#cluster-api) | **Cluster API**, under **Add-ons** |
+| [Crossplane](#crossplane) | **Crossplane**, under **Add-ons** |
+| [Elastic](#elastic) | **Elastic**, under **Add-ons** |
+| [External Secrets](#external-secrets) | **External Secrets**, under **Add-ons** |
+| [Flux](#flux) | **Flux**, under **Add-ons** |
+| [Gatekeeper](#gatekeeper) | **Gatekeeper**, under **Add-ons** |
+| [Gateway API](#gateway-api) | **Gateway API**, under **Network** |
+| [Istio](#istio) | **Istio**, under **Add-ons** |
+| [Karpenter](#karpenter) | **Karpenter**, under **Add-ons** |
+| [KEDA](#keda) | **KEDA**, under **Add-ons** |
+| [Knative Serving](#knative-serving) | **Knative Serving**, under **Add-ons** |
+| [KubeVirt](#kubevirt) | **KubeVirt**, under **Add-ons** |
+| [Kyverno](#kyverno) | **Kyverno**, under **Add-ons** |
+| [Linkerd](#linkerd) | **Linkerd**, under **Network** |
+| [Longhorn](#longhorn) | **Longhorn**, under **Storage** |
+| [Prometheus operator](#prometheus-operator) | **Prometheus Operator**, under **Add-ons** |
+| [Rook Ceph](#rook-ceph) | **Rook Ceph**, under **Storage** |
+| [Sealed Secrets](#sealed-secrets) | **Sealed Secrets**, under **Configuration** |
+| [Strimzi](#strimzi) | **Strimzi**, under **Add-ons** |
+| [Tekton](#tekton) | **Tekton**, under **Add-ons** |
+| [Traefik](#traefik) | **Traefik**, under **Network** |
+| [Trivy](#trivy) | **Trivy**, under **Add-ons** |
+| [Velero](#velero) | **Velero**, under **Add-ons** |
+| [Vertical Pod Autoscaler](#vertical-pod-autoscaler) | **Vertical Pod Autoscaler**, under **Add-ons** |
+| [VictoriaMetrics](#victoriametrics) | **VictoriaMetrics**, under **Add-ons** |
+| [Volume snapshots](#volume-snapshots) | **Volume Snapshots**, under **Storage** |
+
+## Argo CD and Argo Rollouts
+
+[Argo CD](https://argo-cd.readthedocs.io) applications, and [Argo Rollouts](https://argoproj.github.io/rollouts). They're two add-ons:
+
+- **Argo CD**, under **Add-ons** (`argo-cd`): Application, ApplicationSet, AppProject.
+- **Argo Rollouts**, under **Add-ons** (`argo-rollouts`): Rollout, AnalysisRun, AnalysisTemplate, ClusterAnalysisTemplate, Experiment.
+
+Applications and rollouts have views; the other kinds don't. Applications take their status from Argo CD's own health: <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status progressing">Progressing</span>, <span className="lumovi-status critical">Degraded</span>, <span className="lumovi-status warning">Missing</span> or <span className="lumovi-status neutral">Suspended</span>. A rollout is <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status neutral">Paused</span>, <span className="lumovi-status critical">Degraded</span>, <span className="lumovi-status critical">Aborted</span>, or in progress with its phase.
+
+| Kind | Columns | Links | Actions |
+| --- | --- | --- | --- |
+| Application | Sync, Repository, Path, Destination | Destination | **Sync**, **Refresh** |
+| Rollout | Desired, Ready, Updated, Steps | | **Promote**, **Resume** (undo), **Restart…**, **Abort…** |
+
+- **Sync** starts a sync, like the Sync button in Argo CD. It's offered when no operation is running.
+- **Refresh** asks Argo CD to compare the application with its source again.
+- An application's **Destination** link opens the namespace it deploys to.
+- **Promote** moves a paused rollout past its pause. **Resume** unpauses one that was paused by hand.
+- **Restart…** replaces the rollout's pods a few at a time, as its strategy says. It asks first.
+- **Abort…** stops a rollout in progress and sends traffic back to the stable version. It's destructive, so it asks first.
+
+Rollouts have the scale subresource, so you can also **Scale** them like a Deployment.
+
+## Argo Workflows
+
+[Argo Workflows](https://argoproj.github.io/workflows): workflows, their templates and schedules.
+
+**Argo Workflows**, under **Add-ons** (`argo-workflows`): Workflow, CronWorkflow, WorkflowTemplate, ClusterWorkflowTemplate.
+
+A workflow is <span className="lumovi-status healthy">Succeeded</span>, <span className="lumovi-status neutral">Suspended</span>, <span className="lumovi-status progressing">Stopping</span>, critical when it failed or hit an error, and otherwise in progress with its phase. A cron workflow is <span className="lumovi-status healthy">Scheduled</span>, <span className="lumovi-status neutral">Suspended</span>, <span className="lumovi-status neutral">Stopped</span>, or <span className="lumovi-status critical">Can't submit</span> when it couldn't start a run.
+
+| Kind | Columns | Links | Related tabs | Actions |
+| --- | --- | --- | --- | --- |
+| Workflow | Progress, Started, Finished, Template | Template, Cron workflow | **Pods** | **Suspend** (undo), **Resume** (undo), **Stop…**, **Terminate…**, **Resubmit…** (creates) |
+| CronWorkflow | Schedules, Last run, Running | | **Runs** | **Submit now…** (creates), **Suspend** (undo), **Resume** (undo) |
+| WorkflowTemplate | Entrypoint, Parameters | | **Runs** | **Submit…** (creates) |
+| ClusterWorkflowTemplate | Entrypoint, Parameters | | | |
+
+- **Suspend** pauses a running workflow, and **Resume** picks it up again.
+- **Stop…** stops the steps running now, and its exit handlers still run. **Terminate…** stops everything at once, exit handlers included; it's destructive. Both are offered while a workflow is pending or running.
+- **Resubmit…** creates a new workflow with a finished one's spec.
+- **Submit now…** creates a workflow from a cron workflow's spec, without waiting for its schedule. **Submit…** creates one that runs a template.
+- **Runs** lists the workflows a cron workflow or a template started.
 
 ## cert-manager
 
-[cert-manager](https://cert-manager.io): certificates, their requests, and issuers. A certificate is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status progressing">Issuing</span>, or critical with cert-manager's reason.
+[cert-manager](https://cert-manager.io): certificates, their requests, and issuers.
+
+**cert-manager**, under **Add-ons** (`cert-manager`): Certificate, CertificateRequest, Issuer, ClusterIssuer, Order, Challenge. Orders and challenges have no view.
+
+A certificate is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status progressing">Issuing</span>, or critical with cert-manager's reason. A request is <span className="lumovi-status healthy">Issued</span>, <span className="lumovi-status progressing">Pending</span>, <span className="lumovi-status critical">Denied</span>, or critical with the reason. Issuers are <span className="lumovi-status healthy">Ready</span>, or critical with the reason.
 
 | Kind | Columns | Links |
 | --- | --- | --- |
@@ -35,76 +114,94 @@ Like every change in Lumovi, a view's actions check your permissions first (you 
 
 A certificate's details add when it's valid from, when it expires and renews, its lifetime and failed attempts. **Expires** reads like "in 30d", and sorts by time.
 
-## Argo CD and Argo Rollouts
+## Cilium
 
-[Argo CD](https://argo-cd.readthedocs.io) applications, and [Argo Rollouts](https://argoproj.github.io/rollouts). Applications take their status from Argo CD's own health: <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status progressing">Progressing</span>, <span className="lumovi-status critical">Degraded</span>, <span className="lumovi-status warning">Missing</span> or <span className="lumovi-status neutral">Suspended</span>.
+[Cilium](https://cilium.io): network policies, endpoints and nodes of the cluster's network.
 
-| Kind | Columns | Actions |
-| --- | --- | --- |
-| Application | Sync, Repository, Path, Destination | **Sync**, **Refresh** |
-| Rollout | Desired, Ready, Updated, Steps | **Promote**, **Resume** (undo), **Restart**, **Abort** |
+**Cilium**, under **Network** (`cilium`): CiliumNetworkPolicy, CiliumClusterwideNetworkPolicy, CiliumEndpoint, CiliumNode, CiliumLoadBalancerIPPool, CiliumEgressGatewayPolicy.
 
-- **Sync** starts a sync, like the Sync button in Argo CD. It's offered when no operation is running.
-- **Refresh** asks Argo CD to compare the application with its source again.
-- **Promote** moves a paused rollout past its pause. **Resume** unpauses one that was paused by hand.
-- **Restart** replaces the rollout's pods a few at a time, as its strategy says. It asks first.
-- **Abort** stops a rollout in progress and sends traffic back to the stable version. It's destructive, so it asks first.
-
-Rollouts have the scale subresource, so you can also **Scale** them like a Deployment.
-
-## Flux
-
-[Flux](https://fluxcd.io): what it applies, and where it fetches it from. Statuses follow Flux's conditions: <span className="lumovi-status neutral">Suspended</span>, <span className="lumovi-status critical">Stalled</span>, <span className="lumovi-status progressing">Reconciling</span> or <span className="lumovi-status healthy">Ready</span>.
+Policies are <span className="lumovi-status healthy">Valid</span> or <span className="lumovi-status critical">Invalid</span>. An endpoint, one for each pod Cilium manages, is <span className="lumovi-status healthy">Ready</span>, critical when it's not ready, disconnected or invalid, and otherwise in progress with its state. A load balancer IP pool is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status critical">Conflicts</span> when it overlaps another, or <span className="lumovi-status neutral">Disabled</span>.
 
 | Kind | Columns | Links |
 | --- | --- | --- |
-| Kustomization | Revision, Path, Source | Source |
-| HelmRelease | Chart, Version, Release | Chart source |
-| GitRepository, OCIRepository, HelmRepository, HelmChart, Bucket | URL, Revision, Fetched | |
+| CiliumNetworkPolicy, CiliumClusterwideNetworkPolicy | Ingress rules, Egress rules, Description | |
+| CiliumEndpoint | Identity, IPv4, Node, Ingress policy, Egress policy | Pod |
+| CiliumNode | Addresses, Pod CIDRs, Instance type | Node |
+| CiliumLoadBalancerIPPool | CIDRs, Disabled | |
+| CiliumEgressGatewayPolicy | Destinations, Egress IP | |
 
-Every Flux kind has the same three actions, like the `flux` CLI's:
+## CloudNativePG
 
-- **Reconcile** asks Flux to reconcile it now, like `flux reconcile`.
-- **Suspend** stops Flux reconciling it (undo).
-- **Resume** turns reconciliation back on, and asks for one right away (undo).
+[CloudNativePG](https://cloudnative-pg.io): PostgreSQL clusters and their backups.
 
-A Helm release that Flux manages links to its HelmRelease from [Helm releases](/helm/releases#releases-flux-manages).
+**CloudNativePG**, under **Add-ons** (`cloudnative-pg`): Cluster, Pooler, Backup, ScheduledBackup, Database. Poolers and databases have no view.
 
-## Gateway API
+A cluster is <span className="lumovi-status healthy">Healthy</span>, critical with its phase when that speaks of a failure or an error, and otherwise in progress with its phase. A backup is <span className="lumovi-status healthy">Completed</span>, <span className="lumovi-status critical">Failed</span>, or in progress with its phase.
 
-[Gateway API](https://gateway-api.sigs.k8s.io): gateways and the routes attached to them. A gateway is <span className="lumovi-status healthy">Programmed</span> once its controller has set it up. Routes are <span className="lumovi-status healthy">Accepted</span>, or say why their gateway refused them, or why a backend can't be resolved.
+| Kind | Columns | Links | Related tabs | Actions |
+| --- | --- | --- | --- | --- |
+| Cluster | Instances, Ready, Primary | Primary | **Instances**, **Volumes** | **Back up now…** (asks, creates), **Switch over…** (asks), **Restart…** |
+| Backup | Cluster, Method, Started | Cluster | | |
+| ScheduledBackup | Schedule, Last, Next | Cluster | **Backups** | **Suspend** (undo), **Resume** (undo) |
 
-| Kind | Columns | Links |
-| --- | --- | --- |
-| Gateway | Class, Address, Listeners | Class |
-| HTTPRoute, GRPCRoute, TLSRoute, TCPRoute, UDPRoute | Hostnames, Gateways, Backends | Gateway, Backend |
-| GatewayClass | Controller | |
+- **Instances** lists the cluster's instance pods, with their logs and usage. **Volumes** lists its volume claims.
+- **Back up now…** asks for the **Method**, `barmanObjectStore` or `volumeSnapshot`, and creates a Backup of the cluster.
+- **Switch over…** asks which instance is the **New primary**. The current primary becomes a replica, and connections to the primary drop for a moment. It's offered when the cluster has two instances or more, and patches the cluster's status, so it needs `patch` on its `status`.
+- **Restart…** restarts the instances one at a time, replicas first and the primary last, with a switchover. It asks first.
+- **Backups** lists the backups a scheduled backup made.
 
-## Karpenter
+## Cluster API
 
-[Karpenter](https://karpenter.sh): node pools, and the nodes it launched for them.
+[Cluster API](https://cluster-api.sigs.k8s.io): the clusters this one manages, and their machines.
 
-| Kind | Columns | Links |
-| --- | --- | --- |
-| NodePool | Nodes, CPU, Memory, Weight | |
-| NodeClaim | Type, Capacity, Zone, Node | Node, Node pool |
+**Cluster API**, under **Add-ons** (`cluster-api`): Cluster, MachineDeployment, KubeadmControlPlane, Machine, MachineSet, MachinePool, MachineHealthCheck, ClusterClass.
 
-A node pool's details add its node class, CPU and memory limits, consolidation settings, and when its nodes expire.
+Statuses read both API versions, where `v1beta2` says Available and `v1beta1` says Ready. A cluster is <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Not available</span>, <span className="lumovi-status neutral">Paused</span>, <span className="lumovi-status critical">Failed</span>, or in progress with its phase. Machine deployments, sets and pools are <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Not available</span>, <span className="lumovi-status critical">Failed</span>, or in progress. A control plane is <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Not available</span> or <span className="lumovi-status progressing">Initializing</span>. A machine is <span className="lumovi-status healthy">Running</span>, <span className="lumovi-status critical">Failed</span>, or in progress with its phase. A health check that may not remediate any more machines is <span className="lumovi-status warning">Not remediating</span>.
 
-## KEDA
+| Kind | Columns | Links | Related tabs | Actions |
+| --- | --- | --- | --- | --- |
+| Cluster | Version, Control plane, Workers, Endpoint | Control plane | **Machine deployments**, **Machines** | **Pause…** (undo), **Resume** (undo) |
+| MachineDeployment, MachineSet, MachinePool | Cluster, Replicas, Ready, Version | Cluster | **Machines** | |
+| KubeadmControlPlane | Cluster, Replicas, Ready, Version | Cluster | **Machines** | |
+| Machine | Cluster, Node, Version, Provider ID | Cluster | | |
+| MachineHealthCheck | Cluster, Machines, Healthy | Cluster | | |
+| ClusterClass | Workers, Variables | | | |
 
-[KEDA](https://keda.sh): event-driven autoscaling of workloads and jobs. A scaled object is <span className="lumovi-status healthy">Scaling</span> or <span className="lumovi-status healthy">Idle</span>, <span className="lumovi-status neutral">Paused</span>, or critical with KEDA's reason.
+**Pause…** stops Cluster API reconciling the cluster, its machines included, until it's resumed. It asks first. **Resume** turns reconciling back on.
 
-| Kind | Columns | Links | Actions |
+## Crossplane
+
+[Crossplane](https://crossplane.io): the packages that extend it.
+
+**Crossplane**, under **Add-ons** (`crossplane`): Provider, Configuration, Function, CompositeResourceDefinition, Composition. Composite resource definitions and compositions have no view.
+
+A package is <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status progressing">Installing</span>, or critical with the reason it isn't installed or healthy.
+
+| Kind | Columns |
+| --- | --- |
+| Provider, Configuration, Function | Package, Installed, Healthy |
+
+## Elastic
+
+[Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current): Elasticsearch, Kibana and the rest of the Elastic Stack.
+
+**Elastic**, under **Add-ons** (`eck`): Elasticsearch, Kibana, Agent, Beat, ApmServer, Logstash, ElasticMapsServer.
+
+Each reports its health as a color: <span className="lumovi-status healthy">Green</span>, <span className="lumovi-status warning">Yellow</span> or <span className="lumovi-status critical">Red</span> (Kibana has no yellow), and is in progress until it does. Elasticsearch can also be <span className="lumovi-status critical">Invalid</span>.
+
+| Kind | Columns | Links | Related tabs |
 | --- | --- | --- | --- |
-| ScaledObject | Target, Min, Max, Triggers | Target, Autoscaler | **Pause**, **Resume** (both undo) |
-| ScaledJob | Max, Triggers | | |
-
-**Pause** sets KEDA's `autoscaling.keda.sh/paused` annotation, and **Resume** removes it.
+| Elasticsearch | Version, Nodes, Phase | Password of the elastic user | **Pods** |
+| Kibana | Version, Nodes, Elasticsearch | Elasticsearch | **Pods** |
+| Agent, Beat, ApmServer, Logstash, ElasticMapsServer | Version, Available, Expected | | |
 
 ## External Secrets
 
 [External Secrets](https://external-secrets.io): secrets kept in sync with a vault or a cloud's secret store.
+
+**External Secrets**, under **Add-ons** (`external-secrets`): ExternalSecret, ClusterExternalSecret, SecretStore, ClusterSecretStore, PushSecret. Cluster external secrets and push secrets have no view.
+
+An external secret is <span className="lumovi-status healthy">Synced</span>, or critical with the reason. A store is <span className="lumovi-status healthy">Valid</span>, or critical with the reason.
 
 | Kind | Columns | Links | Actions |
 | --- | --- | --- | --- |
@@ -113,33 +210,61 @@ A node pool's details add its node class, CPU and memory limits, consolidation s
 
 **Sync now** asks the operator to fetch the secret again right away.
 
-## Prometheus operator
+## Flux
 
-The [Prometheus operator](https://prometheus-operator.dev)'s kinds, as kube-prometheus-stack installs them.
+[Flux](https://fluxcd.io): what it applies, and where it fetches it from.
 
-| Kind | Columns |
-| --- | --- |
-| Prometheus, Alertmanager | Version, Replicas, Available, Retention |
-| ServiceMonitor, PodMonitor | Ports, Pod ports, Intervals |
-| PrometheusRule | Groups, Rules, Alerts |
+**Flux**, under **Add-ons** (`flux`): Kustomization, HelmRelease, GitRepository, OCIRepository, HelmRepository, HelmChart, Bucket.
 
-Prometheus and Alertmanager are <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Degraded</span> or <span className="lumovi-status critical">Unavailable</span>, as the operator reports them.
-
-## CloudNativePG
-
-[CloudNativePG](https://cloudnative-pg.io): PostgreSQL clusters and their backups.
+Statuses follow Flux's conditions: <span className="lumovi-status neutral">Suspended</span>, <span className="lumovi-status critical">Stalled</span>, <span className="lumovi-status progressing">Reconciling</span> or <span className="lumovi-status healthy">Ready</span>, or critical with Flux's reason.
 
 | Kind | Columns | Links | Actions |
 | --- | --- | --- | --- |
-| Cluster | Instances, Ready, Primary | Primary | **Restart** |
-| Backup | Cluster, Method, Started | Cluster | |
-| ScheduledBackup | Schedule, Last, Next | Cluster | **Suspend**, **Resume** (both undo) |
+| Kustomization | Revision, Path, Source | Source | **Reconcile**, **Suspend** (undo), **Resume** (undo) |
+| HelmRelease | Chart, Version, Release | Chart source | **Reconcile**, **Suspend** (undo), **Resume** (undo) |
+| GitRepository, OCIRepository, HelmRepository, HelmChart, Bucket | URL, Revision, Fetched | | **Reconcile**, **Suspend** (undo), **Resume** (undo) |
 
-**Restart** restarts the instances one at a time, replicas first and the primary last, with a switchover. It asks first.
+Every Flux kind has the same three actions, like the `flux` CLI's:
+
+- **Reconcile** asks Flux to reconcile it now, like `flux reconcile`.
+- **Suspend** stops Flux reconciling it.
+- **Resume** turns reconciliation back on, and asks for one right away.
+
+A Helm release that Flux manages links to its HelmRelease from [Helm releases](/helm/releases#releases-flux-manages).
+
+## Gatekeeper
+
+[OPA Gatekeeper](https://open-policy-agent.github.io/gatekeeper): constraint templates, the constraints made from them, and mutations.
+
+**Gatekeeper**, under **Add-ons** (`gatekeeper`): every kind in `constraints.gatekeeper.sh`, ConstraintTemplate, Assign, AssignMetadata, ModifySet, AssignImage, ExpansionTemplate, Config. Expansion templates and the config have no view.
+
+Gatekeeper makes a kind of constraint for each template, in the `constraints.gatekeeper.sh` group. The add-on and the view cover every one of them, whatever its name: the add-on has a tab for each, in order of their names. A constraint shows what the last audit found: <span className="lumovi-status warning">2 violations</span>, <span className="lumovi-status healthy">No violations</span>, or <span className="lumovi-status progressing">Not audited yet</span>. A template is <span className="lumovi-status healthy">Created</span>, <span className="lumovi-status progressing">Creating</span>, or <span className="lumovi-status critical">Errors</span>; a mutation is <span className="lumovi-status critical">Errors</span> when Gatekeeper reports one.
+
+| Kind | Columns |
+| --- | --- |
+| Every kind in `constraints.gatekeeper.sh` | Action, Violations, Audited |
+| ConstraintTemplate | Constraint kind |
+| Assign, AssignMetadata, ModifySet, AssignImage | Location, Applies to |
+
+## Gateway API
+
+[Gateway API](https://gateway-api.sigs.k8s.io): gateways and the routes attached to them.
+
+**Gateway API**, under **Network** (`gateway-api`): Gateway, HTTPRoute, GRPCRoute, TLSRoute, TCPRoute, UDPRoute, GatewayClass, ReferenceGrant. Reference grants have no view.
+
+A gateway is <span className="lumovi-status healthy">Programmed</span> once its controller has set it up. Routes are <span className="lumovi-status healthy">Accepted</span>, or say why their gateway refused them, or why a backend can't be resolved. A gateway class is <span className="lumovi-status healthy">Accepted</span>, or critical with the reason.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| Gateway | Class, Address, Listeners | Class |
+| HTTPRoute, GRPCRoute, TLSRoute, TCPRoute, UDPRoute | Hostnames, Gateways, Backends | Gateway, Backend |
+| GatewayClass | Controller | |
 
 ## Istio
 
 [Istio](https://istio.io): traffic routing and security.
+
+**Istio**, under **Add-ons** (`istio`): VirtualService, DestinationRule, Gateway, ServiceEntry, PeerAuthentication, AuthorizationPolicy.
 
 | Kind | Columns |
 | --- | --- |
@@ -149,42 +274,325 @@ Prometheus and Alertmanager are <span className="lumovi-status healthy">Availabl
 | ServiceEntry | Hosts, Location, Resolution |
 | PeerAuthentication, AuthorizationPolicy | mTLS, Action |
 
+## Karpenter
+
+[Karpenter](https://karpenter.sh): node pools, and the nodes it launched for them.
+
+**Karpenter**, under **Add-ons** (`karpenter`): NodePool, NodeClaim, EC2NodeClass, AKSNodeClass. AKS node classes have no view. Karpenter's add-on opens on an overview of its own: its node pools against their limits, the nodes they launched and the ones launching, what's being replaced, and the pods waiting for a node. See [Karpenter's overview](/custom-resources/add-ons#karpenter).
+
+A node pool is <span className="lumovi-status healthy">Ready</span>, or critical with Karpenter's reason. A node claim is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status progressing">Launching</span> until its node registers, <span className="lumovi-status warning">Drifted</span> when it no longer matches its node pool or node class, <span className="lumovi-status progressing">Terminating</span>, critical with the reason when it couldn't be launched, and otherwise <span className="lumovi-status critical">Not ready</span>.
+
+| Kind | Columns | Links | Related tabs |
+| --- | --- | --- | --- |
+| NodePool | Nodes, CPU, Memory, Weight | Node class | **Nodes**, **Node claims** |
+| NodeClaim | Type, Capacity, Zone, Node | Node, Node pool, Node class | |
+| EC2NodeClass | Role, AMIs | | |
+
+A node pool's details add its node class, CPU and memory limits, consolidation settings, and when its nodes expire. A node claim's add its node pool, instance type, capacity type, zone, image, provider ID and when it expires. An EC2 node class's add its role, instance profile, AMIs, subnets and security groups.
+
+## KEDA
+
+[KEDA](https://keda.sh): event-driven autoscaling of workloads and jobs.
+
+**KEDA**, under **Add-ons** (`keda`): ScaledObject, ScaledJob, TriggerAuthentication, ClusterTriggerAuthentication. Trigger authentications have no view.
+
+A scaled object is <span className="lumovi-status healthy">Scaling</span> or <span className="lumovi-status healthy">Idle</span>, <span className="lumovi-status neutral">Paused</span>, <span className="lumovi-status neutral">Paused at 2</span> with the replicas it's held at, or critical with KEDA's reason.
+
+| Kind | Columns | Links | Related tabs | Actions |
+| --- | --- | --- | --- | --- |
+| ScaledObject | Target, Min, Max, Triggers | Target, Autoscaler | | **Pause** (undo), **Pause at…** (undo, asks), **Resume** |
+| ScaledJob | Max, Triggers | | **Jobs** | |
+
+- **Pause** sets KEDA's `autoscaling.keda.sh/paused` annotation: autoscaling stops, and the target keeps its replicas.
+- **Pause at…** asks for the **Replicas while paused**, starting at the target's replicas from before KEDA scaled it, and sets `autoscaling.keda.sh/paused-replicas`: KEDA scales the target to that count, and holds it there.
+- **Resume** removes both annotations. It has no undo: pause again instead.
+- **Jobs** lists the Jobs a scaled job started.
+
+## Knative Serving
+
+[Knative Serving](https://knative.dev/docs/serving): services that scale with requests, their revisions, and the routes that split traffic between them.
+
+**Knative Serving**, under **Add-ons** (`knative-serving`): Service, Revision, Route, Configuration, DomainMapping.
+
+Everything is <span className="lumovi-status healthy">Ready</span>, critical with Knative's reason, or in progress (<span className="lumovi-status progressing">Deploying</span>, or the reason Knative gives).
+
+| Kind | Columns | Links | Related tabs |
+| --- | --- | --- | --- |
+| Service, Route, Configuration, DomainMapping | URL, Latest revision, Traffic | Latest revision | **Pods**, **Revisions** |
+| Revision | Service, Replicas, Wanted | Service | **Pods** |
+
+## KubeVirt
+
+[KubeVirt](https://kubevirt.io): virtual machines, their running instances and migrations, and the disks CDI imports for them.
+
+**KubeVirt**, under **Add-ons** (`kubevirt`): VirtualMachine, VirtualMachineInstance, VirtualMachineInstanceMigration, DataVolume, DataSource.
+
+A virtual machine is <span className="lumovi-status healthy">Running</span>, <span className="lumovi-status neutral">Stopped</span> or <span className="lumovi-status neutral">Paused</span>, critical with its status when it's an error (like `ErrImagePull` or `Unschedulable`), and otherwise in progress with its status. An instance is <span className="lumovi-status healthy">Running</span>, <span className="lumovi-status neutral">Shut down</span>, <span className="lumovi-status critical">Failed</span>, or in progress with its phase. Migrations are <span className="lumovi-status healthy">Migrated</span> or <span className="lumovi-status critical">Failed</span>, data volumes <span className="lumovi-status healthy">Ready</span> or <span className="lumovi-status critical">Failed</span>, both in progress until then, and data sources <span className="lumovi-status healthy">Ready</span> or <span className="lumovi-status warning">Not ready</span>.
+
+| Kind | Columns | Links | Related tabs | Actions |
+| --- | --- | --- | --- | --- |
+| VirtualMachine | Run strategy, CPU cores, Memory, Ready | Instance | **Pods** | **Start** (undo), **Stop…** (undo) |
+| VirtualMachineInstance | Node, IP, OS | Virtual machine, Node | **Pods** | |
+| VirtualMachineInstanceMigration | Instance | Instance | | |
+| DataVolume | Progress, From, Image, Claim | Claim | | |
+| DataSource | Claim, Snapshot | | | |
+
+- **Start** sets the run strategy to `Always`, for a stopped virtual machine.
+- **Stop…** sets it to `Halted`: the guest is shut down, and it stays stopped until it's started again. It's destructive, so it asks first.
+
+## Kyverno
+
+[Kyverno](https://kyverno.io): policies, and what they found in the cluster's resources.
+
+**Kyverno**, under **Add-ons** (`kyverno`): PolicyReport, ClusterPolicyReport, ClusterPolicy, Policy, ValidatingPolicy, PolicyException, ClusterCleanupPolicy, CleanupPolicy.
+
+A report, one for each resource, says how it did against every policy that applies to it: <span className="lumovi-status critical">2 errors</span>, <span className="lumovi-status critical">3 failing</span>, <span className="lumovi-status warning">2 warnings</span>, <span className="lumovi-status healthy">Passing</span> or <span className="lumovi-status neutral">Skipped</span>. Policies and cleanup policies are <span className="lumovi-status healthy">Ready</span>, or critical with the reason.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| PolicyReport, ClusterPolicyReport | Kind, Resource, Fail, Warn, Pass | Resource |
+| ClusterPolicy, Policy | Rules, On failure, Background | |
+| ValidatingPolicy | Actions, Validations, Mode | |
+| PolicyException | Policies, Rules | |
+| ClusterCleanupPolicy, CleanupPolicy | Schedule, Last run | |
+
+## Linkerd
+
+[Linkerd](https://linkerd.io): the mesh's policy (servers, routes and who may reach them) and service profiles.
+
+**Linkerd**, under **Network** (`linkerd`): Server, AuthorizationPolicy, HTTPRoute, MeshTLSAuthentication, NetworkAuthentication, EgressNetwork, ServiceProfile, ServerAuthorization. Egress networks and server authorizations have no view.
+
+A route is <span className="lumovi-status healthy">Accepted</span> or <span className="lumovi-status critical">Not accepted</span>.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| Server | Port, Protocol, Pods | |
+| AuthorizationPolicy | Target, Name, Requires | Target |
+| MeshTLSAuthentication, NetworkAuthentication | Identities, Service accounts, Networks | |
+| HTTPRoute (`policy.linkerd.io`) | Hostnames, Parents | |
+| ServiceProfile | Routes, Retry ratio | |
+
+## Longhorn
+
+[Longhorn](https://longhorn.io): replicated volumes, their snapshots and backups, and the nodes and disks they're on.
+
+**Longhorn**, under **Storage** (`longhorn`): Volume, Node, Snapshot, Backup, BackupTarget, RecurringJob, Replica.
+
+A volume is <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status warning">Degraded</span>, <span className="lumovi-status critical">Faulted</span>, <span className="lumovi-status neutral">Detached</span>, or in progress with its state. A node is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status critical">Not ready</span>, <span className="lumovi-status warning">Unschedulable</span>, or <span className="lumovi-status neutral">Not scheduling</span> when scheduling is turned off. Snapshots and backups are <span className="lumovi-status healthy">Completed</span> (or <span className="lumovi-status healthy">Ready</span>), <span className="lumovi-status critical">Failed</span>, or in progress with their state. A backup target is <span className="lumovi-status healthy">Available</span> or <span className="lumovi-status critical">Unavailable</span>, and a replica <span className="lumovi-status healthy">Running</span>, <span className="lumovi-status critical">Error</span>, or in progress.
+
+| Kind | Columns | Links | Related tabs | Actions |
+| --- | --- | --- | --- | --- |
+| Volume (`longhorn.io`) | Claim, Size, Replicas, Node, Last backup | Claim, Volume, Node | **Replicas**, **Snapshots** | **Take a snapshot…** (creates) |
+| Node (`longhorn.io`) | Disks, Scheduling | Node | | |
+| Snapshot, Backup | Volume, Of, Size, Taken, Backed up | Volume | | |
+| BackupTarget | URL, Poll interval | | | |
+| RecurringJob | Task, Schedule, Keeps, Groups | | | |
+| Replica | Volume, Node, State | Volume | | |
+
+**Take a snapshot…** creates a Snapshot of the volume, shown before it's created.
+
+## Prometheus operator
+
+The [Prometheus operator](https://prometheus-operator.dev)'s kinds, as kube-prometheus-stack installs them.
+
+**Prometheus Operator**, under **Add-ons** (`prometheus-operator`): Prometheus, Alertmanager, ServiceMonitor, PodMonitor, PrometheusRule.
+
+Prometheus and Alertmanager are <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Degraded</span> or <span className="lumovi-status critical">Unavailable</span>, as the operator reports them, or critical with its reason when it couldn't reconcile them.
+
+| Kind | Columns | Related tabs |
+| --- | --- | --- |
+| Prometheus, Alertmanager | Version, Replicas, Available, Retention | **Pods** |
+| ServiceMonitor, PodMonitor | Ports, Pod ports, Intervals | |
+| PrometheusRule | Groups, Rules, Alerts | |
+
+## Rook Ceph
+
+[Rook](https://rook.io): Ceph clusters, and the pools, filesystems and object stores on them.
+
+**Rook Ceph**, under **Storage** (`rook-ceph`): CephCluster, CephBlockPool, CephFilesystem, CephObjectStore, CephObjectStoreUser, CephNFS, ObjectBucketClaim.
+
+A Ceph cluster shows Ceph's own health: <span className="lumovi-status healthy">HEALTH_OK</span>, <span className="lumovi-status warning">HEALTH_WARN</span> or <span className="lumovi-status critical">HEALTH_ERR</span>, or <span className="lumovi-status critical">Failed</span>, and is in progress with its phase until Ceph reports. Pools, filesystems, object stores and their users are <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status critical">Failed</span>, or in progress with their phase. A bucket claim is <span className="lumovi-status healthy">Bound</span>, <span className="lumovi-status critical">Failed</span>, or in progress.
+
+| Kind | Columns | Links | Related tabs |
+| --- | --- | --- | --- |
+| CephCluster | Health, Used, Total, Ceph | | **Pods** |
+| CephBlockPool, CephFilesystem, CephObjectStore, CephObjectStoreUser, CephNFS | Replicas, Failure domain, Endpoints | | |
+| ObjectBucketClaim | Bucket, Storage class | Credentials, Endpoint | |
+
+## Sealed Secrets
+
+[Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets): secrets encrypted for the cluster's controller, which unseals each into a Secret of the same name.
+
+**Sealed Secrets**, under **Configuration** (`sealed-secrets`): SealedSecret.
+
+A sealed secret is <span className="lumovi-status healthy">Unsealed</span>, <span className="lumovi-status critical">Can't unseal</span>, or <span className="lumovi-status progressing">Waiting for the controller</span>.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| SealedSecret | Keys, Type | Secret |
+
+## Strimzi
+
+[Strimzi](https://strimzi.io): Kafka clusters, their topics and users, and Kafka Connect.
+
+**Strimzi**, under **Add-ons** (`strimzi`): Kafka, KafkaNodePool, KafkaTopic, KafkaUser, KafkaConnect, KafkaConnector, KafkaMirrorMaker2, KafkaBridge, KafkaRebalance.
+
+A Kafka cluster is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status warning">Ready, with warnings</span> when Strimzi fixed or ignored something, critical with Strimzi's reason, or <span className="lumovi-status progressing">Reconciling</span>. Topics, users and Kafka Connect are <span className="lumovi-status healthy">Ready</span>, or critical with the reason. A connector is <span className="lumovi-status healthy">Running</span>, paused or stopped as its state says, or critical. A rebalance is <span className="lumovi-status warning">Waiting for approval</span> once Cruise Control has proposed one, <span className="lumovi-status healthy">Done</span>, critical when it stopped or isn't ready, and otherwise in progress.
+
+| Kind | Columns | Links | Related tabs | Actions |
+| --- | --- | --- | --- | --- |
+| Kafka | Version, Node pools, Bootstrap | | **Pods**, **Node pools**, **Topics**, **Users** | |
+| KafkaNodePool | Cluster, Roles, Replicas, Node IDs | Cluster | **Pods** | |
+| KafkaTopic, KafkaUser | Cluster, Topic, Partitions, Replicas, Authentication, Authorization | Cluster, Secret | | |
+| KafkaConnect, KafkaMirrorMaker2, KafkaBridge | Replicas, Version, URL | | **Pods** | |
+| KafkaConnector | Connect, Class, Tasks, State | Connect | | **Pause** (undo), **Resume**, **Restart…** |
+| KafkaRebalance | Cluster, Mode, State | Cluster | | **Approve…**, **Refresh**, **Stop…** |
+
+- **Pause** pauses a connector, and **Resume** runs it again. **Restart…** restarts the connector and its tasks.
+- **Approve…** lets Cruise Control start moving partitions as it proposed. It's offered while a rebalance waits for approval.
+- **Refresh** asks Cruise Control for a new proposal.
+- **Stop…** stops a rebalance in progress; what it moved stays moved. It's destructive, so it asks first.
+
+## Tekton
+
+[Tekton](https://tekton.dev): pipelines and tasks, and their runs.
+
+**Tekton**, under **Add-ons** (`tekton`): PipelineRun, TaskRun, Pipeline, Task.
+
+Runs are <span className="lumovi-status healthy">Succeeded</span>, <span className="lumovi-status neutral">Cancelled</span>, critical with Tekton's reason when they failed, and otherwise in progress with the reason. A pipeline run that's waiting to start is <span className="lumovi-status neutral">Pending</span>.
+
+| Kind | Columns | Links | Related tabs | Actions |
+| --- | --- | --- | --- | --- |
+| PipelineRun | Pipeline, Started, Finished | Pipeline | **Pods**, **Task runs** | **Stop…**, **Cancel…**, **Run again…** (creates) |
+| TaskRun | Task, Pipeline run, Started, Finished | Task, Pipeline run, Pod | **Pods** | **Cancel…** |
+| Pipeline | Tasks, Parameters, Description | | **Runs** | **Run…** (creates) |
+| Task | Steps, Parameters, Description | | **Runs** | |
+
+- **Stop…** starts no more tasks: the running ones finish, and then its finally tasks run. **Cancel…** stops its running tasks at once, and its finally tasks don't run. Both are offered while a run is running.
+- **Run again…** creates a new pipeline run with a finished one's pipeline, parameters, workspaces and timeouts.
+- **Run…** creates a pipeline run of the pipeline, with no parameters or workspaces of its own.
+- **Runs** lists the runs of a pipeline or a task.
+
+## Traefik
+
+[Traefik](https://traefik.io): its routes, and what they pass requests through.
+
+**Traefik**, under **Network** (`traefik`): IngressRoute, Middleware, IngressRouteTCP, IngressRouteUDP, MiddlewareTCP, TraefikService, TLSOption, ServersTransport. Traefik services, TLS options and servers transports have no view.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| IngressRoute, IngressRouteTCP, IngressRouteUDP | Entry points, Rules, Services, TLS secret | TLS secret, Service |
+| Middleware, MiddlewareTCP | The API server's | |
+
+A middleware's details say what it does: where it redirects to, the prefixes it strips, its rate limit, the sources it allows, where it forwards authentication, and the middlewares it chains.
+
+## Trivy
+
+[Trivy Operator](https://aquasecurity.github.io/trivy-operator): what it found scanning the cluster.
+
+**Trivy**, under **Add-ons** (`trivy-operator`): VulnerabilityReport, ConfigAuditReport, ExposedSecretReport, RbacAssessmentReport, ClusterRbacAssessmentReport, ClusterComplianceReport.
+
+Reports are <span className="lumovi-status critical">2 critical</span> when they found critical issues, <span className="lumovi-status warning">5 high</span> when the worst are high, and otherwise <span className="lumovi-status healthy">No critical or high</span>. A compliance report is <span className="lumovi-status warning">3 failing</span> or <span className="lumovi-status healthy">Compliant</span>.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| VulnerabilityReport | Workload, Container, Image, Critical, High, Medium | Workload |
+| ConfigAuditReport, ExposedSecretReport, RbacAssessmentReport, ClusterRbacAssessmentReport | Resource, Critical, High, Medium, Low | Resource |
+| ClusterComplianceReport | Standard, Failing, Passing, Schedule | |
+
 ## Velero
 
-[Velero](https://velero.io): backups of cluster resources and volumes. Backups and restores are <span className="lumovi-status healthy">Completed</span>, <span className="lumovi-status warning">Partially failed</span>, or critical with Velero's phase.
+[Velero](https://velero.io): backups of cluster resources and volumes.
+
+**Velero**, under **Add-ons** (`velero`): Backup, Restore, Schedule, BackupStorageLocation. Backup storage locations have no view.
+
+Backups and restores are <span className="lumovi-status healthy">Completed</span>, <span className="lumovi-status warning">Partially failed</span>, <span className="lumovi-status warning">Deleting</span>, critical with Velero's phase when they failed, or in progress with it. A schedule is <span className="lumovi-status healthy">Enabled</span>, <span className="lumovi-status neutral">Paused</span>, or <span className="lumovi-status critical">Failed validation</span>.
 
 | Kind | Columns | Actions |
 | --- | --- | --- |
 | Backup, Restore | Started, Expires, Errors, Warnings | |
-| Schedule | Schedule, Last backup, Keep for | **Pause**, **Unpause** (both undo) |
+| Schedule | Schedule, Last backup, Keep for | **Pause** (undo), **Unpause** (undo) |
 
-## Crossplane
+## Vertical Pod Autoscaler
 
-[Crossplane](https://crossplane.io): the packages that extend it.
+The [Vertical Pod Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler): the requests it recommends for workloads, and whether it applies them.
 
-| Kind | Columns |
-| --- | --- |
-| Provider, Configuration, Function | Package, Installed, Healthy |
+**Vertical Pod Autoscaler**, under **Add-ons** (`vertical-pod-autoscaler`): VerticalPodAutoscaler.
 
-A package is <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status progressing">Installing</span>, or critical with the reason it isn't installed or healthy.
+An autoscaler is <span className="lumovi-status healthy">Recommending</span>, <span className="lumovi-status progressing">Gathering data</span>, <span className="lumovi-status warning">Low confidence</span>, <span className="lumovi-status warning">No pods</span> when no pods match it, or <span className="lumovi-status critical">Unsupported</span>.
+
+| Kind | Columns | Links | Actions |
+| --- | --- | --- | --- |
+| VerticalPodAutoscaler | Target, Mode, CPU, Memory | Target | **Change mode…** (undo, asks) |
+
+**Change mode…** asks for the **Mode**: **Off** only recommends, **Initial** sets requests on new pods, **Recreate** also evicts pods to update them, and **InPlaceOrRecreate** resizes them in place where it can. Undo puts the previous mode back.
+
+## VictoriaMetrics
+
+The [VictoriaMetrics operator](https://docs.victoriametrics.com/operator): VictoriaMetrics and VictoriaLogs, what they scrape, and their alerting rules.
+
+**VictoriaMetrics**, under **Add-ons** (`victoriametrics-operator`): VMCluster, VMSingle, VMAgent, VMAlert, VMAlertmanager, VMAuth, VMServiceScrape, VMPodScrape, VMRule, VLSingle, VLCluster.
+
+Everything is <span className="lumovi-status healthy">Operational</span> or <span className="lumovi-status critical">Failed</span>, as the operator reports it. Servers can also be <span className="lumovi-status neutral">Paused</span>, or in progress while they're created or updated.
+
+| Kind | Columns | Related tabs |
+| --- | --- | --- |
+| VMCluster, VMSingle, VMAgent, VMAlert, VMAlertmanager, VMAuth, VLSingle, VLCluster | Retention, Replicas | **Pods** |
+| VMServiceScrape, VMPodScrape, VMRule | Endpoints, Pod endpoints, Groups | |
+
+## Volume snapshots
+
+[Volume snapshots](https://kubernetes.io/docs/concepts/storage/volume-snapshots): point-in-time copies of volumes, taken by CSI drivers.
+
+**Volume Snapshots**, under **Storage** (`volume-snapshots`): VolumeSnapshot, VolumeSnapshotContent, VolumeSnapshotClass.
+
+A snapshot is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status progressing">Taking</span>, or <span className="lumovi-status critical">Failed</span>.
+
+| Kind | Columns | Links |
+| --- | --- | --- |
+| VolumeSnapshot, VolumeSnapshotContent | Volume claim, Snapshot, Size, Class, Taken | Volume claim, Content, Snapshot, Class |
+| VolumeSnapshotClass | Driver, Deletion policy, Default | |
 
 ## CustomResourceDefinitions
 
-CustomResourceDefinitions themselves get a view too: their list shows each one's **Kind**, **Group**, **Scope** and **Versions**, and their details add the plural, short names and stored versions.
+CustomResourceDefinitions themselves get a view too: their list shows each one's **Kind**, **Group**, **Scope** and **Versions**, and their details add the plural, short names and stored versions. They aren't in an add-on: open them from **API resources**.
 
 ## Changing a built-in view
 
-Your own view of a kind replaces Lumovi's for that kind. Copy the one you want to change from [Lumovi's views](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views) into `~/.lumovi/views`, edit it, and press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** then shows your file as the kind's view.
+Your own view of a kind replaces Lumovi's for that kind, and your own add-on replaces Lumovi's add-on with the same name: the one each section above gives after the add-on's label, like `flux`. Copy the file you want to change from [Lumovi's views](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views) into `~/.lumovi/views`, edit it, and press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** then shows your file as the kind's view.
+
+Views replace each other kind by kind: a view of yours for one of a tool's kinds leaves Lumovi's views of its other kinds in place. See [Which view a kind uses](/reference/view-format#which-view-a-kind-uses).
+
+<Note>
+  **In your cluster:** put your views and add-ons in the chart's `views` value. See [Views for everyone](/server/views).
+</Note>
 
 ## Contributing a view
 
-A view for a popular project is a welcome pull request. Add it to [`src/renderer/src/views`](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views), one file per project, with a comment linking to the project. Give its kinds the few columns people look at first, status rules when the conventions aren't enough, and actions its own CLI offers (and that a patch can do). Lumovi checks every view it ships when it starts, and the tests fail if one has a problem.
+Adding a tool needs no code, and is a welcome first contribution. To ask for one instead, open a [Support a tool](https://github.com/Lumovi/Lumovi/issues/new?template=tool_request.yml) issue. The [contributing guide](https://github.com/Lumovi/Lumovi/blob/main/CONTRIBUTING.md#adding-a-tool) has the details; in short:
+
+<Steps>
+  <Step title="Pin the tool's CRDs">
+    Add its release to `tests/views/crds/sources.json`, under the add-on's name, with the URLs of its CRD manifests, and run `npm run crds -- <name>`. That keeps what the check needs of them in `tests/views/crds/<name>.json`. A chart's templates work too, and for a tool whose operator creates its CRDs itself, the JSON Schema of each kind will do.
+  </Step>
+  <Step title="Write its add-on and views">
+    Write `src/renderer/src/views/<name>.yaml`, with a comment linking to the tool: the `AddOn`, then a `View` for each kind (or group of kinds) worth more than the generic columns. Status rules are where views help most: say what healthy, in progress, failing and paused look like for this tool.
+  </Step>
+  <Step title="Check it">
+    Run `npm run views:check`. It checks every kind, path, template, link, related list and action against the CRDs you pinned, so a misremembered field fails there rather than showing nothing. Labels and annotations aren't in schemas, so check those against the tool's documentation, or a real cluster.
+  </Step>
+  <Step title="Look at it">
+    Put the file in `~/.lumovi/views` while running `npm run dev` against a cluster with the tool installed, and press <kbd>⌘</kbd><kbd>R</kbd> after each change.
+  </Step>
+</Steps>
+
+To check the views against a newer release of a tool, change its version in `sources.json`, and run `npm run crds -- <name>` and `npm run views:check`.
 
 <Columns cols={2}>
-  <Card title="Write a view" icon="file-pen-line" href="/custom-resources/write-a-view">
-    A step-by-step guide to your first one.
+  <Card title="Add-ons" icon="package" href="/custom-resources/add-ons">
+    A tool's entry in the sidebar, and its page.
   </Card>
   <Card title="View format" icon="braces" href="/reference/view-format">
-    Every field a view can have.
+    Every field a view or an add-on can have.
   </Card>
 </Columns>
