@@ -112,14 +112,14 @@ The logo, the favicon, the link preview and the colors are Lumovi's brand, from
 [guidelines](https://github.com/Lumovi/Lumovi-design/blob/main/guidelines/README.md) for using
 them. Copy new versions from there rather than changing them here:
 
-| Here                                   | From Lumovi-design                    |
-| -------------------------------------- | ------------------------------------- |
-| `logo/light.svg`                       | `logo/svg/lumovi-logo-on-light.svg`   |
-| `logo/dark.svg`                        | `logo/svg/lumovi-logo-on-dark.svg`    |
-| `favicon.svg`                          | `icons/web/favicon.svg`               |
-| `og.png`, the docs' link preview       | `social/og/lumovi-docs.png`           |
-| `colors` in `docs.json`                | The README's colors for the docs      |
-| The `--lumovi-*` colors in `style.css` | `colors/tokens.css`, its theme tokens |
+| Here                                     | From Lumovi-design                    |
+| ---------------------------------------- | ------------------------------------- |
+| `logo/light.svg`                         | `logo/svg/lumovi-logo-on-light.svg`   |
+| `logo/dark.svg`                          | `logo/svg/lumovi-logo-on-dark.svg`    |
+| `favicon.svg`                            | `icons/web/favicon.svg`               |
+| `og.png`, the docs' link preview         | `social/og/lumovi-docs.png`           |
+| `colors` and `background` in `docs.json` | The README's settings for the docs    |
+| The `--lumovi-*` colors in `style.css`   | `colors/tokens.css`, its theme tokens |
 
 ## Checking your change
 
