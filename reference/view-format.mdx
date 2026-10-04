@@ -1,10 +1,10 @@
 ---
 title: "View format"
-description: "Every field a Lumovi view can have: kinds, columns, status rules, details, links and actions, with the paths, conditions and templates they use."
+description: "Every field a Lumovi view or add-on can have: kinds, columns, status rules, details, links, related lists and actions, with the paths, conditions and templates they use."
 icon: "braces"
 ---
 
-A view is a YAML document of kind `View`. This page lists everything it can say. For a guided introduction, see [Write a view](/custom-resources/write-a-view).
+A view is a YAML document of kind `View`: it tells Lumovi how to show a kind. An add-on is a document of kind `AddOn`: it gives a tool an entry in the sidebar, with all its kinds on one page. This page lists everything both can say. For a guided introduction, see [Write a view](/custom-resources/write-a-view) and [Add-ons](/custom-resources/add-ons).
 
 ```yaml
 apiVersion: lumovi.dev/v1alpha1
@@ -44,10 +44,25 @@ spec:
 | | Desktop app | In your cluster |
 | --- | --- | --- |
 | **Where** | `~/.lumovi/views`, or the folder in `LUMOVI_VIEWS_DIR` | The chart's `views` value, mounted at `/etc/lumovi/views` |
-| **Which files** | Every `.yaml` and `.yml` file in the folder (not in subfolders), up to 200, each up to 256 KB | The same |
+| **Which files** | Files ending in `.yaml` or `.yml` in the folder itself, not in subfolders. Lumovi reads them in order of their names, up to 200, each up to 256 KB. | The same |
 | **Reloading** | Press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux) | Change the chart's `views` value and upgrade the release |
 
-A file can hold several views, separated by `---`. A view of yours for a kind replaces Lumovi's view of it.
+A file can hold several documents separated by `---`, views and add-ons in any mix. Each is checked on its own: one with a problem isn't used, and the others are.
+
+## Which view a kind uses
+
+Each kind gets one view. Lumovi takes the first it finds:
+
+1. Yours, for the kind.
+2. Yours, for every kind of its group (`kind: '*'`).
+3. Lumovi's, for the kind.
+4. Lumovi's, for every kind of its group.
+
+So your views replace Lumovi's one kind at a time. If Lumovi's view covers five kinds and yours covers one of them, the other four keep Lumovi's. If two of your views name the same kind, the one read last wins: files are read in order of their names, and documents in the order they come in.
+
+Add-ons are matched by name instead: an add-on of yours replaces Lumovi's add-on with the same `metadata.name`, whole. See [Add-ons](#add-ons).
+
+**API resources** shows which view each kind uses: **Lumovi**, or the name of your file.
 
 ## The document
 
@@ -56,27 +71,38 @@ A file can hold several views, separated by `---`. A view of yours for a kind re
 </ResponseField>
 
 <ResponseField name="kind" type="string" required>
-  Always `View`.
+  `View` or `AddOn`.
 </ResponseField>
 
 <ResponseField name="metadata.name" type="string" required>
-  The view's name. It appears in problem messages, so make it recognizable.
+  Its name. It appears in problem messages, so make it recognizable. An add-on's name is also its address, and what decides which of Lumovi's add-ons yours replaces.
 </ResponseField>
 
 <ResponseField name="spec" type="object" required>
-  What the view says, below. Any field it doesn't know is a problem, so typos don't go unnoticed.
+  What it says: below for a view, and in [Add-ons](#add-ons) for an add-on. Any field it doesn't know is a problem, so typos don't go unnoticed.
 </ResponseField>
 
 ## spec
 
+A view's `spec`:
+
 <ResponseField name="kinds" type="list" required>
-  The kinds it's for, at least one. Each is a `kind` and its API `group`. Leave out `group` for the core group's kinds (`Secret`, `Pod`…).
+  The kinds it's for, at least one. Each is a `kind` and its API `group`. Leave out `group` for the core group's kinds.
 
   ```yaml
   kinds:
     - { group: source.toolkit.fluxcd.io, kind: GitRepository }
     - { group: source.toolkit.fluxcd.io, kind: HelmRepository }
   ```
+
+  `kind: '*'` is every kind of a group, like the constraint kinds Gatekeeper makes, one for each of its templates. It needs a `group`. A view for a kind itself wins over one for its whole group.
+
+  ```yaml
+  kinds:
+    - { group: constraints.gatekeeper.sh, kind: '*' }
+  ```
+
+  Kinds Lumovi has a page of its own for, like Pods, Deployments and Secrets (see [Resource kinds](/reference/resource-kinds)), keep their own icon, columns, status, details and tabs. A view of one only adds its actions.
 </ResponseField>
 
 <ResponseField name="icon" type="string">
@@ -96,11 +122,15 @@ A file can hold several views, separated by `---`. A view of yours for a kind re
 </ResponseField>
 
 <ResponseField name="links" type="list of links">
-  Related objects, opened from the detail panel. See [Links](#links).
+  Single objects this one points to, listed under **Related** in the detail panel's **Overview**. See [Links](#links).
+</ResponseField>
+
+<ResponseField name="related" type="list of related lists">
+  Objects of other kinds that belong to this one, a tab each in the detail panel. See [Related](#related).
 </ResponseField>
 
 <ResponseField name="actions" type="list of actions">
-  Changes people can make, as patches. See [Actions](#actions).
+  Changes people can make: a patch of the object, or a new object to create. See [Actions](#actions).
 </ResponseField>
 
 ## Fields
@@ -165,7 +195,7 @@ A path can also be written `{.spec.x}` or `$.spec.x`. When a path finds several 
 </ResponseField>
 
 <ResponseField name="detail" type="template">
-  More about it, shown on hover.
+  More about it, shown on hover, and in an add-on's **Message** column.
 </ResponseField>
 
 ## Conditions
@@ -189,7 +219,7 @@ when: { path: .spec.suspend }                               # set, and not false
 | `exists` | Is set (`true`), or isn't (`false`) |
 | (none) | Is set, and not false, 0 or empty |
 
-Comparisons ignore case, so `equals: True` matches Kubernetes' `"True"` even though YAML reads an unquoted `True` as a boolean. When a path finds several values, the first is compared.
+Comparisons ignore case, so `equals: True` matches Kubernetes' `"True"` even though YAML reads an unquoted `True` as a boolean. When a path finds several values, the first is compared. A condition with more than one operator uses the first of `exists`, `equals`, `notEquals`, `in` and `matches` that it has.
 
 Conditions combine with `all` and `any`, nested as deep as you need:
 
@@ -206,7 +236,7 @@ A condition has exactly one of `path`, `all` or `any`.
 
 ## Templates
 
-Labels, details, links, action texts and patches can include values from the object.
+A status rule's `label` and `detail`, links, related lists, and actions' texts, patches and new objects can include values from the object.
 
 | Template | Gives |
 | --- | --- |
@@ -214,8 +244,23 @@ Labels, details, links, action texts and patches can include values from the obj
 | `{{ .spec.issuerRef.kind ?? "Issuer" }}` | The value, or this text when the path finds nothing |
 | `{{ .spec.target.name ?? .metadata.name }}` | The value, or another path's |
 | `{{ now }}` | The current time, as Kubernetes writes times (most useful in patches) |
+| `{{ input.replicas }}` | What was given for one of an action's [inputs](#inputs). One left empty counts as nothing, so `??` works on it. |
+
+### In patches and new objects
+
+In a `patch`, an `undo` or an object to `create`, a value that's a template and nothing else stands for the value itself, not its text:
+
+- A number stays a number, and a list or an object is copied whole: `params: '{{ .spec.params }}'` copies the object's parameters.
+- When the template finds nothing, the field is left out (and a list item is dropped), rather than set to an empty string.
+- `{{ now }}` is always text, and so is everything under `labels` and `annotations`, which Kubernetes keeps as text.
+
+A value with other text around its template, like `'{{ .metadata.name }}-copy'`, is always text.
+
+Templates in `undo` are filled in from the object as it was before the action ran. So an undo can put back the value an action replaces: `undo: { spec: { mode: '{{ .spec.mode }}' } }`.
 
 ## Links
+
+Links are listed under **Related** in the detail panel's **Overview**. Click one to open the object.
 
 <ResponseField name="name" type="string" required>
   What the object is to this one, like `Secret` or `Issuer`.
@@ -235,9 +280,47 @@ Labels, details, links, action texts and patches can include values from the obj
 
 A link whose kind or name comes out empty isn't shown.
 
+## Related
+
+Related lists are the objects of another kind that belong to this one: a node pool's nodes, a database's instances, a pipeline's runs. Each is a tab of the detail panel, after **Metrics**, listing them with their kind's usual columns. They're also on the object's **Map**.
+
+```yaml
+related:
+  - name: Instances
+    kind: Pod
+    labels: { cnpg.io/cluster: '{{ .metadata.name }}', cnpg.io/podRole: instance }
+  - name: Nodes
+    kind: Node
+    labels: { karpenter.sh/nodepool: '{{ .metadata.name }}' }
+```
+
+<ResponseField name="name" type="string" required>
+  The tab's name, like `Instances` or `Nodes`.
+</ResponseField>
+
+<ResponseField name="kind" type="template" required>
+  Their kind, named as for [links](#links): `Pod`, `NodeClaim.karpenter.sh`.
+</ResponseField>
+
+<ResponseField name="labels" type="map of templates">
+  The labels they have, each value a template: `cnpg.io/cluster: '{{ .metadata.name }}'`.
+</ResponseField>
+
+<ResponseField name="fieldSelector" type="template">
+  A field selector they match, like `'spec.nodeName={{ .status.nodeName }}'`.
+</ResponseField>
+
+<ResponseField name="namespace" type="template">
+  Where to look. This object's namespace unless set. Kinds without namespaces are looked for across the cluster, and so is everything related to an object that has no namespace.
+</ResponseField>
+
+A related list needs `labels` or a `fieldSelector`: without one, it would be every object of the kind. A list whose kind, label values or field selector values come out empty isn't shown, since it would find the wrong objects. Like any list, it needs `list` on the kind.
+
+The first list of `Pod`s is special: it becomes the panel's **Pods** tab, under the list's name (CloudNativePG's **Instances**). It brings a **Logs** tab with their logs, merged, and a **Metrics** tab with their [usage history](/metrics/usage-history).
+
 ## Actions
 
-Actions patch the object, like `kubectl patch`.
+Actions change the object with a patch, like `kubectl patch`, or create another object, like `kubectl create`. Each has a `patch` or a `create`, not both.
 
 ```yaml
 actions:
@@ -266,8 +349,16 @@ actions:
   The action's name, in menus and on its button.
 </ResponseField>
 
-<ResponseField name="patch" type="object or list" required>
+<ResponseField name="patch" type="object or list">
   A merge patch (an object), or, with `type: json`, a list of JSON patch operations. Templates work inside it.
+</ResponseField>
+
+<ResponseField name="create" type="object">
+  An object to create instead, with templates. See [Creating objects](#creating-objects).
+</ResponseField>
+
+<ResponseField name="inputs" type="list of inputs">
+  Values to ask for before it runs, at least one. See [Inputs](#inputs).
 </ResponseField>
 
 <ResponseField name="type" type="string" default="merge">
@@ -279,15 +370,15 @@ actions:
 </ResponseField>
 
 <ResponseField name="undo" type="object or list">
-  A patch that takes the change back, offered as **Undo** in the notification. Same type as `patch`.
+  A patch that takes the change back, offered as **Undo** in the notification. Same type as `patch`, and filled in from the object as it was before. Actions that create have no undo.
 </ResponseField>
 
 <ResponseField name="confirm" type="template">
-  Asks first, with this text. Without it, the action runs at once.
+  Asks first, with this text.
 </ResponseField>
 
 <ResponseField name="done" type="template">
-  The notification once it's done.
+  The notification once it's done. Without it, the notification is the action's name and the object's.
 </ResponseField>
 
 <ResponseField name="when" type="condition">
@@ -303,26 +394,164 @@ actions:
 </ResponseField>
 
 <ResponseField name="icon" type="string">
-  One of the [icons](#icons).
+  One of the [icons](#icons). Without one, an action gets a lightning bolt.
 </ResponseField>
 
-Your account needs `patch` on the kind (or on its `status`, with `subresource: status`) for an action to be enabled. Like every change, it shows the equivalent `kubectl patch` command and is refused in a read-only cluster.
+### When an action asks first
+
+An action runs at once, unless it has a `confirm`, `inputs` or a `create`. Then it opens a dialog first, and its name ends in "…" in menus, like **Back up now…**. The dialog shows the `confirm` text, the inputs, what it would create, and the equivalent command. Its button has the action's name.
+
+### Inputs
+
+Inputs are values an action asks for, used in its templates as `{{ input.name }}`.
+
+```yaml
+- name: Switch over
+  inputs:
+    - name: instance
+      label: New primary
+      type: choice
+      from: '.status.instanceNames[*]'
+  confirm: The instance chosen becomes the primary, and {{ .status.currentPrimary }} a replica.
+  subresource: status
+  patch: { status: { targetPrimary: '{{ input.instance }}' } }
+  done: Switching {{ .metadata.name }} over to {{ input.instance }}
+
+- name: Pause at
+  inputs:
+    - { name: replicas, label: Replicas while paused, type: number, default: '{{ .status.originalReplicaCount }}' }
+  patch:
+    metadata:
+      annotations: { autoscaling.keda.sh/paused-replicas: '{{ input.replicas }}' }
+```
+
+<ResponseField name="name" type="string" required>
+  How templates name it: letters, digits and `_`, not starting with a digit, like `replicas`.
+</ResponseField>
+
+<ResponseField name="label" type="string" required>
+  What the dialog calls it.
+</ResponseField>
+
+<ResponseField name="type" type="string" default="text">
+  - `text`: a text field.
+  - `number`: a whole number from 0 to 1,000. In a patch, a template that's only this input gives a number (except under `labels` and `annotations`).
+  - `choice`: one of a few options, picked from a list.
+</ResponseField>
+
+<ResponseField name="options" type="list">
+  A choice's options: `[Off, Initial, Recreate]`.
+</ResponseField>
+
+<ResponseField name="from" type="path">
+  Where to read a choice's options from instead, like `'.status.instanceNames[*]'`. When it finds nothing, the dialog says **There's nothing to choose from.**
+</ResponseField>
+
+<ResponseField name="default" type="template">
+  The value it starts with. Without one, a number starts at 0, and a choice on its first option.
+</ResponseField>
+
+A choice has `options` or `from`, not both, and other inputs have neither. Every input needs a value before the action can run. Templates in `patch`, `create`, `confirm` and `done` can only name inputs the action has.
+
+### Creating objects
+
+`create` is an object to create, written as you'd write its YAML, with templates in it. It needs an `apiVersion`, a `kind`, and a `metadata.name` or `metadata.generateName`.
+
+```yaml
+- name: Back up now
+  icon: archive
+  inputs:
+    - { name: method, label: Method, type: choice, options: [barmanObjectStore, volumeSnapshot] }
+  create:
+    apiVersion: postgresql.cnpg.io/v1
+    kind: Backup
+    metadata:
+      generateName: '{{ .metadata.name }}-'
+    spec:
+      cluster: { name: '{{ .metadata.name }}' }
+      method: '{{ input.method }}'
+  done: Started a backup of {{ .metadata.name }}
+```
+
+- **Its name.** With `generateName`, Lumovi picks the random end of the name itself, the way the API server would, so the dialog shows the name it will get.
+- **Its namespace.** The object's own, unless `metadata.namespace` says otherwise. Kinds without namespaces get none.
+- **Copying.** A template that's a whole value copies it, lists and objects included, and leaves the field out when it finds nothing. Tekton's **Run again** copies a run's pipeline, parameters and workspaces this way: `params: '{{ .spec.params }}'`.
+- **Before and after.** The dialog shows the object as YAML first, under **Creates** with its kind and name. Once it's created, **Open** in the notification opens it.
+
+Creating something can't be undone from the notification: delete what it made instead.
+
+### Permissions and commands
+
+An action is enabled only when the cluster says your account may make the change: `patch` on the kind (or on its `status`, with `subresource: status`) for a patch, and `create` on the kind it creates for a `create`. Like every change, it shows the equivalent command, `kubectl patch …` or `kubectl create -f <name>.yaml`, and is refused in a [read-only](/changes/read-only) cluster.
+
+## Add-ons
+
+An add-on gives a tool an entry in the sidebar, leading to a page with all its kinds: everything in one list, and a tab for each kind. See [Add-ons](/custom-resources/add-ons).
+
+```yaml
+apiVersion: lumovi.dev/v1alpha1
+kind: AddOn
+metadata:
+  name: platform
+spec:
+  label: Platform
+  icon: database
+  kinds:
+    - { group: platform.example.com, kind: Database }
+    - { group: platform.example.com, kind: DatabaseBackup }
+```
+
+An add-on's `metadata.name` is its address (`add-ons/platform`). One of yours with the same name as one of Lumovi's replaces it whole: its label, icon, place and kinds. [Built-in views](/custom-resources/built-in-views) lists Lumovi's add-ons and their names.
+
+<ResponseField name="label" type="string" required>
+  Its name in the sidebar, on its page and in the command palette.
+</ResponseField>
+
+<ResponseField name="kinds" type="list" required>
+  Its kinds, at least one, in the order of their tabs. Written as a view's [kinds](#spec): `kind: '*'` is every kind of a group, each with a tab, in order of their names. Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be in an add-on.
+</ResponseField>
+
+<ResponseField name="icon" type="string">
+  One of the [icons](#icons). Without one, it gets the puzzle piece of custom resources.
+</ResponseField>
+
+<ResponseField name="category" type="string">
+  A section of the sidebar for Kubernetes' own kinds to sit in, at its end: `cluster` (**Cluster**), `network` (**Network**), `config` (**Configuration**) or `storage` (**Storage**). Without one, it's under **Add-ons**.
+</ResponseField>
+
+An add-on only groups kinds. How each kind looks, its columns, status and actions, comes from its view, matched by kind.
 
 ## Icons
 
-Views can use these [Lucide](https://lucide.dev/icons) icons, for the kind and for actions:
+Views can use these [Lucide](https://lucide.dev/icons) icons, for kinds, actions and add-ons:
 
-`activity`, `archive`, `bell`, `box`, `boxes`, `cloud`, `database`, `gauge`, `git-branch`, `globe`, `key-round`, `layers`, `lock`, `network`, `package`, `puzzle`, `radar`, `refresh-cw`, `rocket`, `route`, `server`, `shield-check`, `timer`, `workflow`
+`activity`, `archive`, `bell`, `box`, `boxes`, `bug`, `camera`, `cloud`, `database`, `file-check`, `flame`, `gauge`, `git-branch`, `git-merge`, `globe`, `hexagon`, `key-round`, `layers`, `lock`, `network`, `package`, `play`, `puzzle`, `radar`, `refresh-cw`, `rocket`, `route`, `scaling`, `server`, `server-cog`, `shield-check`, `signpost`, `timer`, `waves`, `waypoints`, `workflow`
 
 ## Problems
 
-Lumovi checks every view before using it. A view with a problem isn't used at all, and **API resources** lists the problem at the top, saying where it is:
+Lumovi checks every view and add-on before using it. One with a problem isn't used at all, and **API resources** lists the problem at the top, under **A view couldn't be used** (or how many problems there are), saying where it is: the file, the document's number when it isn't the first, its name and the field.
 
 | Message | Cause |
 | --- | --- |
-| `views.yaml: should start with apiVersion: lumovi.dev/v1alpha1 and kind: View` | The document isn't a view |
-| `views.yaml (document 2): needs metadata.name` | The second view in the file has no name |
+| `views.yaml: should start with apiVersion: lumovi.dev/v1alpha1 and kind: View or AddOn` | The document isn't a view or an add-on |
+| `views.yaml (document 2): needs metadata.name` | The second document in the file has no name |
 | `views.yaml: my-view: spec.columns[0].path: is required` | A column without a path |
-| `views.yaml: my-view: spec.colums: isn't something a view has` | A misspelled field |
+| `views.yaml: my-view: spec.colums: isn’t something a view has` | A misspelled field |
 | `views.yaml: my-view: spec.icon: should be one of activity, archive, …` | An icon that isn't on the list |
+| `views.yaml: my-view: spec.columns[1].path: “spec.ready” should start with a dot, like .spec.replicas` | A path that isn't one |
+| `views.yaml: my-view: spec.kinds[0]: every kind (*) is of a group: name it` | `kind: '*'` without a `group` |
+| `views.yaml: my-view: spec.related[0]: needs labels or a fieldSelector to find them` | A related list that would be every object of its kind |
+| `views.yaml: my-view: spec.actions[0]: needs a patch, or an object to create (not both)` | An action with neither, or both |
 | `views.yaml: my-view: spec.actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |
+| `views.yaml: my-view: spec.actions[0]: what it creates needs an apiVersion, a kind, and a metadata.name or generateName` | An incomplete object to create |
+| `views.yaml: my-view: spec.actions[0]: can’t undo creating something` | An `undo` on an action that creates |
+| `views.yaml: my-view: spec.actions[0]: {{ input.size }} isn’t one of its inputs` | A template naming an input the action doesn't have |
+| `views.yaml: my-view: spec.actions[0].inputs[0]: a choice needs options, or a path to read them from` | A choice without `options` or `from`, or with both |
+| `views.yaml: my-view: spec.actions[0].inputs[0]: only a choice has options` | `options` or `from` on a text or number input |
+| `views.yaml: my-tools: spec: Pod has a page of its own, so it can’t be in an add-on` | One of Lumovi's own kinds in an add-on |
+| `views.yaml: my-tools: spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section add-ons can't sit in |
+| `views.yaml: It’s larger than 256 KB.` | A file over the limit, which isn't read |
+
+A file that isn't valid YAML shows the parser's message, after the file's name.
+
+Below the list, **API resources** says how many views are Lumovi's and how many are yours, and where yours go, with **How to write a view**.
