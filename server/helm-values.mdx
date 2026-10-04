@@ -16,10 +16,22 @@ To see the defaults, with a comment on each:
 helm show values oci://ghcr.io/lumovi/charts/lumovi
 ```
 
+## What it is
+
+<ResponseField name="mode" type="string" default="dashboard">
+  What the release is:
+
+  - `dashboard`: Lumovi, showing this cluster to whoever signs in, or a [fleet](/server/fleet) of clusters when the `fleet` values say where they are.
+  - `member`: what a fleet's Lumovi needs to reach this cluster: a service account that may only impersonate, and its token. The chart's notes print the kubeconfig to add. See [Add a cluster](/server/fleet/members).
+  - `agent`: a fleet's agent, for a cluster its Lumovi can't reach: it dials Lumovi. See [Private clusters](/server/fleet/agents).
+
+  A member or an agent makes no Lumovi in the cluster, and no Service, Ingress or NetworkPolicy.
+</ResponseField>
+
 ## The cluster and its address
 
 <ResponseField name="clusterName" type="string" default="in-cluster">
-  What Lumovi calls the cluster: in its pages, their addresses and titles. No slashes or spaces.
+  What Lumovi calls the cluster: in its pages, their addresses and titles. No slashes or spaces. In a fleet, the name of the cluster Lumovi runs in. For a member, the name its kubeconfig entry has, and for an agent, its name in the fleet.
 </ResponseField>
 
 <ResponseField name="url" type="string">
@@ -100,6 +112,50 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
   How long a session lasts, in hours: more than 0, at most 168 (a week). Sessions live in Lumovi's memory, so a restart signs people out sooner.
 </ResponseField>
 
+## A fleet
+
+Lumovi shows a fleet when `fleet.kubeconfigSecret`, `fleet.secrets` or `fleet.agentsSecret` is set. A fleet needs `auth.mode` `oidc` or `proxy`: with `token`, the chart refuses to install. See [A fleet of clusters](/server/fleet).
+
+<ResponseField name="fleet.kubeconfigSecret" type="string">
+  A Secret in Lumovi's namespace with a kubeconfig under the key `kubeconfig`, each of whose contexts is a cluster. Lumovi reads it again as it changes.
+</ResponseField>
+
+<ResponseField name="fleet.secrets" type="string[]" default="[]">
+  Secrets that describe clusters, by whose: `lumovi`, `cluster-api` and `argocd`. Lumovi reads them again every 30 seconds. See [Clusters from Secrets](/server/fleet/discovery).
+</ResponseField>
+
+<ResponseField name="fleet.secretNamespaces" type="string[]" default="[]">
+  Where those Secrets are: the release's namespace unless set. The chart lets Lumovi's service account list Secrets in each.
+</ResponseField>
+
+<ResponseField name="fleet.agentsSecret" type="string">
+  A Secret in Lumovi's namespace with the agents that may connect under the key `agents.yaml`: a list of `{ name, tokenSha256, labels, groups }`. Lumovi reads it when it starts. See [Private clusters](/server/fleet/agents).
+</ResponseField>
+
+<ResponseField name="fleet.includeThisCluster" type="boolean" default="true">
+  Whether the cluster Lumovi runs in is one of the fleet's, called `clusterName`. Its service account may then impersonate users and groups here.
+</ResponseField>
+
+<ResponseField name="fleet.labels" type="object" default="{}">
+  The labels of the cluster Lumovi runs in, like `{ env: production, region: eu-west }`.
+</ResponseField>
+
+## An agent
+
+With `mode: agent`. `clusterName` is the agent's name in the fleet.
+
+<ResponseField name="agent.hubUrl" type="string">
+  The fleet's Lumovi, like `https://lumovi.example.com`, with its base path if it has one. Required.
+</ResponseField>
+
+<ResponseField name="agent.tokenSecret" type="string">
+  A Secret in the release's namespace with the agent's token under the key `token`. Required.
+</ResponseField>
+
+<ResponseField name="agent.resources" type="object">
+  The agent's resources. By default it requests `10m` of CPU and `32Mi` of memory, and is limited to `128Mi` of memory.
+</ResponseField>
+
 ## What people can do
 
 <ResponseField name="readOnly" type="boolean" default="false">
@@ -143,7 +199,12 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="rbac.create" type="boolean" default="true">
-  Whether the chart lets Lumovi's service account impersonate users and groups, which it needs with `oidc` (unless tokens are passed on) and `proxy`. In other modes, the chart makes no RBAC objects either way. Set it to `false` to manage that permission yourself.
+  Whether the chart gives Lumovi's service account the permissions it needs:
+
+  - to impersonate users and groups: for one cluster, with `oidc` (unless tokens are passed on) and `proxy`; in a fleet, when it includes this cluster; and always as a member or an agent,
+  - in a fleet, to list Secrets where `fleet.secrets` are.
+
+  Otherwise, the chart makes no RBAC objects either way. Set it to `false` to manage those permissions yourself.
 </ResponseField>
 
 <ResponseField name="replicaCount" type="integer" default="1">

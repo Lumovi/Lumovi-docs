@@ -1,0 +1,89 @@
+---
+title: "Run a fleet on Sevalla"
+sidebarTitle: "On Sevalla"
+description: "Run a fleet's Lumovi on Sevalla, or a platform like it: from Lumovi's image, with every setting in an environment variable."
+icon: "cloud"
+---
+
+A fleet's Lumovi needs no Kubernetes of its own. On a platform that runs containers from an image, like [Sevalla](https://sevalla.com), it runs from Lumovi's image, and every setting is an environment variable. This page uses Sevalla; other platforms that take an image and environment variables work the same way.
+
+## Before you start
+
+- **The fleet's kubeconfig**: each cluster as a context, with credentials that may only impersonate. [Add a cluster](/server/fleet/members) makes them.
+- **Your OpenID Connect provider**, to register Lumovi with. A fleet needs [single sign-on](/server/auth/single-sign-on) or an authenticating proxy, and on a platform, single sign-on is the simple one.
+- **The address people will open**, like `https://lumovi.example.com`: the one Sevalla gives the application, or a domain of your own.
+
+## Set it up
+
+<Steps>
+  <Step title="Encode the kubeconfig">
+    Platform settings are single values, with no files to mount, so give Lumovi the kubeconfig encoded in base64, on one line:
+
+    <CodeGroup>
+      ```bash macOS
+      base64 < fleet.yaml | tr -d '\n'
+      ```
+
+      ```bash Linux
+      base64 -w0 fleet.yaml
+      ```
+    </CodeGroup>
+
+    Lumovi takes a setting that's only base64 characters as encoded, and decodes it.
+  </Step>
+  <Step title="Register Lumovi with your provider">
+    Add Lumovi as a web application, with this redirect URI: your address's origin, then `auth/callback`.
+
+    ```text
+    https://lumovi.example.com/auth/callback
+    ```
+
+    Note the client ID and secret. See [Single sign-on](/server/auth/single-sign-on) for the rest: the claims, and the groups in the ID token.
+  </Step>
+  <Step title="Create the application">
+    In Sevalla, create an application from a Docker image: `ghcr.io/lumovi/lumovi:{{version}}`. Pin a version, so you know what runs, and change it to upgrade.
+  </Step>
+  <Step title="Set its environment variables">
+    | Variable | Value |
+    | --- | --- |
+    | `LUMOVI_URL` | The address people open, like `https://lumovi.example.com` |
+    | `LUMOVI_AUTH` | `oidc` |
+    | `LUMOVI_OIDC_ISSUER` | Your provider's issuer URL |
+    | `LUMOVI_OIDC_CLIENT_ID` | Lumovi's client ID there |
+    | `LUMOVI_OIDC_CLIENT_SECRET` | Its secret |
+    | `LUMOVI_USERNAME_PREFIX` | `oidc:`, say, as the names your RBAC uses |
+    | `LUMOVI_GROUPS_PREFIX` | `oidc:`, say |
+    | `LUMOVI_FLEET_KUBECONFIG` | The kubeconfig, encoded in base64 |
+    | `LUMOVI_FLEET_AGENTS` | Your [agents](/server/fleet/agents), if you have any, encoded the same way |
+
+    Leave out `LUMOVI_PORT`. Sevalla tells the application which port to listen on in `PORT`, and Lumovi listens on that one. (`LUMOVI_PORT` wins, when it's set.)
+  </Step>
+  <Step title="Run one instance">
+    Sessions live in Lumovi's memory, and a sign-in has to finish where it started, so keep the application to one instance. If you set a health check, its path is `/healthz`: it answers `200 ok` without signing in.
+  </Step>
+  <Step title="Deploy, and sign in">
+    Lumovi's log says what it shows, starting `Lumovi {{version}} shows a fleet of 3 clusters (prod-eu, prod-us, staging)`. A setting that doesn't make sense stops it, and the log says which and why. Open your address, and sign in.
+  </Step>
+</Steps>
+
+## Change the fleet
+
+Lumovi reads `LUMOVI_FLEET_KUBECONFIG` and `LUMOVI_FLEET_AGENTS` when it starts. To add or remove a cluster, change the variable, and deploy again. Restarting signs everyone out.
+
+## Reaching the clusters
+
+Lumovi reaches each cluster's API server from Sevalla, over the internet:
+
+- **API servers that only let some addresses in** must let in your application's outbound IP addresses. Sevalla's applications reach out from fixed ones.
+- **Clusters it can't reach at all**, in a private network, need an [agent](/server/fleet/agents). Agents dial your application's address, like `https://lumovi.example.com`, with a WebSocket.
+
+Sevalla serves applications through Cloudflare's edge, which passes WebSockets: pages' and agents' connections stay open. Lumovi pings them every 30 seconds (`LUMOVI_HEARTBEAT_SECONDS`), so idle connections aren't closed.
+
+<Columns cols={2}>
+  <Card title="A fleet of clusters" icon="boxes" href="/server/fleet">
+    The kubeconfig, its settings, and the fleet page.
+  </Card>
+  <Card title="Server configuration" icon="settings-2" href="/server/configuration#a-fleet">
+    Every setting, as an environment variable.
+  </Card>
+</Columns>

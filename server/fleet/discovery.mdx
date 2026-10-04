@@ -1,0 +1,128 @@
+---
+title: "Clusters from Secrets"
+sidebarTitle: "Clusters from Secrets"
+description: "Let a fleet's Lumovi find its clusters in Secrets: its own, Cluster API's and Argo CD's."
+icon: "key-round"
+---
+
+When Lumovi runs in a cluster, it can find its fleet's clusters in that cluster's Secrets, each tool's way:
+
+- **`lumovi`**: Secrets you make, each with a kubeconfig.
+- **`cluster-api`**: the kubeconfig Cluster API keeps for each cluster it makes.
+- **`argocd`**: Argo CD's cluster Secrets, for the clusters it deploys to.
+
+Lumovi lists them with its own service account when it starts, and again every 30 seconds (`LUMOVI_FLEET_REFRESH_SECONDS`), so clusters come and go as their Secrets do.
+
+## Turn it on
+
+With the Helm chart, name the sources, and the namespaces their Secrets are in:
+
+```yaml values.yaml
+fleet:
+  secrets: [lumovi, cluster-api, argocd]
+  # Where those Secrets are: the release's namespace unless set.
+  secretNamespaces: [lumovi, clusters, argocd]
+```
+
+The chart makes a Role in each of those namespaces that lets Lumovi's service account list Secrets, and binds it. Without the chart, set `LUMOVI_FLEET_SECRETS` (`lumovi,cluster-api,argocd`) and `LUMOVI_FLEET_SECRETS_NAMESPACES` (comma-separated, the service account's namespace unless set), and give the service account `list` on Secrets there.
+
+This works only inside a cluster. Outside one, Lumovi doesn't start:
+
+```text
+LUMOVI_FLEET_SECRETS reads Secrets of the cluster Lumovi runs in, and it isn't running in one (KUBERNETES_SERVICE_HOST isn't set).
+```
+
+Secrets that can't be listed leave their clusters out until they can be, and the log says why, once:
+
+```text
+Fleet: Secrets for argocd in argocd can't be listed: …
+```
+
+## Lumovi's own
+
+A Secret labelled `lumovi.dev/cluster` (with any value), with a kubeconfig under `kubeconfig`. Each context of the kubeconfig is a cluster, called by the context's name, with Lumovi's [settings in its extension](/server/fleet#settings-for-each-cluster) if it has them.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: prod-eu
+  namespace: lumovi
+  labels:
+    lumovi.dev/cluster: ''
+  annotations:
+    lumovi.dev/labels: env=production,region=eu-west
+type: Opaque
+stringData:
+  kubeconfig: |
+    apiVersion: v1
+    kind: Config
+    clusters:
+      - name: prod-eu
+        cluster:
+          server: https://prod-eu.example.com:6443
+          certificate-authority-data: LS0tLS1CRUdJTi…
+    users:
+      - name: prod-eu
+        user:
+          token: eyJhbGciOiJSUzI1NiIs…
+    contexts:
+      - name: prod-eu
+        context: { cluster: prod-eu, user: prod-eu }
+```
+
+Or from a [member's](/server/fleet/members) kubeconfig:
+
+```bash
+kubectl create secret generic prod-eu --namespace lumovi --from-file kubeconfig=prod-eu.yaml
+kubectl label secret prod-eu --namespace lumovi lumovi.dev/cluster=
+```
+
+A Secret without a kubeconfig is shown under its own name, saying `It has no kubeconfig (data.kubeconfig).`
+
+## Cluster API's
+
+Cluster API keeps each cluster's kubeconfig in a Secret called `<cluster>-kubeconfig`, under `value`, in the namespace of its `Cluster`, and labels it, like the cluster's other Secrets, with `cluster.x-k8s.io/cluster-name`. Lumovi reads the `-kubeconfig` ones, and calls each cluster by that label.
+
+When Cluster API replaces a kubeconfig, Lumovi reads the new one at its next look.
+
+<Warning>
+  Cluster API's kubeconfigs sign in as each cluster's administrator. Lumovi uses them only to impersonate the people who sign in, so their RBAC applies, but Lumovi then holds administrator credentials for every one of those clusters. For credentials that may only impersonate, [add the clusters as members](/server/fleet/members) instead.
+</Warning>
+
+## Argo CD's
+
+Argo CD keeps each cluster it deploys to in a Secret labelled `argocd.argoproj.io/secret-type: cluster`, with its `name`, its `server`, and a `config` that says how to sign in. Lumovi calls each cluster by its `name`, and reads from `config`:
+
+| Field | What Lumovi does with it |
+| --- | --- |
+| `bearerToken` | Signs in with it. |
+| `username`, `password` | Signs in with them. |
+| `tlsClientConfig` | `caData`, `certData`, `keyData`, `serverName` and `insecure`, as Argo CD does. |
+| `execProviderConfig` | Runs its `command`, which must be in Lumovi's image: the image has only Node.js and helm. |
+| `awsAuthConfig` | Nothing: the cluster's card says `Argo CD signs in to it with AWS (awsAuthConfig), which Lumovi can't: give it a bearerToken.` |
+
+The Secret's own labels become the cluster's, except Argo CD's (`argocd.argoproj.io/…`). A Secret without a `name` or a `server` is shown under its own name, saying `It has no name or server.`
+
+Argo CD's credentials are usually its `argocd-manager` service account's, which may do anything in the cluster. As with Cluster API's, Lumovi uses them only to impersonate.
+
+## Lumovi's settings, as annotations
+
+Any of these Secrets can carry Lumovi's settings for its clusters as annotations. Each one that's set wins over a cluster's own setting, from its kubeconfig's extension or its Argo CD labels.
+
+| Annotation | What it sets |
+| --- | --- |
+| `lumovi.dev/labels` | Labels, like `env=production,region=eu-west`. They're added to the cluster's own, and win over one with the same key. |
+| `lumovi.dev/groups` | Only people in these groups see the cluster, like `sre, developers`: groups as your provider or proxy names them, without prefixes. |
+| `lumovi.dev/forward-token` | `true`: requests carry each person's own token, instead of impersonating them. Anything else: Lumovi impersonates them. |
+
+A Secret whose annotations aren't like this is shown under its own name, as **Misconfigured**, saying why, like `lumovi.dev/labels must be labels like env=production,region=eu, not "staging".`
+
+<Columns cols={2}>
+  <Card title="A fleet of clusters" icon="boxes" href="/server/fleet">
+    The other ways to describe clusters, and the fleet page.
+  </Card>
+  <Card title="Helm values" icon="sliders-horizontal" href="/server/helm-values#a-fleet">
+    The chart's fleet values.
+  </Card>
+</Columns>

@@ -21,6 +21,10 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
   The port to listen on, from `0` to `65535`. `0` picks any free port, and the log says which. The chart sets it to `8080` itself.
 </ResponseField>
 
+<ResponseField name="PORT" type="number">
+  The port to listen on when `LUMOVI_PORT` isn't set, as platforms like [Sevalla](/server/fleet/sevalla) set it for the application they run.
+</ResponseField>
+
 <ResponseField name="LUMOVI_ADDRESS" type="string">
   The address to listen on: every interface unless set.
 </ResponseField>
@@ -38,7 +42,7 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
 ## The cluster it shows
 
 <ResponseField name="LUMOVI_CLUSTER_NAME" type="string">
-  What it calls the cluster: `in-cluster` (or the kubeconfig's context) unless set.
+  What it calls the cluster: `in-cluster` (or the kubeconfig's context) unless set. In a fleet, the cluster it runs in.
 </ResponseField>
 
 <ResponseField name="KUBECONFIG" type="string">
@@ -57,10 +61,46 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
   Where the API server is, inside a cluster, with `KUBERNETES_SERVICE_PORT`. Kubernetes sets both in every pod: you don't. Without `KUBERNETES_SERVICE_HOST` or `KUBECONFIG`, Lumovi stops, saying it isn't running in a cluster.
 </ResponseField>
 
+## A fleet
+
+Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi shows a fleet when any of `LUMOVI_FLEET_KUBECONFIG`, `LUMOVI_FLEET_KUBECONFIG_FILE`, `LUMOVI_FLEET_SECRETS` and `LUMOVI_FLEET_AGENTS` is set, or `LUMOVI_FLEET_LOCAL` is `true`. It then needs `LUMOVI_AUTH` to be `oidc` or `proxy`, and doesn't use `KUBECONFIG` or `LUMOVI_CONTEXT`. The settings of a fleet's agents are on [Private clusters](/server/fleet/agents#run-it-another-way).
+
+<ResponseField name="LUMOVI_FLEET_KUBECONFIG" type="string">
+  A kubeconfig, each of whose contexts is a cluster: YAML or JSON, or that encoded in base64 on one line. Read when Lumovi starts. One that isn't a kubeconfig stops it.
+</ResponseField>
+
+<ResponseField name="LUMOVI_FLEET_KUBECONFIG_FILE" type="string">
+  Kubeconfig files, separated by `:`, each of whose contexts is a cluster. Read when Lumovi starts, and again every `LUMOVI_FLEET_REFRESH_SECONDS`. A file that can't be read keeps the clusters it had, and the log says why.
+</ResponseField>
+
+<ResponseField name="LUMOVI_FLEET_SECRETS" type="string">
+  Secrets of the cluster Lumovi runs in that describe clusters, by whose: `lumovi`, `cluster-api` and `argocd`, separated by commas. Only in a cluster. See [Clusters from Secrets](/server/fleet/discovery).
+</ResponseField>
+
+<ResponseField name="LUMOVI_FLEET_SECRETS_NAMESPACES" type="string">
+  Where those Secrets are, separated by commas: the service account's namespace unless set.
+</ResponseField>
+
+<ResponseField name="LUMOVI_FLEET_AGENTS" type="string">
+  The agents that may connect, as a YAML list, or that encoded in base64 on one line: each with a `name`, a `token` of at least 32 characters or its `tokenSha256`, and optional `labels`, `groups` and `forwardToken`. Read when Lumovi starts. See [Private clusters](/server/fleet/agents).
+</ResponseField>
+
+<ResponseField name="LUMOVI_FLEET_LOCAL" type="boolean">
+  `true` or `false`: whether the cluster Lumovi runs in is one of the fleet's. Unless set, it is whenever Lumovi runs in a cluster and shows a fleet. `true` outside a cluster stops Lumovi, and `true` on its own makes a fleet of just that cluster.
+</ResponseField>
+
+<ResponseField name="LUMOVI_FLEET_REFRESH_SECONDS" type="number" default="30">
+  How often kubeconfig files and Secrets are read again, in seconds: from 1 to 3600.
+</ResponseField>
+
+<ResponseField name="LUMOVI_CLUSTER_LABELS" type="string">
+  The labels of the cluster Lumovi runs in, in a fleet, like `env=production,region=eu-west`.
+</ResponseField>
+
 ## Sign-in
 
 <ResponseField name="LUMOVI_AUTH" type="string" default="token">
-  `token`, `oidc` or `proxy`. See [Ways to sign in](/server/overview#ways-to-sign-in).
+  `token`, `oidc` or `proxy`. See [Ways to sign in](/server/overview#ways-to-sign-in). A fleet needs `oidc` or `proxy`.
 </ResponseField>
 
 <ResponseField name="LUMOVI_OIDC_ISSUER" type="string">
@@ -108,11 +148,11 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
 </ResponseField>
 
 <ResponseField name="LUMOVI_USERNAME_PREFIX" type="string">
-  Put before impersonated users' names.
+  Put before impersonated users' names. In a fleet, in every cluster that doesn't have its own.
 </ResponseField>
 
 <ResponseField name="LUMOVI_GROUPS_PREFIX" type="string">
-  Put before impersonated groups' names.
+  Put before impersonated groups' names. In a fleet, in every cluster that doesn't have its own.
 </ResponseField>
 
 <ResponseField name="LUMOVI_SESSION_HOURS" type="number" default="12">
@@ -120,7 +160,7 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
 </ResponseField>
 
 <ResponseField name="LUMOVI_HEARTBEAT_SECONDS" type="number" default="30">
-  How often pages' connections are checked, in seconds, at most 3600. Keep it shorter than the idle timeout of the proxies in front of Lumovi.
+  How often pages' connections, and a fleet's agents', are checked, in seconds, at most 3600. Keep it shorter than the idle timeout of the proxies in front of Lumovi.
 </ResponseField>
 
 ## What people can do
@@ -180,6 +220,7 @@ All of these are below the base path. Whatever stands in front of Lumovi must pa
 | `GET auth/sign-in` | Where single sign-on starts: Lumovi sends the browser on to your provider. Only with `oidc`. |
 | `auth/callback` | Where your OpenID Connect provider sends people back. Register it as the redirect URI. Only with `oidc`. |
 | `api/socket` | Each page's WebSocket. Proxies in front of Lumovi must pass WebSockets here. |
+| `api/agent` | Where a fleet's [agents](/server/fleet/agents) connect, with a WebSocket. Only a fleet takes them. |
 
 Any other address below the base path is Lumovi's page or one of its files, for `GET` and `HEAD`. Other methods get `405`, and other addresses under `api/` and `auth/` get `404`.
 
