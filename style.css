@@ -26,8 +26,7 @@
   --lumovi-good-text: #1a7f37;
   --lumovi-warn-text: #8a5a00;
   --lumovi-critical-text: #b42318;
-  --lumovi-shadow-window: 0 0 0 1px rgb(12 12 20 / 0.06), 0 24px 60px -24px rgb(12 12 20 / 0.28),
-    0 18px 40px -28px rgb(38 117 211 / 0.35);
+  --lumovi-shadow-window: 0 0 0 1px rgb(0 0 0 / 0.06), 0 24px 60px -24px rgb(0 0 0 / 0.28);
   --lumovi-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
@@ -47,7 +46,7 @@
   --lumovi-warn-text: #e3a008;
   --lumovi-critical-text: #f85149;
   --lumovi-shadow-window: 0 0 0 1px rgb(255 255 255 / 0.07), 0 40px 100px -30px rgb(0 0 0 / 0.9),
-    0 30px 80px -40px rgb(57 135 229 / 0.35);
+    0 30px 80px -40px rgb(255 255 255 / 0.08);
 }
 
 /* Code in the app's monospace. */
@@ -83,6 +82,11 @@ kbd,
   letter-spacing: -0.04em;
 }
 
+/* Blue is only for what you can act on, so the section's name above the title is quiet text. */
+.eyebrow {
+  color: var(--lumovi-text-3) !important;
+}
+
 /* Key caps, as in the app's shortcut sheet. */
 kbd {
   display: inline-flex;
@@ -115,23 +119,21 @@ kbd {
   box-shadow: var(--lumovi-shadow-window);
 }
 
-/* The introduction's lead screenshot sits in a soft glow. */
+/* The introduction's lead screenshot sits in a soft light, from the bottom left as in the mark. */
 .lumovi-hero {
   position: relative;
   margin: 0.5rem 0 2.5rem;
   padding: 1.25rem;
   border-radius: 20px;
   background:
-    radial-gradient(60% 70% at 70% 30%, rgb(57 135 229 / 0.18), transparent 70%),
-    radial-gradient(50% 60% at 15% 90%, rgb(29 43 79 / 0.12), transparent 70%),
-    var(--lumovi-surface-2);
+    radial-gradient(70% 80% at 15% 90%, rgb(255 255 255 / 0.9), transparent 70%),
+    var(--lumovi-surface-3);
   border: 1px solid var(--lumovi-line);
 }
 :root.dark .lumovi-hero {
   background:
-    radial-gradient(60% 70% at 70% 30%, rgb(57 135 229 / 0.22), transparent 70%),
-    radial-gradient(50% 60% at 15% 90%, rgb(29 43 79 / 0.55), transparent 70%),
-    #101014;
+    radial-gradient(70% 80% at 15% 90%, rgb(255 255 255 / 0.07), transparent 70%),
+    var(--lumovi-surface);
 }
 .lumovi-hero img {
   width: 100%;
