@@ -19,7 +19,19 @@ Every object Lumovi shows gets a status: a short label that says what's going on
 
 Lists sort by health, in that order, so the most urgent things are always at the top. The chips above a list count each level and filter by it. Pick **Failing** and **Warning** together to see only the problems.
 
-Some kinds name the chips in their own words: on **Pods** they're **Running**, **Starting** and **Completed** instead of **Healthy**, **In progress** and **Inactive**, and on **Events**, **Normal**.
+Some lists name the chips in their own words:
+
+| List | Chips, instead of the level's name |
+| --- | --- |
+| **Pods** | **Running** (Healthy), **Starting** (In progress), **Completed** (Inactive) |
+| **Events** | **Normal** (Inactive) |
+| **Jobs** | **Complete** (Healthy), **Running** (In progress) |
+| **CronJobs** | **Scheduled** (Healthy), **Suspended** (Inactive) |
+| **ReplicaSets** | **Ready** (Healthy), **Degraded** (Warning), **Unavailable** (Failing), **Scaled to zero** (Inactive) |
+| **Namespaces** | **Active** (Healthy), **Terminating** (Warning) |
+| **Helm releases** | **Deployed** (Healthy), **Pending** (In progress), **Uninstalling** (Warning), **Failed** (Failing), **Other** (Inactive) |
+
+Every other list, Deployments, StatefulSets, DaemonSets and the Workloads page included, uses the names above.
 
 In the app, a status always comes with an icon and its label, never color alone, and the colors are reserved for health. Charts use a palette checked for color blindness, in both themes.
 

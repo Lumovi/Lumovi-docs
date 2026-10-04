@@ -31,7 +31,7 @@ Forward a port on your computer to a pod or a service, like `kubectl port-forwar
     The local port, **On this computer**, starts as the same number. Ports below 1024 need special rights on many systems, so for those it starts 8000 higher: port 80 becomes 8080, 443 becomes 8443. Change it if you like.
   </Step>
   <Step title="Start forwarding">
-    Tick **Open http&#58;//localhost:N in the browser** to open it right away, then choose **Start forwarding**.
+    Tick **Open http&#58;//localhost:N in the browser** to open it right away, then choose **Start forwarding**. A notification says what's forwarded where, like "Forwarding localhost:8080 to web:80", with **Open** to open it in your browser later.
   </Step>
 </Steps>
 
@@ -47,10 +47,10 @@ While any forward runs, a **Port forwards** button in the header shows how many.
 
 - Its address, `localhost:8080`. Choose it to open it in your browser, or **Copy address**.
 - Where it goes: the service, the pod and the pod's port, with the namespace and cluster.
-- How many connections it has, and any error.
+- How many connections it has, and any error. The button's icon turns red while a forward has one.
 - **Stop forwarding**.
 
-Forwards stop when you stop them, and when you quit Lumovi.
+Forwards stop when you stop them, and when you quit Lumovi. They also stop when Lumovi's window loads its page again, as **Reload** on an error screen does, because forwards belong to the page that started them.
 
 ## How it works
 

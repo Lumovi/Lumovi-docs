@@ -16,6 +16,10 @@ The sidebar's **Configuration** and **Storage** sections hold five lists:
 
 Volumes and storage classes aren't in a namespace, so their lists always show all of them. (<kbd>⌘</kbd> is <kbd>Ctrl</kbd> on Windows and Linux.)
 
+When the cluster has them, the sections also hold [add-ons](/custom-resources/add-ons): **Sealed Secrets** under Configuration, and **Longhorn**, **Rook Ceph** and **Volume Snapshots** under Storage.
+
+Every one of these objects also has a **Map** tab: what uses a ConfigMap, Secret or claim, and what a claim is bound to, down to its volume and storage class. See [Map](/explore/map).
+
 ## ConfigMaps
 
 Open a ConfigMap and its **Data** section shows each key with its value, as text. Binary values (`binaryData`) are counted in the **Keys** column, and are in the YAML.

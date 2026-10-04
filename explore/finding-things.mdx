@@ -21,24 +21,39 @@ Results come in groups:
 | --- | --- |
 | **Actions** | When an object is open: everything you can do to it. Actions you can't take are shown, disabled. |
 | **Objects** | Once you've typed two characters: objects whose names match, among those Lumovi has already loaded in this cluster (up to 20). |
-| **Go to** | Every view: the overview, Workloads, Metrics, Helm releases, API resources, and every kind the cluster serves, found by name, kind, short name or API group. Custom resources included. |
+| **Go to** | Every view: the overview, Workloads, Metrics and [Right-sizing](/metrics/right-sizing), Helm releases, API resources, the page of each [add-on](/custom-resources/add-ons) the cluster has (marked **Add-on**), and every kind the cluster serves, found by name, kind, short name or API group. Custom resources included. |
 | **Namespace** | **All namespaces**, and every namespace. |
 | **Clusters** | Every cluster in your kubeconfig, and **All clusters**. Desktop app only. |
-| **Help & appearance** | **Create from YAML**, **Metrics source…**, **Keyboard shortcuts**, the light, dark and system themes, and making this cluster read-only or allowing changes again. |
+| **Help & appearance** | **Create from YAML**, **Metrics source…**, **Keyboard shortcuts**, **Use system theme**, **Use light theme**, **Use dark theme**, and **Make** _cluster_ **read-only** or **Allow changes to** _cluster_. The last one isn't there when `LUMOVI_READ_ONLY` makes every cluster read-only. |
 
 Move with <kbd>↑</kbd> <kbd>↓</kbd>, press <kbd>↵</kbd> to pick, and <kbd>Esc</kbd> to close.
 
 <Tip>
-  Some views answer to other words too: `prometheus` or `usage history` finds Metrics, `charts` finds Helm releases, and `crds` finds API resources.
+  Some views answer to other words too: `prometheus` or `usage history` finds Metrics, `recommendations` or `over-provisioned` finds Right-sizing, `charts` finds Helm releases, and `crds` finds API resources.
 </Tip>
 
 ## Go-to keys
 
 Every main view has a two-key shortcut: press <kbd>G</kbd>, then a letter, within about a second. For example <kbd>G</kbd> <kbd>P</kbd> for Pods, <kbd>G</kbd> <kbd>D</kbd> for Deployments. The sidebar shows each view's keys when you hover it, and [Keyboard shortcuts](/reference/keyboard-shortcuts) lists them all.
 
+## The sidebar
+
+From top to bottom, the sidebar has:
+
+- **The cluster switcher**: the cluster you're in, its Kubernetes version, and a lock when it's [read-only](/changes/read-only). Open it to switch clusters. See [Connect your clusters](/clusters/connect#switching-clusters).
+- **Overview**, **Workloads**, **Pods**, **Metrics** (with its **Right-sizing** tab) and **Helm releases**. Workloads stays highlighted on the list of each workload kind.
+- **Cluster**, **Network**, **Configuration** and **Storage**: Kubernetes' own kinds, like **Nodes**, **Services**, **Secrets** and **Volume Claims**. [Add-ons](/custom-resources/add-ons) that extend them sit with them when the cluster has them: **Cilium**, **Gateway API**, **Linkerd** and **Traefik** under Network, **Sealed Secrets** under Configuration, **Longhorn**, **Rook Ceph** and **Volume Snapshots** under Storage.
+- **Pinned**: the kinds you pinned, in every cluster that serves them. Pin a custom kind from the pin button above its list, or from **API resources**.
+- **Add-ons**: a page for each of the other tools the cluster runs, like **Argo CD**, **cert-manager** or **Karpenter**.
+- **Custom resources**: the custom kinds you opened last in this cluster (up to five), then **API resources**, with how many custom kinds the cluster serves. Kinds you pinned, and kinds that belong to an add-on, aren't repeated here.
+
+At the bottom are the theme, your account when Lumovi runs [in your cluster](/server/overview), a link to Lumovi on GitHub, and the version you're running.
+
+ReplicaSets and Autoscalers have lists of their own, but no place in the sidebar: find them with <kbd>⌘</kbd><kbd>K</kbd>.
+
 ## Narrowing a list
 
-Every list has the same three tools above it.
+Lists of objects, the Workloads page and add-on pages all have the same three tools above them. **Helm releases** has the first two.
 
 ### Health
 
@@ -53,7 +68,7 @@ Press <kbd>/</kbd>, or click the filter box, and type. It matches, without case:
 - for events, the reason, message and object's name
 - for custom resources, what the list's columns show
 
-On the Workloads page, the filter also matches each workload's kind and images.
+On the Workloads page, the filter also matches each workload's kind and images. On an add-on's page, it matches each object's kind and what its status says, like the reason it failed.
 
 <kbd>↓</kbd> moves from the filter into the list. <kbd>Esc</kbd> leaves the filter.
 
@@ -72,8 +87,9 @@ A list stops at 5,000 objects (or `LUMOVI_MAX_LIST_ITEMS`). When there are more,
 
 ## Sorting and pages
 
-- **Sort** by clicking a column's header, and again to reverse it. Lists start sorted by status, the most urgent first; kinds with no status by name, and events by when they were last seen.
-- **Pages** hold 100 rows, or 50, 250 or 500 (**Rows per page**). Use <kbd>←</kbd> <kbd>→</kbd> for the previous and next page.
+- **Sort** by clicking a column's header, and again to reverse it. Not every column sorts: the name, status and age do, and so do numbers like restarts, CPU, memory, count and last seen, and the columns custom resources get from the cluster or a view.
+- Lists start sorted by status, the most urgent first; kinds with no status by name, and events by when they were last seen. **Helm releases** starts sorted by name.
+- **Pages** hold 100 rows, or 50, 250 or 500 (**Rows per page**). Use <kbd>←</kbd> <kbd>→</kbd> for the previous and next page. **Helm releases** shows every release on one page.
 
 ## Moving through a list
 
@@ -89,7 +105,7 @@ A list stops at 5,000 objects (or `LUMOVI_MAX_LIST_ITEMS`). When there are more,
 
 ## Back and Forward
 
-The filter, health chips, label selector, sort, page and the open object are all part of the page's address. **Back** (<kbd>⌘</kbd><kbd>[</kbd> or <kbd>Alt</kbd><kbd>←</kbd>) and **Forward** (<kbd>⌘</kbd><kbd>]</kbd> or <kbd>Alt</kbd><kbd>→</kbd>) bring each of them back, like in a browser.
+The filter, health chips, label selector, sort, page and the open object are all part of the page's address. **Back** (<kbd>⌘</kbd><kbd>[</kbd> or <kbd>Alt</kbd><kbd>←</kbd>) and **Forward** (<kbd>⌘</kbd><kbd>]</kbd> or <kbd>Alt</kbd><kbd>→</kbd>) bring each of them back, like in a browser. On **Helm releases**, only the open release is part of the address.
 
 <Note>
   **In your cluster:** these addresses are real links. Copy one from the address bar to share a filtered list, or an open pod, with a teammate.

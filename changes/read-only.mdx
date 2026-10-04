@@ -29,7 +29,7 @@ Lumovi remembers which clusters you made read-only, by their kubeconfig context 
 
 ## For every cluster
 
-Set `LUMOVI_READ_ONLY` to `1` (or `true`) in the environment Lumovi starts in. Every cluster is read-only, and it can't be turned off from the app: the switch is disabled, with the caption "Set by LUMOVI_READ_ONLY". That makes it a good fit for shared machines, demos and screen shares.
+Set `LUMOVI_READ_ONLY` to `1` (or `true`) in the environment Lumovi starts in. Every cluster is read-only, and it can't be turned off from the app: the switch is disabled, with the caption "Set by LUMOVI_READ_ONLY", and the command palette leaves out its read-only command. That makes it a good fit for shared machines, demos and screen shares.
 
 <CodeGroup>
   ```bash macOS
@@ -60,12 +60,13 @@ It isn't only the buttons. The part of Lumovi that talks to your clusters (the d
 | [Edit YAML](/changes/yaml), including its dry runs | Off |
 | [Create from YAML](/changes/create) | Off |
 | [Several at once](/changes/bulk) | Off |
+| **Apply…** in [Right-sizing](/metrics/right-sizing) | Off |
 | [Helm](/helm/upgrade-and-rollback) upgrades, installs, rollbacks and uninstalls | Off |
 | [Shells](/debug/shell) and debug containers | Off: a shell can change a container |
 | [Port forwards](/debug/port-forwarding) | On: they don't change the cluster |
 | Lists, details, logs, metrics, YAML, Helm releases | On |
 
-Actions that are off stay visible, disabled, with "Changes are turned off for this cluster."
+Actions that are off stay visible, disabled, with "Changes are turned off for this cluster." One button stays enabled: **Install chart** on Helm releases. Its dialog opens, and when you choose **Review**, it shows the refusal above instead of a dry run.
 
 ## In your cluster
 

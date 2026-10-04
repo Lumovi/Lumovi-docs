@@ -12,7 +12,7 @@ Open the menu and pick one, or **All namespaces**. Type to find a namespace in a
 
 You can also switch from the command palette: press <kbd>⌘</kbd><kbd>K</kbd> (<kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) and type the namespace's name. Its **Namespace** group lists **All namespaces** and every namespace.
 
-With **All namespaces**, each row shows its namespace under its name, so you can tell `web` in `shop` from `web` in `staging`.
+With **All namespaces**, each row shows its namespace under its name, so you can tell `web` in `shop` from `web` in `staging`. Events are the exception: their list has no name column, so it doesn't show their namespace. Pick a namespace to see its events alone.
 
 ## Where it starts
 
@@ -34,7 +34,7 @@ Some accounts may use a few namespaces but not list them. When the list can't be
 
 ## Cluster-wide kinds
 
-Some kinds don't live in a namespace: nodes, namespaces, volumes, storage classes, and cluster-scoped custom resources. On their pages the menu shows **Cluster-wide**, and the list shows everything, whichever namespace you picked.
+Some kinds don't live in a namespace: nodes, namespaces, volumes, storage classes, and cluster-scoped custom resources. On their pages the menu shows **Cluster-wide**, and the list shows everything, whichever namespace you picked. So does the page of an [add-on](/custom-resources/add-ons) whose kinds are all cluster-wide.
 
 The overview's node figures are cluster-wide too. Its workloads, pods and events follow the namespace you picked.
 

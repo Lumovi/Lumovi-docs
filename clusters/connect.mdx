@@ -72,11 +72,11 @@ Each row shows:
 - The API server's host and the user, like `api.example.com · admin`.
 - **Checking…** while Lumovi asks the cluster for its version, then the version and how long it took to answer (`v1.34.1 · 18 ms`), or what went wrong.
 
-The clusters you opened last are under **Recent**, and the rest under **All clusters**. Type to search, move with <kbd>↑</kbd> <kbd>↓</kbd>, and press <kbd>↵</kbd> to open one. Below the list, **Loaded from** shows which kubeconfig files were read.
+The clusters you opened last (up to five) are under **Recent**, and the rest under **All clusters**. Until you've opened one, there's a single list, **Clusters**. Type to search, move with <kbd>↑</kbd> <kbd>↓</kbd>, and press <kbd>↵</kbd> to open one. Below the list, **Loaded from** shows which kubeconfig files were read.
 
 ### When a cluster can't be reached
 
-The label says what kind of problem it is. Hover it for the full message. If you open the cluster anyway, the page explains what to try, with **Try again**.
+The label says what kind of problem it is. Hover it for the full message. If you open the cluster anyway, the overview explains what to try, with **Try again** and **Choose another cluster**.
 
 | Label | What it means | What to try |
 | --- | --- | --- |
@@ -89,7 +89,7 @@ The label says what kind of problem it is. Hover it for the full message. If you
 | **Forbidden** | Access denied. | Your account isn't allowed to read this. If you only have access to some namespaces, pick one from the namespace menu. |
 | **Not found** | Not found. | It may have been deleted, or this API isn't available on the cluster. |
 | **Server error** | The API server returned an error. | This is usually temporary. Retry in a moment. |
-| **Misconfigured** | The context can't be used as it is. | Hover the label for the reason: a context that points at a cluster your kubeconfig doesn't define, for example. |
+| **Misconfigured** | The context can't be used as it is. Opened, its error screen says **Invalid request**. | Hover the label for the reason, like *Context "dev" points at cluster "dev-eu", which isn't defined*. Fix the context in your kubeconfig, then choose **Reload**. |
 
 Expired credentials show up as **Unauthorized**, or as **Credentials failed** when the plugin that gets them fails. Signing in again with your cloud's CLI usually fixes both.
 
@@ -100,7 +100,7 @@ Expired credentials show up as **Unauthorized**, or as **Credentials failed** wh
 
 ## Switching clusters
 
-The cluster switcher at the top of the sidebar shows the cluster you're in, its Kubernetes version, and a lock if it's [read-only](/changes/read-only). Open it to:
+The cluster switcher at the top of the sidebar shows the cluster you're in, its Kubernetes version (or **Unavailable** when it doesn't answer), and a lock if it's [read-only](/changes/read-only). Open it to:
 
 - Switch to another cluster: type to filter, and pick one.
 - Go back to **All clusters**, the start screen.
@@ -112,7 +112,7 @@ Each cluster remembers its own [namespace](/clusters/namespaces), so switching b
 
 ## When a cluster stops answering
 
-If a cluster stops responding while you're using it, a banner says *Can't reach production. Checking again every 15 seconds.*, with **Retry now** and **All clusters**. The last data stays on screen, so you can keep reading while it comes back. When a single list fails to refresh, it keeps its rows and says *Couldn't refresh — showing the last data.*, with **Retry**.
+If a cluster stops responding while you're using it, a banner says *Can't reach production. Checking again every 15 seconds.*, with **Retry now**, and **All clusters** to open another. (When Lumovi runs [in your cluster](/server/overview), there's no other cluster, so the banner has only **Retry now**.) The last data stays on screen, so you can keep reading while it comes back. When a single list fails to refresh, it keeps its rows and says *Couldn't refresh — showing the last data.*, with **Retry**.
 
 ## Big or slow clusters
 

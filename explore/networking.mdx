@@ -4,7 +4,7 @@ description: "Services, ingresses and network policies: how traffic reaches your
 icon: "network"
 ---
 
-The sidebar's **Network** section has three lists. Like every list, they follow the [namespace](/clusters/namespaces) you picked.
+The sidebar's **Network** section has three lists of Kubernetes' own kinds. Like every list, they follow the [namespace](/clusters/namespaces) you picked. When the cluster has them, the section also holds the [add-ons](/custom-resources/add-ons) for its network: **Cilium**, **Gateway API**, **Linkerd** and **Traefik**.
 
 | List | Shortcut | Columns |
 | --- | --- | --- |
@@ -29,7 +29,10 @@ Open a service to see:
 - **Ports**: each port's name, port, target, node port and protocol.
 - **Pods**: the pods its selector matches, failing ones first. If this list is empty, the service has nowhere to send traffic.
 - **Logs**: the logs of every pod behind it, merged in the order they were written. Handy for following a request across replicas. See [Logs](/debug/logs).
+- **Map**: what routes traffic to it, like ingresses and HTTPRoutes, and the pods it sends it to. See [Map](/explore/map).
 - **Events** and **YAML**.
+
+A service without a selector, like an `ExternalName` service, has no **Pods** or **Logs** tab: it has no pods of its own.
 
 ### Reach a service from your computer
 
@@ -39,13 +42,13 @@ Open a service to see:
 
 ## Ingresses
 
-Open an ingress for its class, address and TLS hosts, and its **Rules**: each host and path, and the service and port it sends traffic to (`web:80`).
+Open an ingress for its class, address and TLS hosts, and its **Rules**: each host and path, and where it sends that traffic. That's a service and its port, like `web:80`, or for a backend of another kind, its kind and name. Traffic that no rule takes goes to the ingress's default backend, listed last with host `*` and path *Anything else*. An ingress with no rules at all shows `*` in the list's **Hosts** column. Its **Map** shows the services it routes to, and what's behind them.
 
-Using the Gateway API or Istio instead? Their kinds, like `HTTPRoute`, `Gateway` and `VirtualService`, have views with the columns and links that matter for them. See [Built-in views](/custom-resources/built-in-views).
+Using the Gateway API or Istio instead? Their kinds, like `HTTPRoute`, `Gateway` and `VirtualService`, have views with the columns and links that matter for them, and Gateway API has its own page under **Network**. See [Add-ons](/custom-resources/add-ons) and [Built-in views](/custom-resources/built-in-views).
 
 ## Network policies
 
-Open a policy for the pods it applies to (its **Pod selector**, or *All pods in namespace*), its policy types, and how many ingress and egress rules it has. The rules themselves are in **YAML**.
+Open a policy for the pods it applies to (its **Pod selector**, or *All pods in namespace*), its policy types, and how many ingress and egress rules it has. The rules themselves are in **YAML**, and its **Map** shows the pods it applies to.
 
 <Columns cols={2}>
   <Card title="Port forwarding" icon="cable" href="/debug/port-forwarding">

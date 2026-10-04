@@ -7,7 +7,7 @@ icon: "history"
 
 Changes to Helm releases go through your own `helm`, so hooks, three-way merges and Helm's own record of revisions work as they always do. Lumovi prepares the command, shows it to you, and shows what it would change before anything does.
 
-Open a release in **Helm releases** (<kbd>G</kbd> then <kbd>H</kbd>), and use **Upgrade…**, **Roll back…** or **Uninstall…** at the top of its panel.
+Open a release in **Helm releases** (<kbd>G</kbd> then <kbd>H</kbd>), and use **Upgrade…**, **Roll back…** or **Uninstall…** (the trash button) at the top of its panel.
 
 ## Upgrade
 
@@ -34,6 +34,8 @@ Open a release in **Helm releases** (<kbd>G</kbd> then <kbd>H</kbd>), and use **
         | A packaged chart's URL, like `https://example.com/web-1.2.0.tgz` | Empty |
 
         Leave **Version** empty for the latest, or type one. With a repository URL, **List its versions** reads the repository's index and offers every version in a menu.
+
+        Or type in **Search Artifact Hub** and press <kbd>↵</kbd>, and pick one of the charts it finds, as when you [install a chart](/helm/install).
       </Accordion>
       <Accordion title="A chart on this computer" icon="folder-code">
         A chart folder or a packaged `.tgz`, like the one you're working on. It's checked with `helm lint`, and can have its subcharts downloaded. See [Charts on your computer](/helm/local-charts).
@@ -45,7 +47,7 @@ Open a release in **Helm releases** (<kbd>G</kbd> then <kbd>H</kbd>), and use **
   <Step title="Edit the values">
     The editor starts with the values set for the release now. Everything set here applies, and the chart's defaults fill in the rest, the way `helm upgrade --values` works.
 
-    **Start from the chart's defaults** replaces the editor's contents with the chosen chart's `values.yaml` (from `helm show values`), for when you want to see everything you could set.
+    **Start from the chart's defaults** replaces the editor's contents with the chosen chart's `values.yaml` (from `helm show values`), for when you want to see everything you could set. It's there for a chart from a repository, a registry or this computer, not for the chart the release runs.
   </Step>
   <Step title="Review">
     Press **Review**, or <kbd>⌘</kbd><kbd>S</kbd> in the editor (Ctrl+S on Windows and Linux). Lumovi checks the values are valid YAML, then runs the upgrade as a server-side dry run: Helm renders the chart and the API server validates every object, but nothing changes.
@@ -87,7 +89,7 @@ If Flux's helm-controller manages a release, every dialog warns that Flux puts b
 
 The desktop app runs the `helm` on your login shell's `PATH`, so it's the same one your terminal uses. To use another, set `LUMOVI_HELM` to its path before starting Lumovi.
 
-If Lumovi can't find it, the dialog says so: "Lumovi uses helm for this, and couldn't run helm. Install Helm (https://helm.sh), or set LUMOVI_HELM to where it is."
+If Lumovi can't run it, a release's **Upgrade…**, **Roll back…** and **Uninstall…** are disabled, and say why: "Lumovi uses helm for this, and couldn't run helm. Install Helm, or set LUMOVI_HELM to where it is." **Install chart** says the same when you choose **Review**, with Helm's address: "Install Helm (https://helm.sh), or set LUMOVI_HELM to where it is."
 
 Each command is pointed at the cluster you're looking at with `--kube-context`, uses your kubeconfig's credentials, and may run for up to 10 minutes (for charts with slow hooks).
 
@@ -97,7 +99,7 @@ Each command is pointed at the cluster you're looking at with `--kube-context`, 
 
 ## When changes are off
 
-A cluster you made [read-only](/changes/read-only) can't be changed with Helm either: the buttons are disabled with "Changes are turned off for this cluster." The app itself refuses the change, not just its buttons.
+A cluster you made [read-only](/changes/read-only) can't be changed with Helm either: a release's buttons are disabled with "Changes are turned off for this cluster." The app itself refuses the change, not just its buttons, so **Install chart**, which stays enabled, shows that the cluster is read-only when you choose **Review**.
 
 <Columns cols={2}>
   <Card title="Charts on your computer" icon="folder-code" href="/helm/local-charts">

@@ -15,7 +15,7 @@ Lumovi reads releases from where Helm itself keeps them, so looking needs no `he
 
 ## The list
 
-Each release shows its **Status**, **Chart** and version, **App version**, **Revision** and when it was **Updated**. Sort by any column; sorting by **Status** puts failed releases first. Press <kbd>/</kbd> to filter by name, namespace, chart or app version, or narrow the list by status with the chips:
+Each release shows its **Status**, **Chart** and version, **App version**, **Revision** and when it was **Updated**. The list starts sorted by name, and shows every release on one page. Sort by any column; sorting by **Status** puts failed releases first. Press <kbd>/</kbd> to filter by name, namespace, chart or app version, or narrow the list by status with the chips:
 
 | Chip | Statuses |
 | --- | --- |
@@ -29,7 +29,7 @@ The list refreshes every 15 seconds. **Install chart** at the top installs a new
 
 ## A release
 
-Click a release to open it next to the list. Its actions (**Upgrade…**, **Roll back…** and **Uninstall…**) are at the top.
+Click a release to open it next to the list, or move to it with <kbd>↑</kbd> <kbd>↓</kbd> and press <kbd>↵</kbd>. Its actions are at the top: **Upgrade…**, **Roll back…** when it has an earlier revision to go back to, and **Uninstall…**, the trash button.
 
 <Frame caption="A release's history, with a diff between any two revisions.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/helm-light-1x.webp" alt="A Helm release's history, ready to roll back." />

@@ -11,7 +11,9 @@ The overview is where every cluster opens. In a few seconds it tells you whether
   <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-dark-1x.webp" alt="A cluster's overview: nodes, pods and workloads, CPU and memory with their last hour, and what needs attention." />
 </Frame>
 
-The line at the top names the API server and its Kubernetes version. Nodes and capacity are always the whole cluster's. Workloads, pods and events follow the [namespace](/clusters/namespaces) you picked.
+The line at the top names the API server and its Kubernetes version. Nodes and capacity are always the whole cluster's. Workloads, pods and events follow the [namespace](/clusters/namespaces) you picked, and the line says which one.
+
+If the cluster can't be read (it's unreachable, say), the overview says why, with **Try again** and **Choose another cluster**.
 
 ## The four numbers
 

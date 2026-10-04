@@ -31,9 +31,11 @@ Lumovi shows every kind your cluster serves. Nineteen common kinds have pages of
 | Volumes (PersistentVolume) | `v1` | Sidebar → Storage | |
 | Storage Classes | `storage.k8s.io/v1` | Sidebar → Storage | |
 
+<kbd>⌘</kbd><kbd>K</kbd> is <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux.
+
 Every list starts with **Name**, then **Status** for kinds that have one, then the kind's own columns, and ends with **Age**. [Health and status](/explore/health) explains how each status is worked out.
 
-Every kind except Events can also be given new labels and annotations (**Edit labels…**), edited as YAML (**Edit YAML**), and deleted (**Delete…**). The tables below list what each kind adds. See [Actions by kind](/changes/actions) for how each one works.
+Every kind except Events can also be given new labels and annotations (**Edit labels…**), edited as YAML (**Edit YAML**), and deleted (**Delete…**). The tables below list what each kind adds. See [Actions by kind](/changes/actions) for how each one works. Every object except events and namespaces also has a [Map](/explore/map) tab, showing how it's connected to the rest of the cluster.
 
 ## Workloads
 
@@ -90,13 +92,14 @@ Lists of Secrets carry only the names of their keys. Values are read when you op
 
 ## Every other kind
 
-Custom resources, and Kubernetes' own less common kinds (Leases, PodDisruptionBudgets, CustomResourceDefinitions…), are found through API discovery. They're all in **API resources**, in the sidebar and the command palette, grouped by API group like `kubectl api-resources`.
+Custom resources, and Kubernetes' own less common kinds (Leases, PodDisruptionBudgets, CustomResourceDefinitions…), are found through API discovery. They're all in **API resources**, in the sidebar and the command palette: custom resources first, grouped by API group, then Kubernetes' own kinds, each with its API version, scope and view.
 
 - **Names.** Lumovi names a kind with its API group, like `Certificate.cert-manager.io`. <kbd>⌘</kbd><kbd>K</kbd> finds a kind by its name, short name or group.
 - **Columns.** The ones the API server prints for the kind, as `kubectl get` shows them (a CRD's printer columns), unless a [view](/custom-resources/built-in-views) gives it better ones.
 - **Status.** Read from the conventions most controllers follow: `Ready`-like conditions, `Stalled` and `Reconciling`, a spec the controller hasn't caught up with, suspension, or a phase. A view can set its own rules.
 - **Actions.** Edit labels, edit YAML and delete, like any kind. Kinds with the scale subresource (an Argo Rollout, say) can be scaled like Deployments, and views add actions of their own, like **Sync** or **Reconcile**.
-- **Sidebar.** The custom resources you opened last in a cluster are listed under **Custom resources**, and you can pin any of these kinds to the sidebar.
+- **Add-ons.** The kinds of a tool the cluster runs, like Argo CD or cert-manager, are on that tool's [add-on](/custom-resources/add-ons) page, all together and on a tab each, and the tool has an entry in the sidebar.
+- **Sidebar.** The custom resources you opened last in a cluster (up to five) are listed under **Custom resources**, apart from the kinds of an add-on, which its entry leads to. You can pin any of these kinds to the sidebar.
 
 <Frame caption="Every kind the cluster serves, custom resources included.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/api-resources-light-1x.webp" alt="The API resources page in Lumovi, listing every kind the cluster serves, grouped by API group." />
@@ -104,3 +107,16 @@ Custom resources, and Kubernetes' own less common kinds (Leases, PodDisruptionBu
 </Frame>
 
 Read more in [Custom resources](/custom-resources/overview).
+
+## Pages beyond the kinds
+
+Some pages bring kinds together, or show something no single list does:
+
+| Page | What it shows | Where to find it |
+| --- | --- | --- |
+| **Overview** | The cluster's health and capacity. See [Overview](/explore/overview). | Sidebar, <kbd>G</kbd> <kbd>O</kbd> |
+| **Workloads** | Every workload, whatever its kind. See [Workloads](/explore/workloads). | Sidebar, <kbd>G</kbd> <kbd>W</kbd> |
+| **Metrics** | Usage history, on its **Usage** tab, and what workloads should request, on its **Right-sizing** tab. See [Usage history](/metrics/usage-history) and [Right-sizing](/metrics/right-sizing). | Sidebar, <kbd>G</kbd> <kbd>U</kbd> |
+| **Helm releases** | Every release, read from Helm's own records. See [Helm releases](/helm/releases). | Sidebar, <kbd>G</kbd> <kbd>H</kbd> |
+| An add-on's page | A tool's kinds, together and on a tab each. See [Add-ons](/custom-resources/add-ons). | Sidebar, when the cluster has the tool |
+| **API resources** | Every kind the cluster serves. | Sidebar, under **Custom resources** |

@@ -11,9 +11,9 @@ Every change Lumovi makes is confirmed by a notification, and recorded in the **
 
 When a change is done, a notification at the bottom right says what happened, in plain words: "Scaled storefront to 5 replicas", "Cordoned worker-2".
 
-- A notification stays for six seconds, or ten when something went wrong.
-- It stays as long as the pointer is over it, so you have time to read it and act.
-- Some notifications have a button: **Undo**, or **Open** for something new, like the job **Run now** started or the objects **Create from YAML** made.
+- A notification stays for six seconds, or ten when something went wrong. Up to three show at once; a new one makes the oldest go.
+- It stays as long as the pointer is over it, or it has the focus, so you have time to read it and act.
+- Some notifications have a button: **Undo**, or **Open** for something new, like the job **Run now** started, the objects **Create from YAML** made, what a [view's action](/changes/actions#custom-resources) created, or the address of a new [port forward](/debug/port-forwarding).
 
 ## Undo
 
@@ -28,7 +28,8 @@ When a change is done, a notification at the bottom right says what happened, in
 | Change image | Puts the previous images back |
 | Edit replica range | Puts the autoscaler's previous range back |
 | Edit labels | Puts the previous labels and annotations back |
-| A view's action | Applies the undo the view spells out, when it has one |
+| A view's action | Applies the undo the view spells out, when it has one. Actions that create an object have none. |
+| **Apply…** in [Right-sizing](/metrics/right-sizing) | Puts the workload's previous requests and limits back: "Restored the resources of checkout" |
 
 If the undo fails (someone changed the object in between, say), a notification says "Couldn't undo", with the reason.
 
@@ -45,7 +46,7 @@ Each entry shows:
 - **Its status**: In progress, Done or Failed, with the reason if it failed.
 - **The kubectl command** that does the same thing, with **Copy command**.
 
-The log covers actions, YAML edits, objects created from YAML, changes to several objects at once, undos and Helm changes. **Clear** empties it.
+The log covers actions, YAML edits, objects created from YAML, changes to several objects at once, right-sizing, undos and Helm changes. **Clear** empties it.
 
 <Note>
   The log lives only as long as the session: it's empty again when you restart Lumovi, or reload the page when it runs in your cluster. For a lasting record of who changed what, use the cluster's audit log.
