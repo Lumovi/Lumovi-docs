@@ -27,7 +27,9 @@ You need Lumovi at an address of its own (see [Give Lumovi an address](/server/e
     https://lumovi.example.com/auth/callback
     ```
 
-    That's your `url`, then `auth/callback` below `basePath`. Note the client ID and, if the provider gives one, the client secret. Lumovi uses PKCE, so a public client without a secret works too.
+    That's the origin of your `url` (its scheme and host), then `basePath`, then `auth/callback`. A path in `url` itself isn't used, so below a path, with `basePath: /lumovi`, it's `https://tools.example.com/lumovi/auth/callback`.
+
+    Note the client ID and, if the provider gives one, the client secret. Lumovi uses PKCE, so a public client without a secret works too. With a secret, Lumovi sends it to the provider's token endpoint with HTTP Basic authentication (`client_secret_basic`), or in the request body (`client_secret_post`) when the provider's discovery document lists the methods it takes and Basic isn't one of them.
 
     Make sure the ID token carries the person's email address and their groups. Many providers include groups only when asked: with a `groups` scope, or a setting on the client.
   </Step>
@@ -35,11 +37,11 @@ You need Lumovi at an address of its own (see [Give Lumovi an address](/server/e
     Put the secret in a Secret, under the key `client-secret`, in Lumovi's namespace:
 
     ```bash
-    kubectl create secret generic lumovi-oidc --namespace lumovi \
+    kubectl create secret generic lumovi-sso --namespace lumovi \
       --from-literal client-secret='<the client secret>'
     ```
 
-    Or set `auth.oidc.clientSecret`, and the chart makes that Secret for you. Leave both empty for a public client.
+    Or set `auth.oidc.clientSecret`, and the chart makes that Secret for you. It names it after the release, with `-oidc` at the end: `lumovi-oidc` here. So don't give a Secret of your own that name: if you switch to `clientSecret` later, the upgrade fails, as the chart can't make its Secret under a name that's taken. Leave both empty for a public client.
   </Step>
   <Step title="Configure Lumovi">
     ```yaml values.yaml
@@ -49,7 +51,7 @@ You need Lumovi at an address of its own (see [Give Lumovi an address](/server/e
       oidc:
         issuer: https://dex.example.com
         clientId: lumovi
-        existingSecret: lumovi-oidc # a Secret with the client's secret under client-secret
+        existingSecret: lumovi-sso # a Secret with the client's secret under client-secret
         scopes: openid email profile groups
         providerName: Dex # the button says "Sign in with Dex"
       # Like the API server's --oidc-username-prefix and --oidc-groups-prefix.
@@ -58,6 +60,10 @@ You need Lumovi at an address of its own (see [Give Lumovi an address](/server/e
     ```
 
     `issuer` is the provider's issuer URL, where `/.well-known/openid-configuration` is. Then upgrade the chart with these values.
+
+    <Warning>
+      Lumovi drops any slash at the end of `issuer`, and the ID token's `iss` claim must then match it exactly. A provider whose issuer ends in a slash (the `issuer` in its discovery document, like `https://login.example.com/`) can't sign people in to Lumovi. Signing in ends with **Signing in didn't work. The Lumovi server's log says why.**, and the log says which issuer the ID token is from.
+    </Warning>
   </Step>
   <Step title="Give people roles">
     People are named by the ID token's `email` claim, and their groups come from its `groups` claim. Bind roles to those names, with the prefixes you chose:
@@ -120,14 +126,16 @@ auth:
   oidc:
     issuer: https://dex.example.com
     clientId: lumovi
-    existingSecret: lumovi-oidc
+    existingSecret: lumovi-sso
     forwardToken: id # or access, for a provider whose access tokens the cluster takes
     scopes: openid email profile groups offline_access
 ```
 
 - **No impersonation.** Lumovi's service account needs no permissions, and the chart gives it none.
-- **Names come from the API server.** The token is a JWT the cluster checks itself, so names, groups and prefixes come from the API server's own settings, not Lumovi's. Bind roles to the names the cluster sees.
-- **Tokens are renewed.** Lumovi renews each person's token a minute before it expires, with the refresh token the provider gives it. Most providers give one only when `offline_access` is among the scopes. Without one, the session ends when the cluster stops accepting the token, and people sign in again.
+- **The token must be a JWT that says when it expires**, in its `exp` claim, so Lumovi knows when to renew it. ID tokens always are. Some providers' access tokens aren't: with one of those, signing in ends with **Signing in didn't work. The Lumovi server's log says why.** Use `id` instead.
+- **Names in RBAC come from the API server.** The cluster checks the token itself, so the names and groups it applies RBAC to, and their prefixes, come from the API server's own settings, not Lumovi's. Bind roles to the names the cluster sees.
+- **Some things still come from Lumovi's settings.** The ID token still has to carry the `auth.oidc.usernameClaim` claim. Lumovi shows that name, and the groups in `auth.oidc.groupsClaim`, in its account menu and its log. And it still refuses a name that starts with `system:` once `auth.usernamePrefix` is put before it.
+- **Tokens are renewed.** Lumovi renews each person's token a minute before it expires, with the refresh token the provider gives it. Most providers give one only when `offline_access` is among the scopes. Without one, the session ends when the cluster stops accepting the token, and people sign in again. If renewing fails, the session ends too. Either way, a session lasts no longer than `auth.sessionHours`.
 - **The audit log names people directly**, instead of Lumovi's service account acting as them.
 
 ## When signing in doesn't work
@@ -138,7 +146,7 @@ The sign-in page says what happened. The details go to Lumovi's log (`kubectl lo
 | --- | --- |
 | **Signing in was cancelled, or the provider said no.** | The person cancelled, or the provider refused them. |
 | **That sign-in took too long, or started in another browser. Try again.** | Signing in has to finish within 10 minutes, in the browser that started it. |
-| **Signing in didn't work. The Lumovi server's log says why.** | The provider couldn't be reached, the ID token didn't check out, or it has no claim to name the person by. |
+| **Signing in didn't work. The Lumovi server's log says why.** | The provider couldn't be reached, the ID token didn't check out, it has no claim to name the person by, or the token to pass on isn't a JWT that says when it expires. |
 | **Lumovi won't act as this account: names starting with system: are Kubernetes' own.** | The user's name, with its prefix, starts with `system:`. |
 
 <Columns cols={2}>

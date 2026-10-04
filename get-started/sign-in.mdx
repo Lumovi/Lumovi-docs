@@ -42,7 +42,13 @@ How you sign in depends on how your team set Lumovi up. The sign-in page shows t
 
 ## Who you are, and what you can do
 
-Your initials, at the bottom of the sidebar, open a menu that shows who you're signed in as, and the groups the cluster knows you by. Your access comes from the roles bound to that name and those groups.
+Your initials, at the bottom of the sidebar, open a menu that shows who you're signed in as, and your groups: four by name, then how many more. `system:authenticated`, which everyone signed in is in, isn't listed. Where the name and groups come from depends on how you signed in:
+
+- **With a token:** the cluster's own answer for that token. That's exactly the name and groups the cluster applies roles to.
+- **With single sign-on:** what your provider says about you when you sign in.
+- **Behind a company login:** what the proxy passes on to Lumovi.
+
+Your access comes from the roles bound to that name and those groups. With single sign-on or a company login, the cluster may know them with a prefix your team chose, like `oidc:`: then roles are bound to `oidc:alice@example.com` and `oidc:platform`, while the menu shows `alice@example.com` and `platform`.
 
 <Frame caption="Who's signed in, and their groups.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/server-account-light-1x.webp" alt="Lumovi served from a cluster: who's signed in, and their groups." />
@@ -51,7 +57,7 @@ Your initials, at the bottom of the sidebar, open a menu that shows who you're s
 
 - Actions you aren't allowed to take are turned off, with the reason, like "Your account can't delete pods in shop."
 - If you can only see some namespaces, pick one from the namespace menu, or type its name.
-- **Sign out** is in the same menu. Behind a company login, it signs you out of the proxy, if your team set that up.
+- **Sign out** is in the same menu. Behind a company login, it signs you out of the proxy, if your team set that up. Otherwise the menu says **Signed in by the proxy in front of Lumovi.**
 
 ## Good to know
 

@@ -6,6 +6,10 @@ icon: "sliders-horizontal"
 
 Set these in a values file, and install or upgrade with `--values values.yaml`. The chart checks them against its schema, and refuses settings that don't make sense before anything is installed.
 
+<Warning>
+  The schema checks the values below, not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`.
+</Warning>
+
 To see the defaults, with a comment on each:
 
 ```bash
@@ -19,7 +23,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="url" type="string">
-  The address people open Lumovi at, like `https://lumovi.example.com`. [Single sign-on](/server/auth/single-sign-on) needs it, as the provider sends people back there. With `https:`, cookies are sent over HTTPS only.
+  The address people open Lumovi at, like `https://lumovi.example.com`. [Single sign-on](/server/auth/single-sign-on) needs it, as the provider sends people back there. With `https:`, cookies are sent over HTTPS only. And Lumovi accepts sign-ins and connections from pages at this address even when a proxy in front of it changes the `Host` header. See [Security](/server/security#sessions-and-cookies).
 </ResponseField>
 
 <ResponseField name="basePath" type="string" default="/">
@@ -121,7 +125,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="views" type="object" default="{}">
-  Views everyone sees, by file name: each key is a file name ending in `.yaml` or `.yml`, and its value the file's contents. See [Views for everyone](/server/views).
+  Views and add-ons everyone sees, by file name: each key is a file name ending in `.yaml` or `.yml`, and its value the file's contents. See [Views for everyone](/server/views).
 </ResponseField>
 
 ## Kubernetes objects
@@ -143,7 +147,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="replicaCount" type="integer" default="1">
-  How many Lumovi pods to run. Sessions live in each pod's memory: more than one needs sticky sessions.
+  How many Lumovi pods to run. Sessions live in each pod's memory, and single sign-on has to finish on the pod it started on: more than one needs sticky sessions.
 </ResponseField>
 
 <ResponseField name="service.type" type="string" default="ClusterIP">
@@ -183,7 +187,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="networkPolicy.from" type="object[]" default="[]">
-  The NetworkPolicy's `from`: who may reach Lumovi. Empty, anything may, on Lumovi's port.
+  The NetworkPolicy's `from`: who may reach Lumovi. Empty, anything may, on Lumovi's port. A `podSelector` on its own matches pods in Lumovi's namespace only: for pods in another namespace, add a `namespaceSelector` to the same entry, as in [A proxy in another namespace](/server/auth/proxy#a-proxy-in-another-namespace).
 </ResponseField>
 
 ## The pod
@@ -193,7 +197,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="image.tag" type="string">
-  The image's tag: the chart's version unless set.
+  The image's tag: the chart's `appVersion` unless set. Each chart is released with Lumovi, and its version and `appVersion` are the same, so the chart installs the image of its own version.
 </ResponseField>
 
 <ResponseField name="image.pullPolicy" type="string" default="IfNotPresent">
@@ -209,7 +213,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="podSecurityContext" type="object">
-  The pod's security context. By default: non-root, as user and group 65532, with the `RuntimeDefault` seccomp profile.
+  The pod's security context. By default: non-root, as user and group 65532, with `fsGroup` 65532 too, and the `RuntimeDefault` seccomp profile.
 </ResponseField>
 
 <ResponseField name="securityContext" type="object">
@@ -217,7 +221,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="extraEnv" type="object[]" default="[]">
-  More environment variables, as a container's `env`. See [Configuration](/server/configuration) for the ones Lumovi reads.
+  More environment variables, as a container's `env`. See [Configuration](/server/configuration) for the ones Lumovi reads. They come after the chart's own, and Kubernetes uses the last of two with the same name, so leave out `LUMOVI_PORT` and `LUMOVI_VIEWS_DIR`: see [Set by the chart itself](/server/configuration#set-by-the-chart-itself).
 </ResponseField>
 
 <ResponseField name="podAnnotations" type="object" default="{}">

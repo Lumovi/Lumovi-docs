@@ -7,12 +7,18 @@ icon: "settings-2"
 
 The Helm chart sets these from its [values](/server/helm-values). They're for running the image another way, such as [with Docker](/server/docker), and for the few settings the chart has no value for, which you can set with `extraEnv`.
 
-Lumovi reads them when it starts. One that doesn't make sense stops it, and its log says which and why.
+Lumovi reads them when it starts, and checks most of them: one that doesn't make sense stops it, and its log says which and why. A few aren't checked. `LUMOVI_READ_ONLY` and `LUMOVI_ALLOW_PRIVATE_CHARTS` are on only when they're exactly `true` or `1`, and anything else leaves them off. `LUMOVI_MAX_LIST_ITEMS` and `LUMOVI_REQUEST_TIMEOUT_MS` keep their defaults when they aren't numbers. `LUMOVI_HELM` and `LUMOVI_ARTIFACT_HUB_URL` are used as they are, so a wrong one shows up only when someone uses Helm.
+
+## Set by the chart itself
+
+The chart sets two of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, and `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views). Leave both out of `extraEnv`.
+
+The chart puts `extraEnv` after its own variables. When two have the same name, Kubernetes uses the last, so a variable repeated in `extraEnv` wins over the chart's. For the two above, that breaks Lumovi: it listens on a port nothing sends to, or reads views from a folder the chart doesn't mount. For the others, set the chart's value instead. The chart builds more than the variable on its values, like the permission to impersonate for `auth.mode`, or the probes and the ingress path for `basePath`, while a variable in `extraEnv` changes only Lumovi.
 
 ## Where it runs
 
 <ResponseField name="LUMOVI_PORT" type="number" default="8080">
-  The port to listen on. `0` picks any free port, and the log says which.
+  The port to listen on, from `0` to `65535`. `0` picks any free port, and the log says which. The chart sets it to `8080` itself.
 </ResponseField>
 
 <ResponseField name="LUMOVI_ADDRESS" type="string">
@@ -20,11 +26,13 @@ Lumovi reads them when it starts. One that doesn't make sense stops it, and its 
 </ResponseField>
 
 <ResponseField name="LUMOVI_URL" type="string">
-  The address people open it at, like `https://lumovi.example.com`. Single sign-on needs it. With `https:`, cookies are sent over HTTPS only.
+  The address people open it at, like `https://lumovi.example.com`: an `http` or `https` URL. Single sign-on needs it. With `https:`, cookies are sent over HTTPS only.
+
+  It's also an origin Lumovi accepts sign-ins, sign-outs and pages' connections from, besides the host each request is sent to. Set it when a proxy in front of Lumovi changes the `Host` header. See [Security](/server/security#sessions-and-cookies).
 </ResponseField>
 
 <ResponseField name="LUMOVI_BASE_PATH" type="string" default="/">
-  Where it is below that address, like `/lumovi`.
+  Where it is below that address, like `/lumovi`. Each part of the path can have letters, digits, `_`, `.`, `~` and `-`.
 </ResponseField>
 
 ## The cluster it shows
@@ -38,11 +46,15 @@ Lumovi reads them when it starts. One that doesn't make sense stops it, and its 
 </ResponseField>
 
 <ResponseField name="LUMOVI_CONTEXT" type="string">
-  The kubeconfig's context to show: its current context unless set.
+  The kubeconfig's context to show: its current context unless set. A context the kubeconfig doesn't have stops Lumovi.
 </ResponseField>
 
 <ResponseField name="LUMOVI_SERVICE_ACCOUNT_DIR" type="string" default="/var/run/secrets/kubernetes.io/serviceaccount">
-  Where the pod's service account token and CA certificate are, inside a cluster.
+  Where the pod's service account token and CA certificate are, inside a cluster. Lumovi needs the token there even when people sign in with their own tokens, and stops without it. The chart always mounts it.
+</ResponseField>
+
+<ResponseField name="KUBERNETES_SERVICE_HOST" type="string">
+  Where the API server is, inside a cluster, with `KUBERNETES_SERVICE_PORT`. Kubernetes sets both in every pod: you don't. Without `KUBERNETES_SERVICE_HOST` or `KUBECONFIG`, Lumovi stops, saying it isn't running in a cluster.
 </ResponseField>
 
 ## Sign-in
@@ -52,7 +64,7 @@ Lumovi reads them when it starts. One that doesn't make sense stops it, and its 
 </ResponseField>
 
 <ResponseField name="LUMOVI_OIDC_ISSUER" type="string">
-  The OpenID Connect provider's issuer URL. Required with `oidc`.
+  The OpenID Connect provider's issuer URL, `http` or `https`. Required with `oidc`.
 </ResponseField>
 
 <ResponseField name="LUMOVI_OIDC_CLIENT_ID" type="string">
@@ -80,11 +92,11 @@ Lumovi reads them when it starts. One that doesn't make sense stops it, and its 
 </ResponseField>
 
 <ResponseField name="LUMOVI_OIDC_FORWARD_TOKEN" type="string">
-  `id` or `access`: pass people's own token on (the API server must trust the provider) instead of impersonating them.
+  `id` or `access`: pass people's own token on (the API server must trust the provider) instead of impersonating them. The token must be a JWT that says when it expires.
 </ResponseField>
 
 <ResponseField name="LUMOVI_PROXY_USER_HEADER" type="string" default="X-Forwarded-User">
-  The header a proxy names people in.
+  The header a proxy names people in. Upper and lower case don't matter.
 </ResponseField>
 
 <ResponseField name="LUMOVI_PROXY_GROUPS_HEADER" type="string" default="X-Forwarded-Groups">
@@ -92,7 +104,7 @@ Lumovi reads them when it starts. One that doesn't make sense stops it, and its 
 </ResponseField>
 
 <ResponseField name="LUMOVI_PROXY_SIGN_OUT_URL" type="string">
-  Where signing out of the proxy is.
+  Where signing out of the proxy is: an `http` or `https` URL.
 </ResponseField>
 
 <ResponseField name="LUMOVI_USERNAME_PREFIX" type="string">
@@ -104,7 +116,7 @@ Lumovi reads them when it starts. One that doesn't make sense stops it, and its 
 </ResponseField>
 
 <ResponseField name="LUMOVI_SESSION_HOURS" type="number" default="12">
-  How long sessions last, in hours: at most 168, a week.
+  How long sessions last, in hours: more than 0, at most 168, a week.
 </ResponseField>
 
 <ResponseField name="LUMOVI_HEARTBEAT_SECONDS" type="number" default="30">
@@ -114,7 +126,7 @@ Lumovi reads them when it starts. One that doesn't make sense stops it, and its 
 ## What people can do
 
 <ResponseField name="LUMOVI_READ_ONLY" type="boolean" default="false">
-  `true` or `1`: nobody changes anything through Lumovi.
+  `true` or `1`: nobody changes anything through Lumovi. Anything else leaves changes on.
 </ResponseField>
 
 <ResponseField name="LUMOVI_METRICS_SOURCE" type="string" default="auto">
@@ -130,11 +142,11 @@ Lumovi reads them when it starts. One that doesn't make sense stops it, and its 
 </ResponseField>
 
 <ResponseField name="LUMOVI_VIEWS_DIR" type="string" default="/etc/lumovi/views">
-  Where the views everyone sees are.
+  Where the views and add-ons everyone sees are. The chart sets it itself, to the folder it mounts its `views` value at.
 </ResponseField>
 
-<ResponseField name="LUMOVI_HELM" type="string" default="/usr/local/bin/helm">
-  The helm to run: the one in the image unless set.
+<ResponseField name="LUMOVI_HELM" type="string" default="helm">
+  The helm to run: `helm` on the `PATH` unless set. The image sets it to `/usr/local/bin/helm`, the helm it comes with.
 </ResponseField>
 
 ## Large clusters and slow API servers
@@ -159,15 +171,19 @@ extraEnv:
 
 ## Addresses it answers
 
-All of these are below the base path.
+All of these are below the base path. Whatever stands in front of Lumovi must pass them all through.
 
 | Address | What it's for |
 | --- | --- |
-| `GET healthz` | Health checks: answers `200 ok` while Lumovi runs. |
-| `auth/callback` | Where your OpenID Connect provider sends people back. Register it as the redirect URI. |
+| `GET healthz` | Health checks: answers `200 ok` while Lumovi runs, without signing in. |
+| `api/session` | Who's signed in (`GET`), signing in with a token (`POST`, only with token sign-in), and signing out (`DELETE`). |
+| `GET auth/sign-in` | Where single sign-on starts: Lumovi sends the browser on to your provider. Only with `oidc`. |
+| `auth/callback` | Where your OpenID Connect provider sends people back. Register it as the redirect URI. Only with `oidc`. |
 | `api/socket` | Each page's WebSocket. Proxies in front of Lumovi must pass WebSockets here. |
 
-Every other address is Lumovi's page and its files.
+Any other address below the base path is Lumovi's page or one of its files, for `GET` and `HEAD`. Other methods get `405`, and other addresses under `api/` and `auth/` get `404`.
+
+Addresses outside the base path get `404`, with a note saying where Lumovi is. The base path without its trailing slash, like `/lumovi`, leads to `/lumovi/`.
 
 <Columns cols={2}>
   <Card title="Helm values" icon="sliders-horizontal" href="/server/helm-values">

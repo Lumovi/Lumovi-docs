@@ -20,19 +20,19 @@ Lumovi reads them once, when it starts. Restart it after changing one.
 </ResponseField>
 
 <ResponseField name="LUMOVI_READ_ONLY" type="1 or true">
-  Makes every cluster read-only, whatever is set in the app. The read-only switch then reads **Set by LUMOVI_READ_ONLY** and can't be turned off. The app's main process enforces it, not just the buttons, and it covers shells and Helm too. Useful on shared machines. See [Read-only mode](/changes/read-only).
+  Makes every cluster read-only, whatever is set in the app. The read-only switch then reads **Set by LUMOVI_READ_ONLY** and can't be turned off. The app's main process enforces it, not just the buttons, and it covers shells and Helm too. Useful on shared machines. Only `1` and `true` turn it on: anything else, like `yes` or `TRUE`, leaves changes on. See [Read-only mode](/changes/read-only).
 </ResponseField>
 
 <ResponseField name="LUMOVI_MAX_LIST_ITEMS" type="number" default="5000">
-  The most objects a list loads. Lists are fetched in chunks of 500 and stop here, with a note saying so. Filter by label to see the rest, or raise the limit for a very large cluster.
+  The most objects a list loads. Lists are fetched in chunks of 500 and stop here, with a note saying so. Filter by label to see the rest, or raise the limit for a very large cluster. A value that isn't a number leaves the default.
 </ResponseField>
 
 <ResponseField name="LUMOVI_REQUEST_TIMEOUT_MS" type="milliseconds" default="20000">
-  How long the API server has to answer a request. Raise it for a slow or distant API server that shows **The cluster isn't responding**.
+  How long the API server has to answer a request. Raise it for a slow or distant API server that shows **The cluster isn't responding**. A value that isn't a number leaves the default.
 </ResponseField>
 
 <ResponseField name="LUMOVI_VIEWS_DIR" type="path" default="~/.lumovi/views">
-  Where your own [views](/custom-resources/write-a-view) are. Every `.yaml` and `.yml` file in it is read.
+  Where your own [views](/custom-resources/write-a-view) and [add-ons](/custom-resources/add-ons) are. Every `.yaml` and `.yml` file directly in it is read, up to 200 files of at most 256 KB each. Folders inside it aren't.
 </ResponseField>
 
 <ResponseField name="LUMOVI_HELM" type="path" default="helm">

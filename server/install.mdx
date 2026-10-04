@@ -7,6 +7,10 @@ icon: "download"
 
 You need [Helm](https://helm.sh) and `kubectl` on your computer, and an account that can create namespaces, service accounts and role bindings. The cluster needs Kubernetes 1.25 or later, and 1.28 or later to sign in with tokens, as below.
 
+<Note>
+  With [single sign-on](/server/auth/single-sign-on) or an [authenticating proxy](/server/auth/proxy), the chart also makes a ClusterRole that lets Lumovi's service account impersonate users and groups, and a ClusterRoleBinding that gives it that role. Kubernetes lets you create them only if your account may create cluster roles and their bindings, and may impersonate users and groups itself, or has the `escalate` and `bind` verbs on cluster roles. A cluster administrator has all of these. See [Impersonation](/server/security#impersonation).
+</Note>
+
 ## Try it in five minutes
 
 <Steps>
@@ -96,7 +100,7 @@ kubectl logs --namespace lumovi deployment/lumovi
 ```
 
 ```text
-2026-10-02T10:52:14.120Z Lumovi {{version}} shows production (https://10.96.0.1:443) at http://localhost:8080/; people sign in with a token
+2026-10-04T10:52:14.120Z Lumovi {{version}} shows production (https://10.96.0.1:443) at http://localhost:8080/; people sign in with a token
 ```
 
 After that, the log records who signs in and out, and what failed. A setting that doesn't make sense stops Lumovi before it starts, and the log says which one and why, like:
@@ -114,6 +118,14 @@ Each release of the image is signed with a build provenance attestation. With th
 ```bash
 gh attestation verify oci://ghcr.io/lumovi/lumovi:{{version}} --repo Lumovi/Lumovi
 ```
+
+The Helm chart is attested the same way:
+
+```bash
+gh attestation verify oci://ghcr.io/lumovi/charts/lumovi:{{version}} --repo Lumovi/Lumovi
+```
+
+A check passes only for an image or chart built in Lumovi's repository on GitHub.
 
 ## Next steps
 

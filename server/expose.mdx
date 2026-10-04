@@ -94,13 +94,22 @@ Leave `ingress.enabled` off, and point yours at the `lumovi` Service, port 80 (n
   ```
 </CodeGroup>
 
+If what you put in front of Lumovi changes the `Host` header the browser sent, set `url` to the address people open. Lumovi accepts sign-ins, sign-outs and pages' connections only from its own pages: from an origin whose host is the one in the `Host` header, or the origin of `url`. Without either, signing in with a token says **Sign in from Lumovi's own page.**, and pages keep saying **Reconnecting to Lumovi…**. See [Security](/server/security#sessions-and-cookies).
+
 ## Health checks
 
-Lumovi answers `GET /healthz` (below the base path) with `200 ok`, for load balancers and probes. The chart's readiness probe checks it every 10 seconds, and its liveness probe every 20, restarting Lumovi after three failures in a row.
+Lumovi answers `GET /healthz` (below the base path) with `200 ok`, for load balancers and probes. It needs no sign-in, and says only that Lumovi is running, not whether it can reach the API server. The chart's readiness probe checks it every 10 seconds, and its liveness probe every 20, restarting Lumovi after three failures in a row.
 
-```bash
-curl https://lumovi.example.com/healthz
-```
+<CodeGroup>
+  ```bash At its own host
+  curl https://lumovi.example.com/healthz
+  ```
+
+  ```bash Below a path
+  # With basePath: /lumovi
+  curl https://tools.example.com/lumovi/healthz
+  ```
+</CodeGroup>
 
 <Columns cols={2}>
   <Card title="Single sign-on" icon="log-in" href="/server/auth/single-sign-on">
