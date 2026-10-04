@@ -179,6 +179,7 @@ Without one of the required settings, or without the token, the agent stops at o
 - **When it can't reach Lumovi**, or its connection closes, the agent tries again after 1 second, then 2, 4, 8 and 15, and every 30 seconds after that. Once connected, it starts again from 1.
 - **When Lumovi restarts**, for an upgrade say, it closes its agents' connections, and they connect to the new one.
 - **Lumovi pings its agents** as often as it checks pages' connections (`LUMOVI_HEARTBEAT_SECONDS`, every 30 seconds), and closes a connection that doesn't answer.
+- **The agent listens for those pings**, as Lumovi tells it how often they come. A connection dropped somewhere on the way, without a word, goes quiet: after two heartbeats and a second without one (61 seconds), the agent says `Nothing from the hub in 61 s`, closes it, and connects again.
 - **When Lumovi refuses it, the agent stops**, as trying again wouldn't help, and Kubernetes restarts it until it's fixed:
 
 | The agent's log | Why |

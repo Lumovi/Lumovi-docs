@@ -7,6 +7,11 @@ icon: "boxes"
 
 One Lumovi can show many clusters. People sign in once, and its home page sums every cluster up, the ones that need attention first. Each cluster opens to the same pages as a Lumovi of its own, and in each one people see and change what their RBAC there allows.
 
+<Frame caption="A fleet of four clusters: the ones that need attention first.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/fleet-light-1x.webp" alt="Lumovi’s fleet page: four clusters as cards, each with its status, labels, nodes, pods, workloads, warnings, and CPU and memory in use. One cluster is unreachable, and says why." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/fleet-dark-1x.webp" alt="Lumovi’s fleet page: four clusters as cards, each with its status, labels, nodes, pods, workloads, warnings, and CPU and memory in use. One cluster is unreachable, and says why." />
+</Frame>
+
 <Columns cols={2}>
   <Card title="Add a cluster" icon="circle-plus" href="/server/fleet/members">
     A service account that may only impersonate, and its token.
@@ -207,7 +212,7 @@ Lumovi's home page is the fleet: every cluster the person signed in may see, as 
 - **The headline** says how many clusters there are, and how many need attention.
 - **Each card** has the cluster's status, its Kubernetes version and how long it took to answer, its labels, its nodes that are ready, its pods running and unhealthy, its healthy workloads (Deployments, StatefulSets and DaemonSets), its warning events in the last hour, and its CPU and memory in use against what its nodes can allocate (with metrics-server). A count the person may not list says **No access**.
 - **Filters**: **Needs attention**, **Healthy** and **Unreachable** (clusters that didn't answer), each with how many clusters it has. Pick labels to see the clusters that have all of them, search by name or label, and group the cards by a label's values with **Group by**. All of these are in the page's address, so a link keeps them.
-- **Find a workload**: type two letters or more of a name or namespace, and Lumovi looks through the Deployments, StatefulSets, DaemonSets and CronJobs of every cluster that answered. Each result opens the workload in its cluster. The first 50 are listed.
+- **Find a workload**, in the toolbar, opens a search through every cluster that answered: type two letters or more of a name or namespace, and Lumovi lists the Deployments, StatefulSets, DaemonSets and CronJobs that match, each with its status and its cluster (the first 50). Choose one, or move to it with the arrow keys and press <kbd>Enter</kbd>, to open it in its cluster.
 
 Cards are in this order, the ones that need attention first:
 
@@ -223,7 +228,12 @@ Cards are in this order, the ones that need attention first:
 
 Warning events are counted on each card, but don't make a cluster need attention: every cluster has some.
 
-Opening a card opens the cluster, with the same pages as a Lumovi of its own. The cluster's name at the top of the sidebar switches to another cluster, and **All clusters** there leads back to the fleet. The command palette (<kbd>⌘</kbd><kbd>K</kbd>) has both too. Each person can make a cluster read-only for themselves, in their browser.
+<Frame caption="Finding a workload in every cluster.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/fleet-search-light-1x.webp" alt="Lumovi’s fleet page with the Find a workload search open: the workloads in the shop namespace, each with its status and its cluster." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/fleet-search-dark-1x.webp" alt="Lumovi’s fleet page with the Find a workload search open: the workloads in the shop namespace, each with its status and its cluster." />
+</Frame>
+
+Opening a card opens the cluster, with the same pages as a Lumovi of its own. The cluster's name at the top of the sidebar switches to another cluster, and **All clusters** there leads back to the fleet, as it does on the banner of a cluster that stops answering. The command palette (<kbd>⌘</kbd><kbd>K</kbd>) has both too. Each person can make a cluster read-only for themselves, in their browser.
 
 ## When a cluster can't be used
 
