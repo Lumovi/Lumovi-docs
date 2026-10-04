@@ -18,14 +18,14 @@ Lumovi has a page of its own for Kubernetes' common kinds. Every other kind the 
     Every kind, like `kubectl api-resources`. In the sidebar, at the bottom.
   </Card>
   <Card title="The sidebar" icon="panel-left">
-    The kinds you opened last in this cluster, and the ones you pinned.
+    An entry for each tool the cluster runs, the kinds you opened last in this cluster, and the ones you pinned.
   </Card>
   <Card title="Command palette" icon="command">
-    <kbd>⌘</kbd><kbd>K</kbd> finds any kind by name, short name or group.
+    <kbd>⌘</kbd><kbd>K</kbd> finds any kind by name, short name or group, and add-ons by name.
   </Card>
 </Columns>
 
-⌘ is Ctrl on Windows and Linux. The palette's search also knows "CRDs", so typing it finds **API resources**.
+⌘ is Ctrl on Windows and Linux. The palette's search also knows "CRDs", so typing it finds **API resources**. It finds an add-on by the name of any of its kinds too: `certificates` offers **cert-manager**.
 
 ### API resources
 
@@ -40,7 +40,10 @@ Lumovi looks at what the cluster serves again every minute, so a CRD you just in
 
 ### A short sidebar, however many CRDs
 
-A cluster can have hundreds of custom resource definitions, so the sidebar doesn't list them all. Its **Custom resources** section keeps the five kinds you opened most recently in this cluster, and **API resources**, with a count of every custom kind the cluster serves.
+A cluster can have hundreds of custom resource definitions, so the sidebar doesn't list them all:
+
+- **Add-ons.** Each tool the cluster runs, like Flux or cert-manager, gets an entry that leads to all its kinds. Most are under **Add-ons**; a few that extend Kubernetes' own, like Gateway API, sit in **Network**, **Configuration** or **Storage**. See [Add-ons](/custom-resources/add-ons).
+- **Custom resources.** The kinds you opened most recently in this cluster, up to five, and **API resources**, with a count of every custom kind the cluster serves. Kinds that belong to an add-on are left out, since its entry is a click away already.
 
 To keep a kind at hand, **pin** it: use the pin button on its list, or next to it in **API resources**. Pinned kinds get a **Pinned** section in the sidebar, in every cluster that serves them.
 
@@ -82,7 +85,9 @@ Objects with none of these show <span className="lumovi-status neutral">Unknown<
 
 ### The detail panel
 
-Click an object to open it. Its **Overview** has its details, its conditions, the objects it's related to (when a view says), and its **Spec** and **Status** as trees you can fold.
+Click an object to open it. Its **Overview** has its details, its conditions, the objects it links to under **Related** (when a view says), and its **Spec** and **Status** as trees you can fold.
+
+A view can also list the objects that belong to this one, a tab each: a node pool's **Nodes**, a pipeline's **Runs**. A list of pods becomes the **Pods** tab, under the view's name for it (CloudNativePG's **Instances**), with **Logs** and **Metrics** tabs for those pods.
 
 On Kubernetes 1.27 and later, Lumovi reads each kind's schema from the cluster's OpenAPI documents, and explains every field when you hover it. Custom resources publish their CRD's schema there too, so their fields are explained the same way.
 
@@ -94,19 +99,26 @@ Custom resources are first-class:
 - **Edit** their YAML or labels. Edits are validated by the cluster against the CRD's schema with a dry run, and shown as a diff before they're saved. See [Edit YAML](/changes/yaml).
 - **Delete** them, one or many at once. Deleting a CustomResourceDefinition asks you to type its name first, since it deletes every object of that kind.
 - **Scale** kinds that have the scale subresource, like Argo Rollouts, the same way as a Deployment.
-- Use the **actions** a view adds, like Flux's **Reconcile** or Argo CD's **Sync**.
+- Use the **actions** a view adds, like Flux's **Reconcile**, Argo CD's **Sync**, or CloudNativePG's **Back up now…**, which creates a backup.
 
 Every change checks your permissions first, and shows the equivalent `kubectl` command, written like `kubectl delete certificate.cert-manager.io/api-tls -n shop --context production`.
 
 ## Views
 
-A **view** tells Lumovi more about a kind: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it relates to, and which changes people make to it. Views are YAML and data only, so they can't run code.
+A **view** tells Lumovi more about a kind: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it links to and which belong to it, and which changes people make to it. Views are YAML and data only, so they can't run code.
 
 Lumovi ships views for popular projects, and you can write your own. **API resources** shows which view each kind uses, and lists any problem with your views at the top: a view with a problem isn't used at all, and the message says where it is.
 
-<Columns cols={2}>
+## Add-ons
+
+An **add-on** gathers the kinds of one tool under one entry in the sidebar. Its page lists everything of those kinds together, what's failing first, with a tab for each kind. Lumovi ships add-ons for 32 tools, shows the ones your cluster runs, and you can write your own or replace Lumovi's.
+
+<Columns cols={3}>
+  <Card title="Add-ons" icon="package" href="/custom-resources/add-ons">
+    Each tool's entry in the sidebar, and its page.
+  </Card>
   <Card title="Built-in views" icon="blocks" href="/custom-resources/built-in-views">
-    cert-manager, Argo CD, Flux, Gateway API, Karpenter, KEDA and more.
+    cert-manager, Argo CD, Flux, Karpenter and 28 more.
   </Card>
   <Card title="Write a view" icon="file-pen-line" href="/custom-resources/write-a-view">
     Better columns, status and actions for your own kinds, in a few lines.
