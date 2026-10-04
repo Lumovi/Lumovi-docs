@@ -168,6 +168,16 @@
             ]
           },
           {
+            "group": "Fleet",
+            "pages": [
+              "server/fleet",
+              "server/fleet/members",
+              "server/fleet/discovery",
+              "server/fleet/agents",
+              "server/fleet/sevalla"
+            ]
+          },
+          {
             "group": "Operate",
             "pages": [
               "server/security",

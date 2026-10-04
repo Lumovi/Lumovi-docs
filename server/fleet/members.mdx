@@ -1,0 +1,154 @@
+---
+title: "Add a cluster to a fleet"
+sidebarTitle: "Add a cluster"
+description: "Give a fleet's Lumovi a way into a cluster: a service account that may only impersonate, its token, and the kubeconfig entry to add."
+icon: "circle-plus"
+---
+
+A fleet's Lumovi reaches each cluster with credentials that may only impersonate: it acts as whoever signed in, and the cluster applies their RBAC. The Helm chart makes them in the cluster you add, and prints the kubeconfig entry to give Lumovi.
+
+This is for clusters whose API server Lumovi can reach. For a cluster in a network it can't reach, run an [agent](/server/fleet/agents) there instead.
+
+## With the Helm chart
+
+<Steps>
+  <Step title="Install the chart as a member">
+    With your kubeconfig pointing at the cluster to add:
+
+    ```bash
+    helm install lumovi oci://ghcr.io/lumovi/charts/lumovi \
+      --namespace lumovi --create-namespace \
+      --set mode=member --set clusterName=prod-eu
+    ```
+
+    `mode: member` makes no Lumovi in this cluster, only what the fleet's Lumovi needs here:
+
+    - a service account, `lumovi`,
+    - a ClusterRole and a ClusterRoleBinding that let it impersonate users and groups, and nothing else,
+    - a Secret, `lumovi-token`, in which Kubernetes keeps a token for the service account that doesn't expire.
+
+    `clusterName` is what the fleet calls the cluster.
+  </Step>
+  <Step title="Get its kubeconfig entry">
+    The chart's notes, printed after `helm install`, have two commands. They print a kubeconfig with the cluster's address (as your kubeconfig has it), its certificate authority, and the token. Here, they write it to `prod-eu.yaml`:
+
+    ```bash
+    SERVER=$(kubectl config view --minify --output jsonpath='{.clusters[0].cluster.server}')
+    kubectl get secret lumovi-token --namespace lumovi --output go-template="apiVersion: v1
+    kind: Config
+    clusters:
+      - name: prod-eu
+        cluster:
+          server: $SERVER
+          certificate-authority-data: {{ index .data \"ca.crt\" }}
+    users:
+      - name: prod-eu
+        user:
+          token: {{ .data.token | base64decode }}
+    contexts:
+      - name: prod-eu
+        context:
+          cluster: prod-eu
+          user: prod-eu
+    " > prod-eu.yaml
+    ```
+
+    `helm get notes lumovi --namespace lumovi` prints them again later. If Lumovi reaches the cluster at another address than yours, change `server`. The API server's certificate must be valid for that address, or set `tls-server-name` to a name it's valid for.
+  </Step>
+  <Step title="Add it to the fleet's kubeconfig">
+    Copy its cluster, user and context into the fleet's kubeconfig, and give the context Lumovi's settings for it, if you want any:
+
+    ```yaml fleet.yaml
+    contexts:
+      - name: prod-eu
+        context:
+          cluster: prod-eu
+          user: prod-eu
+          extensions:
+            - name: lumovi.dev
+              extension:
+                labels: { env: production, region: eu-west }
+    ```
+
+    See [Settings for each cluster](/server/fleet#settings-for-each-cluster).
+  </Step>
+  <Step title="Give Lumovi the new kubeconfig">
+    In a Secret (`fleet.kubeconfigSecret`), replace it, with your kubeconfig pointing at the fleet's cluster:
+
+    ```bash
+    kubectl create secret generic lumovi-fleet --namespace lumovi \
+      --from-file kubeconfig=fleet.yaml --dry-run=client --output yaml | kubectl apply -f -
+    ```
+
+    Lumovi reads it again by itself, and the log says `Fleet: prod-eu added`. In `LUMOVI_FLEET_KUBECONFIG`, change the setting, and restart Lumovi.
+  </Step>
+</Steps>
+
+<Warning>
+  Whoever has the token can act as anyone in the cluster. Keep the fleet's kubeconfig only where its administrators can read it. Deleting the `lumovi-token` Secret revokes the token, and so does uninstalling the release.
+</Warning>
+
+## Without the chart
+
+The same objects, for `kubectl apply`:
+
+```yaml member.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lumovi-fleet
+  namespace: lumovi
+---
+# It may impersonate users and groups, and nothing else.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: lumovi-fleet-impersonate
+rules:
+  - apiGroups: ['']
+    resources: [users, groups]
+    verbs: [impersonate]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: lumovi-fleet-impersonate
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: lumovi-fleet-impersonate
+subjects:
+  - kind: ServiceAccount
+    name: lumovi-fleet
+    namespace: lumovi
+---
+# Kubernetes fills it with a token for the service account that doesn't expire.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: lumovi-fleet-token
+  namespace: lumovi
+  annotations:
+    kubernetes.io/service-account.name: lumovi-fleet
+type: kubernetes.io/service-account-token
+```
+
+```bash
+kubectl create namespace lumovi
+kubectl apply -f member.yaml
+kubectl get secret lumovi-fleet-token --namespace lumovi --output jsonpath='{.data.token}' | base64 --decode
+kubectl get secret lumovi-fleet-token --namespace lumovi --output jsonpath='{.data.ca\.crt}'
+```
+
+The first is the user's `token`, and the second, as it is, the cluster's `certificate-authority-data`.
+
+Creating the ClusterRole and its binding needs an account that may impersonate users and groups itself, or has the `escalate` and `bind` verbs on cluster roles. A cluster administrator has all of these.
+
+<Columns cols={2}>
+  <Card title="A fleet of clusters" icon="boxes" href="/server/fleet">
+    The kubeconfig, its settings, and the fleet page.
+  </Card>
+  <Card title="Private clusters" icon="radio-tower" href="/server/fleet/agents">
+    When Lumovi can't reach the cluster's API server.
+  </Card>
+</Columns>
