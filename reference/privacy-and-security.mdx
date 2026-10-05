@@ -28,9 +28,11 @@ That's all. Links to anything else, like a release's notes, open in your browser
 
 What you run in a [terminal](/debug/terminal) is yours: it connects wherever it would in any other terminal.
 
+[AI assistants](/assistants/overview) on this computer can connect to the desktop app, once you turn them on: Lumovi listens for them on `127.0.0.1`, and answers only those that send its token. It doesn't connect to any AI service itself, and needs no API key. What an assistant reads through Lumovi, it handles as it handles everything else you show it, which for most means sending it to their AI provider. See [Security](/assistants/overview#security).
+
 ## Your credentials
 
-Kubeconfig credentials stay in the app's main process: tokens, client keys and the output of credential plugins. The page you see never has them. Every request to a cluster is made by the main process, after it checks what the page asked for.
+Kubeconfig credentials stay in the app's main process: tokens, client keys and the output of credential plugins. The page you see never has them, and neither do [AI assistants](/assistants/overview). Every request to a cluster is made by the main process, after it checks what the page, or an assistant, asked for.
 
 Lumovi reads your kubeconfig and never changes it. Managing kubeconfig files, like adding contexts or signing in to a cloud provider, is left to the tools made for it.
 
@@ -43,7 +45,8 @@ A [terminal](/debug/terminal) gets a kubeconfig of its own that names the cluste
 - **Terminals run in the main process.** A [terminal](/debug/terminal)'s shell is started by the main process, on your computer and as you, like any terminal app's. The page shows what it prints, and passes on what you type.
 - **No browser permissions.** The page can't use the camera, notifications or anything else a website could ask for. It can only copy to the clipboard.
 - **Changes go through a small set of operations.** Each is checked against what you've made read-only, and refused for those clusters, or for all of them with `LUMOVI_READ_ONLY`. See [Read-only mode](/changes/read-only).
-- **Links are limited.** Only `https://` links, and `http://localhost:<port>` for your own [port forwards](/debug/port-forwarding), are handed to the operating system.
+- **Links are limited.** Only `https://` links, and `http://localhost:<port>` for your own [port forwards](/debug/port-forwarding), are handed to the operating system. Besides those, **Add to Cursor** and **Add to VS Code** hand it Cursor's and VS Code's own links to add Lumovi, with its address and token in them.
+- **AI assistants connect only from this computer**, and only once you turn them on: on `127.0.0.1`, with Lumovi's token. Requests from web pages are refused, and so are requests addressed to any name but `127.0.0.1` or `localhost`, and messages over 4 MB. Each change they ask for goes through the same operations as yours, and waits for you. See [AI assistants](/assistants/overview#security).
 - **Updates are verified.** New versions come from the project's GitHub releases over HTTPS. Each download is checked against the SHA-512 checksum the release lists, and on macOS the new version must carry the same Developer ID signature.
 
 The source is [on GitHub](https://github.com/Lumovi/Lumovi), so you can check any of this. Every release's installers come with checksums and signed build provenance: see [Verify your download](/get-started/desktop#verify-your-download).
@@ -55,6 +58,7 @@ Lumovi is careful with what it shows:
 - **Lists of Secrets carry only the names of their keys.** Values are blanked before they reach the page.
 - **Values stay hidden until you reveal them.** An open Secret shows each key with its size, and `••••••••` for its value. Reveal one key, or all of them, when you need to. Copying a value works without revealing it.
 - **The YAML is hidden too.** The YAML tab hides values until you choose **Reveal values**, and so does the `last-applied-configuration` annotation, which holds a copy of them.
+- **AI assistants never get the values.** They read a Secret's keys, with `(hidden by Lumovi)` for each value, and nothing of the `last-applied-configuration` annotation. See [What's hidden](/assistants/tools#whats-hidden).
 
 See [Config and storage](/explore/config-and-storage) for how Secrets are shown and edited.
 
@@ -62,7 +66,7 @@ See [Config and storage](/explore/config-and-storage) for how Secrets are shown 
 
 The desktop app keeps two kinds of things on your computer, and none of it leaves it:
 
-- **Settings**, in `settings.json`: your theme, the window's size and place, which clusters you made read-only, where each one's usage history comes from, the namespace and image of its [node shells](/debug/node-shell), and whether Lumovi looks for new versions by itself.
+- **Settings**, in `settings.json`: your theme, the window's size and place, which clusters you made read-only, where each one's usage history comes from, the namespace and image of its [node shells](/debug/node-shell), and whether Lumovi looks for new versions by itself. For [AI assistants](/assistants/overview): whether they may connect, the port and the token, what each cluster lets them change, and how Lumovi was last started, for Claude Desktop to start it the same way. On macOS and Linux, only your account can read `settings.json`: Lumovi sets that each time it writes the file.
 - **Conveniences** the page remembers: the namespace you picked per cluster, your recent clusters, the kinds you pinned to the sidebar and the custom resources you opened last, the detail panel's width, the terminal dock's height, the time range metrics charts open with, and which chart on your computer each Helm release was last deployed from.
 
 Both live in Lumovi's folder for app data:
@@ -78,6 +82,8 @@ Lumovi also reads your own [views](/custom-resources/write-a-view) from `~/.lumo
 Each [terminal](/debug/terminal) gets a small kubeconfig, in a folder of its own in the system's temporary folder, named `lumovi-terminal-`, the app's process ID, and six random characters. It holds the context's name, its cluster's and user's names, and the namespace: no addresses, and no credentials. On macOS and Linux, only you can read it. Lumovi deletes it when the terminal's shell ends: when the shell exits, when you close its tab, and when you quit. If Lumovi doesn't get to quit, because it crashed or was killed, it deletes what's left the next time it starts.
 
 The [activity log](/changes/undo-and-activity) of the changes you made lives in memory, and is gone when you quit.
+
+Lumovi changes another app's files in one case: **Add to Claude Desktop** adds Lumovi to Claude Desktop's settings, `claude_desktop_config.json`, or updates its entry there, and leaves the rest of the file as it was. It writes the file whole, through a copy it puts in its place, so it's never left half-written. When Claude Desktop then starts Lumovi to talk to it, that Lumovi keeps what it needs in a folder of its own, `lumovi-mcp-stdio`, in the system's temporary folder. See [Connect an assistant](/assistants/overview#connect-an-assistant).
 
 ## In your cluster
 

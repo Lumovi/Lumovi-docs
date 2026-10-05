@@ -22,6 +22,7 @@ icon: "circle-question-mark"
     | Installing | An app per person | One Helm chart, nothing for users |
     | Port forwarding | Yes | No |
     | Terminals with kubectl pointed at the cluster | Yes | No |
+    | [AI assistants](/assistants/overview) | Yes | No |
     | Charts from your computer | Yes | No |
 
     Plenty of teams use both. See [Install the desktop app](/get-started/desktop) and [Run it in your cluster](/get-started/in-your-cluster).
@@ -80,6 +81,9 @@ icon: "circle-question-mark"
   </Accordion>
   <Accordion title="Does it support my custom resources?">
     Yes, every kind the cluster serves, found through API discovery. They get the columns `kubectl get` prints and a status read from their conditions. Views for popular projects (cert-manager, Argo CD, Flux, Karpenter and more) add better columns, links and actions, and each project's add-on gives it an entry in the sidebar, with everything it runs in one list. You can write your own views and add-ons too. See [Custom resources](/custom-resources/overview).
+  </Accordion>
+  <Accordion title="Does Lumovi work with AI assistants?">
+    Yes, in the desktop app. Claude Code, Claude Desktop, Cursor, VS Code and other assistants that speak MCP can read your clusters through Lumovi, and find what's wrong. They ask before they change anything: each change is checked by the cluster, then waits in Lumovi with its diff and its `kubectl` command, for you to approve or reject. Lumovi has no AI of its own and needs no API key: it's a tool your assistant uses, with your credentials. It's off until you turn it on. See [AI assistants](/assistants/overview).
   </Accordion>
   <Accordion title="Where does usage history come from?">
     From a Prometheus or VictoriaMetrics in the cluster, which Lumovi finds by itself and reaches through the API server with your own credentials. Live usage comes from metrics-server. See [Usage history](/metrics/usage-history).

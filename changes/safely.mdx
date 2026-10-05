@@ -50,6 +50,7 @@ Changes you write yourself are checked by the API server before anything is save
 - **New objects** from **Create from YAML** are all dry-run first. If any of them is refused, none is created. See [Create from YAML](/changes/create).
 - **Helm upgrades and installs** run as `helm … --dry-run=server` first, and show what the manifest would change. See [Upgrade and roll back](/helm/upgrade-and-rollback).
 - **Right-sizing recommendations** are checked as a server-side dry run, so quotas, LimitRanges and webhooks have their say, before **Apply** is enabled. See [Right-sizing](/metrics/right-sizing).
+- **Changes AI assistants ask for**, in the desktop app, are dry-run first, then wait in Lumovi, with their diff and their command, for you to approve. Approved, they're made only if they still do what you saw. See [Approving changes](/assistants/approvals).
 
 ## Changes made meanwhile are caught
 
@@ -65,6 +66,8 @@ A YAML edit is saved against the version you started from. If someone changed th
     Deleting a Namespace, Node, PersistentVolume, PersistentVolumeClaim, StorageClass or CustomResourceDefinition asks you to type its name first. These are hard to recover from: a namespace takes everything in it along, and deleting a CRD deletes every object of its kind.
 
     For several objects at once, you type what's being done instead, like `delete namespaces`. See [Several at once](/changes/bulk).
+
+    Approving an [AI assistant](/assistants/approvals)'s deletion asks for the name too: for these kinds, and for any deletion in a cluster named like production.
   </Accordion>
   <Accordion title="Production clusters get an extra check" icon="shield-check">
     When a context's name looks like production, every dialog shows a **PRODUCTION** badge next to the cluster's name, and every delete and drain asks you to type the name first, whatever the kind.
