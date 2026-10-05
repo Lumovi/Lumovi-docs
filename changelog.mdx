@@ -10,7 +10,7 @@ Lumovi follows [semantic versioning](https://semver.org): a fix is a patch relea
 <Update label="October 5, 2026" description="1.1.0" tags={["Desktop app", "In your cluster"]}>
   ## Fleet: many clusters in one Lumovi
 
-  One Lumovi can now show your team many clusters in a browser, private ones too. It runs in a cluster, or without Kubernetes, on a machine of its own or a platform like Sevalla. This release also fixes four things, on the desktop and in your cluster.
+  One Lumovi can now show your team many clusters in a browser, private ones too. It runs in a cluster, or without Kubernetes, on a machine of its own or a platform like Sevalla. This release also fixes five things, on the desktop and in your cluster.
 
   ### Fleet
 
@@ -28,6 +28,7 @@ Lumovi follows [semantic versioning](https://semver.org): a fix is a patch relea
   - **The [Map](/explore/map) shows other namespaces' gateways and services.** A Gateway or a Service in another namespace that a route refers to, like a shared gateway, no longer says <span className="lumovi-status critical">Not found</span>. It's shown without a status, and opens.
   - **[Right-sizing](/metrics/right-sizing) loads without VerticalPodAutoscalers or nodes.** When the Vertical Pod Autoscaler is installed but your account can't list its autoscalers, the page loads, and says what that means. It also loads for accounts that can't list nodes.
   - **<kbd>Esc</kbd> closes a Helm release's panel**, as its close button says. See [Helm releases](/helm/releases).
+  - **The distribution on [Usage history](/metrics/usage-history) counts in the singular** when it should: "1 namespace", not "1 namespaces".
 
   [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.1.0)
 </Update>
