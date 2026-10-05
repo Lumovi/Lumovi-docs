@@ -12,21 +12,24 @@ icon: "scan-eye"
 
 Most Kubernetes tools are either a terminal or a wall of tables. Lumovi surfaces problems first, shows live usage next to what's allocatable, and gets out of your way. When something needs a hand (a scale, a restart, a rollback, a drain) it's a click or a keystroke away, with guard rails.
 
-## Two ways to run it
+## Three ways to run it
 
-It's the same app either way. Pick the one that fits, or use both.
+It's the same app every way. Pick the one that fits, or use more than one.
 
-<Columns cols={2}>
+<Columns cols={3}>
   <Card title="On your desktop" icon="monitor" href="/get-started/desktop" cta="Install the app">
     A native app for macOS, Windows and Linux. It reads your kubeconfig, like `kubectl`, and opens any cluster in it.
   </Card>
   <Card title="In your cluster" icon="server" href="/get-started/in-your-cluster" cta="Install with Helm">
     One Helm chart serves Lumovi as a web dashboard. Your team opens a link, signs in, and sees what their own RBAC allows.
   </Card>
+  <Card title="As a fleet" icon="boxes" href="/server/fleet" cta="Set up a fleet">
+    One Lumovi for many clusters, private ones too. Your team signs in once, and sees each cluster as their RBAC there allows.
+  </Card>
 </Columns>
 
 <Tip>
-  Joining a team that already runs Lumovi? You don't need to install anything. See [Signing in](/get-started/sign-in).
+  Joining a team that already runs Lumovi? You don't need to install anything. See [Signing in](/get-started/sign-in), and [Clusters in a fleet](/clusters/fleet) if it shows many clusters.
 </Tip>
 
 ## What it does
