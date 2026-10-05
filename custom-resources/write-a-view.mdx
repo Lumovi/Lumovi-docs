@@ -363,6 +363,7 @@ This guide builds a view for an in-house `Database` kind, step by step. Swap in 
 - **Your view wins, kind by kind.** If you write a view for a kind Lumovi already has one for, yours replaces it for that kind; Lumovi's view still covers its other kinds. To tweak a built-in one, copy it from [Lumovi's views](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views) and edit it.
 - **Every kind of a group.** `kind: '*'` with a `group` covers every kind of that group. A view for a kind itself wins over one for its group, and yours win over Lumovi's. See [Which view a kind uses](/reference/view-format#which-view-a-kind-uses).
 - **Another folder.** Set `LUMOVI_VIEWS_DIR` to read views from somewhere else, like a folder your team shares in a Git repository.
+- **Links work too.** A link in the folder, named with `.yaml` or `.yml` at the end, is read like the file it points to, so you can link one view from elsewhere. A link to a file that's gone can't be read: **API resources** lists it as a problem, with why, like `databases.yaml: It couldn’t be read: ENOENT: no such file or directory, …`, and the other files still load.
 - **Limits.** Lumovi reads up to 200 files from the folder (not its subfolders), each up to 256 KB.
 
 <Note>

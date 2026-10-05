@@ -23,7 +23,7 @@ The page follows the namespace menu: pick a namespace to see only its workloads.
 - **A week of it, ideally.** Recommendations look at the last 7 days. A workload needs a day of history before Lumovi recommends anything, and more of the week makes for a surer recommendation, so keep at least 7 days of history.
 - **cAdvisor's metrics**, scraped: CPU and memory use, and how often CPU limits throttle (`container_cpu_cfs_periods_total` and `container_cpu_cfs_throttled_periods_total`). kube-prometheus-stack scrapes them out of the box.
 - **kube-state-metrics**, to see OOM kills over the whole week. Without it, Lumovi still sees an OOM kill in the last state of the pods running now.
-- **Permission to read.** `list` on Deployments, StatefulSets, DaemonSets, pods and HorizontalPodAutoscalers where you look, `list` on nodes across the cluster, and `list` on VerticalPodAutoscalers when the cluster has them. Plus what [usage history](/clusters/permissions#usage-history) needs.
+- **Permission to read.** `list` on Deployments, StatefulSets, DaemonSets, pods and HorizontalPodAutoscalers where you look, plus what [usage history](/clusters/permissions#usage-history) needs. `list` on nodes across the cluster, and on VerticalPodAutoscalers when the cluster has them, helps, but isn't needed: see [Without nodes or VerticalPodAutoscalers](#without-nodes-or-verticalpodautoscalers).
 - **Permission to apply.** `patch` on the workload's kind in its namespace.
 
 ## The summary
@@ -99,7 +99,7 @@ A container with a limit but no request gets its limit as its request, as Kubern
 ### Autoscalers
 
 - **HorizontalPodAutoscaler.** Requests it scales on stay as they are: its utilization targets are percentages of them, so changing them would change when it scales. That's CPU and memory with **Utilization** targets, and CPU for an autoscaler without metrics of its own. Targets in absolute amounts (**AverageValue**) leave requests free to change.
-- **VerticalPodAutoscaler.** A workload one manages, in any update mode but `Off`, is left to it, and shows <span className="lumovi-status neutral">Autoscaled</span>.
+- **VerticalPodAutoscaler.** A workload one manages, in any update mode but `Off`, is left to it, and shows <span className="lumovi-status neutral">Autoscaled</span>. That takes `list` on VerticalPodAutoscalers: see [Without nodes or VerticalPodAutoscalers](#without-nodes-or-verticalpodautoscalers).
 
 ### What's left alone
 
@@ -149,10 +149,20 @@ kubectl set resources statefulset/redis -c redis --requests=cpu=150m,memory=1472
 
 **Apply…** is disabled, with the reason, when your account can't change the workload (*Your account can't change deployments in shop.*), or when the cluster is [read-only](/changes/read-only).
 
+## Without nodes or VerticalPodAutoscalers
+
+Listing nodes takes access to the whole cluster, which an account that sees only some namespaces often doesn't have, and some accounts can't list VerticalPodAutoscalers. Right-sizing works without either, and knows a little less:
+
+- **Without nodes**, Lumovi doesn't know what the cluster can allocate. Within a status, the biggest changes still come first, but by their size alone: a core of CPU counts as much as a GiB of memory. The recommendations are the same.
+- **Without VerticalPodAutoscalers**, when the cluster has them, Lumovi can't tell which workloads they manage. Those workloads get recommendations too, rather than <span className="lumovi-status neutral">Autoscaled</span>, and an alert above the list says so, with the reason the cluster gave: *VerticalPodAutoscalers couldn't be listed, so workloads they manage aren't recognized, and get recommendations too.* Before you apply one, check that no VerticalPodAutoscaler sets the workload's requests.
+
+**Try again**, in the alert, lists them again, along with anything else that failed.
+
 ## When something's wrong
 
 - **Prometheus couldn't answer for** some namespaces. Lumovi asks for a week of one namespace at a time, two at once, so a big cluster stays within what Prometheus loads for one query, and answers in time. When some namespaces fail, the others still get recommendations, and the failed ones' workloads show <span className="lumovi-status neutral">No usage</span>. **Try again** asks again. A namespace that keeps failing is usually more than your Prometheus's query limits or timeout allow.
-- **An error instead of the page**, with **Try again**: the workloads couldn't be listed, or Prometheus failed for every namespace.
+- **VerticalPodAutoscalers couldn't be listed.** Workloads they manage get recommendations too. See [Without nodes or VerticalPodAutoscalers](#without-nodes-or-verticalpodautoscalers).
+- **An error instead of the page**, with **Try again**: Deployments, StatefulSets, DaemonSets, pods or HorizontalPodAutoscalers couldn't be listed, or Prometheus failed for every namespace.
 - **Nothing to right-size**: there are no Deployments, StatefulSets or DaemonSets in the namespace you picked.
 
 A week of usage changes slowly, so Lumovi asks Prometheus again every 15 minutes while the page is open.

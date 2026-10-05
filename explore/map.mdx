@@ -15,7 +15,7 @@ Every object's detail panel has a **Map** tab. It draws how the object is connec
 
 [Open an object](/explore/details), and choose **Map**, just before **Events**. Every kind has one except events and namespaces, which relate to everything in their scope or to nothing.
 
-The map covers the object's own namespace, whatever the namespace menu shows. An object without a namespace, like a node or a volume, is mapped across the whole cluster. For more room, choose **Expand panel** in the panel's header.
+The map covers the object's own namespace, whatever the namespace menu shows. An object without a namespace, like a node or a volume, is mapped across the whole cluster. A route's gateway or service in another namespace is on the map too, without a status: see [In other namespaces](#in-other-namespaces). For more room, choose **Expand panel** in the panel's header.
 
 ## Read the map
 
@@ -59,8 +59,8 @@ Lumovi reads the connections from the objects themselves:
 
 | From | To | Found in |
 | --- | --- | --- |
-| Gateway | HTTPRoute | The route's `parentRefs` |
-| Ingress, HTTPRoute | Service | Their backends, and an ingress's default backend |
+| Gateway | HTTPRoute | The route's `parentRefs`. They can name another namespace. |
+| Ingress, HTTPRoute | Service | Their backends, and an ingress's default backend. A route's `backendRefs` can name another namespace. |
 | Ingress | Secret | Its TLS secrets |
 | Service | Workloads, and pods without one | Its selector: the workloads whose pods it matches, and a workload scaled to zero by its pod template |
 | Autoscaler | Workload | Its scale target |
@@ -108,6 +108,14 @@ When nothing connects to the object and it connects to nothing, the map says **N
 
 These are good places to look for leftovers to clean up.
 
+### In other namespaces
+
+An HTTPRoute often names a gateway or a service in another namespace: a gateway shared by many teams, say, or a service a ReferenceGrant lets it use. The map lists only the object's own namespace, so Lumovi doesn't know how those are doing. Their cards show their kind and name without a status, rather than <span className="lumovi-status critical">Not found</span>, and the map doesn't go past them.
+
+Click one to open it, on its own map, in its namespace. That needs `get` on it there, as opening any object does.
+
+A gateway's own map shows only the routes in its namespace, for the same reason.
+
 ## Rows that don't fit
 
 A row with more cards than the panel fits, like a node's hundreds of pods, ends in a card like **+ 12 more**. What shows first is the object itself, then what's unwell, then what goes by the object's name, like its Service and its autoscaler. Lines to the hidden cards go to that card.
@@ -120,7 +128,7 @@ Point at a card, or move to it with <kbd>Tab</kbd>, and the map traces its chain
 
 ## Open another object
 
-Click a card, or press <kbd>↵</kbd> on it, to open its object in the detail panel, on its own map. From there you can keep following the connections. The object the map is about, and cards that are missing, can't be opened. A **Pods** card shows each pod instead.
+Click a card, or press <kbd>↵</kbd> on it, to open its object in the detail panel, on its own map. From there you can keep following the connections. The object the map is about, and cards that are missing, can't be opened. A card without a status opens like any other. A **Pods** card shows each pod instead.
 
 ## Custom resources
 
@@ -134,7 +142,7 @@ The map is drawn from the lists Lumovi already reads, and refreshes with them wh
 - Across the cluster: nodes, volumes and storage classes.
 - For a custom resource, the kinds its view relates it to.
 
-None of them is required. What you can't list is left off the map, or shown without a status where something refers to it. Like every list, each kind is read up to 5,000 objects ([`LUMOVI_MAX_LIST_ITEMS`](/reference/environment-variables)). See [Permissions](/clusters/permissions).
+None of them is required. What you can't list is left off the map, or shown without a status where something refers to it. Other namespaces aren't listed, so a route's gateways and services there show without a status too. Like every list, each kind is read up to 5,000 objects ([`LUMOVI_MAX_LIST_ITEMS`](/reference/environment-variables)). See [Permissions](/clusters/permissions).
 
 <Columns cols={2}>
   <Card title="Object details" icon="panel-right" href="/explore/details">

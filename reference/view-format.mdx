@@ -44,10 +44,10 @@ spec:
 | | Desktop app | In your cluster |
 | --- | --- | --- |
 | **Where** | `~/.lumovi/views`, or the folder in `LUMOVI_VIEWS_DIR` | The chart's `views` value, mounted at `/etc/lumovi/views` |
-| **Which files** | Files ending in `.yaml` or `.yml` in the folder itself, not in subfolders. Lumovi reads them in order of their names, up to 200, each up to 256 KB. | The same |
+| **Which files** | Files and links whose names end in `.yaml` or `.yml`, in the folder itself, not in subfolders. A link is followed to the file it points to. Lumovi reads them in order of their names, up to 200, each up to 256 KB. | The same. Kubernetes mounts each entry as a link, which Lumovi follows. |
 | **Reloading** | Press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux) | Change the chart's `views` value and upgrade the release |
 
-A file can hold several documents separated by `---`, views and add-ons in any mix. Each is checked on its own: one with a problem isn't used, and the others are.
+A file can hold several documents separated by `---`, views and add-ons in any mix. Each is checked on its own: one with a problem isn't used, and the others are. Files are read on their own too: one that can't be read, like a link to nothing, is listed as a [problem](#problems), and the others load.
 
 ## Which view a kind uses
 
@@ -551,6 +551,7 @@ Lumovi checks every view and add-on before using it. One with a problem isn't us
 | `views.yaml: my-tools: spec: Pod has a page of its own, so it can’t be in an add-on` | One of Lumovi's own kinds in an add-on |
 | `views.yaml: my-tools: spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section add-ons can't sit in |
 | `views.yaml: It’s larger than 256 KB.` | A file over the limit, which isn't read |
+| `views.yaml: It couldn’t be read: ENOENT: no such file or directory, open '…'` | A file that can't be read, like a link to nothing or to a folder. What follows says why, in the operating system's words. |
 
 A file that isn't valid YAML shows the parser's message, after the file's name.
 
