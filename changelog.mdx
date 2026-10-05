@@ -7,6 +7,28 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 5, 2026" description="1.2.0" tags={["Desktop app", "In your cluster"]}>
+  ## Hands on: shells on nodes, and terminals
+
+  A shell on any node, as root, through a pod Lumovi starts and deletes again. And on the desktop, terminals on your computer, with kubectl already pointed at the cluster you're looking at.
+
+  ### Shells on nodes
+
+  - **A node's Shell tab** starts a privileged pod on it and opens a shell on the node itself, as root in its own namespaces, or in the pod, with the node's files under `/host`. The pod is deleted when the shell ends. See [Shells on nodes](/debug/node-shell).
+  - **It says what it will do**, before anything starts, shows each step as it happens, and says what went wrong in words that say what to do: a namespace whose Pod Security doesn't allow privileged pods, an image the node can't pull or without `nsenter`, a node with no shell of its own (Talos, Bottlerocket).
+  - **Your RBAC decides**, as with `kubectl debug node`. Where the pods run and their image are settings for each cluster. In your cluster, the chart's `nodeShell` values set them for everyone, or turn node shells off. See [Helm values](/server/helm-values).
+
+  ### Terminals on this computer
+
+  - **A dock of terminals**, in the desktop app, along the bottom of every cluster's pages. Open it from the **Terminal** bar, with <kbd>⌃</kbd><kbd>&#96;</kbd>, **View → Terminal**, or **New terminal** in the command palette, and another with <kbd>⌃</kbd><kbd>⇧</kbd><kbd>&#96;</kbd>. See [Terminals](/debug/terminal).
+  - **Your own shell, pointed at the cluster.** Each tab is your shell, with kubectl, helm and the rest pointed at a cluster and namespace, in that terminal only. A kubeconfig of Lumovi's comes first in `KUBECONFIG` and only names them, so your credentials stay in your files.
+  - **A terminal's keys.** Tabs can be renamed. In a terminal on macOS, <kbd>⌘</kbd><kbd>T</kbd> (or <kbd>⌘</kbd><kbd>N</kbd>) opens another, <kbd>⌘</kbd><kbd>W</kbd> closes one, <kbd>⌘</kbd><kbd>K</kbd> clears it, and <kbd>⌘</kbd><kbd>⇧</kbd><kbd>[</kbd> and <kbd>⌘</kbd><kbd>⇧</kbd><kbd>]</kbd> move between them; on Windows and Linux, <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>T</kbd>, <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>W</kbd> and <kbd>Ctrl</kbd><kbd>PgUp</kbd> / <kbd>Ctrl</kbd><kbd>PgDn</kbd>. See [Keyboard shortcuts](/reference/keyboard-shortcuts#terminals).
+  - **Paste in terminal.** Every action's equivalent command can be typed into a terminal, on one line, to read, change and run with <kbd>↵</kbd>. See [The equivalent command](/changes/actions#the-equivalent-command).
+  - **Icons in your prompt.** Nerd Fonts' symbols come with the app, so prompts like Starship's show their icons without a font to install.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.2.0)
+</Update>
+
 <Update label="October 5, 2026" description="1.1.0" tags={["Desktop app", "In your cluster"]}>
   ## Fleet: many clusters in one Lumovi
 
