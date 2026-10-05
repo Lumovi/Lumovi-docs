@@ -31,15 +31,17 @@ Each entry is a file, named with `.yaml` or `.yml` at the end, with one or more 
 
 ## How it works
 
-- The chart puts the files in a ConfigMap, and mounts it at `/etc/lumovi/views`, where Lumovi reads them (`LUMOVI_VIEWS_DIR`).
+- The chart puts the files in a ConfigMap, and mounts it at `/etc/lumovi/views`, where Lumovi reads them (`LUMOVI_VIEWS_DIR`). Kubernetes mounts each file as a link, which Lumovi follows. Lumovi 1.0.0 didn't, and left every one of these views out: they're used from 1.1.0.
 - A view of a kind replaces Lumovi's own view of that kind, one kind at a time.
 - An add-on replaces Lumovi's add-on with the same name, like `flux` or `cert-manager`.
 - A change to `views` rolls out a new pod, which reads them. That signs everyone out, as any restart does.
+- Without the chart, put the files in the folder `LUMOVI_VIEWS_DIR` names. Lumovi reads it again whenever a page loads, so people see a change when they reload.
 - Views and add-ons are the server's, for everyone. People can't add their own from a browser.
+- In a [fleet](/server/fleet), they're for every cluster: a view of a kind is used in each cluster that has that kind, and an add-on in each cluster that serves one of its kinds.
 
 ## Check them
 
-**API resources** (in the sidebar, or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) shows which view each kind uses, and lists anything wrong with the views and add-ons. One with a problem isn't used at all, and the problem says where it is. At the bottom, it says how many views come from Lumovi and how many from this server, and where they are, like *101 views from Lumovi, 2 from this server. This server's are in /etc/lumovi/views*.
+**API resources** (in the sidebar, or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) shows which view each kind uses, and lists anything wrong with the views and add-ons. One with a problem isn't used at all, and the problem says where it is. A file that can't be read, or is larger than 256 KB, is listed as a problem too, by its name, like `team.yaml: It couldn't be read: …`, and the other files load. Lumovi reads up to 200 files, in order of name. At the bottom, it says how many views come from Lumovi and how many from this server, and where they are, like *101 views from Lumovi, 2 from this server. This server's are in /etc/lumovi/views*.
 
 Views are data only. They read fields with JSONPath, and change objects only with the patches and new objects they spell out. Their actions go through the same checks as Lumovi's own: the cluster is asked first whether the person may make the change, the equivalent `kubectl` command is shown, and a read-only Lumovi stays read-only.
 

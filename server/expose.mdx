@@ -44,6 +44,8 @@ Each page keeps one WebSocket open to Lumovi, at `api/socket` below the base pat
 
 When the connection drops, pages say **Reconnecting to Lumovi…** and try again. If that goes on, a proxy in front of Lumovi may not be passing WebSockets.
 
+A [fleet's](/server/fleet) agents keep a WebSocket open too, at `api/agent` below the base path, through the same ingress or proxy: the same goes for theirs. Lumovi pings them as it pings pages, and an agent that hears nothing for two heartbeats and a second connects again. See [Private clusters](/server/fleet/agents#in-front-of-lumovi).
+
 ```yaml values.yaml
 extraEnv:
   # Ping pages every 20 seconds, for a proxy that closes quiet connections after 30.
@@ -62,7 +64,7 @@ extraEnv:
 </ResponseField>
 
 <ResponseField name="clusterName" type="string" default="in-cluster">
-  What Lumovi calls the cluster: in its pages, their addresses and titles. No slashes or spaces.
+  What Lumovi calls the cluster: in its pages, their addresses and titles. No slashes or spaces. In a [fleet](/server/fleet), the name of the cluster Lumovi runs in.
 </ResponseField>
 
 ```yaml values.yaml: below a path

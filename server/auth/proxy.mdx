@@ -103,6 +103,15 @@ Behind a proxy, Lumovi impersonates people, so the chart gives its service accou
 
 There are no Lumovi sessions behind a proxy: it reads the headers on every request. Restarting Lumovi doesn't sign anyone out, and how long people stay signed in is up to the proxy.
 
+## In a fleet
+
+A [fleet](/server/fleet) behind a proxy works the same way: the proxy names people, and Lumovi impersonates them in every cluster, with the credentials it has for each. The chart lets Lumovi's own service account impersonate only in the cluster it runs in, when that's one of the fleet's.
+
+- **Prefixes**: `auth.usernamePrefix` and `auth.groupsPrefix` apply in each cluster, unless the cluster has [its own](/server/fleet#settings-for-each-cluster). Bind roles in each cluster to the names it sees.
+- **A cluster's `groups`** decide who sees it: groups as the proxy sends them, without prefixes.
+- **There are no tokens to pass on.** The proxy names people, but gives Lumovi no token of theirs, so a cluster with `forwardToken: true` can't be used: its card says **Credentials failed**, and why. For clusters that should get people's own tokens, use [single sign-on](/server/auth/single-sign-on#in-a-fleet).
+- **Agents come through the proxy too.** Let `api/agent` through to Lumovi without signing in: agents can't sign in to a proxy, and Lumovi checks their names and tokens itself. A proxy that answers `401` makes an agent stop. See [Private clusters](/server/fleet/agents#in-front-of-lumovi).
+
 <Columns cols={2}>
   <Card title="Security" icon="shield-check" href="/server/security">
     Hardening Lumovi when it impersonates people.

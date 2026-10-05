@@ -7,7 +7,7 @@ icon: "sliders-horizontal"
 Set these in a values file, and install or upgrade with `--values values.yaml`. The chart checks them against its schema, and refuses settings that don't make sense before anything is installed.
 
 <Warning>
-  The schema checks the values below, not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`.
+  The schema checks the values below, but mostly not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`. Under `fleet` and `agent`, the schema refuses names it doesn't know.
 </Warning>
 
 To see the defaults, with a comment on each:
@@ -25,8 +25,17 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
   - `member`: what a fleet's Lumovi needs to reach this cluster: a service account that may only impersonate, and its token. The chart's notes print the kubeconfig to add. See [Add a cluster](/server/fleet/members).
   - `agent`: a fleet's agent, for a cluster its Lumovi can't reach: it dials Lumovi. See [Private clusters](/server/fleet/agents).
 
-  A member or an agent makes no Lumovi in the cluster, and no Service, Ingress or NetworkPolicy.
+  A member or an agent makes no Lumovi in the cluster, and no Service, Ingress, NetworkPolicy, or Secret and ConfigMap of Lumovi's. Each makes a service account, and (unless `rbac.create` is `false`) a ClusterRole and a ClusterRoleBinding that let it impersonate users and groups. A member adds a Secret with a token for it, and an agent a Deployment. The chart's notes, after installing, say what to do next: for a member, the kubeconfig entry to add; for an agent, its token's SHA-256 and its entry in Lumovi's list.
 </ResponseField>
+
+The chart refuses settings that can't work, before anything is installed, saying why, like:
+
+```text
+A fleet needs single sign-on or a proxy (auth.mode oidc or proxy): a pasted token only says who someone is to one cluster
+url must be set for single sign-on (auth.mode oidc): the provider sends people back there
+agent.hubUrl must be set: the address of the fleet's Lumovi, like https://lumovi.example.com
+agent.tokenSecret must name a Secret with the agent's token under token
+```
 
 ## The cluster and its address
 
@@ -47,7 +56,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 <ResponseField name="auth.mode" type="string" default="token">
   How people sign in: `token`, `oidc` or `proxy`.
 
-  - `token`: with a token the cluster accepts. Each person's requests carry their own token, and Lumovi's service account needs no permissions. See [Tokens](/server/auth/tokens).
+  - `token`: with a token the cluster accepts. Each person's requests carry their own token, and Lumovi's service account needs no permissions. Not for a fleet. See [Tokens](/server/auth/tokens).
   - `oidc`: with an OpenID Connect provider. Lumovi impersonates whoever signs in, unless `auth.oidc.forwardToken` is set. See [Single sign-on](/server/auth/single-sign-on).
   - `proxy`: behind an authenticating proxy that names people in request headers. Lumovi impersonates them. See [Authenticating proxy](/server/auth/proxy).
 </ResponseField>
@@ -85,7 +94,7 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="auth.oidc.forwardToken" type="string">
-  `id` or `access`: the token people's requests carry, when the API server trusts the provider itself (its `--oidc-*` flags, a structured authentication configuration, EKS's OIDC identity providers…). Lumovi then needs no permissions, and renews tokens with refresh tokens. Unset, it impersonates people. See [When the API server trusts the provider](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider).
+  `id` or `access`: the token people's requests carry, when the API server trusts the provider itself (its `--oidc-*` flags, a structured authentication configuration, EKS's OIDC identity providers…). Lumovi then needs no permissions, and renews tokens with refresh tokens. Unset, it impersonates people. See [When the API server trusts the provider](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider). In a fleet, only clusters with `forwardToken: true` get people's tokens, and Lumovi impersonates people in the others, and in its own cluster.
 </ResponseField>
 
 <ResponseField name="auth.proxy.userHeader" type="string" default="X-Forwarded-User">
@@ -101,11 +110,11 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 </ResponseField>
 
 <ResponseField name="auth.usernamePrefix" type="string">
-  Put before the names of the users Lumovi impersonates, like the API server's `--oidc-username-prefix`: `oidc:` makes `alice@example.com` `oidc:alice@example.com` in RBAC.
+  Put before the names of the users Lumovi impersonates, like the API server's `--oidc-username-prefix`: `oidc:` makes `alice@example.com` `oidc:alice@example.com` in RBAC. In a fleet, in every cluster that doesn't have [its own](/server/fleet#settings-for-each-cluster).
 </ResponseField>
 
 <ResponseField name="auth.groupsPrefix" type="string">
-  Put before the names of their groups.
+  Put before the names of their groups. In a fleet, in every cluster that doesn't have its own.
 </ResponseField>
 
 <ResponseField name="auth.sessionHours" type="number" default="12">
@@ -117,49 +126,49 @@ helm show values oci://ghcr.io/lumovi/charts/lumovi
 Lumovi shows a fleet when `fleet.kubeconfigSecret`, `fleet.secrets` or `fleet.agentsSecret` is set. A fleet needs `auth.mode` `oidc` or `proxy`: with `token`, the chart refuses to install. See [A fleet of clusters](/server/fleet).
 
 <ResponseField name="fleet.kubeconfigSecret" type="string">
-  A Secret in Lumovi's namespace with a kubeconfig under the key `kubeconfig`, each of whose contexts is a cluster. Lumovi reads it again as it changes.
+  A Secret in Lumovi's namespace with a kubeconfig under the key `kubeconfig`, each of whose contexts is a cluster. The chart mounts it at `/etc/lumovi/fleet`, so the pod doesn't start until it's there, and Lumovi reads it again as it changes.
 </ResponseField>
 
 <ResponseField name="fleet.secrets" type="string[]" default="[]">
-  Secrets that describe clusters, by whose: `lumovi`, `cluster-api` and `argocd`. Lumovi reads them again every 30 seconds. See [Clusters from Secrets](/server/fleet/discovery).
+  Secrets that describe clusters, by whose: `lumovi`, `cluster-api` and `argocd`, each once. Lumovi reads them again every 30 seconds. See [Clusters from Secrets](/server/fleet/discovery).
 </ResponseField>
 
 <ResponseField name="fleet.secretNamespaces" type="string[]" default="[]">
-  Where those Secrets are: the release's namespace unless set. The chart lets Lumovi's service account list Secrets in each.
+  Where those Secrets are: the release's namespace unless set. The chart lets Lumovi's service account list Secrets in each, with a Role and a RoleBinding there, so each must exist before you install.
 </ResponseField>
 
 <ResponseField name="fleet.agentsSecret" type="string">
-  A Secret in Lumovi's namespace with the agents that may connect under the key `agents.yaml`: a list of `{ name, tokenSha256, labels, groups }`. Lumovi reads it when it starts. See [Private clusters](/server/fleet/agents).
+  A Secret in Lumovi's namespace with the agents that may connect under the key `agents.yaml`: a list of `{ name, tokenSha256, labels, groups, forwardToken }`. Lumovi reads it when its pod starts, and the pod doesn't start without it: restart Lumovi after changing it. See [Private clusters](/server/fleet/agents#the-agents-lumovi-knows).
 </ResponseField>
 
 <ResponseField name="fleet.includeThisCluster" type="boolean" default="true">
-  Whether the cluster Lumovi runs in is one of the fleet's, called `clusterName`. Its service account may then impersonate users and groups here.
+  Whether the cluster Lumovi runs in is one of the fleet's, called `clusterName`. Its service account may then impersonate users and groups here, and does, for everyone who signs in.
 </ResponseField>
 
 <ResponseField name="fleet.labels" type="object" default="{}">
-  The labels of the cluster Lumovi runs in, like `{ env: production, region: eu-west }`.
+  The labels of the cluster Lumovi runs in, like `{ env: production, region: eu-west }`, each a piece of text.
 </ResponseField>
 
 ## An agent
 
-With `mode: agent`. `clusterName` is the agent's name in the fleet.
+With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's list of agents has it. The agent always runs one replica, and uses the chart's `image`, `extraEnv`, `podSecurityContext`, `securityContext`, `nodeSelector`, `tolerations`, `affinity`, `priorityClassName` and `serviceAccount` values too.
 
 <ResponseField name="agent.hubUrl" type="string">
-  The fleet's Lumovi, like `https://lumovi.example.com`, with its base path if it has one. Required.
+  The fleet's Lumovi, like `https://lumovi.example.com`, with its base path if it has one: an `http` or `https` URL. Required.
 </ResponseField>
 
 <ResponseField name="agent.tokenSecret" type="string">
-  A Secret in the release's namespace with the agent's token under the key `token`. Required.
+  A Secret in the release's namespace with the agent's token under the key `token`. Required, and the agent doesn't start until it's there.
 </ResponseField>
 
 <ResponseField name="agent.resources" type="object">
-  The agent's resources. By default it requests `10m` of CPU and `32Mi` of memory, and is limited to `128Mi` of memory.
+  The agent's resources, instead of `resources`. By default it requests `10m` of CPU and `32Mi` of memory, and is limited to `128Mi` of memory.
 </ResponseField>
 
 ## What people can do
 
 <ResponseField name="readOnly" type="boolean" default="false">
-  When `true`, nobody changes anything through Lumovi, whatever their RBAC allows. Each person can also make it read-only for themselves. See [Read-only mode](/changes/read-only).
+  When `true`, nobody changes anything through Lumovi, whatever their RBAC allows, in any cluster of a fleet. Each person can also make a cluster read-only for themselves. See [Read-only mode](/changes/read-only).
 </ResponseField>
 
 <ResponseField name="metrics.source" type="string" default="auto">
@@ -169,7 +178,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet.
   - `off`: no usage history.
   - A service, as `namespace/service:port`: `monitoring/prometheus-operated:9090`. For vmselect, with its path after the port: `vm/vmselect:8481/select/0/prometheus`.
 
-  See [Usage history](/metrics/usage-history).
+  In a fleet, this is every cluster's: leave it `auto` unless they all have the same service. See [Usage history](/metrics/usage-history).
 </ResponseField>
 
 <ResponseField name="helm.allowPrivateCharts" type="boolean" default="false">
@@ -181,7 +190,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet.
 </ResponseField>
 
 <ResponseField name="views" type="object" default="{}">
-  Views and add-ons everyone sees, by file name: each key is a file name ending in `.yaml` or `.yml`, and its value the file's contents. See [Views for everyone](/server/views).
+  Views and add-ons everyone sees, by file name: each key is a file name ending in `.yaml` or `.yml`, and its value the file's contents. In a fleet, they're for every cluster. See [Views for everyone](/server/views).
 </ResponseField>
 
 ## Kubernetes objects
@@ -208,7 +217,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet.
 </ResponseField>
 
 <ResponseField name="replicaCount" type="integer" default="1">
-  How many Lumovi pods to run. Sessions live in each pod's memory, and single sign-on has to finish on the pod it started on: more than one needs sticky sessions.
+  How many Lumovi pods to run. Sessions live in each pod's memory, and single sign-on has to finish on the pod it started on: more than one needs sticky sessions. Keep a fleet's at one: each agent connects to one pod.
 </ResponseField>
 
 <ResponseField name="service.type" type="string" default="ClusterIP">
@@ -282,7 +291,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet.
 </ResponseField>
 
 <ResponseField name="extraEnv" type="object[]" default="[]">
-  More environment variables, as a container's `env`. See [Configuration](/server/configuration) for the ones Lumovi reads. They come after the chart's own, and Kubernetes uses the last of two with the same name, so leave out `LUMOVI_PORT` and `LUMOVI_VIEWS_DIR`: see [Set by the chart itself](/server/configuration#set-by-the-chart-itself).
+  More environment variables, as a container's `env`, for Lumovi or for an agent. See [Configuration](/server/configuration) for the ones Lumovi reads, and [Private clusters](/server/fleet/agents#run-it-another-way) for an agent's. They come after the chart's own, and Kubernetes uses the last of two with the same name, so leave out the ones the chart sets itself: see [Set by the chart itself](/server/configuration#set-by-the-chart-itself).
 </ResponseField>
 
 <ResponseField name="podAnnotations" type="object" default="{}">

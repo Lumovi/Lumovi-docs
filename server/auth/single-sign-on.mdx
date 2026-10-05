@@ -138,6 +138,16 @@ auth:
 - **Tokens are renewed.** Lumovi renews each person's token a minute before it expires, with the refresh token the provider gives it. Most providers give one only when `offline_access` is among the scopes. Without one, the session ends when the cluster stops accepting the token, and people sign in again. If renewing fails, the session ends too. Either way, a session lasts no longer than `auth.sessionHours`.
 - **The audit log names people directly**, instead of Lumovi's service account acting as them.
 
+## In a fleet
+
+A [fleet](/server/fleet) signs people in the same way, once, for all its clusters. Set it up as above, then:
+
+- **Lumovi impersonates people** in each cluster, with the credentials it has for that cluster. The chart lets its own service account impersonate only in the cluster it runs in, when that's one of the fleet's.
+- **Each cluster where Lumovi impersonates people sees the same names**, from `auth.oidc.usernameClaim` and `auth.oidc.groupsClaim`, with `auth.usernamePrefix` and `auth.groupsPrefix` before them, unless the cluster has [its own](/server/fleet#settings-for-each-cluster). Bind roles in each cluster to the names it sees.
+- **Tokens are passed on cluster by cluster.** With `auth.oidc.forwardToken`, Lumovi keeps each person's token and renews it, but passes it on only to clusters with `forwardToken: true`, which name people by their API server's own settings. It impersonates people in the others, and always in the cluster it runs in.
+- **A cluster that refuses the token** says **Unauthorized** on its card, and the session goes on: the other clusters still work. It ends when renewing the token fails, or after `auth.sessionHours`.
+- **A cluster's `groups`** decide who sees it: groups as the ID token has them, without prefixes.
+
 ## When signing in doesn't work
 
 The sign-in page says what happened. The details go to Lumovi's log (`kubectl logs --namespace lumovi deployment/lumovi`).

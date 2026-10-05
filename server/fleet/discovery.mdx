@@ -24,7 +24,7 @@ fleet:
   secretNamespaces: [lumovi, clusters, argocd]
 ```
 
-The chart makes a Role in each of those namespaces that lets Lumovi's service account list Secrets, and binds it. Without the chart, set `LUMOVI_FLEET_SECRETS` (`lumovi,cluster-api,argocd`) and `LUMOVI_FLEET_SECRETS_NAMESPACES` (comma-separated, the service account's namespace unless set), and give the service account `list` on Secrets there.
+The chart makes a Role in each of those namespaces that lets Lumovi's service account list Secrets, and binds it, so each namespace must exist before you install. Lumovi can then list every Secret there, not only the ones that describe clusters: keep those namespaces to administrators. Without the chart, set `LUMOVI_FLEET_SECRETS` (`lumovi,cluster-api,argocd`) and `LUMOVI_FLEET_SECRETS_NAMESPACES` (comma-separated, the service account's namespace unless set), and give the service account `list` on Secrets there.
 
 This works only inside a cluster. Outside one, Lumovi doesn't start:
 
@@ -38,9 +38,11 @@ Secrets that can't be listed now keep the clusters they last described, as a kub
 Fleet: Secrets for argocd in argocd can't be listed: …
 ```
 
+A Secret that doesn't describe a cluster as it should is still shown, as **Misconfigured**, saying why: under the Secret's own name when Lumovi can't tell the cluster's. A cluster from a Secret is named in the log by where it came from, like `Secret argocd/cluster-prod-us`.
+
 ## Lumovi's own
 
-A Secret labelled `lumovi.dev/cluster` (with any value), with a kubeconfig under `kubeconfig`. Each context of the kubeconfig is a cluster, called by the context's name, with Lumovi's [settings in its extension](/server/fleet#settings-for-each-cluster) if it has them.
+A Secret labelled `lumovi.dev/cluster` (with any value), with a kubeconfig under `kubeconfig`. Each context of the kubeconfig is a cluster, called by the context's name, with Lumovi's [settings in its extension](/server/fleet#settings-for-each-cluster) if it has them, prefixes included.
 
 ```yaml
 apiVersion: v1
@@ -78,11 +80,11 @@ kubectl create secret generic prod-eu --namespace lumovi --from-file kubeconfig=
 kubectl label secret prod-eu --namespace lumovi lumovi.dev/cluster=
 ```
 
-A Secret without a kubeconfig is shown under its own name, saying `It has no kubeconfig (data.kubeconfig).`
+A Secret without a kubeconfig is shown under its own name, saying `It has no kubeconfig (data.kubeconfig).`, and one whose kubeconfig isn't one says so, like `Secret lumovi/prod-eu isn't a kubeconfig: …`. Paths in it would be read in Lumovi's container, which has none of your files: embed certificates with the `*-data` fields.
 
 ## Cluster API's
 
-Cluster API keeps each cluster's kubeconfig in a Secret called `<cluster>-kubeconfig`, under `value`, in the namespace of its `Cluster`, and labels it, like the cluster's other Secrets, with `cluster.x-k8s.io/cluster-name`. Lumovi reads the `-kubeconfig` ones, and calls each cluster by that label.
+Cluster API keeps each cluster's kubeconfig in a Secret called `<cluster>-kubeconfig`, under `value`, in the namespace of its `Cluster`, and labels it, like the cluster's other Secrets, with `cluster.x-k8s.io/cluster-name`. Lumovi reads the `-kubeconfig` ones, uses their kubeconfig's first context, and calls each cluster by that label. It skips the cluster's other Secrets, and a `-kubeconfig` one that has no `value` or no context yet. List the namespaces your `Cluster` objects are in.
 
 When Cluster API replaces a kubeconfig, Lumovi reads the new one at its next look.
 
@@ -99,24 +101,26 @@ Argo CD keeps each cluster it deploys to in a Secret labelled `argocd.argoproj.i
 | `bearerToken` | Signs in with it. |
 | `username`, `password` | Signs in with them. |
 | `tlsClientConfig` | `caData`, `certData`, `keyData`, `serverName` and `insecure`, as Argo CD does. |
-| `execProviderConfig` | Runs its `command`, which must be in Lumovi's image: the image has only Node.js and helm. |
+| `execProviderConfig` | Runs its `command`, with its `args` and `env`. The command must be in Lumovi's image, which has only Node.js and helm: otherwise the card says why it couldn't be run. |
 | `awsAuthConfig` | Nothing: the cluster's card says `Argo CD signs in to it with AWS (awsAuthConfig), which Lumovi can't: give it a bearerToken.` |
 
-The Secret's own labels become the cluster's, except Argo CD's (`argocd.argoproj.io/…`). A Secret without a `name` or a `server` is shown under its own name, saying `It has no name or server.`
+The Secret's own labels become the cluster's, except Argo CD's (`argocd.argoproj.io/…`). A Secret without a `name` or a `server` is shown under its own name, saying `It has no name or server.`, and one whose `config` isn't JSON is shown under its own name as **Misconfigured**. One with none of these credentials, like the entry Argo CD may keep for the cluster it runs in, says `Lumovi has no credentials for it…`.
 
 Argo CD's credentials are usually its `argocd-manager` service account's, which may do anything in the cluster. As with Cluster API's, Lumovi uses them only to impersonate.
 
 ## Lumovi's settings, as annotations
 
-Any of these Secrets can carry Lumovi's settings for its clusters as annotations. Each one that's set wins over a cluster's own setting, from its kubeconfig's extension or its Argo CD labels.
+Any of these Secrets can carry Lumovi's settings for its clusters as annotations, for every cluster it describes. Each one that's set wins over a cluster's own setting, from its kubeconfig's extension or its Argo CD labels.
 
 | Annotation | What it sets |
 | --- | --- |
 | `lumovi.dev/labels` | Labels, like `env=production,region=eu-west`. They're added to the cluster's own, and win over one with the same key. |
-| `lumovi.dev/groups` | Only people in these groups see the cluster, like `sre, developers`: groups as your provider or proxy names them, without prefixes. |
+| `lumovi.dev/groups` | Only people in these groups see the cluster, separated by commas, like `sre, developers`: groups as your provider or proxy names them, without prefixes. |
 | `lumovi.dev/forward-token` | `true`: requests carry each person's own token, instead of impersonating them. Anything else: Lumovi impersonates them. |
 
-A Secret whose annotations aren't like this is shown under its own name, as **Misconfigured**, saying why, like `lumovi.dev/labels must be labels like env=production,region=eu, not "staging".`
+A Secret whose `lumovi.dev/labels` isn't like this is shown under its own name, as **Misconfigured**, saying why, like `lumovi.dev/labels must be labels like env=production,region=eu, not "staging".`
+
+There are no annotations for prefixes. A cluster in Lumovi's own Secret can have its own in its kubeconfig's extension; Cluster API's and Argo CD's take the server's.
 
 <Columns cols={2}>
   <Card title="A fleet of clusters" icon="boxes" href="/server/fleet">

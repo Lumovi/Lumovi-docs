@@ -11,9 +11,9 @@ Lumovi reads them when it starts, and checks most of them: one that doesn't make
 
 ## Set by the chart itself
 
-The chart sets two of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, and `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views). Leave both out of `extraEnv`.
+The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
 
-The chart puts `extraEnv` after its own variables. When two have the same name, Kubernetes uses the last, so a variable repeated in `extraEnv` wins over the chart's. For the two above, that breaks Lumovi: it listens on a port nothing sends to, or reads views from a folder the chart doesn't mount. For the others, set the chart's value instead. The chart builds more than the variable on its values, like the permission to impersonate for `auth.mode`, or the probes and the ingress path for `basePath`, while a variable in `extraEnv` changes only Lumovi.
+The chart puts `extraEnv` after its own variables. When two have the same name, Kubernetes uses the last, so a variable repeated in `extraEnv` wins over the chart's. For the ones above, that breaks Lumovi: it listens on a port nothing sends to, or reads files from a folder the chart doesn't mount. For the others, set the chart's value instead. The chart builds more than the variable on its values, like the permission to impersonate for `auth.mode`, or the probes and the ingress path for `basePath`, while a variable in `extraEnv` changes only Lumovi.
 
 ## Where it runs
 
@@ -22,7 +22,7 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
 </ResponseField>
 
 <ResponseField name="PORT" type="number">
-  The port to listen on when `LUMOVI_PORT` isn't set, as platforms like [Sevalla](/server/fleet/sevalla) set it for the application they run.
+  The port to listen on when `LUMOVI_PORT` isn't set, as platforms like [Sevalla](/server/fleet/sevalla) set it for the application they run. One that isn't a port stops Lumovi, saying `PORT must be a port number`.
 </ResponseField>
 
 <ResponseField name="LUMOVI_ADDRESS" type="string">
@@ -54,11 +54,11 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
 </ResponseField>
 
 <ResponseField name="LUMOVI_SERVICE_ACCOUNT_DIR" type="string" default="/var/run/secrets/kubernetes.io/serviceaccount">
-  Where the pod's service account token and CA certificate are, inside a cluster. Lumovi needs the token there even when people sign in with their own tokens, and stops without it. The chart always mounts it.
+  Where the pod's service account token and CA certificate are, inside a cluster. Lumovi needs the token there even when people sign in with their own tokens, and stops without it. In a fleet, it needs them for the cluster it runs in, and to read Secrets. The chart always mounts them.
 </ResponseField>
 
 <ResponseField name="KUBERNETES_SERVICE_HOST" type="string">
-  Where the API server is, inside a cluster, with `KUBERNETES_SERVICE_PORT`. Kubernetes sets both in every pod: you don't. Without `KUBERNETES_SERVICE_HOST` or `KUBECONFIG`, Lumovi stops, saying it isn't running in a cluster.
+  Where the API server is, inside a cluster, with `KUBERNETES_SERVICE_PORT`. Kubernetes sets both in every pod: you don't. Without `KUBERNETES_SERVICE_HOST` or `KUBECONFIG`, Lumovi stops, saying it isn't running in a cluster, unless it shows a fleet. In a fleet, it tells Lumovi it runs in a cluster: see `LUMOVI_FLEET_LOCAL`.
 </ResponseField>
 
 ## A fleet
@@ -66,7 +66,7 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
 Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi shows a fleet when any of `LUMOVI_FLEET_KUBECONFIG`, `LUMOVI_FLEET_KUBECONFIG_FILE`, `LUMOVI_FLEET_SECRETS` and `LUMOVI_FLEET_AGENTS` is set, or `LUMOVI_FLEET_LOCAL` is `true`. It then needs `LUMOVI_AUTH` to be `oidc` or `proxy`, and doesn't use `KUBECONFIG` or `LUMOVI_CONTEXT`. The settings of a fleet's agents are on [Private clusters](/server/fleet/agents#run-it-another-way).
 
 <ResponseField name="LUMOVI_FLEET_KUBECONFIG" type="string">
-  A kubeconfig, each of whose contexts is a cluster: YAML or JSON, or that encoded in base64 on one line. Read when Lumovi starts. One that isn't a kubeconfig stops it.
+  A kubeconfig, each of whose contexts is a cluster: YAML or JSON, or that encoded in base64 on one line. Read when Lumovi starts. One that isn't a kubeconfig stops it, saying `LUMOVI_FLEET_KUBECONFIG isn't a kubeconfig: …`, and base64 that isn't YAML says `LUMOVI_FLEET_KUBECONFIG must be YAML, or YAML encoded in base64.`
 </ResponseField>
 
 <ResponseField name="LUMOVI_FLEET_KUBECONFIG_FILE" type="string">
@@ -74,7 +74,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_FLEET_SECRETS" type="string">
-  Secrets of the cluster Lumovi runs in that describe clusters, by whose: `lumovi`, `cluster-api` and `argocd`, separated by commas. Only in a cluster. See [Clusters from Secrets](/server/fleet/discovery).
+  Secrets of the cluster Lumovi runs in that describe clusters, by whose: `lumovi`, `cluster-api` and `argocd`, separated by commas. Only in a cluster: outside one, and with any other name, Lumovi doesn't start. See [Clusters from Secrets](/server/fleet/discovery).
 </ResponseField>
 
 <ResponseField name="LUMOVI_FLEET_SECRETS_NAMESPACES" type="string">
@@ -94,7 +94,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_CLUSTER_LABELS" type="string">
-  The labels of the cluster Lumovi runs in, in a fleet, like `env=production,region=eu-west`.
+  The labels of the cluster Lumovi runs in, in a fleet, like `env=production,region=eu-west`. Labels that aren't like this stop Lumovi.
 </ResponseField>
 
 ## Sign-in
@@ -132,7 +132,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_OIDC_FORWARD_TOKEN" type="string">
-  `id` or `access`: pass people's own token on (the API server must trust the provider) instead of impersonating them. The token must be a JWT that says when it expires.
+  `id` or `access`: pass people's own token on (the API server must trust the provider) instead of impersonating them. The token must be a JWT that says when it expires. In a fleet, Lumovi passes it on only to clusters with [`forwardToken: true`](/server/fleet#settings-for-each-cluster), and impersonates people in the others.
 </ResponseField>
 
 <ResponseField name="LUMOVI_PROXY_USER_HEADER" type="string" default="X-Forwarded-User">
@@ -160,17 +160,17 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_HEARTBEAT_SECONDS" type="number" default="30">
-  How often pages' connections, and a fleet's agents', are checked, in seconds, at most 3600. Keep it shorter than the idle timeout of the proxies in front of Lumovi.
+  How often pages' connections, and a fleet's agents', are checked, in seconds, at most 3600. Keep it shorter than the idle timeout of the proxies in front of Lumovi. An agent takes two of these and a second without a check for a lost connection, and connects again.
 </ResponseField>
 
 ## What people can do
 
 <ResponseField name="LUMOVI_READ_ONLY" type="boolean" default="false">
-  `true` or `1`: nobody changes anything through Lumovi. Anything else leaves changes on.
+  `true` or `1`: nobody changes anything through Lumovi, in any cluster of a fleet. Anything else leaves changes on.
 </ResponseField>
 
 <ResponseField name="LUMOVI_METRICS_SOURCE" type="string" default="auto">
-  Where usage history comes from unless people choose: `auto`, `off`, or `namespace/service:port`, with a path after it for vmselect (`vm/vmselect:8481/select/0/prometheus`).
+  Where usage history comes from unless people choose: `auto`, `off`, or `namespace/service:port`, with a path after it for vmselect (`vm/vmselect:8481/select/0/prometheus`). In a fleet, it's every cluster's.
 </ResponseField>
 
 <ResponseField name="LUMOVI_ALLOW_PRIVATE_CHARTS" type="boolean" default="false">

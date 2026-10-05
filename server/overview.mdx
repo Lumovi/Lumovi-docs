@@ -51,6 +51,8 @@ Which one depends on how people sign in.
 
 When people's own tokens reach the cluster, its audit log names them directly. When Lumovi impersonates them, the audit log records Lumovi's service account acting as them. The chart grants the impersonation permission only in the modes that need it.
 
+A [fleet](/server/fleet) signs people in with single sign-on or a proxy, never with tokens: a token says who someone is to one cluster only. It impersonates people in each cluster, with credentials for that cluster, or passes their own token on to the clusters that trust your provider.
+
 <Note>
   Signing in with a token needs Kubernetes 1.28 or later: Lumovi asks the cluster whose token it is with a SelfSubjectReview. Single sign-on and the proxy work from Kubernetes 1.25, like the rest of Lumovi.
 </Note>
@@ -59,7 +61,7 @@ When people's own tokens reach the cluster, its audit log names them directly. W
 
 <AccordionGroup>
   <Accordion title="One cluster, or a fleet" icon="server">
-    It shows the cluster it runs in. To show many clusters, with a page that sums them all up and a list to switch between, run it as a [fleet](/server/fleet).
+    It shows the cluster it runs in. To show many clusters, with a page that sums them all up and a list to switch between, run it as a [fleet](/server/fleet). A fleet's Lumovi can run in a cluster, on a machine of its own or on a platform like Sevalla, and reaches clusters in private networks through [agents](/server/fleet/agents) that dial out to it.
   </Accordion>
   <Accordion title="No port forwarding" icon="plug">
     There's no computer of the user's to forward a port to, so **Forward a port…** isn't offered. See [Port forwarding](/debug/port-forwarding) for the desktop app.
@@ -104,6 +106,7 @@ The Helm chart is `oci://ghcr.io/lumovi/charts/lumovi`. It's released with Lumov
 - **Kubernetes 1.25 or later**, and 1.28 or later to sign in with tokens.
 - **Helm**, to install the chart. Helm 3.8 and later read charts from OCI registries.
 - **An ingress controller**, if you want Lumovi at an address of its own. A `kubectl port-forward` is enough to try it.
+- **For a fleet**, single sign-on or an authenticating proxy. Its Lumovi needs no Kubernetes of its own: it needs to reach each cluster's API server, or each cluster's agent needs to reach it.
 
 <Columns cols={2}>
   <Card title="Install it" icon="download" href="/server/install">
