@@ -167,7 +167,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     - **No usage**: Prometheus has no CPU and memory samples for its containers in the last week, or it had no pods.
     - **Autoscaled**: a VerticalPodAutoscaler sets its requests, so Lumovi leaves it to it.
 
-    If Prometheus couldn't answer for some namespaces, an alert names them, with **Try again**: the other namespaces still get their recommendations. A namespace that keeps failing usually asks more of Prometheus than its query limits or timeout allow.
+    If Prometheus couldn't answer for some namespaces, an alert names up to three, and how many more, with **Try again**: the other namespaces still get their recommendations. A namespace that keeps failing on its own usually asks more of Prometheus than its query limits or timeout allow.
 
     If VerticalPodAutoscalers couldn't be listed, an alert says so: workloads they manage get recommendations too, rather than **Autoscaled**. See [Without nodes or VerticalPodAutoscalers](/metrics/right-sizing#without-nodes-or-verticalpodautoscalers).
 
