@@ -5,7 +5,7 @@ description: "Open your team's Lumovi, sign in, and see and change what your own
 icon: "log-in"
 ---
 
-When Lumovi runs in a cluster, it's a web page. Open the address your team gave you, sign in, and the cluster's overview opens. Everything you see, and every change you can make, is what your own Kubernetes account allows: Lumovi never gives anyone more.
+When Lumovi runs in a cluster, it's a web page. Open the address your team gave you, sign in, and the cluster's overview opens. If your team's Lumovi shows many clusters, a page of every cluster you may see opens instead: see [In a fleet](#in-a-fleet). Everything you see, and every change you can make, is what your own Kubernetes account allows: Lumovi never gives anyone more.
 
 ## Sign in
 
@@ -29,6 +29,8 @@ How you sign in depends on how your team set Lumovi up. The sign-in page shows t
     kubectl create token NAME --namespace NAMESPACE
     ```
 
+    A Lumovi that shows a fleet of clusters doesn't take tokens: a token says who you are to one cluster only.
+
     <Note>
       Tokens expire. When yours does, or is revoked, the session ends and Lumovi asks for another.
     </Note>
@@ -40,15 +42,25 @@ How you sign in depends on how your team set Lumovi up. The sign-in page shows t
   </Tab>
 </Tabs>
 
+## In a fleet
+
+Some teams run one Lumovi for many clusters. Once you're signed in to one of those, its first page shows every cluster you may see, each on a card that sums it up: its nodes, pods and workloads, its warnings in the last hour, and its CPU and memory. The ones that need attention come first. Click a card to open its cluster.
+
+You sign in once, for all of them. In each cluster, you see and change what your account there allows, so one may let you do more than another. To move to another cluster, open the cluster's name at the top of the sidebar, or type its name into the [command palette](/explore/finding-things). **All clusters**, in both, goes back to the page of every cluster.
+
+If one cluster doesn't accept your sign-in, its card says <span className="lumovi-status critical">Unauthorized</span>. You stay signed in, and the other clusters work as before.
+
+See [Clusters in a fleet](/clusters/fleet) for the page of every cluster, finding a workload in all of them, and what each card says.
+
 ## Who you are, and what you can do
 
-Your initials, at the bottom of the sidebar, open a menu that shows who you're signed in as, and your groups: four by name, then how many more. `system:authenticated`, which everyone signed in is in, isn't listed. Where the name and groups come from depends on how you signed in:
+Your initials, at the bottom of the sidebar (at the top right of a fleet's page of clusters), open a menu that shows who you're signed in as, and your groups: four by name, then how many more. `system:authenticated`, which everyone signed in is in, isn't listed. Where the name and groups come from depends on how you signed in:
 
 - **With a token:** the cluster's own answer for that token. That's exactly the name and groups the cluster applies roles to.
 - **With single sign-on:** what your provider says about you when you sign in.
 - **Behind a company login:** what the proxy passes on to Lumovi.
 
-Your access comes from the roles bound to that name and those groups. With single sign-on or a company login, the cluster may know them with a prefix your team chose, like `oidc:`: then roles are bound to `oidc:alice@example.com` and `oidc:platform`, while the menu shows `alice@example.com` and `platform`.
+Your access comes from the roles bound to that name and those groups. With single sign-on or a company login, the cluster may know them with a prefix your team chose, like `oidc:`: then roles are bound to `oidc:alice@example.com` and `oidc:platform`, while the menu shows `alice@example.com` and `platform`. In a fleet, each cluster has roles of its own, and may use a prefix of its own.
 
 <Frame caption="Who's signed in, and their groups.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/server-account-light-1x.webp" alt="Lumovi served from a cluster: who's signed in, and their groups." />
@@ -63,7 +75,7 @@ Your access comes from the roles bound to that name and those groups. With singl
 
 <AccordionGroup>
   <Accordion title="Links can be shared" icon="link">
-    Every page has its own address: a pod, a filtered list, a Helm release. Copy it from the address bar and send it. Whoever opens it signs in, and sees it if their account may.
+    Every page has its own address: a pod, a filtered list, a Helm release. Copy it from the address bar and send it. Whoever opens it signs in, and sees it if their account may. In a fleet, the address names the cluster, and the page of every cluster keeps what you picked on it too.
   </Accordion>
   <Accordion title="Sessions end" icon="timer">
     A session lasts 12 hours unless your team changed that. It also ends when Lumovi restarts, after an upgrade say. You come back to the sign-in page, and land where you were. Behind a company login, Lumovi keeps no session of its own: the proxy decides when you sign in again.
@@ -72,7 +84,7 @@ Your access comes from the roles bound to that name and those groups. With singl
     A banner says **Reconnecting to Lumovi…**, and the page keeps what it showed. It picks up again as soon as the server answers. If it goes on, the server may be down, or a proxy in front of it may not pass WebSockets.
   </Accordion>
   <Accordion title="Your preferences stay in your browser" icon="sliders-horizontal">
-    The theme, whether you've made the cluster read-only for yourself, and where usage history comes from are kept in your browser. Changing them doesn't affect anyone else.
+    The theme, the clusters you've made read-only for yourself, and where each cluster's usage history comes from are kept in your browser. Changing them doesn't affect anyone else.
   </Accordion>
   <Accordion title="A few shortcuts belong to the browser" icon="keyboard">
     Browsers keep <kbd>⌘</kbd><kbd>N</kbd> and <kbd>⌘</kbd><kbd>1</kbd>…<kbd>6</kbd> for themselves. The command palette (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) has those commands. Everything else is the same as in the [desktop app](/reference/keyboard-shortcuts).

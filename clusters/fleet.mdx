@@ -1,0 +1,155 @@
+---
+title: "Clusters in a fleet"
+sidebarTitle: "In a fleet"
+description: "When your team's Lumovi shows many clusters: the page that sums them all up, finding a workload in any of them, and moving between them."
+icon: "boxes"
+---
+
+Some teams run one Lumovi for many clusters, a fleet. You sign in once, and its first page shows every cluster you may see, each summed up the way its overview would, the ones that need attention first. Each cluster opens to the same pages as a Lumovi of its own, and in each one you see and change what your own account there allows.
+
+Keyboard shortcuts are shown for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> for <kbd>⌘</kbd>.
+
+<Note>
+  Whoever runs Lumovi sets up the fleet, and decides which clusters you see: see [A fleet of clusters](/server/fleet). The desktop app lists the clusters in your kubeconfig instead: see [Connect your clusters](/clusters/connect).
+</Note>
+
+<Frame caption="Every cluster you may see, the ones that need attention first.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/fleet-light-1x.webp" alt="A fleet of four clusters as cards: edge is unreachable and says why, production has a node not ready, unhealthy pods and degraded workloads, and load-test and staging are healthy. Above them are the search, the status chips, the labels, Group by and Find a workload." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/fleet-dark-1x.webp" alt="A fleet of four clusters as cards: edge is unreachable and says why, production has a node not ready, unhealthy pods and degraded workloads, and load-test and staging are healthy. Above them are the search, the status chips, the labels, Group by and Find a workload." />
+</Frame>
+
+## Every cluster on one page
+
+The heading says how many clusters you may see, and how many need attention. While Lumovi is still hearing from them, it says **Checking each one…**, and when none needs attention, **All healthy**.
+
+Lumovi asks each cluster as you, so each card shows what your account there may see. It asks again every 30 seconds while the page is open, so the figures keep up, and clusters your team adds or removes come and go without a reload.
+
+If no cluster is shared with you, the page says **No clusters for you here**. Ask whoever runs Lumovi to add one, or to share one with your groups.
+
+### A cluster's card
+
+Each card starts with the cluster's name and status, and on the right, its Kubernetes version and how long it took to answer. Below them are its labels, like `env=production` and `region=eu-west`, which your team gives each cluster. Then come the same figures as the tiles on its [overview](/explore/overview):
+
+| Figure | What it counts |
+| --- | --- |
+| **Nodes** | The nodes that are ready, of all of them. Below, how many aren't ready, or **All ready**. |
+| **Pods running** | Pods that are running and ready, in every namespace. Below, how many are unhealthy (failing, pending, not ready or terminating), **All fine**, or **None yet**. A **+** after the number means the cluster has more pods than a list loads (5,000, unless your team changed it), so there are at least that many. |
+| **Workloads** | Deployments, StatefulSets and DaemonSets that are healthy, of all of them. One scaled to zero counts as healthy. Below, how many are degraded, **Healthy**, or **None yet**. |
+| **Warnings** | Warning events in the last hour. |
+| **CPU** and **Memory** | What's in use, as a share of what the nodes can allocate. **No metrics** when the cluster has no [metrics-server](/metrics/live-usage), and **No access** when your account can't read its nodes or their usage. |
+
+The figures are for the whole cluster. One your account may not list shows **—** and **No access**: hover it for the cluster's answer. So if you may only list pods in a few namespaces, **Pods running** says **No access**, and the cluster is judged by what you may see.
+
+A cluster that didn't answer has no figures. Its card says why instead, like `connect ECONNREFUSED 10.0.4.12:6443`. What each reason means, and what to do, is further down this page.
+
+### What needs attention
+
+A card has one status: the first of these that applies. So a cluster with nodes that aren't ready says so, even if its workloads are degraded too.
+
+| Status | When |
+| --- | --- |
+| <span className="lumovi-status critical">Unreachable</span>, or another reason | The cluster didn't answer, or can't be used. The card says why. |
+| <span className="lumovi-status critical">1 node not ready</span> | Some of its nodes aren't ready. |
+| <span className="lumovi-status warning">4 workloads degraded</span> | Some Deployments, StatefulSets or DaemonSets have fewer replicas ready than they want. |
+| <span className="lumovi-status warning">8 pods unhealthy</span> | Some pods are failing, pending, not ready or terminating. See [Health](/explore/health). |
+| <span className="lumovi-status healthy">Healthy</span> | None of the above. |
+| <span className="lumovi-status neutral">No access</span> | Your account may list none of its nodes, pods and workloads, so Lumovi can't say how it is. |
+
+Until a cluster answers, its card says <span className="lumovi-status progressing">Checking…</span>.
+
+A cluster **needs attention** when its status is one of the first four. Those come first on the page: clusters that didn't answer or have nodes not ready, then those with workloads degraded or pods unhealthy. Then come the clusters still being checked, the healthy ones, and last the ones you have no access to, each in order of name.
+
+Warning events are counted on each card, but don't make a cluster need attention: every cluster has some.
+
+## Narrow it down
+
+Above the cards are a search box, a chip for each status and a row of labels:
+
+- The chips, **All**, **Needs attention**, **Healthy** and **Unreachable**, show those clusters, each with how many there are. **Unreachable** has every cluster that didn't answer, whatever the reason. A chip with no clusters is hidden. Clusters still being checked, and those you have no access to, are only under **All**.
+- The search box matches each cluster's name and labels. Every word you type has to appear, so `prod eu` finds `prod-eu`, and `region=us` finds the clusters in `region=us-east`. Press <kbd>/</kbd> or <kbd>⌘</kbd><kbd>K</kbd> to go to it, <kbd>↓</kbd> to move to the first card, and <kbd>Esc</kbd> to leave it.
+- The row of labels under it lists every label your clusters have, with how many have it. Click one to keep only the clusters that have it, and more to keep the ones that have all of them. Click it again to drop it.
+- **Group by** puts the cards under a heading for each value of a label, like `region=eu-west`, with how many clusters each has. Clusters without that label come last, under **No region**. While it's on, the button says **Grouped by region**. Choose **Nothing** to put the cards back together.
+
+The labels and **Group by** are there when your clusters have labels.
+
+When nothing matches, the page says **No clusters match**, with **Show every cluster**, which clears the search, the status and the labels.
+
+### Kept in the address
+
+The search, status, labels and grouping are all part of the page's address. **Back** and **Forward** bring each of them back, and a link you copy opens the page the same way for whoever opens it, with the clusters they may see. The Lumovi logo at the top goes back to every cluster, with nothing picked.
+
+## Find a workload
+
+**Find a workload**, at the right above the cards, looks for a workload in every cluster that answered: their Deployments, StatefulSets, DaemonSets and CronJobs. Type two or more characters of a name or a namespace. Every word you type has to appear in one or the other, so `shop cart` finds `cart` in `shop`.
+
+<Frame caption="Finding a workload by name or namespace, in every cluster.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/fleet-search-light-1x.webp" alt="Find a workload open over the page of every cluster, with shop typed in: four Deployments in the shop namespace of the production cluster, two Ready, one Degraded and one Unavailable." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/fleet-search-dark-1x.webp" alt="Find a workload open over the page of every cluster, with shop typed in: four Deployments in the shop namespace of the production cluster, two Ready, one Degraded and one Unavailable." />
+</Frame>
+
+Each workload it finds shows its name, kind and namespace, its [status](/explore/health), and its cluster. Click one, or move to it with <kbd>↑</kbd> <kbd>↓</kbd> and press <kbd>↵</kbd>: its cluster opens on **Workloads**, with the workload open next to the list. <kbd>Esc</kbd> closes the search.
+
+- Before you type, it says how many clusters it will look in. While it looks, it says **Looking in 3 clusters…**, and when nothing matches, *No workload here is called "checkout".*
+- It shows the first 50 workloads it finds, and how many more there are. Type more of the name to narrow them down.
+- It lists each kind in the whole cluster, as you. In a cluster where you may only list workloads in some namespaces, it finds none of them.
+
+## Open a cluster
+
+Click a card, or press <kbd>↵</kbd> on it, and the cluster opens on its **Overview**. From the search box, <kbd>↓</kbd> moves to the first card, and <kbd>Tab</kbd> moves on from there. Each card is a link, so you can also open a cluster in a new tab.
+
+Inside, it's the same Lumovi as with one cluster: the sidebar, the namespace menu, the command palette and every page. Your account menu, with **Sign out**, is at the bottom of the sidebar; on the page of every cluster, it's at the top right. See [Signing in](/get-started/sign-in).
+
+What you pick in a cluster is kept in your browser, for that cluster:
+
+- The [namespace](/clusters/namespaces). It starts with **All namespaces**.
+- Whether you've made it [read-only](/changes/read-only) for yourself, with **Read-only** in the cluster switcher. When your team made every cluster read-only, it's read-only for everyone, and the switcher says **For everyone, on this server**.
+- Where its [usage history](/metrics/usage-history) comes from.
+
+## Move between clusters
+
+- **The cluster switcher**, at the top of the sidebar, shows the cluster you're in. Open it for every cluster you may see, each with a dot for whether it answers, and a check by the one you're in. Type to filter, and pick one. **All clusters**, at the end of the list, goes back to the page of every cluster.
+- **The command palette**: press <kbd>⌘</kbd><kbd>K</kbd> and type a cluster's name. Its **Clusters** group has every cluster you may see, and **All clusters**. See [Finding things](/explore/finding-things).
+- **Back** (<kbd>⌘</kbd><kbd>[</kbd>, or your browser's) returns to the page you came from, with what you'd picked on it.
+
+Switching back to a cluster puts you in the namespace you left it in.
+
+## When a cluster can't be used
+
+A cluster can be on the page and still not open. Its card says why, and so does the cluster when you open it: its overview shows the error, with **Try again** and **Choose another cluster**, and a banner says *Can't reach edge. Checking again every 15 seconds.*, with **Retry now** and **All clusters**.
+
+| Status | What it means | What to do |
+| --- | --- | --- |
+| <span className="lumovi-status critical">Unreachable</span>, <span className="lumovi-status critical">Timed out</span> | The cluster didn't answer. It may be down, or out of Lumovi's reach. A private cluster, reached through an agent, says *Its agent isn't connected.* | Lumovi keeps checking. If it lasts, tell whoever runs Lumovi. |
+| <span className="lumovi-status critical">Unauthorized</span> | The cluster turned down the credentials Lumovi sent for you: Lumovi's own, or yours, where the cluster takes each person's own sign-in. | You stay signed in, and the other clusters work as before. Tell whoever runs Lumovi. |
+| <span className="lumovi-status critical">Forbidden</span>, <span className="lumovi-status critical">Misconfigured</span>, <span className="lumovi-status critical">Credentials failed</span>, <span className="lumovi-status critical">Certificate error</span> | Something in how Lumovi reaches the cluster has to change. The card says what, like *It takes each person's own token, and this server doesn't pass tokens on: set LUMOVI_OIDC_FORWARD_TOKEN.* | Send the card's message to whoever runs Lumovi: it's written for them. |
+
+<span className="lumovi-status neutral">No access</span> isn't an error: the cluster answered, but your account may list none of its nodes, pods and workloads. Open it to use what you may, and see [Permissions](/clusters/permissions) for what to ask for.
+
+A cluster that isn't shared with your groups isn't on the page at all. A link to it, from a teammate say, opens on *This server has no cluster called "staging" that you can see.*
+
+## Keyboard
+
+On the page of every cluster:
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>/</kbd> or <kbd>⌘</kbd><kbd>K</kbd> | Go to the search box |
+| <kbd>↓</kbd> | From the search box, move to the first card |
+| <kbd>Tab</kbd> | Move to the next card |
+| <kbd>↵</kbd> | Open the cluster |
+| <kbd>Esc</kbd> | Leave the search box |
+| <kbd>⌘</kbd><kbd>R</kbd> | Ask every cluster again now |
+| <kbd>⌘</kbd><kbd>[</kbd> or <kbd>Alt</kbd><kbd>←</kbd> | Back |
+| <kbd>⌘</kbd><kbd>]</kbd> or <kbd>Alt</kbd><kbd>→</kbd> | Forward |
+| <kbd>?</kbd> | Keyboard shortcuts |
+
+In **Find a workload**, <kbd>↑</kbd> <kbd>↓</kbd> move through what it found, <kbd>↵</kbd> opens one, and <kbd>Esc</kbd> closes it. Inside a cluster, every shortcut works as usual: see [Keyboard shortcuts](/reference/keyboard-shortcuts).
+
+<Columns cols={2}>
+  <Card title="Signing in" icon="log-in" href="/get-started/sign-in">
+    Who you are in each cluster, and what you can do.
+  </Card>
+  <Card title="A fleet of clusters" icon="server" href="/server/fleet">
+    For whoever runs Lumovi: where clusters come from, and who sees each one.
+  </Card>
+</Columns>
