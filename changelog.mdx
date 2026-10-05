@@ -7,6 +7,31 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 5, 2026" description="1.1.0" tags={["Desktop app", "In your cluster"]}>
+  ## Fleet: many clusters in one Lumovi
+
+  One Lumovi can now show your team many clusters in a browser, private ones too. It runs in a cluster, or without Kubernetes, on a machine of its own or a platform like Sevalla. This release also fixes four things, on the desktop and in your cluster.
+
+  ### Fleet
+
+  - **Every cluster on one page.** Lumovi's home page sums up each cluster as its overview would: nodes, pods, workloads, warnings, CPU and memory, its version and how fast it answers. What needs attention comes first, and a cluster that can't be reached says why. Filter by status and labels, group by a label, and find a workload by name or namespace in every cluster. The cluster switcher and the command palette move between clusters, and back to all of them. See [Clusters in a fleet](/clusters/fleet).
+  - **Each person's own RBAC.** People sign in once, with single sign-on or through a proxy. Lumovi impersonates them in each cluster, or passes their own token on to clusters that trust your identity provider. See [A fleet of clusters](/server/fleet).
+  - **Where clusters come from.** A kubeconfig, in a setting (`LUMOVI_FLEET_KUBECONFIG`, as YAML or base64 on one line) or in files read again as they change; [Secrets](/server/fleet/discovery) of the cluster Lumovi runs in, its own, Cluster API's and Argo CD's; and that cluster itself. A context's `lumovi.dev` extension, or a Secret's annotations, give a cluster labels, the groups who see it, and whether people's own tokens are passed on.
+  - **[Agents](/server/fleet/agents) for private clusters.** For a cluster Lumovi can't reach, an agent in it dials out to Lumovi over a WebSocket, and relays its connections to the API server. TLS runs from Lumovi to the API server through it, so the agent passes on only what it can't read. It reconnects by itself, also when its connection goes quiet, and passes on its service account's new token when Kubernetes rotates it.
+  - **The Helm chart** installs a fleet (its `fleet` values), what a cluster needs to [join one](/server/fleet/members) (`mode: member`: a service account that may only impersonate, and its token, with the kubeconfig entry printed after installing), or an agent (`mode: agent`).
+  - **Without Kubernetes.** On platforms that set `PORT`, like [Sevalla](/server/fleet/sevalla), Lumovi listens on it unless `LUMOVI_PORT` is set, and takes every setting from the environment.
+  - **To try it from source**, `npm run dev:server -- --fleet` serves a fleet of the demo clusters, signed in to with a mock single sign-on. See [Build from source](/reference/build-from-source).
+
+  ### Fixed
+
+  - **Views from the Helm chart are used.** Kubernetes mounts the chart's `views` value as links, which Lumovi left out. A view file that can't be read is now listed as a [problem](/reference/view-format#problems), and the rest load.
+  - **The [Map](/explore/map) shows other namespaces' gateways and services.** A Gateway or a Service in another namespace that a route refers to, like a shared gateway, no longer says <span className="lumovi-status critical">Not found</span>. It's shown without a status, and opens.
+  - **[Right-sizing](/metrics/right-sizing) loads without VerticalPodAutoscalers or nodes.** When the Vertical Pod Autoscaler is installed but your account can't list its autoscalers, the page loads, and says what that means. It also loads for accounts that can't list nodes.
+  - **<kbd>Esc</kbd> closes a Helm release's panel**, as its close button says. See [Helm releases](/helm/releases).
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.1.0)
+</Update>
+
 <Update label="October 4, 2026" description="1.0.0" tags={["Desktop app", "In your cluster"]}>
   ## The first version of Lumovi
 
