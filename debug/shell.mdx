@@ -7,6 +7,8 @@ icon: "square-terminal"
 
 When logs aren't enough, get inside. Lumovi opens a terminal in a running container, like `kubectl exec -it`, right in the pod's panel. For images with no shell at all, it adds a debug container that brings its own tools, like `kubectl debug`.
 
+For a problem on the node under a container, a node has a **Shell** tab too: see [Shells on nodes](/debug/node-shell).
+
 <Frame caption="A shell in a running container.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/shell-light-1x.webp" alt="The Shell tab of a pod in the detail panel: a terminal session in the pod's container, with a container picker and a Reconnect button." />
   <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/shell-dark-1x.webp" alt="The Shell tab of a pod in the detail panel: a terminal session in the pod's container, with a container picker and a Reconnect button." />
@@ -35,7 +37,7 @@ sh -c 'command -v bash >/dev/null 2>&1 && exec bash || exec sh'
 ## In the terminal
 
 - The terminal fits the panel, and the container learns its new size when you resize the panel. Expand the panel for more room.
-- It keeps 5,000 lines of scrollback, and uses the app's colors in light and dark.
+- It keeps 10,000 lines of scrollback, and uses the app's colors in light and dark.
 - Keys go to the terminal: <kbd>Esc</kbd> works in `vi` and `less`, and doesn't close the panel.
 - **Reconnect** starts a fresh session in the same container.
 
@@ -92,6 +94,8 @@ kubectl debug -it web-1 --image=busybox:1.37 --container=debugger-ab12c --target
 <Note>
   A debug container is an ephemeral container: it stays in the pod until the pod is replaced, and can't be removed before then. Adding one needs `patch` on `pods/ephemeralcontainers`, and like other changes, it's off in read-only clusters.
 </Note>
+
+For a shell on your own computer, with kubectl pointed at the cluster, see [Terminals](/debug/terminal).
 
 <Columns cols={2}>
   <Card title="Logs" icon="scroll-text" href="/debug/logs">
