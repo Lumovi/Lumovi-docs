@@ -78,6 +78,7 @@
             "group": "Clusters",
             "pages": [
               "clusters/connect",
+              "clusters/fleet",
               "clusters/namespaces",
               "clusters/permissions"
             ]

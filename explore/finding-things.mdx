@@ -23,7 +23,7 @@ Results come in groups:
 | **Objects** | Once you've typed two characters: objects whose names match, among those Lumovi has already loaded in this cluster (up to 20). |
 | **Go to** | Every view: the overview, Workloads, Metrics and [Right-sizing](/metrics/right-sizing), Helm releases, API resources, the page of each [add-on](/custom-resources/add-ons) the cluster has (marked **Add-on**), and every kind the cluster serves, found by name, kind, short name or API group. Custom resources included. |
 | **Namespace** | **All namespaces**, and every namespace. |
-| **Clusters** | Every cluster in your kubeconfig, and **All clusters**. Desktop app only. |
+| **Clusters** | Every cluster in your kubeconfig, and **All clusters**. When Lumovi runs in your cluster, only in a [fleet](/clusters/fleet): every cluster you may see, and **All clusters**, the fleet's page of clusters. |
 | **Help & appearance** | **Create from YAML**, **Metrics source…**, **Keyboard shortcuts**, **Use system theme**, **Use light theme**, **Use dark theme**, and **Make** _cluster_ **read-only** or **Allow changes to** _cluster_. The last one isn't there when `LUMOVI_READ_ONLY` makes every cluster read-only. |
 
 Move with <kbd>↑</kbd> <kbd>↓</kbd>, press <kbd>↵</kbd> to pick, and <kbd>Esc</kbd> to close.
@@ -31,6 +31,8 @@ Move with <kbd>↑</kbd> <kbd>↓</kbd>, press <kbd>↵</kbd> to pick, and <kbd>
 <Tip>
   Some views answer to other words too: `prometheus` or `usage history` finds Metrics, `recommendations` or `over-provisioned` finds Right-sizing, `charts` finds Helm releases, and `crds` finds API resources.
 </Tip>
+
+The palette looks in the cluster you're in. In a [fleet](/clusters/fleet), to find a workload in any of its clusters, use **Find a workload** on the page of every cluster: it looks for Deployments, StatefulSets, DaemonSets and CronJobs by name or namespace in all of them at once. There, <kbd>⌘</kbd><kbd>K</kbd> goes to the search box that finds clusters.
 
 ## Go-to keys
 
@@ -40,7 +42,7 @@ Every main view has a two-key shortcut: press <kbd>G</kbd>, then a letter, withi
 
 From top to bottom, the sidebar has:
 
-- **The cluster switcher**: the cluster you're in, its Kubernetes version, and a lock when it's [read-only](/changes/read-only). Open it to switch clusters. See [Connect your clusters](/clusters/connect#switching-clusters).
+- **The cluster switcher**: the cluster you're in, its Kubernetes version, and a lock when it's [read-only](/changes/read-only). Open it to switch clusters, in the desktop app or a [fleet](/clusters/fleet). See [Connect your clusters](/clusters/connect#switching-clusters).
 - **Overview**, **Workloads**, **Pods**, **Metrics** (with its **Right-sizing** tab) and **Helm releases**. Workloads stays highlighted on the list of each workload kind.
 - **Cluster**, **Network**, **Configuration** and **Storage**: Kubernetes' own kinds, like **Nodes**, **Services**, **Secrets** and **Volume Claims**. [Add-ons](/custom-resources/add-ons) that extend them sit with them when the cluster has them: **Cilium**, **Gateway API**, **Linkerd** and **Traefik** under Network, **Sealed Secrets** under Configuration, **Longhorn**, **Rook Ceph** and **Volume Snapshots** under Storage.
 - **Pinned**: the kinds you pinned, in every cluster that serves them. Pin a custom kind from the pin button above its list, or from **API resources**.

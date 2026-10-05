@@ -8,7 +8,7 @@ icon: "plug"
 There's nothing to add or import. The desktop app shows every context in your kubeconfig, with the credentials it already has: client certificates, tokens, and credential plugins like `gke-gcloud-auth-plugin`, `aws eks get-token` and `kubelogin`.
 
 <Note>
-  **In your cluster:** Lumovi served from a cluster shows that one cluster, and each person signs in with their own identity. There's no kubeconfig and no cluster list. See [Run it in your cluster](/server/overview).
+  **In your cluster:** Lumovi served from a cluster shows that one cluster, or a [fleet](/clusters/fleet) of clusters your team chose, and each person signs in with their own identity. There's no kubeconfig to read. A fleet opens on a page of its clusters, instead of the start screen. See [Run it in your cluster](/server/overview).
 </Note>
 
 ## Where clusters come from
@@ -110,9 +110,13 @@ You can also switch from the command palette (<kbd>⌘</kbd><kbd>K</kbd>), which
 
 Each cluster remembers its own [namespace](/clusters/namespaces), so switching back puts you where you were.
 
+<Note>
+  **In your cluster:** a Lumovi that shows one cluster has nothing to switch to, so the switcher shows the cluster's name and address, and **Read-only**. In a [fleet](/clusters/fleet), the switcher and the command palette list every cluster you may see, and **All clusters** goes back to the fleet's page of clusters. A browser has no menu bar, so there's no <kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd>.
+</Note>
+
 ## When a cluster stops answering
 
-If a cluster stops responding while you're using it, a banner says *Can't reach production. Checking again every 15 seconds.*, with **Retry now**, and **All clusters** to open another. (When Lumovi runs [in your cluster](/server/overview), there's no other cluster, so the banner has only **Retry now**.) The last data stays on screen, so you can keep reading while it comes back. When a single list fails to refresh, it keeps its rows and says *Couldn't refresh — showing the last data.*, with **Retry**.
+If a cluster stops responding while you're using it, a banner says *Can't reach production. Checking again every 15 seconds.*, with **Retry now**, and **All clusters** to open another. (When Lumovi runs [in your cluster](/server/overview) with one cluster, there's no other, so the banner has only **Retry now**. In a [fleet](/clusters/fleet), **All clusters** goes back to its page of clusters.) The last data stays on screen, so you can keep reading while it comes back. When a single list fails to refresh, it keeps its rows and says *Couldn't refresh — showing the last data.*, with **Retry**.
 
 ## Big or slow clusters
 

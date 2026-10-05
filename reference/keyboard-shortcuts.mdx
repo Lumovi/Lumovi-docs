@@ -20,7 +20,7 @@ Lumovi works from the keyboard as well as the mouse. Press <kbd>?</kbd> anywhere
 
 | Shortcut | What it does |
 | --- | --- |
-| <kbd>⌘</kbd><kbd>K</kbd> | Open the [command palette](/explore/finding-things). On the start screen, it searches your clusters instead. |
+| <kbd>⌘</kbd><kbd>K</kbd> | Open the [command palette](/explore/finding-things). On the start screen, and on the page of every cluster in a [fleet](/clusters/fleet), it searches your clusters instead. |
 | <kbd>/</kbd> | Filter the list |
 | <kbd>⌘</kbd><kbd>R</kbd> | Refresh now |
 | <kbd>⌘</kbd><kbd>[</kbd> or <kbd>Alt</kbd><kbd>←</kbd> | Back |
@@ -84,9 +84,9 @@ While the detail panel is open, moving through the list opens each row in turn. 
 | --- | --- |
 | <kbd>.</kbd> | Open the actions menu: scale, restart, edit… |
 | <kbd>⌘</kbd><kbd>⌫</kbd> | Delete the open object |
-| <kbd>Esc</kbd> | Close the detail panel |
+| <kbd>Esc</kbd> | Close the detail panel, or a Helm release's panel |
 
-The panel's edge can be dragged to resize it, or focused and moved with <kbd>←</kbd> <kbd>→</kbd>. Lumovi remembers its width. See [Object details](/explore/details).
+With a menu or a dialog open, <kbd>Esc</kbd> closes that first, and the panel stays open. The panel's edge can be dragged to resize it, or focused and moved with <kbd>←</kbd> <kbd>→</kbd>. Lumovi remembers its width. See [Object details](/explore/details).
 
 ## Dialogs
 
@@ -149,3 +149,20 @@ Everything else in the log viewer is a button or a chip. See [Logs](/debug/logs)
 | <kbd>?</kbd> | All shortcuts, once you've left the search box (in it, <kbd>?</kbd> is part of what you type) |
 
 The command palette finds views, objects, namespaces and clusters, and the actions for the open object. See [Search, filters and ⌘K](/explore/finding-things).
+
+## A fleet's page of clusters
+
+When Lumovi shows a [fleet](/clusters/fleet), its first page has every cluster you may see, as cards.
+
+| Shortcut | What it does |
+| --- | --- |
+| <kbd>/</kbd> or <kbd>⌘</kbd><kbd>K</kbd> | Go to the search box |
+| <kbd>↓</kbd> | From the search box, move to the first card |
+| <kbd>Tab</kbd> | Move to the next card |
+| <kbd>↵</kbd> | Open the cluster |
+| <kbd>Esc</kbd> | Leave the search box |
+| <kbd>⌘</kbd><kbd>R</kbd> | Ask every cluster again now |
+| <kbd>⌘</kbd><kbd>[</kbd> <kbd>⌘</kbd><kbd>]</kbd> | Back and Forward, through the filters, labels and grouping you picked |
+| <kbd>?</kbd> | Keyboard shortcuts |
+
+In **Find a workload**, <kbd>↑</kbd> <kbd>↓</kbd> move through the workloads it found, <kbd>↵</kbd> opens one in its cluster, and <kbd>Esc</kbd> closes it.
