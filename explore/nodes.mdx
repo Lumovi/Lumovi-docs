@@ -46,6 +46,10 @@ A node's status is one of:
 
 **Pods** lists every pod running on the node, from every namespace, failing ones first. **Metrics** charts its CPU and memory over time against its capacity, when Lumovi has found your [usage history](/metrics/usage-history). **Map** shows the pods that run on it and what runs them. See [Map](/explore/map). **Events** and **YAML** are there as for any object. A node has no **Logs** tab: that would be everything on it.
 
+## A shell on the node
+
+**Shell**, at the top of the panel, opens the node's **Shell** tab. From there, Lumovi starts a short-lived privileged pod on the node and opens a shell through it: as root on the node itself, or in the pod, with the node's files under `/host`. Nothing starts until you choose **Start shell**, and the pod is deleted when the shell ends. Your RBAC, and the Pod Security of the namespace the pod runs in, decide whether you can. See [Shells on nodes](/debug/node-shell).
+
 ## Take a node out of service
 
 | Action | What it does |

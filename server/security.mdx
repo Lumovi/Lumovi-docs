@@ -93,12 +93,23 @@ If your charts live in your own network, such as a ChartMuseum or Harbor, allow 
 
 Charts never come from files: there's no computer of the user's to read them from.
 
+## Shells on nodes
+
+A [shell on a node](/debug/node-shell) runs in a privileged pod Lumovi starts on that node, which shares the node's process, network and IPC namespaces and mounts its root filesystem. Whoever opens one is root on the node, and can reach whatever it holds: the kubelet's credentials, and the Secrets and volumes of every pod on it.
+
+- **People's own RBAC decides.** Lumovi creates the pod, and opens the shell, as whoever is signed in, like everything else it does. They need `create` and `get` on `pods`, and `create` on `pods/exec`, in the node shells' namespace (`kube-system` unless `nodeShell.namespace` says otherwise), and `delete` on `pods` for the pod to be deleted afterwards.
+- **So does the namespace's Pod Security.** It must allow privileged pods. Anyone who can create pods in a namespace that does can be root on any node with `kubectl` alone, without Lumovi.
+- **Each person can choose another namespace and image** for themselves, in their browser. Their RBAC and that namespace's Pod Security apply there just the same.
+- **The pod has no service account token**, and Lumovi deletes it when the shell ends. One it can't delete, because the person may not delete pods there, say, stops within 12 hours, its `activeDeadlineSeconds`.
+
+To turn node shells off for everyone, set `nodeShell.enabled: false` (`LUMOVI_NODE_SHELL=off`): Lumovi's server then refuses to start one, whatever people's RBAC allows. `readOnly: true` turns them off too, with every other change. To keep people from being root on nodes at all, with or without Lumovi, let them create pods only in namespaces whose Pod Security doesn't allow privileged pods.
+
 ## Read-only
 
 - `readOnly: true` keeps everyone from changing anything through Lumovi, whatever their permissions.
 - Each person can also make Lumovi read-only for themselves, in their own browser.
 
-Lumovi's server enforces it, not only the page: it refuses changes, shells and Helm changes while it's on. See [Read-only mode](/changes/read-only).
+Lumovi's server enforces it, not only the page: it refuses changes, shells (on nodes too) and Helm changes while it's on. See [Read-only mode](/changes/read-only).
 
 ## The pod
 
@@ -130,6 +141,7 @@ The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. I
 <Check>Serve it over HTTPS, and set `url` to the `https:` address, so cookies are sent over HTTPS only.</Check>
 <Check>Leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
 <Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
+<Check>Set `nodeShell.enabled: false` unless people should open shells on nodes through Lumovi. Either way, only those who may create pods where privileged pods are allowed can open one.</Check>
 <Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and run Lumovi where only the administrators of all its clusters can.</Check>
 <Check>In a fleet, give Lumovi agents' `tokenSha256`, not their tokens, and keep each token in a Secret in its own cluster.</Check>
 

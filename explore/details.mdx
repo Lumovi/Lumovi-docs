@@ -34,7 +34,7 @@ Each kind gets the tabs that make sense for it:
 | **Overview** | Everything |
 | **Pods** | Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs, services with a selector, nodes, custom kinds that scale pods (like Argo Rollouts), and custom kinds whose [view](/custom-resources/overview#views) relates pods to them. A view can name the tab, like CloudNativePG's **Instances**. |
 | **Logs** | Pods, and the same kinds as **Pods** except nodes. A workload's or service's logs merge every pod's. |
-| **Shell** | Pods |
+| **Shell** | Pods, and nodes: a shell on the node itself, through a pod Lumovi starts there. See [Shells on nodes](/debug/node-shell). |
 | **Metrics** | Pods, nodes, Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs and CronJobs, and custom kinds with pods |
 | A view's lists | Custom kinds whose view relates other objects to them: a tab for each, like a node pool's **Nodes** or a Kafka cluster's **Topics** |
 | **Map** | Everything but events and namespaces |
