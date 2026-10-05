@@ -76,6 +76,8 @@ The [activity log](/changes/undo-and-activity) of the changes you made lives in 
 
 When Lumovi runs in a cluster for a team, people sign in, and it acts with their own permissions. That has its own model: how sign-in works, what its service account may do, and how to keep it locked down. See [Security](/server/security).
 
+A [fleet](/server/fleet)'s Lumovi, for many clusters, also holds credentials for each of them, which should allow nothing but impersonating people, and clusters it can't reach connect to it through their agents. See [the fleet's security](/server/fleet#security).
+
 ## Reporting a vulnerability
 
 Please report vulnerabilities privately, through a [GitHub security advisory](https://github.com/Lumovi/Lumovi/security/advisories/new) or as the [security policy](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md) describes. Please don't open a public issue.
