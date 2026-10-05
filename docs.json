@@ -146,6 +146,14 @@
               "custom-resources/built-in-views",
               "custom-resources/write-a-view"
             ]
+          },
+          {
+            "group": "AI assistants",
+            "pages": [
+              "assistants/overview",
+              "assistants/approvals",
+              "assistants/tools"
+            ]
           }
         ]
       },

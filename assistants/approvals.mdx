@@ -1,0 +1,173 @@
+---
+title: "Approving changes"
+sidebarTitle: "Approving changes"
+description: "A change an AI assistant asks for is checked by the cluster, then waits in Lumovi with its diff, its reason and its kubectl command, for you to approve or reject."
+icon: "check-check"
+---
+
+An assistant doesn't change your clusters by itself. When it asks to apply a manifest, scale, restart or delete something, Lumovi has the cluster check the change, then shows it to you: what it changes, why the assistant wants it, and the `kubectl` command that does the same. Nothing happens until you approve it, unless you've let assistants make some changes to that cluster [without asking](#changes-they-ask-for). And once you approve it, Lumovi makes it only if it still does what you saw.
+
+<Frame caption="A change Claude Code asks for: why, the diff it makes, and the kubectl command that does the same.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-approval-light-1x.webp" alt="The approval dialog over the Deployments list. Claude Code asks to Scale Deployment storefront to 5 replicas, in Deployment · shop · production, with the PRODUCTION badge. Under Why, its reason: checkout latency has doubled since 14:00, and storefront's pods are at 95% CPU. The diff turns replicas: 3 into replicas: 5, the equivalent command is kubectl scale deployment/storefront --replicas=5 -n shop --context production, and the footer says Waits 5:00 more, next to Reject… and Approve." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-approval-dark-1x.webp" alt="The approval dialog over the Deployments list. Claude Code asks to Scale Deployment storefront to 5 replicas, in Deployment · shop · production, with the PRODUCTION badge. Under Why, its reason: checkout latency has doubled since 14:00, and storefront's pods are at 95% CPU. The diff turns replicas: 3 into replicas: 5, the equivalent command is kubectl scale deployment/storefront --replicas=5 -n shop --context production, and the footer says Waits 5:00 more, next to Reject… and Approve." />
+</Frame>
+
+<Note>
+  **Desktop app only:** like [AI assistants](/assistants/overview) themselves, for now.
+</Note>
+
+The keys on this page are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>.
+
+## What happens
+
+<Steps>
+  <Step title="The assistant asks">
+    It calls one of Lumovi's [four tools that change things](/assistants/tools#changing), with a reason: a sentence or two about what's wrong, and how the change helps.
+  </Step>
+  <Step title="The cluster checks it">
+    Lumovi sends the change as a server-side dry run first. The API server checks it as it would the real thing: your access (RBAC), quotas, admission webhooks, and the object itself. It says what the object would come to, which is what you'll see. If the cluster refuses it, the assistant is told why, and you aren't asked:
+
+    > Create ConfigMap feature-flags wouldn't work: …
+  </Step>
+  <Step title="Lumovi asks you">
+    The approval dialog opens, over whatever you're looking at. If Lumovi isn't in front, a [notification](#when-youre-elsewhere) says a change is waiting. The assistant [waits](#while-it-waits) for your answer.
+  </Step>
+  <Step title="You answer">
+    [Approve or reject](#approve-or-reject) it, with a note if you like. Unanswered, it waits five minutes, then the assistant is told it wasn't approved.
+  </Step>
+  <Step title="Lumovi checks it again">
+    Approved a while after it was shown, the change might not do the same anymore. Lumovi makes it only if it still changes the object as the diff you saw did, and deletes only the object you saw. See [Made as you saw it](#made-as-you-saw-it).
+  </Step>
+  <Step title="Lumovi makes the change">
+    Lumovi makes the change, and tells the assistant, with the command:
+
+    > Scaled storefront to 5 replicas, approved in Lumovi. The kubectl command that does the same: kubectl scale deployment/storefront --replicas=5 -n shop --context demo
+  </Step>
+</Steps>
+
+## The approval dialog
+
+From top to bottom, the dialog shows:
+
+- **Who asks, and what.** "Claude Code asks", and the change, like **Scale Deployment storefront to 5 replicas**, **Restart Deployment cart**, **Create ConfigMap feature-flags** or **Delete Pod checkout-7d9f8-x2k4q**. Its icon says what kind of change it is. A delete's is red.
+- **Where.** The object's kind, its namespace and the cluster: `Deployment · shop · demo`. When the cluster's name looks like production, a **PRODUCTION** badge sits next to it, as in Lumovi's other dialogs. See [Changing things safely](/changes/safely#hard-to-do-by-accident).
+- **Why.** The assistant's reason, in its own words.
+- **What it changes.** The diff between the object as it is and as the dry run says it would be, with how many lines it adds and removes, like `+1 −1 lines`. Above it, "The cluster accepts it", or "Creates it: the cluster accepts it" for a new object, or "Deletes it, and what it owns". The diff leaves out the object's status and the fields the API server keeps for itself, like `resourceVersion` and `managedFields`. A Secret's values show as `(hidden by Lumovi)`, as they do for the assistant.
+- **Whose fields it takes over.** When a manifest sets fields something else manages, a warning says so, with the API server's words for whose and which: "It takes fields over from what manages them (Helm, Argo CD, an autoscaler…), which may change them back: Apply failed with 1 conflict: conflict with "helm" using v1: .data.LOG_LEVEL". Helm, Argo CD or an autoscaler may well put them back the next time they act.
+- **The manifest.** For a manifest to apply, **The manifest Claude Code gave**, folded: the manifest as the assistant wrote it.
+- **Equivalent command.** The `kubectl` command that makes the same change, with **Copy command** when you point at it.
+- **The name, for some deletions.** Where Lumovi's own **Delete** asks you to type the name, so does this: for a Namespace, Node, PersistentVolume, PersistentVolumeClaim, StorageClass or CustomResourceDefinition, and for any deletion in a cluster whose name looks like production. It says "Type _name_ to approve", with a field for it.
+- **The time left.** "Waits 4:59 more", counting down. It changes color in the last minute.
+
+The dialog opens with nothing focused, so a stray <kbd>↵</kbd> doesn't answer it.
+
+## Approve or reject
+
+- **Approve** (<kbd>⌘</kbd><kbd>↵</kbd>) makes the change. For a delete, it's **Approve deletion**, in red. Where the name has to be typed, **Approve deletion** and <kbd>⌘</kbd><kbd>↵</kbd> do nothing until it matches.
+- **Reject…** asks for a note first: "Tell Claude Code why, or what to do instead (optional)". Write one, or leave it empty, and choose **Reject** (<kbd>⌘</kbd><kbd>↵</kbd>). **Back**, or <kbd>Esc</kbd>, goes back to **Approve**.
+
+The assistant reads your answer. A rejection comes with your note, which it's told to follow:
+
+> The person rejected it in Lumovi, saying: "Scale it to 4 instead: the nodes are nearly full.". Nothing was changed.
+
+The buttons show their key: ⌘↩ on a Mac, Ctrl+↩ on Windows and Linux.
+
+## Several at once
+
+A change that comes while you're looking at another waits its turn. The dialog says how many there are, like **1 of 3**, with arrows to the previous and the next. When you answer one, the next takes its place, or the one before it when it was the last.
+
+## Later
+
+**×** (**Later**), <kbd>Esc</kbd>, or a click outside the dialog put the changes aside. They keep waiting, and their time keeps running, in a pill at the bottom of the window:
+
+> 2 changes from Claude Code wait for you **Review**
+
+Choose **Review** to see them again. A new change brings the dialog back by itself. So does the window loading its page again, as **Reload** on an error screen does: the changes still waiting show again.
+
+## When you're elsewhere
+
+You're usually in your assistant when it asks. When Lumovi's window isn't in front, a notification says what's waiting:
+
+> **Claude Code asks to change demo**
+>
+> Scale Deployment storefront to 5 replicas. Review it in Lumovi.
+
+Click it to bring Lumovi to the front. On a Mac, Lumovi's icon in the Dock bounces too. The notifications close once you come to Lumovi.
+
+## While it waits
+
+A change waits in Lumovi for five minutes in all. The assistant's call doesn't wait that long at once: many assistants give a call about a minute.
+
+- **A call waits up to about 50 seconds.** Then it returns, not as an error, saying the change is still waiting, with its id: "Still waiting for the person's answer in Lumovi: nothing has changed yet. Tell them to look at Lumovi, and call wait_for_change with id "…" to keep waiting for it."
+- **`wait_for_change` waits again**, the same way, and says what became of the change once you've answered: made, rejected with your note, or not approved in time. Lumovi tells assistants to call it until you answer. See [Assistant tools](/assistants/tools).
+- **Assistants that ask for progress hear from it** every 10 seconds or so, while a call waits: "Waiting for the person to approve it in Lumovi".
+- **You can answer while no call waits.** The change is made, or not, all the same, and the next `wait_for_change` tells the assistant how it went.
+
+## Not answered
+
+Nothing changes unless you approve. A change ends without it in two ways:
+
+- **Not approved in time.** After five minutes, the dialog closes, and Lumovi says **Not approved in time**: "Claude Code asked to scale Deployment storefront to 5 replicas. Nothing was changed." The assistant is told: "Nobody approved it in Lumovi within 5 minutes: nothing was changed. Ask the person to look at Lumovi, and try again."
+- **Withdrawn.** When the assistant gives up on a call that's waiting for the change, the one that asked or a `wait_for_change`, because you stopped it there, or it ended its session with Lumovi, the dialog closes, and Lumovi says **Claude Code withdrew a change**: "Scale Deployment storefront to 5 replicas. Nothing was changed." Turning assistants off, changing the port or making a new token lets every assistant go, and withdraws every change still waiting, whether or not a call is waiting on it: nothing left can be approved.
+
+Otherwise, a change keeps waiting in Lumovi until you answer it or its five minutes are up, also when its call has already said it's still waiting, or the assistant's connection dropped without stopping it. Approved then, it's still made, as you saw it: the assistant just doesn't hear back, unless it asks with `wait_for_change`.
+
+## Made as you saw it
+
+Up to five minutes can pass between the dry run you saw and your answer. Someone else may have changed the object since, or a controller may have. So when you approve, Lumovi tries the change as a dry run again, and compares what it would change now with what the diff showed. It leaves out the object's status, and what the API server keeps for itself, like `resourceVersion`: those change all the time, and don't change what the change does.
+
+- **The same change**: Lumovi makes it.
+- **A different one**, because the object changed meanwhile: Lumovi doesn't make it, and tells the assistant to ask again, so you see it as it is now: "Scale Deployment cart to 3 replicas wasn't made: cart changed after it was shown (what it would change is different now). Nothing was changed: ask again, to show it as it is now."
+- **One the cluster refuses now**, because the object is gone, say: "Restart Deployment cart failed: …", with the cluster's reason.
+
+A deletion is for the object you saw, and no other: Lumovi deletes it only if it's still the same object, by its uid. One deleted meanwhile and made again under the same name isn't deleted, and the assistant hears that it changed after it was shown.
+
+Changes made [without asking](#changes-they-ask-for) are made right after their dry run, so there's nothing to compare.
+
+## After approval
+
+<Frame caption="An assistant's changes in the Activity log: one approved, one rejected with a note.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-activity-light-1x.webp" alt="The Deployments list with the Activity log, Changes this session, open. Scaled cart to 4 replicas, via Claude Code, with its kubectl scale command; and Restart StatefulSet postgres, rejected, asked by Claude Code, with the note Not during the sale: tonight, after 22:00, and its kubectl rollout restart command. A notification at the bottom right says Scaled cart to 4 replicas, As Claude Code asked, in production." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-activity-dark-1x.webp" alt="The Deployments list with the Activity log, Changes this session, open. Scaled cart to 4 replicas, via Claude Code, with its kubectl scale command; and Restart StatefulSet postgres, rejected, asked by Claude Code, with the note Not during the sale: tonight, after 22:00, and its kubectl rollout restart command. A notification at the bottom right says Scaled cart to 4 replicas, As Claude Code asked, in production." />
+</Frame>
+
+- **A notification** says what was done: **Scaled storefront to 5 replicas**, "As Claude Code asked, in demo." There's no **Undo**: ask the assistant, or change it back yourself. If the change wasn't made, or failed, the notification says so, like **Scale Deployment cart to 3 replicas failed**, with the reason, and the assistant is told too.
+- **The Activity log** has a line for it, with "via Claude Code", the command and whether it worked. A change you rejected is there too, as **Rejected**, with "rejected, asked by Claude Code" and your note. Changes that weren't approved in time, or were withdrawn, aren't. See [Undo and activity](/changes/undo-and-activity#the-activity-log).
+- **Lists and details** refresh, then again a moment later, once the cluster's controllers have acted.
+
+## Changes they ask for
+
+Each cluster decides what becomes of its assistants' changes. In the **AI assistants** dialog, **Changes they ask for** lists every cluster in your kubeconfig, each with three choices:
+
+| Choice | What happens to a change |
+| --- | --- |
+| **Ask** | The default. You approve each one here. |
+| **Allow** | Made without asking, after the dry run, and you're told: a notification in Lumovi's window, like "Claude changed demo without asking: assistants may, there.", and a line in the Activity log. Deletions, and changes that take fields over from what manages them, still ask. |
+| **Never** | Assistants only read. A change is refused before anything's tried. |
+
+The dialog sums it up: "Ask: you approve each one here. Allow: they're made without asking, and you're told (deletions, and changes that take fields over from Helm or Argo CD, still ask). Never: assistants only read. Your own access (RBAC) applies either way."
+
+<Warning>
+  **Allow** lets assistants scale, restart and apply manifests with no one looking at them first, and tells you only in Lumovi's window, with no notification outside it. Keep it for clusters where that's fine, like one on your own computer.
+</Warning>
+
+Refused by **Never**, the assistant is told:
+
+> Lumovi doesn't let AI assistants change sandbox: its AI assistants settings say "Never". Nothing was changed.
+
+Whatever you choose:
+
+- **Read-only clusters take no changes.** A cluster you made [read-only](/changes/read-only) says "Read-only: no changes" instead of the three choices. Lumovi refuses its changes, whatever asks for them, and the assistant is told: "Create ConfigMap feature-flags wouldn't work: production is read-only in Lumovi. Allow changes to it to continue."
+- **Your RBAC applies.** Lumovi makes the change with your credentials, and the dry run fails for one your account can't make. See [Permissions](/clusters/permissions#ai-assistants).
+- **Assistants know.** `list_clusters` tells them each cluster's choice, `ask`, `allow` or `never`, or `read-only`, so they don't ask for what won't be made.
+
+Lumovi keeps each cluster's choice by its kubeconfig context name, with its other settings.
+
+<Columns cols={2}>
+  <Card title="AI assistants" icon="sparkles" href="/assistants/overview">
+    Turn them on, and connect your assistant.
+  </Card>
+  <Card title="Changing things safely" icon="shield-check" href="/changes/safely">
+    The guard rails on every change Lumovi makes.
+  </Card>
+</Columns>

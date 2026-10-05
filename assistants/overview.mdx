@@ -1,0 +1,202 @@
+---
+title: "AI assistants"
+sidebarTitle: "AI assistants"
+description: "Let Claude Code, Claude Desktop, Cursor, VS Code and other assistants read your clusters through Lumovi, and ask you before they change anything."
+icon: "sparkles"
+---
+
+AI assistants like Claude Code, Claude Desktop, Cursor and VS Code can use Lumovi to look at your clusters: list what's there, read objects, events and logs, and find what's wrong, with Lumovi's own reasons. When an assistant wants to change something, it asks. Lumovi shows you the change, with the diff it makes, the assistant's reason and the `kubectl` command that does the same, and makes it only if you approve.
+
+<Frame caption="AI assistants: where they connect, how to connect each one, and what each cluster lets them change.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistants-light-1x.webp" alt="The AI assistants dialog over a cluster's overview: assistants on, listening at http://127.0.0.1:47830/mcp on port 47830, the Claude Code tab with its claude mcp add command and the token cut short, Claude Code under Connected now, and under Changes they ask for, Ask, Allow or Never for each cluster, with staging set to Allow." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistants-dark-1x.webp" alt="The AI assistants dialog over a cluster's overview: assistants on, listening at http://127.0.0.1:47830/mcp on port 47830, the Claude Code tab with its claude mcp add command and the token cut short, Claude Code under Connected now, and under Changes they ask for, Ask, Allow or Never for each cluster, with staging set to Allow." />
+</Frame>
+
+<Note>
+  **Desktop app only:** for now. Assistants connect to the desktop app on your computer, not to Lumovi [in your cluster](/server/overview).
+</Note>
+
+## How it works
+
+Lumovi has no AI of its own, and needs no API key. The AI is your assistant's, with your account there. Lumovi is a tool it uses: it speaks the [Model Context Protocol](https://modelcontextprotocol.io) (MCP), which assistants use to connect to tools, and gives them [twelve tools](/assistants/tools): seven that read, four that ask for a change, and one that waits for your answer. The assistant decides when to call them, and Lumovi answers with what it would show you.
+
+Lumovi works for an assistant as it does for you:
+
+- **Your clusters.** Every context in your kubeconfig, as on the start screen.
+- **Your credentials.** Lumovi reads and changes clusters with the credentials in your kubeconfig, so an assistant can't see or do more than your account can. See [Permissions](/clusters/permissions#ai-assistants).
+- **Your guard rails.** [Read-only](/changes/read-only) clusters stay read-only, and each change waits for you, unless you let a cluster's assistants make some changes without asking.
+
+## What assistants can do
+
+**They read.** Your clusters, the kinds each one serves, lists of objects with their health, one object as YAML, events and a container's logs. One tool, `find_problems`, sums up what's failing in a cluster or namespace in one answer, which is where assistants usually start.
+
+**They ask.** To apply a manifest, scale, restart or delete, each time with a reason. The cluster checks the change first, with a dry run, and then it waits in Lumovi for you to approve or reject it. Once you approve it, Lumovi makes it only if it still does what you saw. Each cluster can also take some of its assistants' changes without asking, or none at all, but deletions always ask: see [Changes they ask for](/assistants/approvals#changes-they-ask-for).
+
+What they can't do:
+
+- **See a Secret's values.** They get its keys, and `(hidden by Lumovi)` for each value.
+- **Change a read-only cluster**, or one whose **Changes they ask for** is set to **Never**.
+- **Go past your RBAC.** A change your account can't make fails at the dry run, before you're asked.
+- **Delete without asking.** Deletions always wait for you, and some ask you to type the name first.
+- **Anything else.** They have only Lumovi's tools: no shells, port forwards or Helm.
+
+## Turn it on
+
+AI assistants are off until you turn them on. Open the **AI assistants** dialog:
+
+- Choose **AI assistants**, the sparkles at the bottom of the sidebar. It has a green dot while an assistant is connected.
+- On the start screen, choose the same button at the bottom, next to the theme.
+- Choose **AI assistants…** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux).
+- Choose **View → AI Assistants…**
+
+While it's off, the dialog says what assistants would do:
+
+- **They read:** Clusters' objects, events and logs, and what's failing; never Secrets' values.
+- **They ask:** Each change shows here, with the diff it makes, for you to approve or reject.
+- **Only on this computer:** With a token of its own. Read-only clusters, and your own access (RBAC), always apply.
+
+Choose **Turn on**. Lumovi starts listening for assistants, makes a token for them to send, and shows where:
+
+```text
+Listening at http://127.0.0.1:47830/mcp
+```
+
+It stays on: Lumovi listens again each time it starts. The switch at the top right of the dialog turns it off. Lumovi then stops listening, lets every assistant go, and withdraws every change still waiting. Turned on again, it keeps the same token.
+
+### The port
+
+Lumovi listens on port 47830 unless you choose another. To change it, type a port from 1024 to 65535 in **Port**, and choose **Use**, or press <kbd>↵</kbd>.
+
+If another program already uses the port, the dialog says so, in red, and shows no way to connect until you choose another:
+
+> Lumovi can't use port 47830 (listen EADDRINUSE: …): choose another one.
+
+Changing the port lets every assistant go and withdraws every change still waiting. Assistants you set up with the old port need setting up again. Claude Desktop doesn't: it finds the port by itself.
+
+## Connect an assistant
+
+Under **Connect an assistant**, a tab for each assistant says how. What you copy has the token in it: the dialog shows only its first four characters, then `…`, and the copy buttons copy all of it. The assistant keeps the token in its own settings.
+
+<Tabs>
+  <Tab title="Claude Code" icon="square-terminal">
+    Run the command once, in a terminal. **Copy command** copies it, with the whole token:
+
+    ```bash
+    claude mcp add --transport http --scope user lumovi http://127.0.0.1:47830/mcp --header "Authorization: Bearer <token>"
+    ```
+
+    With `--scope user`, Claude Code uses Lumovi in every project, not only the folder you run it in.
+
+    The tab suggests letting Claude Code use Lumovi's tools without asking you each time: Lumovi asks you before any change anyway.
+  </Tab>
+  <Tab title="Claude Desktop" icon="monitor">
+    Choose **Add to Claude Desktop**, then quit Claude Desktop and open it again:
+
+    > Added to Claude Desktop: quit and open it again to use Lumovi there.
+
+    Lumovi adds itself to Claude Desktop's settings, as `lumovi` under `mcpServers`, and leaves the rest of the file as it was:
+
+    | System | Claude Desktop's settings |
+    | --- | --- |
+    | macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
+    | Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
+
+    Claude Desktop doesn't connect over HTTP. It starts Lumovi as a program it talks to over stdin and stdout. On macOS, that's Lumovi's app with `--mcp-stdio=` and Lumovi's settings folder. On Windows, where the app itself can't read stdin, it's `Lumovi.exe` running as Node (`ELECTRON_RUN_AS_NODE`) on a small bridge that comes with Lumovi. Started either way, Lumovi opens no window: it passes Claude Desktop's messages on to the Lumovi you have open. It reads the port and the token from Lumovi's settings each time, so a new port or token needs no setting up again.
+
+    The entry it adds looks like this, with your own paths. To write it by hand, copy it as Lumovi would: on Windows, the `env` line is needed.
+
+    <CodeGroup>
+      ```json macOS
+      "lumovi": {
+        "command": "/Applications/Lumovi.app/Contents/MacOS/Lumovi",
+        "args": ["--mcp-stdio=/Users/you/Library/Application Support/Lumovi"]
+      }
+      ```
+
+      ```json Windows
+      "lumovi": {
+        "command": "C:\\Users\\you\\AppData\\Local\\Programs\\Lumovi\\Lumovi.exe",
+        "args": [
+          "C:\\Users\\you\\AppData\\Local\\Programs\\Lumovi\\resources\\app.asar.unpacked\\out\\mcp-stdio\\bridge.cjs",
+          "C:\\Users\\you\\AppData\\Roaming\\Lumovi"
+        ],
+        "env": { "ELECTRON_RUN_AS_NODE": "1" }
+      }
+      ```
+    </CodeGroup>
+
+    If Lumovi isn't open, it's opened for Claude Desktop, the way you last started it, and Claude Desktop's messages wait up to 30 seconds for it to listen. AI assistants have to be on in Lumovi for this.
+
+    Lumovi writes Claude Desktop's settings whole, through a copy it then puts in their place, so they're never left half-written. Choosing **Add to Claude Desktop** again updates Lumovi's entry. Moved Lumovi? Add it to Claude Desktop again: the entry names where Lumovi's app was.
+
+    Claude Desktop isn't made for Linux, and there the tab says so: connect other assistants as **Other** shows.
+  </Tab>
+  <Tab title="Cursor" icon="mouse-pointer-2">
+    Choose **Add to Cursor**. Cursor opens, and asks you to add Lumovi.
+
+    Or add Lumovi to `~/.cursor/mcp.json` yourself. **Copy Cursor's settings** copies it, with the whole token:
+
+    ```json ~/.cursor/mcp.json
+    {
+      "mcpServers": {
+        "lumovi": {
+          "url": "http://127.0.0.1:47830/mcp",
+          "headers": {
+            "Authorization": "Bearer <token>"
+          }
+        }
+      }
+    }
+    ```
+
+    If the file has other servers already, add `lumovi` next to them, under `mcpServers`.
+  </Tab>
+  <Tab title="VS Code" icon="code">
+    Choose **Add to VS Code**. VS Code opens, asks you to confirm, then shows Lumovi among its MCP servers.
+  </Tab>
+  <Tab title="Other" icon="plug">
+    Assistants that connect to MCP servers over HTTP use Lumovi's address, and send its token in a header. **Copy address** and **Copy header** copy them:
+
+    - **Address**: `http://127.0.0.1:47830/mcp`
+    - **Header**: `Authorization: Bearer <token>`
+
+    Lumovi speaks MCP's Streamable HTTP transport there.
+  </Tab>
+</Tabs>
+
+## Connected now
+
+**Connected now** lists the assistants connected at the moment, by name: **Claude Code**, **Claude** (Claude Desktop), **Cursor**, **VS Code**, **Windsurf** and **Codex**, and others by the name they give. Two of the same, like Claude Code in two terminals, show as **Claude Code ×2**. Until one connects, it says "None yet: assistants show here once they connect."
+
+The sidebar's button says so too: its green dot, and **AI assistants (2 connected)** when you point at it.
+
+An assistant leaves the list when it disconnects. One that hasn't asked anything for six hours is let go: the next time it asks, Lumovi tells it to start a new session.
+
+## A new token
+
+Assistants send Lumovi's token to connect. If a copy of it got out, make a new one: choose **New token…** at the bottom of the dialog, then **Make a new token**. **Cancel** keeps the one you have.
+
+The dialog says what that does: "Assistants connected with the token now disconnect: set them up again (Claude Desktop picks the new one up itself)." Every connected assistant is let go, every change still waiting is withdrawn, and the old token stops working. Set up Claude Code, Cursor, VS Code and the others again, from the dialog. Claude Desktop reads the new token by itself.
+
+## Security
+
+Lumovi lets assistants in only from this computer, and only with its token:
+
+- **Only on this computer.** Lumovi listens on `127.0.0.1`, which other computers can't reach.
+- **Only with the token.** Every request has to carry it, as `Authorization: Bearer <token>`. It's 43 random characters, made the first time you turn assistants on, and Lumovi compares it in constant time. A request without it gets "Lumovi needs its token: set this assistant up again from Lumovi."
+- **Not from web pages.** A browser marks the requests a page makes with an `Origin` header, and Lumovi refuses them: "Web pages may not connect to Lumovi." A page that points a name of its own at your computer (DNS rebinding) sends that name as the `Host`, and is refused too: "Only this computer may connect." Only requests addressed to `127.0.0.1` or `localhost`, at Lumovi's port, get in.
+- **Small messages.** A message is at most 4 MB. A larger one gets "That's more than Lumovi takes: 4 MB at most." Only `/mcp` answers.
+- **Kept where only you can read it.** The token is in Lumovi's `settings.json`, with what each cluster lets assistants change. On macOS and Linux, Lumovi keeps that file readable by your account only. See [Privacy and security](/reference/privacy-and-security#what-it-keeps-on-your-computer).
+
+Any program on your computer that has the token can use Lumovi as an assistant would: read your clusters, and ask for changes. The commands and settings you copy have it in them, the one for Claude Code in your shell's history too. Make a new token if one got out.
+
+Lumovi itself calls no AI service, and sends what it gives an assistant to that assistant only. The assistant handles it as it handles everything else you show it, which for most means sending it to their AI provider. Lumovi hides Secrets' values from them, but not what's outside Secrets, like ConfigMaps, environment variables in a pod's spec, or what a container logs. See [What's hidden](/assistants/tools#whats-hidden).
+
+<Columns cols={2}>
+  <Card title="Approving changes" icon="check-check" href="/assistants/approvals">
+    What an assistant's change shows you, and how to answer it.
+  </Card>
+  <Card title="Assistant tools" icon="wrench" href="/assistants/tools">
+    Every tool, its parameters, and what it needs.
+  </Card>
+</Columns>
