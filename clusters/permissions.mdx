@@ -75,6 +75,7 @@ Each action checks one permission first:
 | Delete, restart a pod | `delete` on the kind |
 | Evict a pod | `create` on `pods/eviction` |
 | Open a shell | `create` on `pods/exec` |
+| Open a shell on a node | `create` and `get` on `pods`, `create` on `pods/exec`, and `delete` on `pods`, in the node shells' namespace (`kube-system` unless set otherwise) |
 | Add a debug container | `patch` on `pods/ephemeralcontainers` |
 | Forward a port | `create` on `pods/portforward` |
 | Apply a right-sizing recommendation | `patch` on the workload |
@@ -85,6 +86,8 @@ A few notes:
 
 - **Draining** cordons the node, then evicts its pods a few at a time, so it also needs `create` on `pods/eviction`. A PodDisruptionBudget can refuse an eviction: the drain shows each pod's progress, with **Retry** for any that fail.
 - **Debug containers** open a shell in the new container, which also needs `pods/exec`.
+- **Shells on nodes** run in a privileged pod Lumovi creates, so that namespace's Pod Security must allow privileged pods. Without `delete`, the pod stays until its 12-hour deadline, and the tab says so before you start. See [Shells on nodes](/debug/node-shell).
+- **[Terminals](/debug/terminal)** in the desktop app aren't checked: they're your own shell, and what you run there needs what it would in any terminal.
 - **Create from YAML** and **several at once** don't check first. The cluster checks each object, and the dialog shows what it refused.
 
 <Tip>

@@ -27,7 +27,7 @@ See [Permissions](/clusters/permissions) for what each feature needs.
 Every dialog says what it changes and where:
 
 - **The object and the cluster.** The header names the object, its kind and namespace, and the cluster it's in.
-- **The equivalent command.** Under **Equivalent command**, the `kubectl` command that does the same thing, ready to copy. It's a good way to learn kubectl, and a record of what happened.
+- **The equivalent command.** Under **Equivalent command**, the `kubectl` command that does the same thing, ready to copy. It's a good way to learn kubectl, and a record of what happened. In the desktop app, **Paste in terminal** types it into a [terminal](/debug/terminal) instead, and closes the dialog without making the change: nothing runs until you press <kbd>↵</kbd> there.
 - **What will happen.** Dialogs explain the effect in plain words: how a restart rolls out, which pods a drain evicts, whether a deleted pod comes back.
 
 A few of the commands Lumovi shows:
@@ -83,6 +83,8 @@ Scaling, cordoning, pausing a rollout, suspending, changing images, changing an 
 ## Read-only when you want it
 
 Turn changes off for one cluster from the cluster switcher, or for every cluster with `LUMOVI_READ_ONLY=1`. It isn't only the buttons: the part of Lumovi that talks to clusters refuses changes too. See [Read-only mode](/changes/read-only).
+
+It doesn't reach Lumovi's [terminals](/debug/terminal): a terminal is your own shell, and what you run there does what your account allows.
 
 <Columns cols={2}>
   <Card title="Actions by kind" icon="mouse-pointer-click" href="/changes/actions">

@@ -63,10 +63,18 @@ It isn't only the buttons. The part of Lumovi that talks to your clusters (the d
 | **Apply…** in [Right-sizing](/metrics/right-sizing) | Off |
 | [Helm](/helm/upgrade-and-rollback) upgrades, installs, rollbacks and uninstalls | Off |
 | [Shells](/debug/shell) and debug containers | Off: a shell can change a container |
+| [Shells on nodes](/debug/node-shell) | Off: a node shell can change the node |
 | [Port forwards](/debug/port-forwarding) | On: they don't change the cluster |
 | Lists, details, logs, metrics, YAML, Helm releases | On |
+| [Terminals](/debug/terminal) on your computer | Not covered: they're your own shell |
 
 Actions that are off stay visible, disabled, with "Changes are turned off for this cluster." One button stays enabled: **Install chart** on Helm releases. Its dialog opens, and when you choose **Review**, it shows the refusal above instead of a dry run.
+
+A shell's tab, in a pod or on a node, says **Shells are off** instead of opening one.
+
+## Terminals aren't covered
+
+The read-only switch doesn't apply to the desktop app's [terminals](/debug/terminal). A terminal is your own shell on your computer, with your own credentials. kubectl and helm there do whatever your account allows, as in any other terminal, whether Lumovi has the cluster read-only or not. A terminal started for a read-only cluster says so: "Lumovi's read-only switch doesn't apply to what you run here."
 
 ## In your cluster
 

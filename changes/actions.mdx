@@ -28,6 +28,13 @@ On Windows and Linux, use <kbd>Ctrl</kbd> wherever this page shows <kbd>⌘</kbd
 
 An action you can't take stays in the menu, disabled, with the reason: your account isn't allowed to (say, "Your account can't delete pods in shop."), or the cluster is [read-only](/changes/read-only).
 
+## The equivalent command
+
+Each action's dialog shows its **Equivalent command**, the `kubectl` command that does the same, kept up to date as you fill in the form. Hover it for its buttons:
+
+- **Copy command** copies it.
+- **Paste in terminal**, in the desktop app, types it into a [terminal](/debug/terminal) at the bottom of the page, on one line, and closes the dialog, without making the change. Nothing runs until you press <kbd>↵</kbd> there, so you can read it, change it, and run it yourself.
+
 ## At a glance
 
 | Kind | Actions |
@@ -39,7 +46,7 @@ An action you can't take stays in the menu, disabled, with the reason: your acco
 | Pods | Shell, Debug, Forward a port (desktop app), Restart, Evict, Delete (or force-delete) |
 | Jobs | Suspend, Resume |
 | CronJobs | Run now, Suspend, Resume, Change image |
-| Nodes | Cordon, Uncordon, Drain |
+| Nodes | Shell, Cordon, Uncordon, Drain |
 | Autoscalers | Edit replica range |
 | Volume claims | Expand volume |
 | Services | Forward a port (desktop app) |
@@ -61,7 +68,7 @@ The detail panel shows up to two actions as buttons, those that depend on the ob
 | Pods | **Shell** on a running pod, and **Restart** on one a controller manages |
 | CronJobs | **Run now**. While suspended: **Resume**, **Run now**. |
 | Jobs | **Resume**, while suspended |
-| Nodes | **Cordon**, or **Uncordon** on a cordoned node |
+| Nodes | **Cordon**, or **Uncordon** on a cordoned node, and **Shell** |
 | Autoscalers | **Edit replica range** |
 | Custom resources | **Scale**, with the scale subresource, and the actions their view puts first |
 
@@ -149,6 +156,9 @@ Anything with no button of its own, like a Service, a Secret, or a Job that isn'
 ## Nodes
 
 <AccordionGroup>
+  <Accordion title="Shell" icon="square-terminal">
+    Opens a shell on the node, in its **Shell** tab, through a privileged pod Lumovi starts on it and deletes when the shell ends. The tab says what it will do before anything starts. See [Shells on nodes](/debug/node-shell).
+  </Accordion>
   <Accordion title="Cordon and Uncordon" icon="ban">
     Cordoning marks a node unschedulable, so no new pods land on it. These run at once, and can be undone from the notification.
   </Accordion>

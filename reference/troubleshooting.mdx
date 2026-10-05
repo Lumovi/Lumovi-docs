@@ -105,7 +105,26 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   <Accordion title="A shell says the container has no shell" icon="square-terminal">
     Images built without a shell (distroless ones, say) can't run one. Choose **Debug** to add a debug container with tools to the pod instead. See [Shells and debug containers](/debug/shell).
 
-    **Shells are off** means the cluster is read-only in Lumovi: shells count as changes.
+    **Shells are off** means the cluster is read-only in Lumovi: shells count as changes. [Terminals](/debug/terminal) on your computer aren't covered.
+  </Accordion>
+  <Accordion title="A shell on a node doesn't start" icon="server-cog">
+    Lumovi starts a privileged pod on the node for it, and says why when it can't:
+
+    - **… doesn't allow privileged pods: its Pod Security level is stricter than privileged.** Choose **Settings** in the node's **Shell** tab, and a namespace that allows privileged pods, like `kube-system`.
+    - **… couldn't start … (ErrImagePull): ….** The node can't pull the image. Choose one it can pull in **Settings**, like a copy in your own registry.
+    - **… didn't start the node shell's pod in … seconds.** The node's kubelet may not be running, or the image takes long to pull.
+    - **… has no shell of its own.** Talos and Bottlerocket nodes have none. Choose **Shell in the pod**.
+    - **… has no nsenter.** A shell on the node itself needs the image's `nsenter`. Choose an image that has it, like `alpine`, in **Settings**, or a shell in the pod.
+    - **No node shell access.** Your account can't create pods, read them, or open shells in them, in the node shells' namespace. Ask for them, or choose another namespace in **Settings**.
+    - **Node shells need a Linux node.** Windows nodes can't have one.
+    - **Node shells are off.** The Lumovi server you use turned them off.
+
+    See [Shells on nodes](/debug/node-shell).
+  </Accordion>
+  <Accordion title="A terminal won't start, or kubectl points elsewhere" icon="terminal">
+    **Your shell, … isn't there: set SHELL to one that is.** `SHELL` names a shell that isn't on your computer. Set it to one that is, and start Lumovi again. Without `SHELL`, terminals start zsh on macOS and bash on Linux. On Windows, they start Windows PowerShell.
+
+    **kubectl uses another cluster.** Your shell's startup files probably set `KUBECONFIG`, which replaces the terminal's own. Have them add to it instead, so the terminal's file stays first. See [Terminals](/debug/terminal#kubectl-points-at-the-cluster).
   </Accordion>
   <Accordion title="A port can't be forwarded" icon="unplug">
     **Port … on this computer can't be used (EADDRINUSE).** Something else on your computer listens on that port. Pick another local port. See [Port forwarding](/debug/port-forwarding).
