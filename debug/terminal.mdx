@@ -1,0 +1,178 @@
+---
+title: "Terminals"
+sidebarTitle: "Terminals"
+description: "Your own shell at the bottom of a cluster's pages, with kubectl, helm and the rest pointed at that cluster and namespace, in that terminal only."
+icon: "terminal"
+---
+
+Lumovi's terminals are your own shell, in a dock at the bottom of a cluster's pages. kubectl, helm and the rest are already pointed at the cluster you're looking at, and the namespace you picked, in that terminal only. Your kubeconfig and your other terminals stay as they were. Any command Lumovi shows can be pasted into one, to read, change and run yourself.
+
+<Frame caption="A terminal under the cluster's pages, with kubectl pointed at the cluster.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/terminal-light-1x.webp" alt="The Deployments list, with the terminal dock open below it on a tab named production. Its first line says kubectl points at production in this terminal, and kubectl get deployments -n shop lists the shop namespace's deployments." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/terminal-dark-1x.webp" alt="The Deployments list, with the terminal dock open below it on a tab named production. Its first line says kubectl points at production in this terminal, and kubectl get deployments -n shop lists the shop namespace's deployments." />
+</Frame>
+
+<Note>
+  **Desktop app only:** a terminal runs a shell on your computer, so there are none when Lumovi runs [in your cluster](/server/overview). There, open a [shell in a container](/debug/shell) or [on a node](/debug/node-shell) instead.
+</Note>
+
+## Open the dock
+
+A thin **Terminal** bar runs along the bottom of every cluster's pages. It's always there, and shows the terminals that are running. To open the dock:
+
+- Click **Terminal** in the bar.
+- Press <kbd>⌃</kbd><kbd>&#96;</kbd> anywhere in a cluster (<kbd>Ctrl</kbd><kbd>&#96;</kbd> on Windows and Linux). Press it again to hide the dock.
+- Choose **View → Terminal**.
+- Choose **New terminal** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux).
+
+When no terminal is running, the dock starts one for the cluster you're in, and its namespace: the one you picked in the [namespace menu](/clusters/namespaces), or else the context's own. Otherwise it opens on the terminal you had last. The terminal has focus, so you can type right away.
+
+To start another, choose **+** (**New terminal**) in the bar, press <kbd>⌃</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> anywhere in a cluster, or choose **View → New Terminal**. Click a tab in the bar to open the dock on it.
+
+The start screen has no dock: there's no cluster to point a terminal at.
+
+## Your own shell
+
+Each tab runs a shell on your computer, as you, starting in your home folder:
+
+| System | Shell |
+| --- | --- |
+| macOS | The one in `SHELL`, or zsh, as a login shell, the way Terminal starts it |
+| Linux | The one in `SHELL`, or bash |
+| Windows | Windows PowerShell, whatever `SHELL` says |
+
+It gets the environment Lumovi started with and, on macOS and Linux, the `PATH` your login shell sets up, so the tools you use in other terminals are there. Lumovi sets a few variables of its own:
+
+| Variable | Set to |
+| --- | --- |
+| `KUBECONFIG` | The terminal's own kubeconfig, then yours. See below. |
+| `TERM` and `COLORTERM` | `xterm-256color` and `truecolor` |
+| `TERM_PROGRAM` | `Lumovi`, with its version in `TERM_PROGRAM_VERSION`, for a prompt or a script that wants to know where it runs |
+| `LANG` | `en_US.UTF-8`, unless Lumovi's environment has a `LANG`: apps opened from the Dock often have none |
+
+## kubectl points at the cluster
+
+When a terminal starts, Lumovi writes a small kubeconfig for it, and puts it first in the terminal's `KUBECONFIG`, before your own files: the ones in `KUBECONFIG` when Lumovi started (as full paths, so a relative one still works), or `~/.kube/config`. It names the context, with its cluster, user and namespace, and holds nothing else:
+
+```json
+{
+  "apiVersion": "v1",
+  "kind": "Config",
+  "current-context": "dev",
+  "contexts": [
+    {
+      "name": "dev",
+      "context": { "cluster": "dev", "user": "dev-admin", "namespace": "shop" }
+    }
+  ]
+}
+```
+
+kubectl takes the current context, and each context, from the first file that has them. So in this terminal, it uses this cluster and namespace, and finds the cluster's address and your credentials in your own files, as always. Nothing secret is copied.
+
+- **This terminal only.** Your other terminals, and kubectl anywhere else, keep your kubeconfig's current context.
+- **helm, k9s and other tools** that read `KUBECONFIG` follow it too.
+- **`kubectl config use-context`** in a terminal changes that terminal only: kubectl writes it to the terminal's own file.
+- **Your credentials stay in your files.** Credential plugins work as in any terminal, and a token kubectl refreshes is saved with your user, in your files.
+- **The namespace** is the one picked in the namespace menu when the terminal started. With **All namespaces**, it's the context's own, if your kubeconfig sets one. Picking another namespace later doesn't change a running terminal: start a new one.
+
+The terminal's first line says where it points:
+
+```text
+› kubectl points at dev, namespace shop, in this terminal.
+```
+
+Lumovi deletes the terminal's kubeconfig when its shell ends: when the shell exits, when you close its tab, and when you quit. If Lumovi crashed or was killed before it could, it deletes what's left the next time it starts. See [Privacy and security](/reference/privacy-and-security#what-it-keeps-on-your-computer).
+
+<Tip>
+  If kubectl in a terminal uses another cluster, your shell's startup files probably set `KUBECONFIG`, which replaces the terminal's. Have them add to it instead, so the terminal's own file stays first. `echo $KUBECONFIG` shows what the shell has (`$env:KUBECONFIG` in PowerShell).
+</Tip>
+
+## Read-only clusters
+
+Lumovi's [read-only](/changes/read-only) switch doesn't apply to terminals. A terminal is your own shell: what you run there can change the cluster as far as your account allows, as in any other terminal. When the cluster is read-only in Lumovi, a new terminal says so, after where kubectl points: "Lumovi's read-only switch doesn't apply to what you run here."
+
+To keep a cluster from changing at all, use an account that can only read, like one with the built-in `view` ClusterRole. See [Permissions](/clusters/permissions).
+
+## Tabs
+
+Each tab shows its cluster, and its namespace when it has one, so terminals for different clusters sit side by side. Every cluster's pages show them all.
+
+- **Switch** by clicking a tab, or with the [keys](#keys) below.
+- **Rename** a tab by double-clicking it, pressing <kbd>F2</kbd> on it, or choosing **Rename…** from its menu. <kbd>↵</kbd> keeps the name, and <kbd>Esc</kbd> leaves it as it was. An empty name goes back to the cluster's.
+- **Close** a tab with its **×**. That ends its shell. Closing the last one hides the dock.
+
+Right-click a tab for its menu:
+
+| Item | What it does |
+| --- | --- |
+| **Rename…** | Names the tab |
+| **New terminal like it** | Starts another terminal for the same cluster and namespace |
+| **Close** | Ends its shell and closes the tab |
+| **Close the others** | Ends every other terminal |
+
+### They keep running
+
+Terminals keep running while the dock is hidden, while you look at other pages and other clusters, and on the start screen. Back in a cluster, they're as you left them.
+
+They end when you close their tab and when you quit Lumovi. They also end when Lumovi's window loads its page again, as **Reload** on an error screen does, because terminals belong to the page that started them.
+
+### When a shell ends
+
+When the shell exits, its tab says **exited**, the terminal dims, and a notice says why. **Restart** starts a new shell in the same tab, with the same name, cluster and namespace.
+
+| Message | Means |
+| --- | --- |
+| The shell exited with code N. | You exited, or the shell did. |
+| Your shell, _path_, isn't there: set SHELL to one that is. | `SHELL` names a shell that isn't on your computer. Set it to one that is, and start Lumovi again. |
+| Your kubeconfig has no context called "_name_". | The context is no longer in your kubeconfig. |
+
+## The dock
+
+- **Resize** it by dragging its top edge. Or press <kbd>Tab</kbd> until the edge has focus, and press <kbd>↑</kbd> or <kbd>↓</kbd>. Lumovi remembers the height.
+- **Maximize the terminal**, on the right of the bar, makes it as tall as it goes. **Restore the terminal** brings it back.
+- **Hide the terminal**, the arrow at the end of the bar, hides it, as <kbd>⌃</kbd><kbd>&#96;</kbd> does. Hidden from a terminal, the page has focus again.
+
+The terminal fits the dock, and the shell learns its new size when you resize it. It uses the app's colors, in light and dark, and keeps 10,000 lines of scrollback.
+
+## Keys
+
+In a terminal, keys go to the shell, as in any terminal, except the dock's own and, on a Mac, the menus' <kbd>⌘</kbd> shortcuts. The dock's differ by platform:
+
+| What it does | macOS | Windows and Linux |
+| --- | --- | --- |
+| Show or hide the dock, anywhere in a cluster | <kbd>⌃</kbd><kbd>&#96;</kbd> | <kbd>Ctrl</kbd><kbd>&#96;</kbd> |
+| New terminal, anywhere in a cluster | <kbd>⌃</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> |
+| New terminal, in a terminal | <kbd>⌘</kbd><kbd>T</kbd> or <kbd>⌘</kbd><kbd>N</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>T</kbd> |
+| Close it, in a terminal | <kbd>⌘</kbd><kbd>W</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>W</kbd> |
+| Clear it, in a terminal | <kbd>⌘</kbd><kbd>K</kbd> | None of Lumovi's: <kbd>Ctrl</kbd><kbd>K</kbd> is the shell's |
+| Previous or next terminal | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>]</kbd> and <kbd>⌘</kbd><kbd>⇧</kbd><kbd>[</kbd>, or <kbd>⌃</kbd><kbd>PgDn</kbd> and <kbd>⌃</kbd><kbd>PgUp</kbd> | <kbd>Ctrl</kbd><kbd>PgDn</kbd> and <kbd>Ctrl</kbd><kbd>PgUp</kbd> |
+| Rename the terminal | <kbd>F2</kbd>, on its tab | <kbd>F2</kbd>, on its tab |
+
+On a Mac, <kbd>⌘</kbd><kbd>T</kbd>, <kbd>⌘</kbd><kbd>N</kbd>, <kbd>⌘</kbd><kbd>W</kbd> and <kbd>⌘</kbd><kbd>K</kbd> are the terminal's while a terminal has focus, as in Terminal and iTerm. Everywhere else in Lumovi they keep their usual meaning: <kbd>⌘</kbd><kbd>N</kbd> is **New from YAML…**, <kbd>⌘</kbd><kbd>W</kbd> closes the window, and <kbd>⌘</kbd><kbd>K</kbd> opens the command palette.
+
+On Windows and Linux, a shell keeps <kbd>Ctrl</kbd><kbd>W</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> and the rest for itself, so the dock's keys add <kbd>⇧</kbd>, as Windows Terminal's do. They, and the keys that switch terminals, work while the dock is open and has focus.
+
+The shortcut sheet (<kbd>?</kbd>) lists them under **Terminal**. See [Keyboard shortcuts](/reference/keyboard-shortcuts#terminals).
+
+## Paste a command
+
+Every action dialog shows its **Equivalent command**. Hover it for its buttons: next to **Copy command**, **Paste in terminal** types it into a terminal and closes the dialog, without making the change. Nothing runs until you press <kbd>↵</kbd> in the terminal, so you can read the command, change it, and run it yourself.
+
+- It goes into the terminal the dock shows, or showed last. When there's none, or its shell has ended, a new one starts for the cluster you're in.
+- Commands name their cluster and namespace, like `--context dev -n shop`, so they act on the dialog's cluster whichever one the terminal points at.
+- A command with several lines, like one for each namespace in [Several at once](/changes/bulk), is typed as one line: joined with ` && `, so each runs only if the one before it worked, or with `; ` on Windows, where Windows PowerShell has no `&&`.
+- A terminal that's still starting gets the command once its shell has drawn its prompt.
+
+## Icons in your prompt
+
+Prompts that draw icons, like Starship, Powerlevel10k and oh-my-posh, show them without a font to install. Lumovi brings the symbols of [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) (Symbols Nerd Font Mono 3.5.1), sized to the terminal's characters, and uses them only for what its own font doesn't have. Nothing is downloaded for them. Shells in containers and on nodes show them too.
+
+<Columns cols={2}>
+  <Card title="Shells and debug containers" icon="square-terminal" href="/debug/shell">
+    A terminal inside a container, or a debug container with tools.
+  </Card>
+  <Card title="Changing things safely" icon="shield-check" href="/changes/safely">
+    The equivalent command, and the other guard rails.
+  </Card>
+</Columns>

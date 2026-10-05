@@ -9,7 +9,11 @@ Lumovi is open source under the Apache 2.0 license, on [GitHub](https://github.c
 
 ## Build the app
 
-You need [Node.js](https://nodejs.org) 24 or later (the repository's `.nvmrc` asks for 26) and npm. To package the app, you also need:
+You need [Node.js](https://nodejs.org) 24 or later (the repository's `.nvmrc` asks for 26) and npm.
+
+The desktop app's [terminals](/debug/terminal) run on [node-pty](https://github.com/microsoft/node-pty), which is native code. On macOS and Windows it comes prebuilt. On Linux, `npm ci` builds it, so you also need Python 3, `make` and a C++ compiler (`sudo apt-get install python3 make g++` on Debian and Ubuntu). After installing, `scripts/node-pty.ts` makes node-pty's `spawn-helper` executable: its package comes without that, and on macOS, terminals can't start without it.
+
+To package the app, you also need:
 
 - **On a Mac:** Xcode 26 or later. Lumovi's icon is compiled by Xcode's `actool`, and packaging stops without it.
 - **On Linux:** `rpm`, to build the `.rpm` (`sudo apt-get install rpm` on Debian and Ubuntu).
@@ -29,6 +33,8 @@ You need [Node.js](https://nodejs.org) 24 or later (the repository's `.nvmrc` as
     ```
 
     The installers for your platform land in `release/`, for x64 and arm64: a `.dmg` and `.zip` on macOS, one `.exe` on Windows, and an AppImage, `.deb` and `.rpm` on Linux. `npm run package` builds an unpacked app there instead, which is quicker.
+
+    On Linux, node-pty is built for the computer it's installed on, so build only for that computer's architecture: `npm run dist -- --x64`, or `npm run dist -- --arm64` on an ARM one. An installer for the other architecture would carry a node-pty that can't run there. Lumovi's own releases build each on a machine of that architecture.
   </Step>
 </Steps>
 
@@ -108,7 +114,7 @@ npm run dev:server -- --fleet  # a fleet of the demo clusters, signed in to as A
 
 | Folder | What's in it |
 | --- | --- |
-| `src/main` | The Electron main process: the window, menus, updates and IPC |
+| `src/main` | The Electron main process: the window, menus, updates, terminals and IPC |
 | `src/backend` | Kubeconfigs, API requests, Helm, shells and logs, for the desktop app and the server alike |
 | `src/server` | Lumovi served from a cluster: sign-in, the page, a WebSocket for each page, a fleet's clusters, and its agent (`agent.ts`) |
 | `src/preload` | The narrow, typed bridge the page gets as `window.lumovi` |
@@ -122,7 +128,7 @@ npm run dev:server -- --fleet  # a fleet of the demo clusters, signed in to as A
 
 A few ideas hold it together:
 
-- **One page, two hosts.** The interface talks to its host through one typed API: over IPC in the desktop app, over a WebSocket when served. Both answer from the same handlers. What only one can do, like port forwards on the desktop or sessions on the server, is an optional part of that API, which the page shows only when it's there.
+- **One page, two hosts.** The interface talks to its host through one typed API: over IPC in the desktop app, over a WebSocket when served. Both answer from the same handlers. What only one can do, like port forwards and terminals on the desktop or sessions on the server, is an optional part of that API, which the page shows only when it's there.
 - **Credentials never reach the page.** It runs sandboxed, with context isolation, no Node.js access and a strict Content Security Policy. Every IPC call is checked for its sender and validated in the main process, the only place that talks to clusters. See [Privacy and security](/reference/privacy-and-security).
 - **Plain REST.** Authentication comes from [`@kubernetes/client-node`](https://github.com/kubernetes-client/javascript), and requests are plain REST calls with gzip, so any API path, metrics and logs included, works the same way.
 - **Status colors are for health.** They always come with an icon and a label, and charts use a palette checked for color blindness in both themes.
