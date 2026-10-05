@@ -158,9 +158,17 @@ Listing nodes takes access to the whole cluster, which an account that sees only
 
 **Try again**, in the alert, lists them again, along with anything else that failed.
 
+## Big clusters
+
+Lumovi asks Prometheus about several namespaces at once, in batches of up to a thousand containers, counted from the pods running now. The biggest namespaces go first, two batches at a time. A cluster of thousands of namespaces takes dozens of queries, and each stays within what Prometheus loads for one query, and answers in time.
+
+- **What's measured shows first.** While the rest is, a line says how far it's got, like *Measured 120 of 3,000 namespaces so far: the rest join the list as they're measured.*
+- **A batch too big for Prometheus**, with too many samples or too slow, is asked about again in halves, and so on, down to a namespace at a time. A namespace that's too big on its own fails alone. A batch that fails for another reason fails as a whole.
+- **Workloads come 50 a page.** Page through the rest below the table.
+
 ## When something's wrong
 
-- **Prometheus couldn't answer for** some namespaces. Lumovi asks for a week of one namespace at a time, two at once, so a big cluster stays within what Prometheus loads for one query, and answers in time. When some namespaces fail, the others still get recommendations, and the failed ones' workloads show <span className="lumovi-status neutral">No usage</span>. **Try again** asks again. A namespace that keeps failing is usually more than your Prometheus's query limits or timeout allow.
+- **Prometheus couldn't answer for** some namespaces. When some fail, the others still get recommendations, and the failed ones' workloads show <span className="lumovi-status neutral">No usage</span>. The alert names up to three, and how many more there are. **Try again** asks again. A namespace that keeps failing on its own is usually more than your Prometheus's query limits or timeout allow. See [Big clusters](#big-clusters).
 - **VerticalPodAutoscalers couldn't be listed.** Workloads they manage get recommendations too. See [Without nodes or VerticalPodAutoscalers](#without-nodes-or-verticalpodautoscalers).
 - **An error instead of the page**, with **Try again**: Deployments, StatefulSets, DaemonSets, pods or HorizontalPodAutoscalers couldn't be listed, or Prometheus failed for every namespace.
 - **Nothing to right-size**: there are no Deployments, StatefulSets or DaemonSets in the namespace you picked.
