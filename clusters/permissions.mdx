@@ -94,6 +94,29 @@ A few notes:
   To check a permission yourself, use `kubectl auth can-i`, for example `kubectl auth can-i create pods/exec -n shop`. Lumovi asks the cluster the same question.
 </Tip>
 
+## AI assistants
+
+In the desktop app, [AI assistants](/assistants/overview) use Lumovi with your credentials, like everything else in it. An assistant can read and change only what your account can, and Lumovi gives it nothing of its own.
+
+Lumovi doesn't ask the cluster up front for an assistant. It sends each change as a dry run first, which the API server checks against your RBAC like the real change, so one your account can't make fails there, before you're asked. Reading something you may not read fails the same way, and the assistant is told why. Once you approve a change, other than a deletion, it's tried as a dry run again, with the same permissions.
+
+| Tool | Needs |
+| --- | --- |
+| `list_clusters` | Nothing: it reads your kubeconfig |
+| `list_kinds` | API discovery, which every account can read |
+| `list_resources` | `list` on the kind |
+| `get_resource` | `get` on the kind |
+| `get_events` | `list` on `events` |
+| `get_logs` | `get` on `pods/log` |
+| `find_problems` | `list` on nodes, pods, Deployments, StatefulSets, DaemonSets, Jobs, PersistentVolumeClaims and events, in the namespace or across the cluster. It names the kinds it couldn't list, and sums up the rest. |
+| `apply_manifest` | `get` and `patch` on the kind, and `create` when it creates the object |
+| `scale` | `get` and `patch` on the kind, or on its `scale` subresource for custom kinds |
+| `restart` | `get` and `patch` on the workload |
+| `delete_resource` | `get` and `delete` on the kind |
+| `wait_for_change` | Nothing: it waits for your answer in Lumovi |
+
+A cluster you made [read-only](/changes/read-only) refuses assistants' changes whatever your RBAC allows, and so does one whose **Changes they ask for** is **Never**. See [Approving changes](/assistants/approvals#changes-they-ask-for).
+
 ## An example
 
 A teammate with the built-in `view` role can browse workloads and read logs. To let them see usage history from a Prometheus in `monitoring` too, bind a Role there:
