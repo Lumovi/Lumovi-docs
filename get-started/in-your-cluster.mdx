@@ -82,10 +82,14 @@ This page gets it running in a few minutes, signed in with a token. When you're 
 
 It's the same app, so nearly everything in these docs applies to both. Served from a cluster:
 
-- **It shows one cluster**, the one it runs in. There's no list of clusters to switch between.
+- **It shows one cluster**, the one it runs in, unless you set it up as a [fleet](/server/fleet). With one cluster, there's no list of clusters to switch between.
 - **There's no port forwarding**, since there's no computer of yours to forward a port to.
 - **Charts come from repositories, registries or URLs**, never from files on your computer.
 - **Preferences belong to each browser**: the theme, whether you've made the cluster read-only for yourself, and where usage history comes from.
 - **A few shortcuts belong to the browser**: <kbd>⌘</kbd><kbd>N</kbd> and <kbd>⌘</kbd><kbd>1</kbd>…<kbd>6</kbd> (<kbd>Ctrl</kbd> on Windows and Linux). The command palette (<kbd>⌘</kbd><kbd>K</kbd>) has those commands.
 
 [Lumovi in your cluster](/server/overview) covers how it works, and [Helm values](/server/helm-values) lists every setting.
+
+## Many clusters
+
+One Lumovi can also show many clusters, as a [fleet](/server/fleet): people sign in once, with single sign-on or a proxy, and its first page sums up every cluster they may see. It runs in a cluster, on a machine of its own, or on a platform like [Sevalla](/server/fleet/sevalla), and reaches clusters in private networks through an [agent](/server/fleet/agents) that dials out to it.

@@ -17,6 +17,10 @@ auth:
   mode: token # the default
 ```
 
+<Note>
+  Tokens are for a Lumovi of one cluster. A token says who someone is to one cluster only, so a [fleet](/server/fleet) of many clusters needs single sign-on or a proxy instead: with tokens, a fleet's Lumovi doesn't start, and the chart refuses to install it.
+</Note>
+
 ## How signing in works
 
 <Steps>

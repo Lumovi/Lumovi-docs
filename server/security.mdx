@@ -14,6 +14,8 @@ Lumovi never gives anyone more than their own permissions: every request reaches
 | [Single sign-on](/server/auth/single-sign-on) | Who people are, in memory | Impersonate any user or group |
 | [Authenticating proxy](/server/auth/proxy) | Nothing: it reads the proxy's headers on every request | Impersonate any user or group |
 
+A [fleet](/server/fleet) needs single sign-on or a proxy, and Lumovi also holds a way into each of its clusters: see [A fleet](#a-fleet).
+
 ## Impersonation
 
 With single sign-on that doesn't pass people's own tokens on, or behind a proxy, Lumovi's service account may impersonate anyone. Whoever can exec into its pod, or read its service account's token, can then act as anyone in the cluster. Treat Lumovi like any other component with cluster-wide power:
@@ -25,6 +27,34 @@ With single sign-on that doesn't pass people's own tokens on, or behind a proxy,
 Lumovi never acts as one of Kubernetes' own users or groups (`system:…`), whatever a provider or proxy says. It leaves out groups that start with `system:`, and refuses users whose names (with their prefix) do.
 
 When the API server trusts your provider, [pass people's tokens on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) instead: Lumovi then needs no permissions at all.
+
+## A fleet
+
+A fleet's Lumovi acts as the people who sign in, in every one of its clusters, and holds a way into each:
+
+| Where a cluster comes from | What Lumovi holds for it |
+| --- | --- |
+| A kubeconfig, or [Lumovi's own Secrets](/server/fleet/discovery) | Each context's user: for a [member](/server/fleet/members), a token that may only impersonate |
+| [Cluster API's Secrets](/server/fleet/discovery) | The cluster's administrator credentials, which Cluster API keeps |
+| [Argo CD's Secrets](/server/fleet/discovery) | Argo CD's credentials, usually its `argocd-manager`'s, which may do anything |
+| An [agent](/server/fleet/agents) | Its service account's token, which may only impersonate, while it's connected |
+| The cluster Lumovi runs in | Its own service account, which may impersonate |
+
+- **Whoever controls Lumovi controls every cluster.** Anyone who can exec into its pod, read its kubeconfig, its Secrets or its settings, or change them, can act as anyone in all of them. Run it where only the administrators of every one of its clusters can, as you would the most trusted of them.
+- **Give it credentials that may only impersonate**, as members and agents have, rather than administrators'. Lumovi then can't do more in a cluster than the people who sign in.
+- **`groups` hides a cluster, but doesn't protect it.** It decides who sees a cluster in Lumovi. What people may do there is still up to that cluster's RBAC.
+- **Prefixes apply in each cluster**: the server's, or the cluster's own. Set them so no name or group from your provider or proxy is one of any cluster's own by accident.
+- **People's own tokens go only where you say**: to clusters with `forwardToken: true`, when `LUMOVI_OIDC_FORWARD_TOKEN` is set. Lumovi keeps them, and their refresh tokens, in memory.
+- **Reading Secrets**: with `fleet.secrets`, Lumovi's service account may list every Secret in the namespaces you name, not only those that describe clusters.
+
+### Agents
+
+- **Nothing in a private cluster listens.** Its agent dials out to Lumovi's `api/agent`, and has no Service.
+- **Lumovi checks every agent.** It knows each by its name and the SHA-256 of its token, and needs nothing else to: `api/agent` takes no sign-in, and an unknown name or token gets `401`, which Lumovi's log records (`An agent was refused: …`).
+- **The agent can't read what it relays.** TLS runs from Lumovi to the API server, inside its connection, checked against the certificate authority the agent sent, as `kubernetes.default.svc`.
+- **Its token stands for its cluster.** As the agent says which certificate authority to trust, whoever has its token could stand in for that cluster with a server of their own, and see what people send it, their own tokens too with `forwardToken`. Keep it in a Secret in that cluster, and give Lumovi only its SHA-256.
+- **A takeover shows.** When another agent connects with the same name and token, the first one stops, and says so in its log.
+- **Helm reaches an agent's cluster** through a port on `127.0.0.1`, inside Lumovi's container, open only while helm runs.
 
 ## Sessions and cookies
 
@@ -100,6 +130,8 @@ The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. I
 <Check>Serve it over HTTPS, and set `url` to the `https:` address, so cookies are sent over HTTPS only.</Check>
 <Check>Leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
 <Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
+<Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and run Lumovi where only the administrators of all its clusters can.</Check>
+<Check>In a fleet, give Lumovi agents' `tokenSha256`, not their tokens, and keep each token in a Secret in its own cluster.</Check>
 
 ## Reporting a vulnerability
 

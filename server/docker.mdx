@@ -1,7 +1,7 @@
 ---
 title: "Run it without Kubernetes"
 sidebarTitle: "With Docker"
-description: "Run the Lumovi image anywhere containers run, showing one cluster from a kubeconfig."
+description: "Run the Lumovi image anywhere containers run, showing one cluster from a kubeconfig, or a fleet of them."
 icon: "container"
 ---
 
@@ -18,7 +18,7 @@ Then open [http://localhost:8080](http://localhost:8080).
 
 - `LUMOVI_CONTEXT` picks the context to show; without it, the kubeconfig's current context.
 - The cluster is called by its context's name, unless `LUMOVI_CLUSTER_NAME` says otherwise.
-- Lumovi listens on port 8080 (`LUMOVI_PORT`), and answers `/healthz` for health checks.
+- Lumovi listens on port 8080 (`LUMOVI_PORT`), and answers `/healthz` for health checks. When `LUMOVI_PORT` isn't set, it listens on `PORT` if that's set, as platforms that run containers set it.
 
 Every setting is an environment variable here: see [Configuration](/server/configuration).
 
@@ -52,6 +52,24 @@ docker run --rm -p 8080:8080 \
 ```
 
 `-e LUMOVI_OIDC_CLIENT_SECRET` without a value passes the variable on from your shell, so the secret stays out of your shell history. Put TLS in front of Lumovi with a reverse proxy, and set `LUMOVI_URL` to the address people open. See [Single sign-on](/server/auth/single-sign-on) for registering Lumovi with your provider.
+
+## A fleet
+
+To show many clusters, give Lumovi a kubeconfig whose contexts are the clusters, with credentials that may only impersonate, instead of `KUBECONFIG`. It needs no Kubernetes of its own, and [single sign-on](/server/auth/single-sign-on) or a proxy, as a fleet always does:
+
+```bash
+docker run -d --restart unless-stopped -p 8080:8080 \
+  -v "$PWD/fleet:/etc/lumovi/fleet:ro" \
+  -e LUMOVI_FLEET_KUBECONFIG_FILE=/etc/lumovi/fleet/kubeconfig \
+  -e LUMOVI_URL=https://lumovi.example.com \
+  -e LUMOVI_AUTH=oidc \
+  -e LUMOVI_OIDC_ISSUER=https://dex.example.com \
+  -e LUMOVI_OIDC_CLIENT_ID=lumovi \
+  -e LUMOVI_OIDC_CLIENT_SECRET \
+  ghcr.io/lumovi/lumovi:{{version}}
+```
+
+Lumovi reads the file again every 30 seconds, so mount its folder rather than the file: an editor that replaces the file leaves a file mounted on its own as it was. Without files to mount, put the kubeconfig in `LUMOVI_FLEET_KUBECONFIG` instead, as YAML or encoded in base64, as on [Sevalla](/server/fleet/sevalla). Clusters it can't reach join through an [agent](/server/fleet/agents) that dials it, listed in `LUMOVI_FLEET_AGENTS`. See [A fleet of clusters](/server/fleet).
 
 ## Pin a version
 

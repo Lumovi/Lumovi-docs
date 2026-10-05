@@ -21,16 +21,16 @@ This is for clusters whose API server Lumovi can reach. For a cluster in a netwo
       --set mode=member --set clusterName=prod-eu
     ```
 
-    `mode: member` makes no Lumovi in this cluster, only what the fleet's Lumovi needs here:
+    `mode: member` makes no Lumovi in this cluster, only what the fleet's Lumovi needs here, named after the release:
 
     - a service account, `lumovi`,
-    - a ClusterRole and a ClusterRoleBinding that let it impersonate users and groups, and nothing else,
+    - a ClusterRole and a ClusterRoleBinding, `lumovi-impersonate`, that let it impersonate users and groups, and nothing else,
     - a Secret, `lumovi-token`, in which Kubernetes keeps a token for the service account that doesn't expire.
 
-    `clusterName` is what the fleet calls the cluster.
+    `clusterName` is what the fleet calls the cluster. With `rbac.create: false`, the chart makes no ClusterRole or binding, and you give the service account the same permission yourself. Creating them needs an account that may impersonate users and groups itself, or has the `escalate` and `bind` verbs on cluster roles: a cluster administrator has these.
   </Step>
   <Step title="Get its kubeconfig entry">
-    The chart's notes, printed after `helm install`, have two commands. They print a kubeconfig with the cluster's address (as your kubeconfig has it), its certificate authority, and the token. Here, they write it to `prod-eu.yaml`:
+    The chart's notes, printed after `helm install`, start with `prod-eu can join a fleet now`, and have two commands. They print a kubeconfig with the cluster's address (as your kubeconfig has it), its certificate authority, and the token. Here, they write it to `prod-eu.yaml`:
 
     ```bash
     SERVER=$(kubectl config view --minify --output jsonpath='{.clusters[0].cluster.server}')
@@ -81,6 +81,8 @@ This is for clusters whose API server Lumovi can reach. For a cluster in a netwo
     ```
 
     Lumovi reads it again by itself, and the log says `Fleet: prod-eu added`. In `LUMOVI_FLEET_KUBECONFIG`, change the setting, and restart Lumovi.
+
+    Or, when Lumovi reads Secrets, give the cluster a Secret of its own instead, with `prod-eu.yaml` as it is, and its settings as annotations: see [Clusters from Secrets](/server/fleet/discovery).
   </Step>
 </Steps>
 
@@ -142,7 +144,7 @@ kubectl get secret lumovi-fleet-token --namespace lumovi --output jsonpath='{.da
 
 The first is the user's `token`, and the second, as it is, the cluster's `certificate-authority-data`.
 
-Creating the ClusterRole and its binding needs an account that may impersonate users and groups itself, or has the `escalate` and `bind` verbs on cluster roles. A cluster administrator has all of these.
+Applying them needs the same permissions as installing the chart: an account that may impersonate users and groups itself, or has the `escalate` and `bind` verbs on cluster roles.
 
 <Columns cols={2}>
   <Card title="A fleet of clusters" icon="boxes" href="/server/fleet">

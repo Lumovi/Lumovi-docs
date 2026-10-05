@@ -63,7 +63,14 @@ Restart Lumovi so it reads the new secret:
 kubectl rollout restart --namespace lumovi deployment/lumovi
 ```
 
-Like any restart, this signs everyone out.
+Like any restart, this signs everyone out. A fleet's list of agents, in the Secret that `fleet.agentsSecret` names, is read the same way, when the pod starts: restart Lumovi after changing it too. Its kubeconfig, in `fleet.kubeconfigSecret`, and the Secrets it reads with `fleet.secrets` are read again by themselves, without a restart.
+
+## A fleet
+
+Upgrade a fleet's Lumovi as above, or, where it runs from the image alone (with Docker, or on a platform like [Sevalla](/server/fleet/sevalla)), by changing the image's tag.
+
+- **Its agents connect again by themselves.** Stopping, Lumovi closes their connections, and each agent tries again a second later, then less and less often, until the new one answers. Lumovi's log names each agent's version as it connects, like `The agent of private-eu connected (Lumovi {{version}})`.
+- **Members and agents are releases of their own**, in their own clusters. Upgrade each there, the same way, with its own values or `--reuse-values`.
 
 ## Roll back
 

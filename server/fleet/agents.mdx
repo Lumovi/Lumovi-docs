@@ -55,7 +55,7 @@ flowchart LR
       agentsSecret: lumovi-agents
     ```
 
-    Lumovi reads the list when it starts: restart it after changing the list (`kubectl rollout restart deployment/lumovi --namespace lumovi`). Until its agent connects, the cluster's card says **Unreachable**: `Its agent isn't connected.`
+    Lumovi reads the list when it starts: restart it after changing the list (`kubectl rollout restart deployment/lumovi --namespace lumovi`). Its pod doesn't start until the Secret is there. Until the agent connects, the cluster's card says **Unreachable**: `Its agent isn't connected.`
   </Step>
   <Step title="Install the agent in the cluster">
     With your kubeconfig pointing at the private cluster, store the token, and install the chart as an agent, with the name Lumovi knows it by:
@@ -71,7 +71,9 @@ flowchart LR
       --set agent.tokenSecret=lumovi-agent
     ```
 
-    `agent.hubUrl` is the address people open Lumovi at, with its base path if it has one.
+    `agent.hubUrl` is the address people open Lumovi at, with its base path if it has one. `clusterName` must be the agent's name in Lumovi's list: unless set, it's `in-cluster`.
+
+    The chart's notes, after installing, print a command that gives the SHA-256 of the token in `agent.tokenSecret`, and the entry for Lumovi's list, if you'd rather make the token here first.
   </Step>
   <Step title="See it connect">
     The agent's log says when it's connected:
@@ -110,28 +112,28 @@ flowchart LR
 </ResponseField>
 
 <ResponseField name="groups" type="string[]">
-  Only people in one of these groups see the cluster: groups as your provider or proxy names them, without prefixes. Everyone signed in does, without it.
+  Only people in one of these groups see the cluster: groups as your provider or proxy names them, without prefixes. Everyone signed in does, without it, and an empty list hides it from everyone.
 </ResponseField>
 
 <ResponseField name="forwardToken" type="boolean" default="false">
-  `true`: requests carry each person's own token, for an API server that trusts your provider, instead of impersonating them.
+  `true`: requests carry each person's own token, for an API server that trusts your provider, instead of impersonating them. Lumovi must have their tokens: set `LUMOVI_OIDC_FORWARD_TOKEN`.
 </ResponseField>
 
-A list that isn't like this stops Lumovi, saying what's wrong, like `LUMOVI_FLEET_AGENTS[0] (private-eu) needs a token of at least 32 characters, or its tokenSha256.`
+An agent's cluster takes the server's prefixes for the names it impersonates. A list that isn't like this stops Lumovi, saying what's wrong, like `LUMOVI_FLEET_AGENTS[0] (private-eu) needs a token of at least 32 characters, or its tokenSha256.`
 
 ## What the chart makes
 
 With `mode: agent`, the chart makes no Lumovi in the cluster, only its agent:
 
-- **A Deployment**, `lumovi-agent` for a release called `lumovi`, that runs the agent from Lumovi's image. It has one replica, and is replaced with the `Recreate` strategy: a second agent of the same cluster would take over from the first.
-- **A service account** that may impersonate users and groups, and nothing else. Its token is mounted in the agent's pod.
+- **A Deployment**, `lumovi-agent` for a release called `lumovi`, that runs the agent from Lumovi's image. It has one replica, whatever `replicaCount` says, and is replaced with the `Recreate` strategy: a second agent of the same cluster would take over from the first.
+- **A service account**, `lumovi`, with a ClusterRole and a ClusterRoleBinding, `lumovi-impersonate`, that let it impersonate users and groups, and nothing else (unless `rbac.create` is `false`). Its token is mounted in the agent's pod.
 - **Health checks** on port 8081. `/healthz` answers `200 connected` while the agent is connected to Lumovi, and `503 not connected` otherwise, so the pod is ready only while connected. It's alive as long as the port answers.
 
-There's no Service: nothing connects to the agent. It requests `10m` of CPU and `32Mi` of memory, and is limited to `128Mi` (`agent.resources`). See [Helm values](/server/helm-values#an-agent).
+There's no Service: nothing connects to the agent. It requests `10m` of CPU and `32Mi` of memory, and is limited to `128Mi` (`agent.resources`). The chart's `image`, `extraEnv`, `podSecurityContext`, `securityContext`, `nodeSelector`, `tolerations`, `affinity` and `priorityClassName` apply to it too. See [Helm values](/server/helm-values#an-agent).
 
 ## Run it another way
 
-The agent is in Lumovi's image, as `/app/out/agent/agent.js`. It runs in the cluster it relays to: it connects to the API server at `KUBERNETES_SERVICE_HOST` and `KUBERNETES_SERVICE_PORT`, which Kubernetes sets in every pod, and needs its pod's service account token.
+The agent is in Lumovi's image, as `/app/out/agent/agent.js`. It runs in the cluster it relays to: it connects to the API server at `KUBERNETES_SERVICE_HOST` and `KUBERNETES_SERVICE_PORT` (443 unless set), which Kubernetes sets in every pod, and needs its pod's service account token and CA certificate. Give its service account permission to impersonate users and groups, and nothing more, as a [member's](/server/fleet/members#without-the-chart) has.
 
 ```yaml
 containers:
@@ -149,7 +151,7 @@ containers:
 ```
 
 <ResponseField name="LUMOVI_HUB_URL" type="string" required>
-  Lumovi's address, with its base path if it has one: an `http` or `https` URL. The agent connects to `api/agent` below it. Use `https`: the token travels in the connection's headers.
+  Lumovi's address, with its base path if it has one: an `http` or `https` URL. The agent connects to `api/agent` below it, with a `wss` or `ws` WebSocket. Use `https`: the token travels in the connection's headers.
 </ResponseField>
 
 <ResponseField name="LUMOVI_AGENT_NAME" type="string" required>
@@ -157,7 +159,7 @@ containers:
 </ResponseField>
 
 <ResponseField name="LUMOVI_AGENT_TOKEN" type="string" required>
-  The agent's token.
+  The agent's token. Spaces and line breaks around it are left out, so hash it without them.
 </ResponseField>
 
 <ResponseField name="LUMOVI_AGENT_HEALTH_PORT" type="number" default="8081">
@@ -172,7 +174,15 @@ containers:
   Where the pod's service account token and CA certificate are.
 </ResponseField>
 
-Without one of the required settings, or without the token, the agent stops at once and says why, like `No service account token in /var/run/secrets/kubernetes.io/serviceaccount: the agent needs its pod's (automountServiceAccountToken).`
+Without one of the required settings (`KUBERNETES_SERVICE_HOST` among them), or without the service account's token, the agent stops at once and says why:
+
+```text
+LUMOVI_HUB_URL must be set: see https://docs.lumovi.dev/server/fleet/agents
+LUMOVI_HUB_URL must be the hub's address, like https://lumovi.example.com, not "lumovi.example.com".
+No service account token in /var/run/secrets/kubernetes.io/serviceaccount: the agent needs its pod's (automountServiceAccountToken).
+```
+
+When Kubernetes stops it, it closes its connection, and Lumovi's log says `The agent of private-eu disconnected`.
 
 ## Connecting, and staying connected
 
@@ -187,17 +197,25 @@ Without one of the required settings, or without the token, the agent stops at o
 | The hub at https://lumovi.example.com refused this agent: it doesn't know this name and token. | Lumovi has no agent of that name, or its token's SHA-256 isn't that one. Lumovi's log says `An agent was refused: "private-eu", with a token that doesn't match`. |
 | The hub at https://lumovi.example.com refused this agent: another agent connected as it (do two clusters use the same name and token?). | A second agent connected with the same name and token, and took over. |
 
-While it's away, Lumovi's log says `The agent of private-eu disconnected`, and the cluster's card says `Its agent isn't connected.`
+While it's away, Lumovi's log says `The agent of private-eu disconnected`, and the cluster's card says `Its agent isn't connected.` An agent that's connected but can't reach its own API server stays connected, and the cluster's card says **Unreachable**, as for any cluster that doesn't answer.
+
+Other problems reaching Lumovi are in the agent's log, like `Can't reach the hub at https://lumovi.example.com: …`, then `Connecting again in 4 s: it couldn't connect`.
 
 ## In front of Lumovi
 
 Agents connect to `api/agent` below Lumovi's base path, with a WebSocket, and keep it open. Whatever is in front of Lumovi (an ingress, a load balancer, a CDN) must pass WebSockets there, as it does for pages at `api/socket`, and keep idle connections open longer than the heartbeat. Run one replica of Lumovi: an agent connects to one of them.
 
+- **Behind an [authenticating proxy](/server/auth/proxy)**, let `api/agent` through to Lumovi without signing in (with oauth2-proxy, `--skip-auth-route`). Agents can't sign in to a proxy, and Lumovi checks their names and tokens itself. A proxy that answers `401` makes an agent stop, saying Lumovi doesn't know its name and token.
+- **With the chart's `networkPolicy`**, its `from` must let in whatever agents come through, like your ingress controller or proxy.
+- **A server of one cluster** refuses agents, with `403`: only a fleet takes them.
+
 ## Security
 
-- **Whoever has an agent's token can connect as its cluster.** Keep it in a Secret in that cluster, and give Lumovi only its SHA-256.
-- **The agent can't read what it relays.** Lumovi checks the API server's certificate itself, end to end.
+- **Nothing in the cluster listens.** The agent only dials out, to Lumovi, and has no Service.
+- **The agent can't read what it relays.** Lumovi checks the API server's certificate itself, end to end, against the certificate authority the agent sent.
 - **Its service account may only impersonate**, like a member's, and Lumovi uses its token only while the agent is connected.
+- **Whoever has an agent's token can connect as its cluster.** As the agent says which certificate authority to trust, they could stand in for the cluster with a server of their own, and see what people send it: their own tokens too, with `forwardToken`. Keep the token in a Secret in that cluster that only its administrators can read, and give Lumovi only its SHA-256 (`tokenSha256`), so Lumovi's settings don't hold it.
+- **A takeover shows.** When another agent connects with the same name and token, the first one stops, and its log says another agent connected as it. Unless two clusters were given the same name and token by mistake, that's a sign the token is somewhere it shouldn't be: make a new one.
 
 <Columns cols={2}>
   <Card title="A fleet of clusters" icon="boxes" href="/server/fleet">

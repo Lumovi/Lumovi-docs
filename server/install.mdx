@@ -8,7 +8,7 @@ icon: "download"
 You need [Helm](https://helm.sh) and `kubectl` on your computer, and an account that can create namespaces, service accounts and role bindings. The cluster needs Kubernetes 1.25 or later, and 1.28 or later to sign in with tokens, as below.
 
 <Note>
-  With [single sign-on](/server/auth/single-sign-on) or an [authenticating proxy](/server/auth/proxy), the chart also makes a ClusterRole that lets Lumovi's service account impersonate users and groups, and a ClusterRoleBinding that gives it that role. Kubernetes lets you create them only if your account may create cluster roles and their bindings, and may impersonate users and groups itself, or has the `escalate` and `bind` verbs on cluster roles. A cluster administrator has all of these. See [Impersonation](/server/security#impersonation).
+  With [single sign-on](/server/auth/single-sign-on) or an [authenticating proxy](/server/auth/proxy), and for a [fleet](/server/fleet) that includes this cluster, a member or an agent, the chart also makes a ClusterRole that lets Lumovi's service account impersonate users and groups, and a ClusterRoleBinding that gives it that role. Kubernetes lets you create them only if your account may create cluster roles and their bindings, and may impersonate users and groups itself, or has the `escalate` and `bind` verbs on cluster roles. A cluster administrator has all of these. See [Impersonation](/server/security#impersonation).
 </Note>
 
 ## Try it in five minutes
@@ -91,6 +91,18 @@ For anything past a first try, keep the chart's settings in a file, and install 
 
 The chart's version is the app's, so `--version {{version}}` installs Lumovi {{version}}. Without it, Helm installs the latest.
 
+## A fleet, a member or an agent
+
+The same chart installs each part of a [fleet](/server/fleet), one Lumovi for many clusters. `mode` says which this release is:
+
+| `mode` | What it installs | For |
+| --- | --- | --- |
+| `dashboard` (the default) | Lumovi: a Deployment, its Service, a service account, and the ingress, network policy, views and permissions you ask for. With the [`fleet` values](/server/helm-values#a-fleet), it shows a fleet, and may list Secrets where they say. | The cluster Lumovi runs in |
+| `member` | A service account that may only impersonate users and groups, and a Secret with a token for it that doesn't expire. Its notes print the kubeconfig entry to give the fleet's Lumovi. | Each cluster the fleet's Lumovi can reach: see [Add a cluster](/server/fleet/members) |
+| `agent` | The agent, which dials the fleet's Lumovi, with a service account that may only impersonate. Its notes print how to list it in Lumovi's agents. | Each cluster it can't reach: see [Private clusters](/server/fleet/agents) |
+
+A member or an agent runs no Lumovi in its cluster, and nobody opens it there. A fleet needs single sign-on or a proxy, so the chart refuses `fleet` values with `auth.mode: token`.
+
 ## Check that it's running
 
 Lumovi writes a line to its log when it starts, saying which cluster it shows, where, and how people sign in:
@@ -102,6 +114,8 @@ kubectl logs --namespace lumovi deployment/lumovi
 ```text
 2026-10-04T10:52:14.120Z Lumovi {{version}} shows production (https://10.96.0.1:443) at http://localhost:8080/; people sign in with a token
 ```
+
+For a fleet, that line says how many clusters it shows, after a line for each one (`Fleet: prod-eu added`), like `Lumovi {{version}} shows a fleet of 3 clusters (hub, prod-eu, staging) at http://localhost:8080/; people sign in with single sign-on`.
 
 After that, the log records who signs in and out, and what failed. A setting that doesn't make sense stops Lumovi before it starts, and the log says which one and why, like:
 
