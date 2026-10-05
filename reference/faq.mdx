@@ -17,7 +17,7 @@ icon: "circle-question-mark"
     | | Desktop app | In your cluster |
     | --- | --- | --- |
     | Who uses it | You | Your whole team, in a browser |
-    | Clusters | Every cluster in your kubeconfig | The one it runs in |
+    | Clusters | Every cluster in your kubeconfig | The one it runs in, or a [fleet](/server/fleet) of many |
     | Credentials | Your kubeconfig | Each person signs in |
     | Installing | An app per person | One Helm chart, nothing for users |
     | Port forwarding | Yes | No |
@@ -67,7 +67,12 @@ icon: "circle-question-mark"
   <Accordion title="Can I work with several clusters?">
     Yes. The desktop app lists every context in your kubeconfig on its start screen, with whether each one answers. Switch between them from the cluster menu at the top of the sidebar, or with <kbd>⌘</kbd><kbd>K</kbd>. Each cluster remembers its own namespace, read-only setting and usage history source.
 
-    Lumovi [in your cluster](/server/overview) shows the one cluster it runs in.
+    Lumovi [in your cluster](/server/overview) shows the one cluster it runs in, unless you set it up as a [fleet](/server/fleet).
+  </Accordion>
+  <Accordion title="Can my team see many clusters in a browser?">
+    Yes, with a [fleet](/server/fleet): one Lumovi for many clusters, private ones too. People sign in once, with single sign-on or through a proxy, and its home page sums up every cluster, the ones that need attention first. In each cluster, they see and change what their own RBAC there allows: Lumovi impersonates them, or passes their own token on.
+
+    A fleet runs in a cluster with the Helm chart, or without Kubernetes, with Docker or on a platform like [Sevalla](/server/fleet/sevalla). For clusters it can't reach, an [agent](/server/fleet/agents) in each one dials out to it. See [Clusters in a fleet](/clusters/fleet) for using one.
   </Accordion>
   <Accordion title="Does it handle big clusters?">
     Yes. Lists load in chunks of 500 and are paginated and virtualized, so thousands of pods stay smooth. They stop at 5,000 objects by default, with a note saying so; a label selector narrows a list on the server. Busy lists refresh less often.

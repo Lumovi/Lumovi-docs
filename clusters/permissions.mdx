@@ -6,6 +6,8 @@ icon: "lock-keyhole"
 
 Lumovi acts with your credentials: the ones in your kubeconfig on the desktop, or the identity you signed in with when it runs [in your cluster](/server/overview). It never has more access than you do, and it doesn't need cluster-admin. An account that can only read a few namespaces works fine.
 
+In a [fleet](/server/fleet), each cluster applies your RBAC there: Lumovi impersonates you with credentials that may do nothing else, or passes your own token on. What you may do can differ from one cluster to the next. For whoever runs the fleet: in each cluster, Lumovi's own credentials need nothing but `impersonate` on users and groups. See [Add a cluster](/server/fleet/members).
+
 ## Asked up front
 
 Before it offers a change, Lumovi asks the cluster whether you're allowed to make it, with a [SelfSubjectAccessReview](https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access) per action (the same check as `kubectl auth can-i`). Kubernetes lets every signed-in account make these checks.
@@ -28,9 +30,11 @@ Lists and details need `list` and `get` on the kinds you look at. Lumovi refresh
 | Live CPU and memory | `list` on `pods` and `nodes` in the `metrics.k8s.io` group |
 | Logs | `get` on `pods/log` |
 | Custom resources | API discovery, which every account can read, and `list` on the kinds |
+| A cluster's card in a [fleet](/clusters/fleet) | `list` on nodes, pods, Deployments, StatefulSets, DaemonSets and events across that cluster, and node metrics for CPU and memory. A figure you can't list says **No access**. |
+| **Find a workload** in a fleet | `list` on Deployments, StatefulSets, DaemonSets and CronJobs across each cluster |
 | An add-on's page | `list` on each of its kinds |
 | Karpenter's overview | `list` on node pools, node claims and nodes, and on pods in every namespace |
-| The **Map** tab | `list` in the object's namespace on what it shows: pods, workloads, services, ingresses, network policies, autoscalers, disruption budgets, ConfigMaps, Secrets, service accounts and volume claims (and Gateway API gateways and routes, when the cluster serves them). Also `list` on nodes, persistent volumes and storage classes. A kind it can't list still appears where it's referenced, without a status. |
+| The **Map** tab | `list` in the object's namespace on what it shows: pods, workloads, services, ingresses, network policies, autoscalers, disruption budgets, ConfigMaps, Secrets, service accounts and volume claims (and Gateway API gateways and routes, when the cluster serves them). Also `list` on nodes, persistent volumes and storage classes. A kind it can't list still appears where it's referenced, without a status, and so does a route's gateway or service in another namespace, which the map doesn't list. |
 | Field explanations | The cluster's OpenAPI schema, which every account can read |
 
 If a page needs something you can't read, it says **Access denied**, with *Your account isn't allowed to read this. If you only have access to some namespaces, pick one from the namespace menu.*
@@ -43,7 +47,7 @@ Charts over time come from a Prometheus-compatible server, reached through the A
 | --- | --- |
 | Find the server automatically | `list` on `services`, in every namespace |
 | Read history from it | `get` on `services/proxy` in the server's namespace |
-| See [right-sizing](/metrics/right-sizing) recommendations | The two above, `list` on Deployments, StatefulSets, DaemonSets, pods and HorizontalPodAutoscalers where you look, `list` on nodes, and `list` on VerticalPodAutoscalers when the cluster serves them |
+| See [right-sizing](/metrics/right-sizing) recommendations | The two above, and `list` on Deployments, StatefulSets, DaemonSets, pods and HorizontalPodAutoscalers where you look. `list` on nodes, and on VerticalPodAutoscalers when the cluster serves them, helps but isn't needed: see [Without nodes or VerticalPodAutoscalers](/metrics/right-sizing#without-nodes-or-verticalpodautoscalers). |
 
 Without `list` on services, choose the server yourself in **Metrics source**. See [Usage history](/metrics/usage-history).
 
