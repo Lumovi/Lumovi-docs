@@ -116,6 +116,7 @@
             "pages": [
               "debug/logs",
               "debug/shell",
+              "debug/node-shell",
               "debug/port-forwarding"
             ]
           },

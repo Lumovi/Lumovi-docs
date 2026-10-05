@@ -173,6 +173,20 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   Where usage history comes from unless people choose: `auto`, `off`, or `namespace/service:port`, with a path after it for vmselect (`vm/vmselect:8481/select/0/prometheus`). In a fleet, it's every cluster's.
 </ResponseField>
 
+<ResponseField name="LUMOVI_NODE_SHELL" type="string" default="on">
+  `on` or `off`: whether people can open [shells on nodes](/debug/node-shell). With `off`, nobody can, in any cluster of a fleet, whatever their RBAC allows: a node's **Shell** tab says **Node shells are off**, and Lumovi refuses to start one, saying `Node shells are turned off on this Lumovi server (LUMOVI_NODE_SHELL=off).` Anything else stops Lumovi, saying `LUMOVI_NODE_SHELL must be on or off, not "…".`
+</ResponseField>
+
+<ResponseField name="LUMOVI_NODE_SHELL_NAMESPACE" type="string" default="kube-system">
+  Where node shells' pods are created unless people choose another namespace: a namespace's name, whose Pod Security must allow privileged pods. In a fleet, it's every cluster's.
+</ResponseField>
+
+<ResponseField name="LUMOVI_NODE_SHELL_IMAGE" type="string" default="alpine:3.22">
+  The image node shells' pods run unless people choose another: one with `sh`, and `nsenter` for shells on the node itself. No spaces, and at most 255 characters. In a fleet, it's every cluster's.
+
+  A namespace that isn't a namespace's name, or an image with spaces, stops Lumovi, saying `LUMOVI_NODE_SHELL_NAMESPACE must be a namespace's name and LUMOVI_NODE_SHELL_IMAGE an image, not "…" and "…".`
+</ResponseField>
+
 <ResponseField name="LUMOVI_ALLOW_PRIVATE_CHARTS" type="boolean" default="false">
   `true` or `1`: charts may come from private network addresses.
 </ResponseField>
