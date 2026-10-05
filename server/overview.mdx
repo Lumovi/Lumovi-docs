@@ -66,6 +66,9 @@ A [fleet](/server/fleet) signs people in with single sign-on or a proxy, never w
   <Accordion title="No port forwarding" icon="plug">
     There's no computer of the user's to forward a port to, so **Forward a port…** isn't offered. See [Port forwarding](/debug/port-forwarding) for the desktop app.
   </Accordion>
+  <Accordion title="No terminals" icon="terminal">
+    Terminals run a shell on your own computer, so Lumovi in a cluster has none: no dock, and no **Paste in terminal** by a dialog's command. See [Terminals](/debug/terminal) for the desktop app.
+  </Accordion>
   <Accordion title="Charts come from repositories, registries or URLs" icon="package">
     Never from files on anyone's computer. Lumovi fetches charts only from public addresses unless `helm.allowPrivateCharts` allows private ones, such as a ChartMuseum or Harbor in your network. Otherwise anyone signed in could make it reach services inside the cluster's network. See [Security](/server/security#charts-and-private-networks).
   </Accordion>

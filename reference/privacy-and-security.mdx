@@ -24,7 +24,9 @@ The desktop app talks to:
 - **The chart repositories and registries you choose**, when you upgrade or install a Helm release from one.
 - **GitHub**, to look for new versions of Lumovi. **Help → Check for Updates Automatically** turns that off.
 
-That's all. Links to anything else, like a release's notes, open in your browser.
+That's all. Links to anything else, like a release's notes, open in your browser. Fonts come with the app, the icons of terminals' prompts included, so nothing is downloaded for them.
+
+What you run in a [terminal](/debug/terminal) is yours: it connects wherever it would in any other terminal.
 
 ## Your credentials
 
@@ -32,10 +34,13 @@ Kubeconfig credentials stay in the app's main process: tokens, client keys and t
 
 Lumovi reads your kubeconfig and never changes it. Managing kubeconfig files, like adding contexts or signing in to a cloud provider, is left to the tools made for it.
 
+A [terminal](/debug/terminal) gets a kubeconfig of its own that names the cluster and namespace, and no credentials: kubectl there finds those in your files, as in any terminal.
+
 ## How the app is built
 
 - **The page is sandboxed.** It runs with context isolation, no Node.js integration and a strict Content Security Policy. It can't navigate away or open new windows.
 - **Every request is checked.** The main process only answers calls from the app's own page, and validates every argument.
+- **Terminals run in the main process.** A [terminal](/debug/terminal)'s shell is started by the main process, on your computer and as you, like any terminal app's. The page shows what it prints, and passes on what you type.
 - **No browser permissions.** The page can't use the camera, notifications or anything else a website could ask for. It can only copy to the clipboard.
 - **Changes go through a small set of operations.** Each is checked against what you've made read-only, and refused for those clusters, or for all of them with `LUMOVI_READ_ONLY`. See [Read-only mode](/changes/read-only).
 - **Links are limited.** Only `https://` links, and `http://localhost:<port>` for your own [port forwards](/debug/port-forwarding), are handed to the operating system.
@@ -57,8 +62,8 @@ See [Config and storage](/explore/config-and-storage) for how Secrets are shown 
 
 The desktop app keeps two kinds of things on your computer, and none of it leaves it:
 
-- **Settings**, in `settings.json`: your theme, the window's size and place, which clusters you made read-only, where each one's usage history comes from, and whether Lumovi looks for new versions by itself.
-- **Conveniences** the page remembers: the namespace you picked per cluster, your recent clusters, the kinds you pinned to the sidebar and the custom resources you opened last, the detail panel's width, the time range metrics charts open with, and which chart on your computer each Helm release was last deployed from.
+- **Settings**, in `settings.json`: your theme, the window's size and place, which clusters you made read-only, where each one's usage history comes from, the namespace and image of its [node shells](/debug/node-shell), and whether Lumovi looks for new versions by itself.
+- **Conveniences** the page remembers: the namespace you picked per cluster, your recent clusters, the kinds you pinned to the sidebar and the custom resources you opened last, the detail panel's width, the terminal dock's height, the time range metrics charts open with, and which chart on your computer each Helm release was last deployed from.
 
 Both live in Lumovi's folder for app data:
 
@@ -69,6 +74,8 @@ Both live in Lumovi's folder for app data:
 | Linux | `~/.config/Lumovi`, or `$XDG_CONFIG_HOME/Lumovi` |
 
 Lumovi also reads your own [views](/custom-resources/write-a-view) from `~/.lumovi/views`, or the folder `LUMOVI_VIEWS_DIR` names. It never writes there. When you upgrade or install a Helm release, the values go to `helm` in a temporary folder, which Lumovi deletes as soon as `helm` is done.
+
+Each [terminal](/debug/terminal) gets a small kubeconfig, in a folder of its own in the system's temporary folder, named `lumovi-terminal-`, the app's process ID, and six random characters. It holds the context's name, its cluster's and user's names, and the namespace: no addresses, and no credentials. On macOS and Linux, only you can read it. Lumovi deletes it when the terminal's shell ends: when the shell exits, when you close its tab, and when you quit. If Lumovi doesn't get to quit, because it crashed or was killed, it deletes what's left the next time it starts.
 
 The [activity log](/changes/undo-and-activity) of the changes you made lives in memory, and is gone when you quit.
 

@@ -117,7 +117,8 @@
               "debug/logs",
               "debug/shell",
               "debug/node-shell",
-              "debug/port-forwarding"
+              "debug/port-forwarding",
+              "debug/terminal"
             ]
           },
           {

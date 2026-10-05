@@ -8,12 +8,12 @@ icon: "keyboard"
 Lumovi works from the keyboard as well as the mouse. Press <kbd>?</kbd> anywhere to see the shortcut sheet. It's also in the command palette, and in the desktop app's **Help** menu.
 
 <Frame caption="The shortcut sheet, one keystroke away.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/shortcuts-light-1x.webp" alt="The Lumovi keyboard shortcuts sheet, grouped into General, Lists, Open object and Go to." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/shortcuts-dark-1x.webp" alt="The Lumovi keyboard shortcuts sheet, grouped into General, Lists, Open object and Go to." />
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/shortcuts-light-1x.webp" alt="The Lumovi keyboard shortcuts sheet, grouped into General, Lists, Open object, Terminal and Go to." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/shortcuts-dark-1x.webp" alt="The Lumovi keyboard shortcuts sheet, grouped into General, Lists, Open object, Terminal and Go to." />
 </Frame>
 
 <Note>
-  Shortcuts are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>. On a Mac, most shortcuts also work with <kbd>Ctrl</kbd>, but the ones that are only in the menus (<kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd>, <kbd>⌘</kbd><kbd>/</kbd>) and the editors' (<kbd>⌘</kbd><kbd>S</kbd>, <kbd>⌘</kbd><kbd>F</kbd>, <kbd>⌘</kbd><kbd>Z</kbd>) need <kbd>⌘</kbd>.
+  Shortcuts are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>. On a Mac, most shortcuts also work with <kbd>Ctrl</kbd>, but the ones that are only in the menus (<kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd>, <kbd>⌘</kbd><kbd>/</kbd>) and the editors' (<kbd>⌘</kbd><kbd>S</kbd>, <kbd>⌘</kbd><kbd>F</kbd>, <kbd>⌘</kbd><kbd>Z</kbd>) need <kbd>⌘</kbd>. The [terminals'](#terminals) keys differ more, so they're written out for both.
 </Note>
 
 ## General
@@ -37,6 +37,10 @@ These are in the app's menus, and work in the desktop app. A browser keeps <kbd>
 | <kbd>⌘</kbd><kbd>1</kbd> … <kbd>⌘</kbd><kbd>6</kbd> | Overview, Workloads, Pods, Services, Nodes, Events | **Go** |
 | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd> | All clusters (back to the start screen) | **Go → All Clusters** |
 | <kbd>⌘</kbd><kbd>/</kbd> | Keyboard shortcuts | **Help → Keyboard Shortcuts** |
+| <kbd>⌃</kbd><kbd>&#96;</kbd> | Show or hide the [terminal](/debug/terminal) | **View → Terminal** |
+| <kbd>⌃</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> | New terminal | **View → New Terminal** |
+
+In a [terminal](/debug/terminal) on a Mac, <kbd>⌘</kbd><kbd>N</kbd> opens another terminal instead of **New from YAML…**, and <kbd>⌘</kbd><kbd>W</kbd> and <kbd>⌘</kbd><kbd>K</kbd> close and clear the terminal instead of closing the window and opening the command palette. See [Terminals](#terminals).
 
 ## Go to a view
 
@@ -59,7 +63,7 @@ Press <kbd>G</kbd>, then a letter, within a second or so. Hover an item in the s
 ReplicaSets, Autoscalers, Network Policies, Volumes, Storage Classes, API resources, [Right-sizing](/metrics/right-sizing), [add-on](/custom-resources/add-ons) pages and custom resources have no letter. Open them from the sidebar, or type their name into <kbd>⌘</kbd><kbd>K</kbd>.
 
 <Tip>
-  Single-key shortcuts like <kbd>G</kbd>, <kbd>/</kbd> and <kbd>?</kbd> don't fire while you type in a field, or while a dialog or menu is open, so they never get in your way.
+  Single-key shortcuts like <kbd>G</kbd>, <kbd>/</kbd> and <kbd>?</kbd> don't fire while you type in a field or a terminal, or while a dialog or menu is open, so they never get in your way.
 </Tip>
 
 ## Lists
@@ -138,6 +142,27 @@ On the [Metrics](/metrics/usage-history) page and in every **Metrics** tab:
 | <kbd>Esc</kbd> in the search box | Clear the search |
 
 Everything else in the log viewer is a button or a chip. See [Logs](/debug/logs).
+
+## Terminals
+
+In the desktop app's [terminals](/debug/terminal), at the bottom of a cluster's pages. Their keys differ by platform:
+
+| What it does | macOS | Windows and Linux |
+| --- | --- | --- |
+| Show or hide the dock, anywhere in a cluster | <kbd>⌃</kbd><kbd>&#96;</kbd> | <kbd>Ctrl</kbd><kbd>&#96;</kbd> |
+| New terminal, anywhere in a cluster | <kbd>⌃</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> |
+| New terminal, in a terminal | <kbd>⌘</kbd><kbd>T</kbd> or <kbd>⌘</kbd><kbd>N</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>T</kbd> |
+| Close it, in a terminal | <kbd>⌘</kbd><kbd>W</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>W</kbd> |
+| Clear it, in a terminal | <kbd>⌘</kbd><kbd>K</kbd> | None of Lumovi's: <kbd>Ctrl</kbd><kbd>K</kbd> is the shell's |
+| Previous or next terminal | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>]</kbd> and <kbd>⌘</kbd><kbd>⇧</kbd><kbd>[</kbd>, or <kbd>⌃</kbd><kbd>PgDn</kbd> and <kbd>⌃</kbd><kbd>PgUp</kbd> | <kbd>Ctrl</kbd><kbd>PgDn</kbd> and <kbd>Ctrl</kbd><kbd>PgUp</kbd> |
+| Rename the terminal | <kbd>F2</kbd>, on its tab | <kbd>F2</kbd>, on its tab |
+| Make the dock taller or shorter | <kbd>↑</kbd> <kbd>↓</kbd>, on its top edge | <kbd>↑</kbd> <kbd>↓</kbd>, on its top edge |
+
+- <kbd>⌃</kbd><kbd>&#96;</kbd> and <kbd>⌃</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> work anywhere in a cluster, in a terminal too. The start screen has no dock.
+- On a Mac, <kbd>⌘</kbd><kbd>T</kbd>, <kbd>⌘</kbd><kbd>N</kbd>, <kbd>⌘</kbd><kbd>W</kbd> and <kbd>⌘</kbd><kbd>K</kbd> are the terminal's while a terminal has focus, as in Terminal and iTerm. Everywhere else they keep their usual meaning.
+- On Windows and Linux, a shell keeps <kbd>Ctrl</kbd><kbd>W</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> and the rest for itself, so the dock's keys add <kbd>⇧</kbd>, as Windows Terminal's do. They, and the keys that switch terminals, work while the dock is open and has focus.
+
+Other keys go to the terminal's shell, as in any terminal, <kbd>Ctrl</kbd> keys included. On Windows and Linux, <kbd>Ctrl</kbd><kbd>K</kbd> and <kbd>Ctrl</kbd><kbd>R</kbd> are the shell's there: click the page, or hide the dock, to use Lumovi's. On a Mac, the menus' <kbd>⌘</kbd> shortcuts, like <kbd>⌘</kbd><kbd>R</kbd>, still work.
 
 ## Start screen and command palette
 
