@@ -58,6 +58,7 @@ Forwards stop when you stop them, and when you quit Lumovi. They also stop when 
 - **To a service's pod.** A forward to a service goes to the first of its pods that's ready. A named target port is looked up in the pod's containers. The pod is picked when the forward starts: if it's replaced, start the forward again.
 - **Port in use.** If the local port is taken, the dialog says so ("Port 8080 on this computer can't be used") and you pick another.
 - **Read-only clusters.** Port forwards don't change the cluster, so they work in [read-only](/changes/read-only) clusters too.
+- **Recorded.** The [audit log](/audit/overview) keeps each forward, started and stopped, with how long it ran.
 
 <Note>
   **In your cluster:** port forwarding isn't offered when Lumovi runs in your cluster, because there's no computer of yours to forward to. Use the desktop app, or `kubectl port-forward`.
