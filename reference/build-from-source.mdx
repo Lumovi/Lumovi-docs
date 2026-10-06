@@ -76,7 +76,7 @@ npm run dev:server -- --fleet  # a fleet of the demo clusters, signed in to as A
 | `npm run test:e2e` | Build with coverage instrumentation, and run the e2e tests |
 | `npm run test:linux` | The same, on Linux in Docker, as CI runs it |
 | `npm run coverage` | The e2e tests, plus a coverage report in `coverage/` |
-| `npm run coverage:check` | Fail unless every file, line, branch and function is covered |
+| `npm run coverage:check` | List every uncovered line, and fail unless every source file is loaded by some test and more than 95% of statements, branches, functions and lines run |
 | `npm run lint` / `typecheck` / `format` | Static checks |
 | `npm run views:check` | Check Lumovi's views and add-ons against the CRDs of their tools |
 | `npm run crds` | Fetch those CRDs again, at the versions `tests/views/crds/sources.json` pins |
@@ -135,7 +135,7 @@ A few ideas hold it together:
 
 ## Tests
 
-Lumovi keeps **100% end-to-end coverage** of statements, branches, functions and lines, enforced in CI.
+Lumovi keeps **above 95% end-to-end coverage** of statements, branches, functions and lines, with every source file loaded by some test, enforced in CI. New code comes with tests that run it.
 
 - **End-to-end tests** drive the real Electron app with Playwright, against a mock API server with the demo clusters. Coverage is collected from all three Electron processes, the server and the page, and merged across Linux, macOS and Windows. The test windows stay invisible and never take focus, so you can keep working; set `LUMOVI_E2E_FOREGROUND=1` to watch them.
 - **Web tests** start the server against the same mock clusters and a mock OpenID Connect provider, and drive the page in Chromium: every way of signing in, sessions ending, the WebSocket dropping and coming back, shells, logs and Helm. `tests/web/fleet*.spec.ts` do the same for a fleet: its page, where its clusters come from, and agents relaying to clusters the server can't reach.
