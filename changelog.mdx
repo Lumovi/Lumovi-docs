@@ -7,6 +7,48 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 6, 2026" description="1.6.0" tags={["Desktop app", "In your cluster"]}>
+  ## An audit log
+
+  What was done through Lumovi, by whom, from where, and how it went.
+
+  - **Recorded as it happens.** Changes from the page and from AI assistants, with how each was approved: by whom, after how long, with your note, or made without asking. Helm installs, upgrades, rollbacks and uninstalls. Shells and node shells, with how long they ran, and port forwards. Logs, Secrets and Helm releases' values read, or refused. On a server, sign-ins and sign-outs (failed ones too, up to 60 a minute, then counted), and assistants allowed, denied and let go. Each tool an assistant calls. Changes to read-only, where node shells run, and AI permissions. Each change comes with the `kubectl` or `helm` command that does the same. Never Secrets' values, what a change set, Helm values, tokens or manifests, nor what the cluster says in an error about a Secret, and each event is one line of 64 KiB at most. See [The audit log](/audit/overview).
+  - **The Audit log page**, from the sidebar, the command palette, the Activity log and the AI assistants' Activity tab. Search it, filter it with the filters kept in the address, follow events as they happen, see everything about one, and export to CSV or JSON Lines. Each object's **Audit** tab shows its own.
+  - **Chained.** Each event holds its chain's id and the hash of the one before it. **Check integrity** lists every place the chain doesn't hold, and anyone can check it with jq and sha256sum (`jq -jcS 'del(.hash)' | sha256sum`). The newest's hash, compared with a copy kept elsewhere, shows what the chain alone can't: the newest removed, or all of it rewritten. See [Check it hasn't changed](/audit/verify).
+  - **In your cluster:**
+    - People see their own events, and the auditors you name in `audit.auditors` (`LUMOVI_AUDITORS`) see everyone's.
+    - Each event is also a JSON line on Lumovi's output, and can go to a webhook (`audit.webhook`), in batches, tried again until it's taken. What can't be kept or sent is counted, said in the log, recorded, and shown to auditors.
+    - The history is kept on a 2 GiB volume, from the cluster's default storage class, which uninstalling keeps, by one Lumovi at a time. A cluster without a default class needs `audit.persistence.storageClass`, or `audit.persistence.enabled: false`, which keeps it in memory.
+    - `audit.level: changes` records less.
+    - See [Audit log for your team](/server/audit-log).
+  - **The desktop app** keeps its own on your computer, for 90 days, or in memory, saying why, if its folder can't be used.
+
+  ## Who may do what, team by team
+
+  On your team's Lumovi, its admins decide what people may do through it: within their RBAC, and never more.
+
+  - **Profiles, grants and limits.** What everyone signed in gets. Lumovi's own groups, made of your identity provider's groups and people by name, whatever the case of their name. Profiles, each a level of changes, shells, node shells, logs, Secrets (hidden, keys only, values), Helm (upgrade, or install), AI assistants (off, changes ask first, as they set them) and the audit log (their own, or everyone's). Grants that give groups a profile in some clusters and namespaces, by name, pattern or label. And limits that hold anyone back wherever they match. See [Access for your team](/server/access).
+  - **The server decides.** Changes, shells, node shells, logs, Secrets, Helm releases and AI assistants are refused where people may not, saying which grant or limit decided. Changes, shells, logs, Secret reads and Helm refused this way are recorded in the audit log as refused. Secrets' values never leave the server for someone shown only their keys, not even in a change's answer, nor do Helm releases' values and manifests.
+  - **The Access pages**, for the admins named in `access.admins` (`LUMOVI_ADMINS`):
+    - groups, with who's in each, and the provider's groups seen at sign-in (named, for Microsoft Entra ID's IDs);
+    - profiles side by side;
+    - grants and limits, with how far each reaches;
+    - someone checked anywhere;
+    - and every change, from the audit log.
+
+    Changes are read back and saved together. Saving after someone else did is refused, never lost in theirs.
+  - **Your access**, for everyone: what they may do, cluster by cluster, and why. Every refusal says why where it happens, and links to it. See [Your access](/clusters/your-access).
+  - **In the chart**: `access.policy` (`LUMOVI_ACCESS`), which admins see but can't change, with `on` and `off` taken as meant, quoted or not. What admins set is kept in a ConfigMap the chart makes, and read again every 15 seconds, so replicas follow. A change made there by hand is recorded too, as made outside Lumovi, even one made while Lumovi wasn't running. With no admins, everyone may do all their RBAC allows.
+  - **AI assistants** never do more than their person may. Someone who may use them nowhere can't allow one.
+
+  ### Fixed
+
+  - Saving AI rules on a server keeps the chart's `helm.sh/resource-policy: keep` on their ConfigMap, so turning AI assistants off with `helm upgrade` keeps everyone's rules.
+  - AI rules changed just as someone else's save landed are no longer lost.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.6.0)
+</Update>
+
 <Update label="October 6, 2026" description="1.5.0" tags={["Desktop app", "In your cluster"]}>
   ## What AI assistants may do, and where
 
