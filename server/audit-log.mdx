@@ -1,0 +1,234 @@
+---
+title: "Audit log for your team"
+sidebarTitle: "Audit log"
+description: "What Lumovi in your cluster records, where it keeps and sends it, and who reads everyone's."
+icon: "scroll-text"
+---
+
+Lumovi records what everyone does through it: changes, and AI assistants' with how each was approved; Helm releases installed, upgraded, rolled back and uninstalled; shells, and logs and Secrets read; sign-ins; assistants allowed and let go; and changes to what decides what may be done. Each event is kept in a history, for the **Audit log** page; written to Lumovi's output, for your log collector; and sent to a webhook, when you give one. People see their own events, and the auditors you name see everyone's.
+
+What people see, and how to use the page: [The audit log](/audit/overview). Every action and field: [Audit events](/audit/events).
+
+```yaml values.yaml
+audit:
+  auditors: [platform-admins, user:ana@example.com]
+  webhook:
+    url: https://siem.example.com/lumovi
+    headersSecret: lumovi-audit-webhook
+```
+
+## How much it records
+
+`audit.level` (`LUMOVI_AUDIT_LEVEL`) is one of:
+
+- **`access`**, the default: everything Lumovi records.
+- **`changes`**: changes, sign-ins, AI assistants allowed and let go, settings, and Lumovi's own events. Not what's opened and read: shells, logs, Secrets' values, nor each tool an assistant calls. The **Audit log** page then says so.
+
+Lumovi never records values, tokens or manifests' contents, whatever the level: see [Never in it](/audit/overview#never-in-it).
+
+## Auditors
+
+Auditors see everyone's events, and can [check the chain](/audit/verify). Everyone else sees their own: what they did, and what their assistants did as them.
+
+```yaml values.yaml
+audit:
+  auditors: [platform-admins, security, user:ana@example.com]
+```
+
+Name groups exactly as people sign in with them, and people as `user:` and their name: as the cluster names a token's user, as your provider names them, or as your proxy does, without `auth.usernamePrefix` or `auth.groupsPrefix`. Without the chart, `LUMOVI_AUDITORS` takes the same, separated by commas: `platform-admins,user:ana@example.com`.
+
+Lumovi checks when a page connects, with the groups someone signed in with. Behind an [authenticating proxy](/server/auth/proxy), that's the groups the proxy's header names, so let nothing but the proxy reach Lumovi: turn on `networkPolicy`. Each start of Lumovi records its auditors in its **Lumovi started** event, so a change to them shows in the log too.
+
+Everyone else's page shows only their own events, and how long the log keeps them: not where else events go, what couldn't be kept or sent, the date of the oldest event, or how many events a search looked through. Sign-ins that didn't succeed are nobody's own, so only auditors see them.
+
+## Where it's kept
+
+With the chart, the history is on a volume of its own, unless you turn it off: a PersistentVolumeClaim, `<release>-audit`, of 2 GiB, from the cluster's default storage class. A cluster without a default storage class needs `audit.persistence.storageClass`, or `audit.persistence.enabled: false`. Lumovi keeps it at `/var/lib/lumovi/audit` (`LUMOVI_AUDIT_DIR`).
+
+```yaml values.yaml
+audit:
+  persistence:
+    size: 10Gi
+    storageClass: fast-ssd   # unset: the default class; '': no class
+    existingClaim: ''        # a claim of your own, instead of the chart's
+  retentionDays: 365
+```
+
+- **A file a day**, by the day in UTC, like `audit-2026-10-06.jsonl`, with an event a line.
+- **Kept for `audit.retentionDays`** (`LUMOVI_AUDIT_RETENTION_DAYS`), 90 days unless set, from 1 to 3,650. Older days' files are deleted when Lumovi starts and every minute after.
+- **Uninstalling keeps it**: the claim has `helm.sh/resource-policy: keep`. Delete it yourself once nothing needs it, like `kubectl delete pvc --namespace lumovi lumovi-audit`.
+- **One Lumovi at a time.** Two servers writing one folder would number events the same, so Lumovi holds `audit.lock` in it while it runs, renewed every 10 seconds. One that finds it held waits, and says so: `Another Lumovi (process 1 on lumovi-7d9f8c6b5-x2k4q) keeps its audit history in /var/lib/lumovi/audit: waiting for it to stop (30 seconds at most).` It takes the lock as soon as the other lets go of it, or stops renewing it for 30 seconds: so a pod that replaces one whose node was lost waits half a minute at most, and starts. On the same computer, it's taken at once when the Lumovi that held it is gone. If it's still renewed after about 40 seconds, the second doesn't start: `Another Lumovi (process 1 on lumovi-7d9f8c6b5-x2k4q) keeps its audit history in /var/lib/lumovi/audit: two can’t, or they’d number events the same. Stop it, or give this one a folder of its own.`
+- **Lumovi's own.** The folder is made only Lumovi's user's (`0700`), and each file only its (`0600`), as it starts. Lumovi must be able to write there: in the image, it runs as user `65532`, and in Kubernetes, the pod's `fsGroup` (the chart's `podSecurityContext.fsGroup`, `65532` unless set) must be one that may write to the volume. When it can't, Lumovi doesn't start, saying: `LUMOVI_AUDIT_DIR (/var/lib/lumovi/audit) can’t be written in: …. Lumovi’s image runs as user 65532: in Kubernetes, the pod’s fsGroup (the Helm chart’s podSecurityContext.fsGroup) must be one that may write to its volume.`
+- **In the chain's order.** A day's file is never one before the newest's, even when the clock was set back, so the files keep the events in order.
+- **Read a piece at a time**, however long the history: a line longer than 1 MiB isn't read as an event (none is: an event is 64 KiB at most).
+- **If the folder goes away** while Lumovi runs, its log says so, once: `The audit history can’t be looked after: …`, and what can't be kept is counted: see [When events are lost](#when-events-are-lost).
+
+`storageClass` unset takes the cluster's default class; `''` asks for none, for a volume made by hand with no class; a name asks for that class. The claim is `ReadWriteOnce`: Kubernetes lets two pods on one node mount it, and the lock keeps the second from keeping the history too. So with the volume, the chart runs one replica, and refuses more, saying `The audit history on its volume needs a single replica (replicaCount 1): …`, and a second pod, scaled by hand or by an autoscaler, doesn't start. An upgrade stops the old pod before it starts the new one (the Deployment's strategy is `Recreate`): Lumovi is away for those seconds, and open pages reconnect.
+
+### In memory
+
+With `audit.persistence.enabled: false`, the history is in Lumovi's memory: its most recent 10,000 events (`LUMOVI_AUDIT_MEMORY_EVENTS`), until it stops. The page says so: "Kept in the server's memory, since it started". Its output and webhook still get every event.
+
+Without the chart, Lumovi keeps the history in `LUMOVI_AUDIT_DIR`, or else in an `audit` folder in `LUMOVI_DATA_DIR`, or else in memory, and its log says: `The audit history is kept in memory: the Audit page shows what happened since Lumovi started. Set LUMOVI_AUDIT_DIR (the Helm chart's audit.persistence) to keep it.`
+
+In memory, each start of Lumovi begins a new chain, and so does each replica: see [How events are chained](/audit/verify#how-events-are-chained). Check its output's events [chain by chain](/audit/verify#check-it-yourself).
+
+## On the server's output
+
+Each event is also a line of JSON on Lumovi's output, which `kubectl logs` shows, between Lumovi's own log lines, which start with the time:
+
+```text
+2026-10-06T09:12:03.512Z alice@example.com signed in
+{"type":"lumovi.audit","version":1,"id":"7c1e2f4a-9b3d-4e8f-a6c5-2d1b0e9f8a73","chain":"9a829611-9c63-48cf-94fb-90576b07837d","seq":41,"time":"2026-10-06T09:12:03.512Z","category":"sign-in","action":"session.sign-in","outcome":"success","actor":{"user":"alice@example.com","groups":["platform"],"via":"ui","session":"a3f9c2e17b4d6085","address":"10.244.0.17","forwardedFor":"198.51.100.7","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"},"summary":"Signed in with Okta","details":{"method":"oidc","with":"Okta"},"prev":"9d2c7b4e1f0a8c6d3e5b2a9f7c4d1e8b0a6f3c9d2e7b5a1f4c8d0e3b6a9f2c7d","hash":"03e1e4c5f0d8e71ba33d5cc280b9d3cd0f3152aa15f17d3ced0a486f79de7e6b"}
+```
+
+Whatever collects the cluster's logs, like Fluent Bit, Vector, or the Datadog or Splunk agent, can pick out lines with `"type":"lumovi.audit"`, and parse them as JSON. `audit.stdout: false` (`LUMOVI_AUDIT_STDOUT=false`) stops it.
+
+## To a webhook
+
+Lumovi can send each event to a URL as well: a SIEM, Vector, Logstash, Cribl, or anything that takes JSON over HTTP.
+
+<Steps>
+  <Step title="Put its headers in a Secret">
+    In Lumovi's namespace, with the headers under `headers.yaml`, as YAML:
+
+    ```yaml headers.yaml
+    Authorization: Bearer 2f1c9a…
+    ```
+
+    ```bash
+    kubectl create secret generic lumovi-audit-webhook \
+      --namespace lumovi --from-file=headers.yaml
+    ```
+
+    Each header's value is text: quote numbers, like `X-Tenant: '42'`.
+  </Step>
+  <Step title="Name the URL and the Secret">
+    ```yaml values.yaml
+    audit:
+      webhook:
+        url: https://siem.example.com/lumovi
+        format: json   # or ndjson
+        headersSecret: lumovi-audit-webhook
+    ```
+
+    Then upgrade. Lumovi reads the headers when it starts: after changing the Secret, restart it.
+  </Step>
+</Steps>
+
+The URL is `http` or `https`, in any case, with no user and password in it: put an `Authorization` header in the Secret instead. A query in it is sent, but the page and the log name the webhook without it. Lumovi checks the headers as it starts, and what it says of a URL or a header that won't do never repeats it, since either can hold a token: `LUMOVI_AUDIT_WEBHOOK_URL must be an http or https URL.`, `LUMOVI_AUDIT_WEBHOOK_HEADERS: Authorization’s value can’t be sent in a header (it has a line break, say).` Without the chart, set `LUMOVI_AUDIT_WEBHOOK_URL`, `LUMOVI_AUDIT_WEBHOOK_FORMAT`, and `LUMOVI_AUDIT_WEBHOOK_HEADERS`: the headers as YAML or JSON, or either encoded in base64.
+
+Events are sent with `POST`, in batches. With `json`, the body is an array of events (`application/json`); with `ndjson`, a line of JSON each (`application/x-ndjson`). Any `2xx` answer means the webhook took them.
+
+- **In batches, in order.** Up to 100 events a request, a second after the first one is waiting, one request at a time, in the order they were recorded.
+- **`413`** halves the batch, down to one event, for 10 minutes. One event refused with `413` is let go.
+- **`400` and `422`** let those events go: sending them again would get the same answer.
+- **Anything else is tried again**, until it's taken: other `4xx`, like `401`, `403`, `404` and `429`, `5xx`, a redirect (Lumovi doesn't follow them), no answer within 10 seconds, or no connection. It waits about a second, then twice as long each time, up to a minute between tries, each a little less by chance, so many Lumovis don't try again together.
+- **Up to 10,000 events wait** while it can't take them (`LUMOVI_AUDIT_WEBHOOK_BUFFER`), and 64 MiB of them at most, counted in bytes as they're sent. Past either, the oldest are let go.
+- **When Lumovi stops**, it spends up to 5 seconds sending what's waiting. What's still waiting then is let go, and so is anything recorded after it, each counted.
+
+A batch whose answer didn't come within 10 seconds is sent again, so a receiver can get some events twice: tell them apart by their `id`.
+
+## When events are lost
+
+Events Lumovi can't keep in the history, or send to the webhook, are counted and said: in Lumovi's log, as an **Audit events lost** event (`audit.dropped`), and to auditors on the **Audit log** page.
+
+Every minute, and as Lumovi stops, it says what was lost since it last said: once for each place and each reason, with how many for that reason:
+
+- **In its log**, like:
+
+  ```text
+  2026-10-06T14:03:00.004Z 3 audit events couldn’t be sent to https://siem.example.com/lumovi: It answered 422.
+  ```
+
+  When the history first fails, it also says `The audit history can't be kept:` and why, right away.
+- **As an event**, **Audit events lost** (`audit.dropped`), one for each reason, with how many it was for, where, and why. It's recorded like any other, so it goes where the others still can.
+- **On the Audit log page**, for auditors, until Lumovi restarts: how many couldn't be kept or sent since it started, and what's wrong now, or else why the last were lost. While the webhook is being tried again, it says "Events are waiting to be sent to" the webhook, with its last answer.
+
+Why events were let go, as it's said:
+
+| Said | When |
+| --- | --- |
+| "It answered 422." | The webhook refused them, as they are (`400`, `413` or `422`). |
+| "More than 10,000 events (or 64 MiB of them) were waiting to be sent: the oldest were let go." | The webhook took none for long enough that what waited filled the buffer. |
+| "Lumovi stopped before they could be sent." | They were still waiting as Lumovi stopped. |
+
+And what's wrong while it's tried again: "It answered 503.", or "It can't be reached:" and why, "it didn't answer within 10 seconds", "the connection failed (ECONNREFUSED)" or "the request failed": never what was sent.
+
+An event the history couldn't keep is still in the chain: the next one follows from it, and a check of the history says "Event 9 is missing.", with **Audit events lost** to say why.
+
+## The settings
+
+| Value | Variable | Default |
+| --- | --- | --- |
+| `audit.level` | `LUMOVI_AUDIT_LEVEL` | `access` |
+| `audit.auditors` | `LUMOVI_AUDITORS` | none |
+| `audit.stdout` | `LUMOVI_AUDIT_STDOUT` | `true` |
+| `audit.persistence.enabled`, `.size`, `.storageClass`, `.existingClaim` | `LUMOVI_AUDIT_DIR`, set to `/var/lib/lumovi/audit` | on, `2Gi`, the default class, none |
+| `audit.retentionDays` | `LUMOVI_AUDIT_RETENTION_DAYS` | `90` |
+| `audit.webhook.url` | `LUMOVI_AUDIT_WEBHOOK_URL` | none |
+| `audit.webhook.format` | `LUMOVI_AUDIT_WEBHOOK_FORMAT` | `json` |
+| `audit.webhook.headersSecret` | `LUMOVI_AUDIT_WEBHOOK_HEADERS`, from the Secret's `headers.yaml` | none |
+| With `extraEnv` | `LUMOVI_AUDIT_MEMORY_EVENTS` | `10000` |
+| With `extraEnv` | `LUMOVI_AUDIT_WEBHOOK_BUFFER`: how many events wait for the webhook, at most | `10000` |
+| With `extraEnv` | `LUMOVI_AUDIT_SCAN_LIMIT`: how many events a search looks through before it stops and offers to look further | `200000` |
+| With `extraEnv` | `LUMOVI_AUDIT_EXPORT_LIMIT`: how many events an export holds | `50000` |
+
+Each is described in [Helm values](/server/helm-values#the-audit-log) and [Configuration](/server/configuration#the-audit-log). One that doesn't make sense stops Lumovi, and its log says which.
+
+## In a fleet
+
+A [fleet](/server/fleet)'s Lumovi keeps one audit log for all its clusters, and each event names its cluster. Members and agents record nothing: everything goes through the fleet's Lumovi.
+
+## Security
+
+- **The history holds who did what, and from where**: people's names and groups, addresses, browsers, objects' names, commands, assistants' reasons. Keep it as private as Lumovi's namespace.
+- **Send to a webhook over `https`**, with its credentials in the Secret, not in the URL.
+- **Whoever can write the volume can rewrite the history**, in a way its chain doesn't show: its hashes have no key. Whoever can exec into Lumovi's pod can too. Keep a copy they can't reach, from the output or a webhook, and compare the newest event there with the history's: see [What it proves](/audit/verify#what-it-proves-and-what-it-doesnt).
+- **Behind an authenticating proxy**, Lumovi trusts its headers: whoever reaches Lumovi directly can say they're anyone, an auditor included. Let nothing but the proxy reach it: `networkPolicy` is off unless you turn it on, and the chart's notes say so after installing.
+- **Anyone can try to sign in**, and each attempt that fails is recorded, up to 60 a minute: past that, one event a minute counts them, by the address they came from, and so does one as Lumovi stops.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The page says the log is kept in memory" icon="memory-stick">
+    Lumovi has no folder for it: the chart's `audit.persistence` is off, or without the chart, neither `LUMOVI_AUDIT_DIR` nor `LUMOVI_DATA_DIR` is set. It shows what happened since it started.
+  </Accordion>
+  <Accordion title="Lumovi stops at start with an audit setting" icon="power-off">
+    It names the setting, and what it takes:
+
+    - *LUMOVI_AUDIT_LEVEL must be changes or access, not "…".*
+    - *LUMOVI_AUDIT_RETENTION_DAYS must be a whole number from 1 to 3,650, not "…".*, and the same for the other numbers
+    - *LUMOVI_AUDIT_WEBHOOK_URL must be an http or https URL.*
+    - *LUMOVI_AUDIT_WEBHOOK_URL can't carry a user and password: put an Authorization header in LUMOVI_AUDIT_WEBHOOK_HEADERS.*
+    - *LUMOVI_AUDIT_WEBHOOK_HEADERS, _FORMAT and _BUFFER say how events are sent to LUMOVI_AUDIT_WEBHOOK_URL, which isn't set.*
+    - *LUMOVI_AUDIT_WEBHOOK_HEADERS must be a map of text, like `{ env: production }`.*
+    - *LUMOVI_AUDIT_WEBHOOK_HEADERS: Authorization's value can't be sent in a header (it has a line break, say).*
+
+    And two about the history's folder: *Another Lumovi … keeps its audit history in …*, and *LUMOVI_AUDIT_DIR (…) can't be written in: …*. See below.
+  </Accordion>
+  <Accordion title="Lumovi's pod is Pending" icon="hard-drive">
+    Its volume's claim is waiting for a volume: the cluster has no default storage class, and `audit.persistence.storageClass` isn't set. `kubectl get pvc --namespace lumovi` shows the claim `Pending`, and `kubectl get storageclass` marks none `(default)`. Set `audit.persistence.storageClass` to one of them, or `audit.persistence.enabled: false`.
+  </Accordion>
+  <Accordion title="Another Lumovi keeps its audit history there" icon="lock">
+    A second Lumovi waited for the folder's lock for about 40 seconds, found it still renewed by another, and didn't start: a second pod on the same volume, scaled by hand or by an autoscaler, or two releases given one claim. Run one, or give each a volume of its own. A lock left by a Lumovi that stopped is taken over once it's 30 seconds old.
+  </Accordion>
+  <Accordion title="LUMOVI_AUDIT_DIR can't be written in" icon="folder-x">
+    Lumovi's user can't write to the folder, so it doesn't start. In Kubernetes, the pod's `fsGroup` must be one that may write to the volume: the chart sets `65532`, so check `podSecurityContext` if you changed it. With Docker, use a named volume, or a folder user `65532` owns.
+  </Accordion>
+  <Accordion title="Events don't reach the webhook" icon="webhook">
+    As an auditor, the **Audit log** page says what the webhook last answered, and Lumovi's log says what was let go. `It answered 401.` or `403`: check the headers in the Secret. `It can't be reached: …`: check the URL, and that a network policy lets Lumovi out. Lumovi keeps trying, with up to 10,000 events waiting.
+  </Accordion>
+  <Accordion title="The audit history can't be kept" icon="triangle-alert">
+    Lumovi can't write to its folder now: the volume is full, say. Events still go to the output and the webhook, and what the history missed is counted. A larger `audit.persistence.size`, or fewer `retentionDays`, makes room. Not every storage class can grow a claim.
+  </Accordion>
+</AccordionGroup>
+
+<Columns cols={2}>
+  <Card title="The audit log" icon="scroll-text" href="/audit/overview">
+    What people see on the Audit log page.
+  </Card>
+  <Card title="Check it hasn't changed" icon="shield-check" href="/audit/verify">
+    How events are chained.
+  </Card>
+</Columns>

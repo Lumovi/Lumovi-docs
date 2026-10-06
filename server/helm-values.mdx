@@ -7,7 +7,7 @@ icon: "sliders-horizontal"
 Set these in a values file, and install or upgrade with `--values values.yaml`. The chart checks them against its schema, and refuses settings that don't make sense before anything is installed.
 
 <Warning>
-  The schema checks the values below, but mostly not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`. Under `fleet`, `agent`, `nodeShell` and `assistants`, the schema refuses names it doesn't know.
+  The schema checks the values below, but mostly not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`. Under `fleet`, `agent`, `nodeShell`, `assistants` and `audit`, the schema refuses names it doesn't know.
 </Warning>
 
 To see the defaults, with a comment on each:
@@ -243,6 +243,56 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
   Views and add-ons everyone sees, by file name: each key is a file name ending in `.yaml` or `.yml`, and its value the file's contents. In a fleet, they're for every cluster. See [Views for everyone](/server/views).
 </ResponseField>
 
+## The audit log
+
+What Lumovi records, where it keeps and sends it, and who reads everyone's. See [Audit log for your team](/server/audit-log).
+
+<ResponseField name="audit.level" type="string" default="access">
+  `access` records everything; `changes` records changes, sign-ins, settings and Lumovi's own events, but not what's opened and read: shells, logs, Secrets' values, and each tool an AI assistant calls.
+</ResponseField>
+
+<ResponseField name="audit.auditors" type="string[]" default="[]">
+  Who sees everyone's events on the **Audit log** page, and may check its chain: groups, as people sign in with them, and people as `user:<name>`, like `[platform-admins, user:ana@example.com]`. Everyone else sees their own.
+</ResponseField>
+
+<ResponseField name="audit.stdout" type="boolean" default="true">
+  Whether each event is also a line of JSON on Lumovi's output, with `"type":"lumovi.audit"`, for whatever collects the cluster's logs.
+</ResponseField>
+
+<ResponseField name="audit.persistence.enabled" type="boolean" default="true">
+  Whether the history is kept on a volume: a PersistentVolumeClaim, `<release>-audit`, that uninstalling keeps. Off, the history is in memory: what happened since Lumovi started.
+
+  With it, the history is one Lumovi's at a time: the chart runs one replica, and refuses more, and upgrades stop the old pod before starting the new one (`Recreate`), so Lumovi is away for those seconds. A second pod on the volume, scaled by hand or by an autoscaler, waits for the first, then doesn't start. One replacing a pod whose node was lost waits half a minute at most. The pod's `fsGroup` (`podSecurityContext`) must be one that may write to it. See [Where it's kept](/server/audit-log#where-its-kept).
+</ResponseField>
+
+<ResponseField name="audit.persistence.size" type="string" default="2Gi">
+  The claim's size.
+</ResponseField>
+
+<ResponseField name="audit.persistence.storageClass" type="string" default="null">
+  The claim's storage class. Unset, the cluster's default: a cluster without one needs it set. `''` asks for none, for a volume made by hand with no class.
+</ResponseField>
+
+<ResponseField name="audit.persistence.existingClaim" type="string" default="''">
+  A claim of your own to keep the history on, instead of the chart's.
+</ResponseField>
+
+<ResponseField name="audit.retentionDays" type="integer" default="90">
+  How many days the history keeps, from 1 to 3650. Your log collector or webhook keeps its own copy for as long as it does.
+</ResponseField>
+
+<ResponseField name="audit.webhook.url" type="string" default="''">
+  An `http` or `https` URL to send each event to as well, in batches, tried again until it takes them. See [To a webhook](/server/audit-log#to-a-webhook).
+</ResponseField>
+
+<ResponseField name="audit.webhook.format" type="string" default="json">
+  `json`: an array of events in each request; `ndjson`: a line of JSON each.
+</ResponseField>
+
+<ResponseField name="audit.webhook.headersSecret" type="string" default="''">
+  A Secret of yours, in Lumovi's namespace, with the headers to send under `headers.yaml`, as YAML: `Authorization: Bearer …`.
+</ResponseField>
+
 ## Kubernetes objects
 
 <ResponseField name="serviceAccount.create" type="boolean" default="true">
@@ -268,7 +318,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 </ResponseField>
 
 <ResponseField name="replicaCount" type="integer" default="1">
-  How many Lumovi pods to run. Sessions live in each pod's memory, and single sign-on has to finish on the pod it started on: more than one needs sticky sessions. Keep a fleet's at one: each agent connects to one pod. With `assistants.enabled`, the chart refuses more than one, saying `AI assistants need a single replica (replicaCount 1): …`: what people allowed, their assistants' tokens, and the changes those ask for live in one pod's memory, and assistants' requests carry no cookies to stick to it. Set `assistants.enabled: false` to run more.
+  How many Lumovi pods to run. Sessions live in each pod's memory, and single sign-on has to finish on the pod it started on: more than one needs sticky sessions. Keep a fleet's at one: each agent connects to one pod. With `assistants.enabled`, the chart refuses more than one, saying `AI assistants need a single replica (replicaCount 1): …`: what people allowed, their assistants' tokens, and the changes those ask for live in one pod's memory, and assistants' requests carry no cookies to stick to it. Set `assistants.enabled: false` to run more. With `audit.persistence.enabled`, it refuses more than one too, saying `The audit history on its volume needs a single replica (replicaCount 1): …`. Set `audit.persistence.enabled: false` to run more: each then keeps its events in memory, in a chain of its own.
 </ResponseField>
 
 <ResponseField name="service.type" type="string" default="ClusterIP">

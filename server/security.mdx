@@ -59,9 +59,9 @@ A fleet's Lumovi acts as the people who sign in, in every one of its clusters, a
 ## Sessions and cookies
 
 - **The browser holds only a random ID** for its session, 32 bytes, in the `lumovi-session` cookie. The token or the identity it stands for stays in Lumovi.
-- **Sessions live in Lumovi's memory.** Restarting it signs everyone out, and nothing about them is written to disk. For the same reason the chart runs one replica.
+- **Sessions live in Lumovi's memory.** Restarting it signs everyone out, and neither a session's ID nor its token is written to disk: the [audit log](#the-audit-log) names a session by a hash of it. For the same reason the chart runs one replica.
 - **Sessions last 12 hours** unless `auth.sessionHours` says otherwise, at most a week. People signing out end their session in every tab.
-- **Single sign-on uses the authorization code flow with PKCE.** The state, PKCE verifier and nonce stay in the `lumovi-sign-in` cookie for at most 10 minutes, signed with a key Lumovi makes when it starts. A sign-in that's under way when Lumovi restarts has to be tried again. The ID token's signature is checked against the provider's keys: RSA and ECDSA signatures only, so unsigned tokens and shared-secret signatures are refused. Its issuer, audience, expiry and nonce are checked against what Lumovi expects, allowing a minute for clocks that disagree.
+- **Single sign-on uses the authorization code flow with PKCE.** The state, PKCE verifier and nonce stay in the `lumovi-sign-in` cookie for at most 10 minutes, signed with a key Lumovi makes when it starts, with when it expires. The way back from the provider works once, and only until then: the cookie brought back again, or later, gets "That sign-in took too long, or started in another browser. Try again." A sign-in that's under way when Lumovi restarts has to be tried again. The ID token's signature is checked against the provider's keys: RSA and ECDSA signatures only, so unsigned tokens and shared-secret signatures are refused. Its issuer, audience, expiry and nonce are checked against what Lumovi expects, allowing a minute for clocks that disagree.
 - **Only Lumovi's own pages can sign in with a token, sign out, or connect.** Browsers name the page's origin on those requests and on the WebSocket. Lumovi takes them only when that origin's host is the one in the request's `Host` header, or the origin is `url`'s. A request that names no origin is refused. Behind a proxy that changes the `Host` header, set `url` to the address people open, or signing in and connecting fail.
 
 Lumovi sets three cookies, all `SameSite=Lax` and limited to the base path:
@@ -85,6 +85,18 @@ Unless you turn them off, AI assistants connect at `mcp` below the base path, an
 - **Allowing an assistant hands someone's access to it.** Lumovi sends people back only to their own computer, an app, VS Code's site, or sites you name in `assistants.redirectHosts`, so a link to its page made by someone else can't send their access to a site of that person's choosing. The page says where it goes back to, and asks people to allow only what they started.
 
 Turn them off with `assistants.enabled: false` (`LUMOVI_ASSISTANTS=off`) if your team doesn't use them.
+
+## The audit log
+
+Lumovi records what everyone does through it, who signed in, and from where: see [Audit log for your team](/server/audit-log).
+
+- **People see their own events**, and the auditors you name (`audit.auditors`) see everyone's. Lumovi's server decides, for the page, an object's **Audit** tab, exports, and events as they happen.
+- **Never values, tokens or manifests**: a Secret's keys, a change's fields and a Helm release's top-level value names, never what they're set to.
+- **The history is on a volume** in Lumovi's namespace, and each event is also on Lumovi's output, and at a webhook if you give one.
+
+- **Its chain has no key.** Whoever can write the volume, or exec into Lumovi's pod, can rewrite the history in a way the chain doesn't show. Keep a copy they can't reach, from Lumovi's output or a webhook, and compare its newest event with the history's: see [What it proves](/audit/verify#what-it-proves-and-what-it-doesnt).
+- **One Lumovi keeps the history**, holding a lock on its folder, so two can't number events the same.
+- **Anyone can try to sign in**, and failed attempts are recorded up to 60 a minute, then counted. They're for auditors alone, as is what couldn't be kept or sent.
 
 ## The page
 
@@ -142,7 +154,7 @@ securityContext:
     drop: [ALL]
 ```
 
-The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. It writes only to `/tmp`, an `emptyDir`: helm's caches, and for each run of helm a kubeconfig that acts as the person who asked (readable only by Lumovi, and removed after). Each image is signed with a build provenance attestation; see [Verify the image](/server/install#verify-the-image).
+The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. It writes to `/tmp`, an `emptyDir`: helm's caches, and for each run of helm a kubeconfig that acts as the person who asked (readable only by Lumovi, and removed after). With `audit.persistence`, it also writes the audit history to its volume, at `/var/lib/lumovi/audit`. Each image is signed with a build provenance attestation; see [Verify the image](/server/install#verify-the-image).
 
 ## Hardening checklist
 
@@ -154,6 +166,7 @@ The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. I
 <Check>Leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
 <Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
 <Check>Turn AI assistants off (`assistants.enabled: false`) unless your team uses them, or set limits for everyone in `assistants.rules`: hide what they shouldn't see, and keep changes at `ask` or `never` where they matter.</Check>
+<Check>Name your auditors in `audit.auditors`, and keep the audit log where you keep your other logs too: from Lumovi's output, or with `audit.webhook`.</Check>
 <Check>Set `nodeShell.enabled: false` unless people should open shells on nodes through Lumovi. Either way, only those who may create pods where privileged pods are allowed can open one.</Check>
 <Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and run Lumovi where only the administrators of all its clusters can.</Check>
 <Check>In a fleet, give Lumovi agents' `tokenSha256`, not their tokens, and keep each token in a Secret in its own cluster.</Check>
