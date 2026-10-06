@@ -1,0 +1,160 @@
+---
+title: "Proxies and certificate authorities"
+sidebarTitle: "Proxy and certificates"
+description: "Send Lumovi's own connections through your company's proxy, and trust the certificate authority a proxy that inspects HTTPS signs with."
+icon: "globe-lock"
+---
+
+In many companies, connections out of the network go through a proxy, and a proxy that inspects HTTPS signs what it passes on with a certificate authority of the company's own. Lumovi takes both as `kubectl` and `helm` do: the proxy from `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY`, and the certificate authorities from the system and from files you give it.
+
+This page is about Lumovi in your cluster, and its [agents](/server/fleet/agents). For the desktop app, see [Proxies and certificates on your computer](/desktop/network).
+
+## With the chart
+
+Put the certificate authority in a ConfigMap, or a Secret, in Lumovi's namespace, as PEM:
+
+```bash
+kubectl create configmap corp-ca --namespace lumovi --from-file=ca.crt=corp-root.pem
+```
+
+Then name it, and the proxy, in your values:
+
+```yaml values.yaml
+proxy:
+  https: http://proxy.corp.example.com:3128
+  http: http://proxy.corp.example.com:3128
+  noProxy: .corp.example.com,minio.storage.svc
+extraCA:
+  configMap: corp-ca   # or secret: corp-ca
+  key: ca.crt
+```
+
+A proxy that wants credentials takes them in its URL. Keep that out of your values, which go into the Deployment as they are: put it in a Secret, under `HTTPS_PROXY` and `HTTP_PROXY`, and name the Secret in `proxy.secret` instead of `proxy.https` and `proxy.http`:
+
+```bash
+kubectl create secret generic corp-proxy --namespace lumovi \
+  --from-literal=HTTPS_PROXY=http://user:password@proxy.corp.example.com:3128 \
+  --from-literal=HTTP_PROXY=http://user:password@proxy.corp.example.com:3128
+```
+
+```yaml values.yaml
+proxy:
+  secret: corp-proxy
+  noProxy: .corp.example.com
+```
+
+`HTTPS_PROXY` must be there: a Secret that isn't, or has no such key, keeps the pod from starting (`CreateContainerConfigError`, and its events say which). `HTTP_PROXY` can be left out, where plain `http` needn't go through the proxy. Given with `proxy.https` or `proxy.http`, `helm install` fails: `proxy.secret holds the proxies' URLs: give it, or proxy.https and proxy.http, not both.`
+
+The chart sets `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY` from `proxy`, mounts the ConfigMap or Secret at `/etc/lumovi/ca`, and sets `LUMOVI_CA_FILE` to the file under `key`. It does the same for an agent (`mode: agent`). See [Helm values](/server/helm-values#a-company’s-network).
+
+As it starts, Lumovi's log says what it took:
+
+```text
+2026-10-06T09:00:00.112Z Lumovi trusts 1 more certificate authority, from /etc/lumovi/ca/ca.crt.
+2026-10-06T09:00:00.113Z Lumovi’s own connections go through the proxy http://proxy.corp.example.com:3128 for https and http://proxy.corp.example.com:3128 for http, except to .corp.example.com,minio.storage.svc,localhost,127.0.0.1,::1,[::1],10.96.0.1,kubernetes.default.svc,.svc,.cluster.local.
+```
+
+Without the chart, set the variables yourself: see [Configuration](/server/configuration#a-company’s-network).
+
+## The proxy
+
+`HTTPS_PROXY` is for `https` addresses, and `HTTP_PROXY` for `http` ones, each in upper case or lower case (upper case first, when both are set). A proxy without a scheme, like `proxy.corp.example.com:3128`, is taken as `http://`, as curl takes it. One that isn't a URL stops Lumovi, saying which, and never what it was: `HTTPS_PROXY isn’t a proxy’s URL: give it as http://host:port (or https://).` Lumovi's own connections go through it:
+
+- **Clusters**: the one it shows from a kubeconfig, and a [fleet](/server/fleet)'s, unless the cluster names a proxy of its own: `proxy-url` in its kubeconfig, or `proxyUrl` in an Argo CD Secret's `config`. That one is used instead, as `kubectl` would.
+- **Single sign-on**: your provider's discovery, keys and tokens.
+- **Helm**: the repositories whose charts Lumovi lists, and Artifact Hub. The `helm` Lumovi runs, which fetches the charts themselves, gets the same variables, and the cluster's proxy as `proxy-url` in the kubeconfig it's given.
+- **The [audit log's webhook](/server/audit-log#to-a-webhook)**.
+- **An [agent](/server/fleet/agents)'s connection to Lumovi**, its WebSocket through the proxy's tunnel (`CONNECT`).
+
+Some are never sent through it:
+
+- **This computer**: `localhost`, `127.0.0.1` and `::1` (`[::1]`), whatever `NO_PROXY` says. Other addresses in `127.0.0.0/8` aren't left out unless `NO_PROXY` names them.
+- **The cluster Lumovi runs in**, inside one: its API server at `KUBERNETES_SERVICE_HOST`, `kubernetes.default.svc`, and every name under `.svc` and `.cluster.local`. An agent reaches its own API server directly too.
+- **What `NO_PROXY` leaves out**, as below.
+
+Other services in the cluster go through the proxy when they're named any other way: a short name like `minio.storage`, or a Service's address. Name them in full, like `minio.storage.svc`, or add them to `NO_PROXY`: a single sign-on provider, a chart repository or a webhook in the cluster, say.
+
+Lumovi adds what it never proxies to `NO_PROXY`, so `helm` leaves them out too.
+
+### NO_PROXY
+
+`NO_PROXY` (or `no_proxy`) is a list, separated by commas or spaces, of what's reached directly, read the same way for everything Lumovi connects to:
+
+| Entry | Leaves out |
+| --- | --- |
+| `*` | Everything: no proxy at all, and Lumovi's log says `except to *.` |
+| `corp.example.com`, `.corp.example.com` or `*.corp.example.com` | That name, and every name under it. Names are matched whatever their case. |
+| `10.1.2.3`, `fd00::1` | That address, and no other: ranges, like `10.0.0.0/8`, aren't read. |
+| `registry.corp.example.com:5000`, `[fd00::1]:6443` | That name or address, on that port only. |
+
+### Credentials
+
+A proxy that wants credentials takes them in its URL, as curl does: `http://user:password@proxy.corp.example.com:3128`. Encode characters like `@` and `:` in them (`%40`, `%3A`). With the chart, give them in a Secret, with `proxy.secret`: see [With the chart](#with-the-chart).
+
+Lumovi leaves them out of everything it says, in its log and its errors. They do reach the kubeconfig each run of `helm` gets, as `proxy-url`, as `kubectl` would have them: in a private temporary folder, deleted after the run.
+
+## Certificate authorities
+
+Lumovi trusts three sets of certificate authorities:
+
+- **Node's own**, the public ones browsers trust, and `NODE_EXTRA_CA_CERTS`' if you set it.
+- **The system's**: in the image, those of its base image.
+- **The files `LUMOVI_CA_FILE` names**, separated by commas, each with one or more PEM certificates (`-----BEGIN CERTIFICATE-----`). Text around them is fine.
+
+A file that can't be read, has no certificate in it, or has one that isn't a certificate, stops Lumovi, saying which:
+
+```text
+The certificate authorities in /etc/lumovi/ca/ca.crt can’t be read: ENOENT: no such file or directory, open '/etc/lumovi/ca/ca.crt'
+/etc/lumovi/ca/ca.crt has no certificates in it (PEM, as -----BEGIN CERTIFICATE-----).
+The certificate authorities in /etc/lumovi/ca/ca.crt can’t be read: its certificate 2 isn’t one (…).
+```
+
+`helm` trusts them too. Lumovi writes all it trusts to one file, in a private temporary folder, and gives `helm` its path as `SSL_CERT_FILE`, unless you set `SSL_CERT_FILE` yourself. An agent runs nothing, so it doesn't.
+
+A cluster is different: its kubeconfig's `certificate-authority` (or `-data`) is the only one its connection trusts, as with `kubectl`. Behind a proxy that inspects HTTPS, connections to clusters are usually left uninspected; if yours aren't, the kubeconfig must name the proxy's authority.
+
+## When it doesn't connect
+
+Lumovi says why a certificate wasn't taken, and what usually makes it so:
+
+| It says | Why |
+| --- | --- |
+| "Its certificate isn't signed by a certificate authority Lumovi trusts (…). Behind a proxy that inspects HTTPS, its certificate authority must be trusted: in the system's certificates, or LUMOVI_CA_FILE on a server; for a cluster, its kubeconfig's certificate-authority must be the one that signed it." | The proxy signs what it passes on with an authority Lumovi doesn't have, or the server's certificate is self-signed. Give Lumovi the authority, with `extraCA` or `LUMOVI_CA_FILE`. |
+| "Its certificate has expired (…)." | The server's certificate, or the proxy's, is past its date. |
+| "Its certificate is for another name (…)." | The address isn't one the certificate names: a proxy that answers for the server, or the wrong address. |
+| "The proxy needs credentials (407): give them in its URL, as `http://user:password@host:port`." | The proxy wants to know who's asking. See [Credentials](#credentials). |
+| "The proxy didn't open a tunnel (it answered 403)." | The proxy refused the address: ask for it to be allowed, or leave it out with `NO_PROXY`. |
+
+Where they show:
+
+- **Single sign-on**: the sign-in page says "Signing in didn't work. The Lumovi server's log says why.", and the log says `Signing in failed: Couldn't reach`, the address, and why.
+- **Helm**: where a repository's charts, or Artifact Hub's, are listed, after `Couldn't reach` and the address. What `helm` fetches itself fails as `helm` says it.
+- **The audit webhook**: on the **Audit log** page, for auditors, after "It can't be reached:". See [When events are lost](/server/audit-log#when-events-are-lost).
+- **A cluster**: on its card, and its error screen.
+- **An agent's connection to Lumovi**: in the agent's log, after `Can't reach the hub at` and the address, naming the proxy and where it was asked to go: "The proxy `http://proxy.corp.example.com:3128` needs credentials to lumovi.example.com:443 (407): give them in its URL, as `http://user:password@host:port`." A certificate it doesn't trust is said as Node says it, like `self-signed certificate in certificate chain`.
+
+## OpenShift
+
+OpenShift's cluster-wide proxy isn't passed to pods by itself. Set the chart's `proxy` to the same values as the cluster's `Proxy` object (`oc get proxy cluster -o yaml`), leaving out of `noProxy` the ranges it may list, which Lumovi doesn't read, and `extraCA` to a ConfigMap with its trusted CA bundle: label one `config.openshift.io/inject-trusted-cabundle: "true"`, and OpenShift fills it in, under `ca-bundle.crt`:
+
+```bash
+oc create configmap corp-ca --namespace lumovi
+oc label configmap corp-ca --namespace lumovi config.openshift.io/inject-trusted-cabundle=true
+```
+
+```yaml values.yaml
+extraCA:
+  configMap: corp-ca
+  key: ca-bundle.crt
+```
+
+See [Hardening](/server/hardening#openshift) for the rest of what's different there.
+
+<Columns cols={2}>
+  <Card title="Hardening" icon="shield-plus" href="/server/hardening">
+    What to set for a production installation.
+  </Card>
+  <Card title="Helm values" icon="sliders-horizontal" href="/server/helm-values#a-company’s-network">
+    `proxy`, `extraCA` and `openshift`.
+  </Card>
+</Columns>

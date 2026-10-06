@@ -204,6 +204,8 @@
             "group": "Operate",
             "pages": [
               "server/security",
+              "server/hardening",
+              "server/network",
               "server/views",
               "server/assistants",
               "server/audit-log",

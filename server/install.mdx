@@ -129,19 +129,26 @@ The chart checks the same things where it can, so `helm install` fails first wit
 
 ## Verify the image
 
-Each release of the image is signed with a build provenance attestation. With the [GitHub CLI](https://cli.github.com):
+Each release's image and chart are built, attested and signed by Lumovi's release workflow on GitHub, from `main`. Check the attestations with the [GitHub CLI](https://cli.github.com):
 
 ```bash
-gh attestation verify oci://ghcr.io/lumovi/lumovi:{{version}} --repo Lumovi/Lumovi
+signer=(--repo Lumovi/Lumovi --signer-workflow Lumovi/Lumovi/.github/workflows/release.yml
+  --source-ref refs/heads/main)
+gh attestation verify oci://ghcr.io/lumovi/lumovi:{{version}} "${signer[@]}"
+gh attestation verify oci://ghcr.io/lumovi/charts/lumovi:{{version}} "${signer[@]}"
 ```
 
-The Helm chart is attested the same way:
+And the signatures with [cosign](https://docs.sigstore.dev/cosign/system_config/installation/):
 
 ```bash
-gh attestation verify oci://ghcr.io/lumovi/charts/lumovi:{{version}} --repo Lumovi/Lumovi
+cosign verify ghcr.io/lumovi/lumovi:{{version}} \
+  --certificate-identity https://github.com/Lumovi/Lumovi/.github/workflows/release.yml@refs/heads/main \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
-A check passes only for an image or chart built in Lumovi's repository on GitHub.
+The same with `ghcr.io/lumovi/charts/lumovi:{{version}}` checks the chart. Each passes only for what Lumovi's release workflow built and signed. What the image is made of, its bills of materials, and how to check them: see [Check a release](/server/security#check-a-release).
+
+To pin the image by digest, and have an admission controller require its signature, see [Harden it for production](/server/hardening#the-image).
 
 ## Next steps
 

@@ -84,6 +84,20 @@ docker run --rm -p 8080:8080 \
 
 The image's `/var/lib/lumovi/audit` belongs to Lumovi's user (UID 65532), so a new named volume mounted there does too. A folder of your own on the host must be one that user may write to, or Lumovi doesn't start, and says why. One container keeps a volume at a time: a second on it waits for the first to stop, and doesn't start if it's still running after about 40 seconds.
 
+## Behind a company's proxy
+
+Give it the proxy, and mount the certificate authority a proxy that inspects HTTPS signs with:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -v "$PWD/kubeconfig:/kubeconfig:ro" -e KUBECONFIG=/kubeconfig \
+  -e HTTPS_PROXY=http://proxy.corp.example.com:3128 -e NO_PROXY=.corp.example.com \
+  -v "$PWD/corp-root.pem:/etc/lumovi/ca/corp-root.pem:ro" -e LUMOVI_CA_FILE=/etc/lumovi/ca/corp-root.pem \
+  ghcr.io/lumovi/lumovi
+```
+
+A cluster whose kubeconfig has a `proxy-url` goes through that one instead. See [Proxies and certificate authorities](/server/network).
+
 ## Pin a version
 
 Without a tag, Docker pulls `latest`, the latest release. Pin a version to know what runs:
