@@ -290,7 +290,7 @@ What Lumovi records, where it keeps and sends it, and who reads everyone's. See 
 <ResponseField name="audit.persistence.enabled" type="boolean" default="true">
   Whether the history is kept on a volume: a PersistentVolumeClaim, `<release>-audit`, that uninstalling keeps. Off, the history is in memory: what happened since Lumovi started.
 
-  With it, the history is one Lumovi's at a time: the chart runs one replica, and refuses more, and upgrades stop the old pod before starting the new one (`Recreate`), so Lumovi is away for those seconds. A second pod on the volume, scaled by hand or by an autoscaler, waits for the first, then doesn't start. One replacing a pod whose node was lost waits half a minute at most. The pod's `fsGroup` (`podSecurityContext`) must be one that may write to it. See [Where it's kept](/server/audit-log#where-its-kept).
+  With it, the history is one Lumovi's at a time: the chart runs one replica, and refuses more, and upgrades stop the old pod before starting the new one (`Recreate`), so Lumovi is away for those seconds. A second pod on the volume, scaled by hand or by an autoscaler, waits for the first, then doesn't start. One replacing a pod whose node was lost waits half a minute at most. The pod's `fsGroup` (`podSecurityContext`) must be one that may write to it. See [Where it's kept](/server/audit-log#where-it’s-kept).
 </ResponseField>
 
 <ResponseField name="audit.persistence.size" type="string" default="2Gi">

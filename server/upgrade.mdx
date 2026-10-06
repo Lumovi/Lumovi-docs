@@ -39,7 +39,7 @@ The desktop app updates itself. In a cluster, Lumovi is upgraded like anything e
     kubectl logs --namespace lumovi deployment/lumovi
     ```
 
-    Its line `Lumovi … shows …` names the version that's running. The log's lines of JSON, with `"type":"lumovi.audit"`, are its [audit events](/server/audit-log#on-the-servers-output).
+    Its line `Lumovi … shows …` names the version that's running. The log's lines of JSON, with `"type":"lumovi.audit"`, are its [audit events](/server/audit-log#on-the-server’s-output).
   </Step>
 </Steps>
 
@@ -59,7 +59,7 @@ In Lumovi 1.4, `assistants.changes` (`LUMOVI_ASSISTANT_CHANGES`) said what every
 
 - **The chart no longer sets `assistants.changes`.** Unless you set limits, people may let their assistants change things without asking, or read Secrets' values. Their defaults still ask, show Secrets' keys only, and hide env values that look sensitive.
 - **`allow` no longer makes changes without asking** by itself: it leaves it to each person, whose changes ask unless they choose otherwise. `ask` and `never` limit what they choose.
-- **People's rules are kept in a ConfigMap** the chart makes, `<release>-assistant-rules`, with a Role that lets Lumovi read and update it. See [Where people's rules are kept](/server/assistants#where-peoples-rules-are-kept).
+- **People's rules are kept in a ConfigMap** the chart makes, `<release>-assistant-rules`, with a Role that lets Lumovi read and update it. See [Where people's rules are kept](/server/assistants#where-people’s-rules-are-kept).
 
 To keep what 1.4 allowed, set a limit for everyone:
 

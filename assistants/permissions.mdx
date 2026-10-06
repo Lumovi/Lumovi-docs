@@ -177,7 +177,7 @@ Find any namespace, and see what an assistant may do there: each setting, and wh
 
 ### Assistants know their limits
 
-What `list_clusters` tells assistants as they start, cluster by cluster, as [above](#what-theyre-told-as-they-start). "What a rule hides, they never learn exists."
+What `list_clusters` tells assistants as they start, cluster by cluster, as [above](#what-they’re-told-as-they-start). "What a rule hides, they never learn exists."
 
 ### Kept as you go
 
@@ -190,7 +190,7 @@ In the desktop app, with Lumovi's other settings, in `settings.json`, which only
 When what's kept can't be read, edited by hand into something that doesn't make sense, say, assistants get nothing until you set your permissions again: no changes, no Secrets, no env values and no logs. The **Permissions** tab says so: "Your AI permissions couldn't be read (Lumovi's settings were edited into something that doesn't make sense): assistants may do nothing until you set them again." Lumovi leaves what it couldn't read in `settings.json` as it was, so this lasts across restarts, until you change a permission.
 
 <Note>
-  **In your cluster:** each person's are kept on the server, the same in every browser they sign in with, and every page of theirs, and their assistants, follow a change at once. The administrator decides where: a ConfigMap the Helm chart makes, a file, or only memory. In memory, the tab says "This server keeps AI permissions in memory: when it restarts, yours are gone, and assistants do what the defaults say until you set them again." See [AI assistants for your team](/server/assistants#where-peoples-rules-are-kept).
+  **In your cluster:** each person's are kept on the server, the same in every browser they sign in with, and every page of theirs, and their assistants, follow a change at once. The administrator decides where: a ConfigMap the Helm chart makes, a file, or only memory. In memory, the tab says "This server keeps AI permissions in memory: when it restarts, yours are gone, and assistants do what the defaults say until you set them again." See [AI assistants for your team](/server/assistants#where-people’s-rules-are-kept).
 </Note>
 
 Before you allow an assistant on a server, **Allow an AI assistant?** counts what it will be able to do with your permissions, and links to them: **Change what assistants may do**. See [AI assistants on a server](/assistants/server#sign-in-and-allow-it).

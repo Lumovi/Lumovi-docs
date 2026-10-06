@@ -22,7 +22,7 @@ You need [Helm](https://helm.sh) and `kubectl` on your computer, and an account 
 
     This creates a deployment with one Lumovi pod, a `lumovi` Service on port 80, a service account, and a 2 GiB volume for the [audit log](/server/audit-log), from the cluster's default storage class. A cluster without a default storage class needs `--set audit.persistence.storageClass=<class>`, or `--set audit.persistence.enabled=false`. With the default sign-in (tokens), that service account needs no permissions, and the chart gives it none.
 
-    The history on that volume is one Lumovi's at a time, so the chart runs one pod, and an upgrade stops the old one before it starts the new one. See [Where it's kept](/server/audit-log#where-its-kept).
+    The history on that volume is one Lumovi's at a time, so the chart runs one pod, and an upgrade stops the old one before it starts the new one. See [Where it's kept](/server/audit-log#where-it’s-kept).
   </Step>
   <Step title="Open it">
     Forward a port from your computer to the Service:
@@ -119,7 +119,7 @@ kubectl logs --namespace lumovi deployment/lumovi
 
 For a fleet, that line says how many clusters it shows, after a line for each one (`Fleet: prod-eu added`), like `Lumovi {{version}} shows a fleet of 3 clusters (hub, prod-eu, staging) at http://localhost:8080/; people sign in with single sign-on`.
 
-After that, the log records who signs in and out, and what failed. Each [audit event](/server/audit-log#on-the-servers-output) is a line of JSON in it too, starting with `{"type":"lumovi.audit"`. A setting that doesn't make sense stops Lumovi before it starts, and the log says which one and why, like:
+After that, the log records who signs in and out, and what failed. Each [audit event](/server/audit-log#on-the-server’s-output) is a line of JSON in it too, starting with `{"type":"lumovi.audit"`. A setting that doesn't make sense stops Lumovi before it starts, and the log says which one and why, like:
 
 ```text
 LUMOVI_URL must be set for single sign-on: the provider sends people back there.

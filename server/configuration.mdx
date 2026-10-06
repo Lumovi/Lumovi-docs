@@ -11,7 +11,7 @@ Lumovi reads them when it starts, and checks most of them: one that doesn't make
 
 ## Set by the chart itself
 
-The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-its-kept), with `access.admins`, `LUMOVI_ACCESS_CONFIGMAP` to `<release>-access`, the ConfigMap it makes for [access](/server/access#where-its-kept), and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
+The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-it’s-kept), with `access.admins`, `LUMOVI_ACCESS_CONFIGMAP` to `<release>-access`, the ConfigMap it makes for [access](/server/access#where-it’s-kept), and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
 
 The chart puts `extraEnv` after its own variables. When two have the same name, Kubernetes uses the last, so a variable repeated in `extraEnv` wins over the chart's. For the ones above, that breaks Lumovi: it listens on a port nothing sends to, or reads files from a folder the chart doesn't mount. For the others, set the chart's value instead. The chart builds more than the variable on its values, like the permission to impersonate for `auth.mode`, or the probes and the ingress path for `basePath`, while a variable in `extraEnv` changes only Lumovi.
 
@@ -216,7 +216,7 @@ Who may do what through Lumovi, within what RBAC allows. See [Access for your te
 </ResponseField>
 
 <ResponseField name="LUMOVI_ACCESS_CONFIGMAP" type="string">
-  A ConfigMap in the namespace Lumovi runs in, where it keeps what admins set, under `access.json`. The chart sets it to `<release>-access`, which it makes, when `access.admins` names someone. Lumovi needs `get` on it, and `patch` to save what admins change, and stops when it can't read it, or isn't running in a cluster. Without it, `access.json` in `LUMOVI_DATA_DIR`, or memory. See [Where it's kept](/server/access#where-its-kept).
+  A ConfigMap in the namespace Lumovi runs in, where it keeps what admins set, under `access.json`. The chart sets it to `<release>-access`, which it makes, when `access.admins` names someone. Lumovi needs `get` on it, and `patch` to save what admins change, and stops when it can't read it, or isn't running in a cluster. Without it, `access.json` in `LUMOVI_DATA_DIR`, or memory. See [Where it's kept](/server/access#where-it’s-kept).
 </ResponseField>
 
 ## AI assistants
@@ -236,7 +236,7 @@ See [AI assistants for your team](/server/assistants).
 </ResponseField>
 
 <ResponseField name="LUMOVI_ASSISTANT_RULES_CONFIGMAP" type="string">
-  A ConfigMap in the namespace Lumovi runs in, where it keeps each person's own rules for their assistants. The chart sets it to `<release>-assistant-rules`, which it makes. Lumovi needs `get` on it, and `patch` to save people's rules, and doesn't start when it can't read it, or isn't running in a cluster. See [Where people's rules are kept](/server/assistants#where-peoples-rules-are-kept).
+  A ConfigMap in the namespace Lumovi runs in, where it keeps each person's own rules for their assistants. The chart sets it to `<release>-assistant-rules`, which it makes. Lumovi needs `get` on it, and `patch` to save people's rules, and doesn't start when it can't read it, or isn't running in a cluster. See [Where people's rules are kept](/server/assistants#where-people’s-rules-are-kept).
 </ResponseField>
 
 <ResponseField name="LUMOVI_DATA_DIR" type="string">
@@ -260,7 +260,7 @@ See [Audit log for your team](/server/audit-log). The Helm chart sets the first 
 </ResponseField>
 
 <ResponseField name="LUMOVI_AUDIT_DIR" type="string">
-  The folder for the audit history, a file a day. Unset, the `audit` folder in `LUMOVI_DATA_DIR`, or, without that either, memory: what happened since Lumovi started. See [Where it's kept](/server/audit-log#where-its-kept).
+  The folder for the audit history, a file a day. Unset, the `audit` folder in `LUMOVI_DATA_DIR`, or, without that either, memory: what happened since Lumovi started. See [Where it's kept](/server/audit-log#where-it’s-kept).
 
   One Lumovi keeps a folder at a time: another that finds it held (`audit.lock` in it) waits for it to be let go, or not renewed for 30 seconds. Still held after about 40 seconds, it doesn't start, saying `Another Lumovi (process … on …) keeps its audit history in …: two can’t, or they’d number events the same. Stop it, or give this one a folder of its own.` Lumovi's user must be able to write there, or it doesn't start either: `LUMOVI_AUDIT_DIR (…) can’t be written in: …`. As it starts, it makes the folder and its files only its own (`0700`, `0600`).
 </ResponseField>
@@ -270,7 +270,7 @@ See [Audit log for your team](/server/audit-log). The Helm chart sets the first 
 </ResponseField>
 
 <ResponseField name="LUMOVI_AUDIT_STDOUT" type="string" default="true">
-  `true` or `false`: whether each event is also a line of JSON on Lumovi's output, for the cluster's log collector. See [On the server's output](/server/audit-log#on-the-servers-output).
+  `true` or `false`: whether each event is also a line of JSON on Lumovi's output, for the cluster's log collector. See [On the server's output](/server/audit-log#on-the-server’s-output).
 </ResponseField>
 
 <ResponseField name="LUMOVI_AUDIT_WEBHOOK_URL" type="string">

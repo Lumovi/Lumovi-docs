@@ -48,7 +48,7 @@ In settings, the levels are `read`, `write`; `off`, `on`; `hidden`, `keys`, `val
 Each says where, as [AI assistants' rules](/assistants/permissions#where-a-rule-applies) do. `clusters` and `namespaces` each take names, patterns like `tenant-*`, labels like `team=payments`, and `!` first to leave some out, like `!kube-*`. None means all of them. A cluster's labels are `clusterLabels`, or in a fleet, its clusters' own.
 
 - **A Namespace object** counts as being in itself: a grant for `shop` lets someone change the `shop` Namespace too.
-- **A cluster's own objects**, like nodes, persistent volumes and cluster roles, follow only grants and limits that name no namespaces. So do **node shells**, decided for a cluster's nodes. See [A cluster's own objects](#a-clusters-own-objects).
+- **A cluster's own objects**, like nodes, persistent volumes and cluster roles, follow only grants and limits that name no namespaces. So do **node shells**, decided for a cluster's nodes. See [A cluster's own objects](#a-cluster’s-own-objects).
 - **Where a namespace's labels can't be read**, a grant that needs them doesn't apply, and a limit that might does: what's decided is never more than what's so.
 
 ### A cluster's own objects
@@ -196,7 +196,7 @@ Pick someone who signed in, or type a name to check them with no groups. Then a 
 
 ### History
 
-Every saved change to access, newest first: who made it, from where, and each change as it was and as it is, like **Helm** ~~Off~~ → **Upgrade, roll back**. It reads them from the audit log, where each is an **access.changed** event, and **Open in the audit log** shows them there, as far back as it keeps. A change made by hand where access is kept, not on these pages, says **Outside Lumovi, where it's kept**: see [Where it's kept](#where-its-kept).
+Every saved change to access, newest first: who made it, from where, and each change as it was and as it is, like **Helm** ~~Off~~ → **Upgrade, roll back**. It reads them from the audit log, where each is an **access.changed** event, and **Open in the audit log** shows them there, as far back as it keeps. A change made by hand where access is kept, not on these pages, says **Outside Lumovi, where it's kept**: see [Where it's kept](#where-it’s-kept).
 
 ### Saving
 
@@ -215,7 +215,7 @@ Lumovi doesn’t let you open shells in shop: no grant of yours gives it there.
 Lumovi doesn’t let you upgrade releases in payments: the limit “Production” says so.
 ```
 
-Changes, shells, logs, Secret reads, Helm and AI assistants' calls refused this way are recorded in the [audit log](/audit/overview) as **Refused**. Pages say the same before anyone tries: see [Your access](/clusters/your-access#where-its-said).
+Changes, shells, logs, Secret reads, Helm and AI assistants' calls refused this way are recorded in the [audit log](/audit/overview) as **Refused**. Pages say the same before anyone tries: see [Your access](/clusters/your-access#where-it’s-said).
 
 | Setting | What it needs |
 | --- | --- |
