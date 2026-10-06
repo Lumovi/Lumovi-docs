@@ -1,0 +1,231 @@
+---
+title: "AI assistants for your team"
+sidebarTitle: "AI assistants"
+description: "Let your team's AI assistants use Lumovi as them, signed in through Lumovi with OAuth, and decide what the changes they ask for do, cluster by cluster."
+icon: "users"
+---
+
+Lumovi's server is an MCP server too, at its address with `/mcp` after it: `https://lumovi.example.com/mcp`. Claude Code, Cursor, VS Code and other MCP clients that speak HTTP and OAuth connect there, with the same [tools](/assistants/tools) as the desktop app's. Each signs in through Lumovi, as MCP has clients do: Lumovi opens in the person's browser, they sign in as they always do, and allow the assistant. From then on, it acts as them, with their RBAC on each cluster, a [fleet's](/server/fleet) too. The changes it asks for wait on that person's own Lumovi pages for their answer.
+
+What people see and do is on [AI assistants on a server](/assistants/server). This page is for whoever runs Lumovi.
+
+<Note>
+  AI assistants are **on** unless you turn them off. Each one still needs someone to sign in and allow it, and can do no more than that person can.
+</Note>
+
+## Turn them on or off
+
+<CodeGroup>
+  ```yaml values.yaml
+  assistants:
+    enabled: false
+  ```
+
+  ```bash Environment
+  LUMOVI_ASSISTANTS=off
+  ```
+</CodeGroup>
+
+Off, `mcp`, the OAuth endpoints and the addresses where assistants look for how to sign in answer `404`, with "This server's administrator has turned AI assistants off." The page for allowing an assistant says the same, and so does the **AI assistants** dialog, while the sidebar has no button for it. `LUMOVI_ASSISTANTS` is `on` or `off`: anything else stops Lumovi, saying `LUMOVI_ASSISTANTS must be on or off, not "maybe".`
+
+## What their changes do
+
+Each cluster's assistants' changes are asked about, made without asking, or never made, as you say: for every cluster, and for some on their own.
+
+| | What happens to a change |
+| --- | --- |
+| `ask` | The default. It waits for the person's approval, on their Lumovi pages. |
+| `allow` | Made without asking, after the cluster checks it with a dry run, and the person is told on their pages. Deletions, and changes that take fields over from what manages them (Helm, Argo CD, an autoscaler), still ask. |
+| `never` | Assistants only read. A change is refused before anything is tried. |
+
+<CodeGroup>
+  ```yaml values.yaml
+  assistants:
+    changes: ask # every cluster, unless it has its own
+    clusters:
+      staging: allow
+      production: never
+  ```
+
+  ```bash Environment
+  LUMOVI_ASSISTANT_CHANGES=ask,staging=allow,production=never
+  ```
+</CodeGroup>
+
+In `LUMOVI_ASSISTANT_CHANGES`, an entry without a name is every cluster's, and `name=…` entries are those clusters' own, separated by commas. Unset, every cluster's is `ask`. Spaces around them don't matter. The chart builds it from `assistants.changes` and `assistants.clusters`. Anything else stops Lumovi:
+
+```text
+LUMOVI_ASSISTANT_CHANGES must be ask, allow or never, with clusters' own after it (ask,staging=allow), not "sometimes".
+```
+
+A cluster's name is the one Lumovi shows: `clusterName` (`in-cluster` unless set) for a Lumovi of one cluster, and each cluster's name in a fleet. People see what you chose under **Changes they ask for** in their dialog, without a way to change it: **Ask you**, **Made without asking** or **Never**.
+
+Whatever you choose, the person's RBAC applies, and `readOnly: true` (`LUMOVI_READ_ONLY`) keeps assistants from changing anything, as it keeps everyone. So does read-only that people set for themselves: a cluster someone made read-only in their browser is read-only for their assistants too, as their latest Lumovi page says. For a cluster nobody's assistants should change, set it to `never`.
+
+## Where assistants go back to
+
+Once someone allows an assistant, their browser goes back to it with a code the assistant swaps for its tokens. So Lumovi sends people back only where an assistant can be theirs:
+
+- **Their own computer**: `http` or `https` on `localhost`, `127.0.0.1` or `[::1]`, where Claude Code and other assistants listen while they sign in.
+- **An app**, by its own scheme, like `cursor:`. Not `javascript:`, `data:`, `file:`, `blob:`, `about:`, `vbscript:`, `ws:` or `wss:`.
+- **VS Code's redirector**, `https://vscode.dev` and `https://insiders.vscode.dev`, which passes the code on to VS Code on their computer.
+- **Sites you name**, over `https` only.
+
+Claude Code, Cursor and VS Code need nothing more. An assistant that runs on a site of its own, rather than on people's computers, needs its host named:
+
+<CodeGroup>
+  ```yaml values.yaml
+  assistants:
+    redirectHosts: [assistant.example.com]
+  ```
+
+  ```bash Environment
+  LUMOVI_ASSISTANT_REDIRECT_HOSTS=assistant.example.com
+  ```
+</CodeGroup>
+
+`LUMOVI_ASSISTANT_REDIRECT_HOSTS` takes host names, separated by commas: no scheme, path or port. Anything else stops Lumovi, saying `LUMOVI_ASSISTANT_REDIRECT_HOSTS must be host names, like assistant.example.com, not "…".`
+
+When an assistant registers, Lumovi keeps only the addresses it may send people back to, and refuses one with none left:
+
+```text
+redirect_uris must go back to this computer (http://localhost), to an app (its own scheme), or to a site this server allows (LUMOVI_ASSISTANT_REDIRECT_HOSTS).
+```
+
+## In a fleet
+
+In a [fleet](/server/fleet), an assistant acts in every cluster its person may see, as Lumovi acts for them: impersonating them with Lumovi's credentials for each cluster, or passing their own token on where the cluster takes it. Name the fleet's clusters in `assistants.clusters` to give some their own rule.
+
+## Below a base path
+
+MCP clients look for how to sign in at the root of the server's origin first, with Lumovi's path after the well-known part ([RFC 8414](https://www.rfc-editor.org/rfc/rfc8414) and [RFC 9728](https://www.rfc-editor.org/rfc/rfc9728)). With `basePath: /lumovi`, that's two addresses outside Lumovi's path:
+
+```text
+/.well-known/oauth-authorization-server/lumovi
+/.well-known/oauth-protected-resource/lumovi/mcp
+```
+
+Lumovi answers them, and the same below its path. The chart's ingress routes the two root addresses to Lumovi too, when assistants are on and `basePath` isn't `/`. An ingress, gateway or proxy of your own must route them as well, each exactly:
+
+```yaml Your own Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lumovi
+  namespace: lumovi
+spec:
+  rules:
+    - host: tools.example.com
+      http:
+        paths:
+          - path: /lumovi/
+            pathType: Prefix
+            backend: { service: { name: lumovi, port: { name: http } } }
+          # Where AI assistants look for how to sign in.
+          - path: /.well-known/oauth-authorization-server/lumovi
+            pathType: Exact
+            backend: { service: { name: lumovi, port: { name: http } } }
+          - path: /.well-known/oauth-protected-resource/lumovi/mcp
+            pathType: Exact
+            backend: { service: { name: lumovi, port: { name: http } } }
+```
+
+Lumovi answers nothing else outside its path. At its own host, with `basePath: /`, there's nothing to add.
+
+## Its address
+
+Lumovi tells assistants where everything is, from `url` when it's set, or else from the address each request was sent to (and `https` when the proxy in front sends `X-Forwarded-Proto: https`). Set `url` to the address people open, so the addresses assistants get are the ones they can reach, whatever `Host` header a proxy sends. See [The address people open](/server/expose#the-address-people-open).
+
+A call that waits for someone's approval takes up to about 50 seconds. Give proxies in front of Lumovi a read timeout above a minute, as the WebSocket needs anyway. See [Keep the WebSocket open](/server/expose#keep-the-websocket-open).
+
+## Behind an authenticating proxy
+
+Assistants can't sign in to your proxy: they sign in to Lumovi, with its own tokens. Let these through to Lumovi without signing in, below the base path:
+
+| Path | What it is |
+| --- | --- |
+| `mcp` | The MCP endpoint: Lumovi checks the assistant's token itself |
+| `oauth/register`, `oauth/token`, `oauth/revoke` | Where assistants register, get and renew their tokens, and sign out |
+| `.well-known/oauth-authorization-server`, `.well-known/oauth-protected-resource`, `.well-known/oauth-protected-resource/mcp` | How to sign in |
+| The two root addresses [above](#below-a-base-path) | The same, below a base path |
+
+Keep `authorize`, the page where people allow an assistant, and `api/assistants/authorize`, which it asks, behind the proxy, like every other page: Lumovi needs to know who's allowing it. See [Authenticating proxy](/server/auth/proxy#ai-assistants) for an example.
+
+Behind a proxy, Lumovi has no sessions. An assistant someone allows acts as that person as the proxy last named them: each time they open a Lumovi page, their assistants take on what the proxy says about them there, like their groups. When that changed, their assistants' connections close, and they connect again as it is now. It lasts as long as a session would (`auth.sessionHours`, 12 hours unless set), from when they allowed it, then the assistant signs in again. Signing out of the proxy doesn't end it: people disconnect it in Lumovi.
+
+## The server's log
+
+Lumovi's log (`kubectl logs`) records each assistant that's allowed or goes, and what became of every change one asked for:
+
+```text
+2026-10-06T09:12:03.512Z alice@example.com allowed Claude Code (lumovi) to use Lumovi as them
+2026-10-06T09:14:41.077Z alice@example.com’s Claude Code: Scale Deployment cart to 3 replicas in demo, made
+2026-10-06T09:20:16.930Z alice@example.com’s Claude Code: Restart Deployment cart in demo, rejected: Not now.
+2026-10-06T09:31:02.204Z alice@example.com’s Claude Code: Restart Deployment cart in staging, made without asking
+2026-10-06T11:02:47.661Z alice@example.com’s Claude Code was let go
+2026-10-06T14:40:09.318Z bob@example.com’s Cursor was let go: its refresh token was used again, so someone else may have it
+```
+
+| The line ends | When |
+| --- | --- |
+| `allowed … to use Lumovi as them` | Someone allowed an assistant, by the name it registered with |
+| `made`, `failed`, `rejected`, `not answered in time`, `withdrawn` | What became of a change, `without asking` where the cluster allows that, with the error or the person's note after it |
+| `was let go` | The person disconnected it |
+| `was let go: its refresh token was used again, so someone else may have it` | A refresh token it had already used came back, more than 30 seconds later: a copy, maybe. Lumovi ends what was allowed, and the assistant signs in again. |
+| `signed out` | The assistant signed out itself |
+| `can no longer use Lumovi` | Its person's session ended, or, behind a proxy, its time was up |
+
+The cluster's audit log records the changes themselves, as the person's: Lumovi makes them as it makes theirs.
+
+## Security
+
+- **OAuth 2.1, as MCP has it.** The authorization code flow with PKCE (`S256` only), for public clients: assistants have no secrets. They register themselves ([RFC 7591](https://www.rfc-editor.org/rfc/rfc7591)), which grants nothing: a registration is only the assistant's name and where it may be sent back to, and its client ID is that, so it outlives a restart.
+- **A person allows each one, on Lumovi's own page.** The page names the assistant, who it would act as, and where it goes back to. Lumovi takes the answer only from its own page, by its origin, as it does sign-ins: another site can't allow an assistant for someone.
+- **Sent back only to the person's computer, an app, or sites you name.** See [Where assistants go back to](#where-assistants-go-back-to). The address must also match one the assistant registered exactly, and the answer names Lumovi as its issuer (`iss`). A site you stop naming can no longer be sent back to, even by an assistant that registered with it.
+- **Codes and tokens.** A code works once, for two minutes, for the assistant and address it was given to, with the PKCE verifier it was made for. Access tokens last an hour. Refresh tokens work once: each renewal gives a new one. One that's used again within 30 seconds is taken for a retry, and refused; later, for a copy someone else has, and Lumovi ends what was allowed. Codes and tokens that run out are cleared every minute. Assistants sign out at `oauth/revoke` ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)).
+- **In memory only.** What people allowed, codes, tokens and the changes waiting live in Lumovi's memory, and nothing is written down. A registration needs no keeping: its client ID holds it. Restarting Lumovi signs every assistant out, and they sign in again. For the same reason, Lumovi runs one replica while assistants are on: their requests carry no cookies to keep them to one pod. The chart refuses `replicaCount` above 1 with `assistants.enabled`, saying `AI assistants need a single replica (replicaCount 1): …`.
+- **As long as the session it was allowed in.** An assistant acts as its person until they disconnect it, sign out, or their session ends. Its tokens work only at `mcp`, not for Lumovi's pages.
+- **What an assistant can do** is what its person can, through Lumovi's tools only: read, and ask for the changes those tools make, which wait for that person, or follow the rule you set for the cluster. It never sees a Secret's values. Its changes are refused under `readOnly: true`, like everyone's, and in the clusters its person made read-only.
+- **Each person's own.** People see and disconnect only their own assistants, and only their pages show their assistants' changes.
+
+<Warning>
+  An assistant that someone allows acts as them. Lumovi sends people back only to their own computer, an app, or the sites you name, so a link to its page made by someone else can't send their access to a site of that person's choosing. Name only sites you trust in `redirectHosts`, and tell your team to allow an assistant only when they've just asked for it.
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="The assistant can't find how to sign in" icon="signpost">
+    Below a base path, the two addresses at the origin's root don't reach Lumovi: route them as [above](#below-a-base-path). Behind an authenticating proxy, the proxy may be asking assistants to sign in to it: let the paths [above](#behind-an-authenticating-proxy) through.
+  </Accordion>
+  <Accordion title="It's sent to the wrong address" icon="link">
+    Without `url`, Lumovi gives assistants addresses from the `Host` header it gets, over `https` only when the proxy sends `X-Forwarded-Proto: https`. Set `url` to the address people open. The same goes when the page for allowing an assistant says "It's for …, not Lumovi's …", or allowing it fails with "Allow assistants from Lumovi's own page."
+  </Accordion>
+  <Accordion title="The page for allowing it says the request can't be answered" icon="circle-x">
+    "This request to allow an assistant can't be answered:", then why, and "Start again from the assistant.":
+
+    - **It doesn't say which assistant it is.** The client ID isn't one Lumovi gave, or it goes back to a site that's no longer in `redirectHosts`.
+    - **It goes back somewhere the assistant didn't name.** The address to go back to isn't one it registered.
+    - **It asks for something other than a code.** Lumovi gives codes only.
+    - **It has no PKCE code challenge (S256).**
+    - **It's for …, not Lumovi's ….** It names another MCP server: see above.
+  </Accordion>
+  <Accordion title="An assistant can't register" icon="ban">
+    **redirect_uris must go back to this computer (http://localhost), to an app (its own scheme), or to a site this server allows (LUMOVI_ASSISTANT_REDIRECT_HOSTS).** None of the addresses it asked to be sent back to is one Lumovi sends people to. For an assistant that runs on a site of its own, name the site's host in `assistants.redirectHosts`. See [Where assistants go back to](#where-assistants-go-back-to).
+  </Accordion>
+  <Accordion title="Assistants keep having to sign in again" icon="refresh-cw">
+    Their access ends with the session it was allowed in: when the person signs out, the session ends (`auth.sessionHours`), or Lumovi restarts, as an upgrade does. The log says `can no longer use Lumovi` when an assistant's access ends with its session, and `was let go: its refresh token was used again` when Lumovi ended it because an old refresh token came back.
+  </Accordion>
+  <Accordion title="Lumovi doesn't start" icon="power-off">
+    `LUMOVI_ASSISTANTS` is `on` or `off`, `LUMOVI_ASSISTANT_CHANGES` is like `ask,staging=allow`, and `LUMOVI_ASSISTANT_REDIRECT_HOSTS` is host names. The log says which, and what it got. With the chart, `helm install` refuses values its schema doesn't take, and more than one replica while assistants are on. See [Configuration](/server/configuration#ai-assistants).
+  </Accordion>
+</AccordionGroup>
+
+<Columns cols={2}>
+  <Card title="AI assistants on a server" icon="server" href="/assistants/server">
+    What your team sees: connecting, allowing, approving.
+  </Card>
+  <Card title="Security" icon="shield-check" href="/server/security">
+    What Lumovi can do in your cluster, and how to keep it contained.
+  </Card>
+</Columns>
