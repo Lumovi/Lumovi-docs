@@ -7,13 +7,15 @@ icon: "wrench"
 
 These are the tools an assistant gets when it connects to Lumovi. The assistant decides which to call, and with what, and may show you their names as it uses them. Lumovi answers in short YAML, with each object's health as Lumovi shows it.
 
+Every tool keeps to your [permissions](/assistants/permissions), as they are at the moment it's called: what's hidden isn't there, and what they refuse is refused, with who decided. See [Within your permissions](#within-your-permissions).
+
 <Note>
   **In your cluster:** your team's Lumovi gives assistants the same tools. `list_clusters` lists the clusters you may see there, and a change that's still waiting names the server's address. See [AI assistants on a server](/assistants/server).
 </Note>
 
 | Tool | Title | What it does |
 | --- | --- | --- |
-| `list_clusters` | List clusters | Your clusters, and whether each takes changes |
+| `list_clusters` | List clusters | Your clusters, and what assistants may do in each |
 | `list_kinds` | List kinds | The kinds a cluster serves, custom resources' too |
 | `list_resources` | List resources | Objects of a kind, with their health |
 | `get_resource` | Get a resource | One object as YAML, its health first |
@@ -31,7 +33,7 @@ When an assistant connects, Lumovi also tells it how to go about it: start with 
 ## Parameters they share
 
 <ResponseField name="cluster" type="string" required>
-  The cluster: a context's name, as `list_clusters` gives them. For one that isn't in your kubeconfig, the assistant is told which are: *There is no cluster called "prod". These are: demo, sandbox, …*
+  The cluster: a context's name, as `list_clusters` gives them. For one that isn't in your kubeconfig, or that your permissions hide, the assistant is told which are: *There is no cluster called "prod". These are: demo, sandbox, …*
 </ResponseField>
 
 <ResponseField name="kind" type="string">
@@ -48,7 +50,15 @@ These tools only read. Lumovi marks them so for the assistant (MCP's `readOnlyHi
 
 ### list_clusters
 
-The clusters in your kubeconfig, and which is the current one. For each: its name, its API server's address, its default namespace when the context has one, and `changes`, whether it takes an assistant's changes: `ask`, `allow`, `never` or `read-only`. See [Changes they ask for](/assistants/approvals#changes-they-ask-for).
+The clusters in your kubeconfig that your permissions don't hide, and which is the current one (unless it's hidden). For each: its name, its API server's address, its default namespace when the context has one, and what assistants may do with it:
+
+- **`changes`**: `ask`, `allow`, `never`, or `read-only` for a read-only cluster.
+- **`secrets`**: `values`, `keys` or `hidden`.
+- **`env`**: `show`, `sensitive` or `all`, the env values hidden.
+- **`logs`**: `read` or `off`.
+- **`inSomeNamespaces`**: the rules that say otherwise in some of its namespaces, each with the namespaces it names and what it says; an administrator's with `at most`, like `logs: at most off`. Rules that hide aren't told.
+
+See [What they're told as they start](/assistants/permissions#what-theyre-told-as-they-start).
 
 It takes no parameters.
 
@@ -69,7 +79,7 @@ Objects of a kind, in one namespace or all of them. For each: its name and names
 | Services | `type`, `clusterIP`, `ports` (`80/TCP`) |
 | Nodes | `roles`, `version` (the kubelet's) |
 
-It says how many there are (`total`), and how many it shows when that's fewer (`shown`).
+It says how many there are (`total`), and how many it shows when that's fewer (`shown`). Objects in namespaces your permissions hide aren't there. Listing Secrets across namespaces leaves out those whose namespaces hide Secrets, and says how many: `notShown: 3 more, in namespaces whose Secrets the person's AI permissions hide`.
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="kind" type="string" required />
@@ -85,7 +95,7 @@ It says how many there are (`total`), and how many it shows when that's fewer (`
 
 ### get_resource
 
-One object as YAML, with its health on the first line, like `# Health: Running (healthy)`. It leaves out what's long and says little, and a Secret's values: see [What's hidden](#whats-hidden).
+One object as YAML, with its health on the first line, like `# Health: Running (healthy)`. It leaves out what's long and says little, and what your permissions hide: a Secret's values unless they show them, and env values that look sensitive, or all. See [What's hidden](#whats-hidden).
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="kind" type="string" required />
@@ -96,7 +106,7 @@ One object as YAML, with its health on the first line, like `# Health: Running (
 
 ### get_events
 
-What Kubernetes reported, the latest first: about one object, a namespace, or the whole cluster. Each event says how long ago it last happened, its type and reason, the object it's about, its message, and how many times it happened when that's more than once. With none, it says "No events."
+What Kubernetes reported, the latest first: about one object, a namespace, or the whole cluster. Each event says how long ago it last happened, its type and reason, the object it's about, its message, and how many times it happened when that's more than once. With none, it says "No events." Events in, or about, a namespace your permissions hide aren't there.
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="namespace" type="string">
@@ -115,7 +125,7 @@ What Kubernetes reported, the latest first: about one object, a namespace, or th
 
 ### get_logs
 
-A container's latest log lines, as `kubectl logs` shows them, up to 256 KB of them. It doesn't follow the log. With none, it says "(No log lines.)"
+A container's latest log lines, as `kubectl logs` shows them, up to 256 KB of them. It doesn't follow the log. With none, it says "(No log lines.)" Where your permissions say **Don't read**, it's refused: "Lumovi doesn't let AI assistants read logs in shop: the person's AI permissions say so ("Shop")."
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="namespace" type="string" required />
@@ -141,7 +151,7 @@ What's wrong in a cluster, or in one namespace, in one call. It's where Lumovi t
 - **`warningsInTheLastHour`**: the last hour's warning events, one for each object and reason, the most frequent first, up to 20, with how many times and how long ago.
 - **`couldNotCheck`**: the kinds it couldn't list, and why, like your account not being allowed to.
 
-When there's nothing, it says so: "Nothing is wrong in shop in demo: no unhealthy objects, and no warnings in the last hour."
+When there's nothing, it says so: "Nothing is wrong in shop in demo: no unhealthy objects, and no warnings in the last hour." What's in namespaces your permissions hide isn't counted.
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="namespace" type="string">
@@ -158,9 +168,9 @@ These four ask for a change. Each takes a reason, which you read before you answ
 
 A change goes through the same steps, whichever tool asks for it:
 
-1. **The cluster's setting.** If its [Changes they ask for](/assistants/approvals#changes-they-ask-for) is **Never**, the change is refused, and nothing is tried.
+1. **Your permissions.** Where the change is, in its namespace, a hidden namespace isn't there, and **Changes** decides. For one of the cluster's own objects, every cluster-scoped kind but Namespace, it's the strictest of the cluster and every namespace: refused if any namespace is hidden, **Never**, or hides its Secrets, and asking if any asks. With **Never**, the change is refused, and nothing is tried: "Lumovi doesn't let AI assistants change monitoring in demo: the person's AI permissions say so ("Monitoring"). Nothing was changed." Where **Secrets** is **Hidden**, a Secret can't be changed either.
 2. **A dry run.** The API server checks the change, and your access, and says what the object would come to. If it refuses, the assistant is told why: "Restart Deployment cart wouldn't work: …". A [read-only](/changes/read-only) cluster refuses here.
-3. **Your answer.** With **Allow**, the change is made at once, unless it's a deletion, or takes fields over from what manages them: those ask anyway. Otherwise it waits in Lumovi for you, up to five minutes. See [Approving changes](/assistants/approvals).
+3. **Your answer.** With **Without asking**, the change is made at once, unless it's a deletion, takes fields over from what manages them, or makes something read a Secret it didn't before where Secrets' values are hidden: those ask anyway. Otherwise it waits in Lumovi for you, up to five minutes. See [Approving changes](/assistants/approvals#changes-they-ask-for).
 4. **A check.** Once you approve it, Lumovi tries it as a dry run again, and makes it only if it still changes the object as the diff you saw did. A deletion is made only if the object is still the one you saw, by its uid. If not: "Scale Deployment cart to 3 replicas wasn't made: cart changed after it was shown (…). Nothing was changed: ask again, to show it as it is now."
 5. **The change.** Lumovi makes it with your credentials, and tells the assistant what it did, and the `kubectl` command that does the same: "Restarted cart, approved in Lumovi. The kubectl command that does the same: …". If it fails, the assistant is told why: "Restart Deployment cart failed: …".
 
@@ -221,6 +231,7 @@ Restarts a Deployment's, StatefulSet's or DaemonSet's pods, as `kubectl rollout 
 Deletes an object, as `kubectl delete` does. What it owns goes too, in the background, like a Deployment's ReplicaSets and their pods. Lumovi marks it as destructive for the assistant (MCP's `destructiveHint`).
 
 - **It always asks**, even where the cluster allows assistants' changes. The approval dialog's button reads **Approve deletion**.
+- **The cluster's own objects only where every namespace may change.** Deleting a node, a CustomResourceDefinition or a cluster role can reach every namespace, so it's refused unless no namespace of the cluster is hidden, **Never**, or hides its Secrets: "CustomResourceDefinition rollouts.argoproj.io is demo's own: a change to it can reach every namespace, and assistants may not change all of them: the person's AI permissions say so ("System"). Nothing was changed."
 - **The name, where Lumovi's own Delete asks for it**: for a Namespace, Node, PersistentVolume, PersistentVolumeClaim, StorageClass or CustomResourceDefinition, and for any deletion in a cluster whose name looks like production. You type it before you can approve.
 - **Only the object you saw.** The deletion names the object's uid, so one deleted and made again under the same name meanwhile isn't deleted.
 
@@ -258,13 +269,36 @@ Cancelling it withdraws the change. Lumovi marks it as read-only for the assista
 
 ## What's hidden
 
-Lumovi leaves a few things out of the objects assistants read with `get_resource`, and out of those an approval shows you:
+Lumovi always leaves out what's long and says little:
 
-- **A Secret's values.** Each key of its `data` and `stringData` is kept, with `(hidden by Lumovi)` for its value.
-- **`managedFields`**, which is long and says little.
+- **`managedFields`**.
 - **The `kubectl.kubernetes.io/last-applied-configuration` annotation**, which repeats the object, and can hold a copy of a Secret's values.
 
-What isn't in a Secret is shown as it is: a ConfigMap's data, environment variables written in a pod's spec, custom resources' fields, events' messages and what containers log. Keep that in mind for clusters that hold sensitive data outside Secrets.
+And what your [permissions](/assistants/permissions#what-assistants-see) hide, where they hide it:
+
+- **A Secret's values**, unless **Secrets** is **Values**: each key of its `data` and `stringData` is kept, with `(hidden by Lumovi)` for its value. With **Hidden**, the Secrets aren't shown at all.
+- **Env values**, wherever an object has containers: those that look sensitive, by a word in their name, like `DB_PASSWORD` or `apiKey`, or a value that carries credentials, like a URL with a password or a token, or a webhook's address, with **Hide sensitive**, the default; every one with **Hide all**. See [Env values](/assistants/permissions#what-assistants-see).
+- **Logs**, with **Don't read**.
+- **Whole namespaces and clusters**, with **Hidden**.
+
+The approval dialog shows you a Secret's keys only, as well, but env values as they are: it's yours, not the assistant's.
+
+What's elsewhere is shown as it is, unless its namespace is hidden: a ConfigMap's data, a container's arguments, annotations, custom resources' own fields for credentials, events' messages. Keep that in mind for clusters that hold sensitive data outside Secrets.
+
+## Within your permissions
+
+Every tool decides with your permissions as they are when it's called, so a change to them applies at once, to assistants connected already too.
+
+- **A hidden namespace isn't there.** Lists and events leave it out, and asking for something in it is answered as the API server would for something missing: `namespaces "kube-system" not found`. A hidden cluster isn't in `list_clusters`, and naming one says "There is no cluster called …".
+- **What they refuse says who decided**: "the person's AI permissions say so", with the rule's name when a rule did, or "this server's administrator says so", with theirs.
+
+| When | The assistant is told |
+| --- | --- |
+| **Secrets** is **Hidden** | Lumovi doesn't show AI assistants the Secrets in shop: the person's AI permissions say so ("Shop"). |
+| **Logs** is **Don't read** | Lumovi doesn't let AI assistants read logs in shop: the person's AI permissions say so ("Shop"). |
+| **Changes** is **Never** | Lumovi doesn't let AI assistants change monitoring in demo: the person's AI permissions say so ("Monitoring"). Nothing was changed. |
+| Changing one of the cluster's own objects where some namespace is hidden, **Never**, or hides its Secrets | CustomResourceDefinition rollouts.argoproj.io is demo's own: a change to it can reach every namespace, and assistants may not change all of them: the person's AI permissions say so ("System"). Nothing was changed. |
+| The same, when the namespaces can't be listed | Lumovi can't tell which namespaces that would reach: … |
 
 <Columns cols={2}>
   <Card title="Approving changes" icon="check-check" href="/assistants/approvals">

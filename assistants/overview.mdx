@@ -7,14 +7,14 @@ icon: "sparkles"
 
 AI assistants like Claude Code, Claude Desktop, Cursor and VS Code can use Lumovi to look at your clusters: list what's there, read objects, events and logs, and find what's wrong, with Lumovi's own reasons. When an assistant wants to change something, it asks. Lumovi shows you the change, with the diff it makes, the assistant's reason and the `kubectl` command that does the same, and makes it only if you approve.
 
-<Frame caption="AI assistants in the desktop app: where they connect, how to connect each one, and what each cluster lets them change.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistants-light-1x.webp" alt="The AI assistants dialog over a cluster's overview: assistants on, listening at http://127.0.0.1:47830/mcp on port 47830, the Claude Code tab with its claude mcp add command and the token cut short, Claude Code under Connected now, and under Changes they ask for, Ask, Allow or Never for each cluster, with staging set to Allow." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistants-dark-1x.webp" alt="The AI assistants dialog over a cluster's overview: assistants on, listening at http://127.0.0.1:47830/mcp on port 47830, the Claude Code tab with its claude mcp add command and the token cut short, Claude Code under Connected now, and under Changes they ask for, Ask, Allow or Never for each cluster, with staging set to Allow." />
+<Frame caption="The AI assistants page in the desktop app: where assistants connect, how to connect each one, and which are connected.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistants-light-1x.webp" alt="The AI assistants page in the desktop app, for a kubeconfig of 4 contexts, on its Connect tab: On this computer, switched on, listening at http://127.0.0.1:47830/mcp on port 47830; the Claude Code tab with its claude mcp add command and the token cut short; Claude Code under Connected now; and New token…. Permissions and Activity are the page's other tabs." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistants-dark-1x.webp" alt="The AI assistants page in the desktop app, for a kubeconfig of 4 contexts, on its Connect tab: On this computer, switched on, listening at http://127.0.0.1:47830/mcp on port 47830; the Claude Code tab with its claude mcp add command and the token cut short; Claude Code under Connected now; and New token…. Permissions and Activity are the page's other tabs." />
 </Frame>
 
 ## On your desktop, or your team's server
 
-Assistants use the desktop app on your computer, or your team's Lumovi [in a cluster](/server/overview) or [fleet](/clusters/fleet). They get the same tools either way, and their changes wait for you in the same dialog. What differs:
+Assistants use the desktop app on your computer, or your team's Lumovi [in a cluster](/server/overview) or [fleet](/clusters/fleet). They get the same tools either way, keep to the same [permissions](/assistants/permissions), and their changes wait for you in the same dialog. What differs:
 
 | | Desktop app | Your team's Lumovi |
 | --- | --- | --- |
@@ -23,7 +23,7 @@ Assistants use the desktop app on your computer, or your team's Lumovi [in a clu
 | Which assistants | Claude Code, Claude Desktop, Cursor, VS Code and others | Claude Code, Cursor, VS Code and others that sign in with OAuth |
 | As whom | You, with your kubeconfig | You, signed in as on your pages |
 | On or off | Off until you turn it on | On unless the administrator turned it off |
-| What their changes do, in each cluster | You choose | The administrator chooses |
+| What they may do, and where | [Your permissions](/assistants/permissions) | Your permissions, within the administrator's limits |
 | Where you approve them | Lumovi's window, with a notification from your computer | Your Lumovi pages, with the browser's notification if you allow it |
 
 How it works, and what assistants can do, below, is the same on both. Turning them on and connecting them is the desktop app's; for your team's Lumovi, see [AI assistants on a server](/assistants/server).
@@ -36,18 +36,18 @@ Lumovi works for an assistant as it does for you:
 
 - **Your clusters.** Every context in your kubeconfig, as on the start screen; on a server, the clusters you may see there.
 - **Your credentials.** Lumovi reads and changes clusters with the credentials in your kubeconfig, or on a server, the ones you signed in with, so an assistant can't see or do more than your account can. See [Permissions](/clusters/permissions#ai-assistants).
-- **Your guard rails.** [Read-only](/changes/read-only) clusters stay read-only, and each change waits for you, unless a cluster's assistants may make some changes without asking.
+- **Your guard rails.** [Read-only](/changes/read-only) clusters stay read-only, and your [permissions](/assistants/permissions) say what assistants may see, change and read, and where.
 
 ## What assistants can do
 
-**They read.** Your clusters, the kinds each one serves, lists of objects with their health, one object as YAML, events and a container's logs. One tool, `find_problems`, sums up what's failing in a cluster or namespace in one answer, which is where assistants usually start.
+**They read.** Your clusters, the kinds each one serves, lists of objects with their health, one object as YAML, events and a container's logs, as your [permissions](/assistants/permissions) say. One tool, `find_problems`, sums up what's failing in a cluster or namespace in one answer, which is where assistants usually start.
 
-**They ask.** To apply a manifest, scale, restart or delete, each time with a reason. The cluster checks the change first, with a dry run, and then it waits in Lumovi for you to approve or reject it. Once you approve it, Lumovi makes it only if it still does what you saw. Each cluster can also take some of its assistants' changes without asking, or none at all, but deletions always ask: see [Changes they ask for](/assistants/approvals#changes-they-ask-for).
+**They ask.** To apply a manifest, scale, restart or delete, each time with a reason. The cluster checks the change first, with a dry run, and then it waits in Lumovi for you to approve or reject it. Once you approve it, Lumovi makes it only if it still does what you saw. Your permissions can let them make some changes without asking, or none at all, in some clusters and namespaces, but deletions always ask: see [Changes they ask for](/assistants/approvals#changes-they-ask-for).
 
 What they can't do:
 
-- **See a Secret's values.** They get its keys, and `(hidden by Lumovi)` for each value.
-- **Change a read-only cluster**, or one whose **Changes they ask for** is set to **Never**.
+- **See what your permissions hide.** By default, a Secret's keys but not its values, and env values that look sensitive, read `(hidden by Lumovi)`. A namespace you hide isn't there for them.
+- **Change a read-only cluster**, or where your permissions say **Never**.
 - **Go past your RBAC.** A change your account can't make fails at the dry run, before you're asked.
 - **Delete without asking.** Deletions always wait for you, and some ask you to type the name first.
 - **Anything else.** They have only Lumovi's tools: no shells, port forwards or Helm.
@@ -58,16 +58,18 @@ What they can't do:
 
 ## Turn it on
 
-AI assistants are off until you turn them on. Open the **AI assistants** dialog:
+AI assistants are off until you turn them on. Open the **AI assistants** page, on its **Connect** tab:
 
 - Choose **AI assistants**, the sparkles at the bottom of the sidebar. It has a green dot while an assistant is connected.
 - On the start screen, choose the same button at the bottom, next to the theme.
 - Choose **AI assistants…** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux).
 - Choose **View → AI Assistants…**
 
-While it's off, the dialog says what assistants would do:
+The page's **Back** button takes you back where you were. Its other tabs are [Permissions](/assistants/permissions), and **Activity**: what assistants changed, or asked to, since Lumovi opened, each with its `kubectl` command.
 
-- **They read:** Clusters' objects, events and logs, and what's failing; never Secrets' values.
+While it's off, **On this computer** says what assistants would do:
+
+- **They read:** Clusters' objects, events and logs, and what's failing, as your AI permissions say.
 - **They ask:** Each change shows here, with the diff it makes, for you to approve or reject.
 - **Only on this computer:** With a token of its own. Read-only clusters, and your own access (RBAC), always apply.
 
@@ -77,13 +79,13 @@ Choose **Turn on**. Lumovi starts listening for assistants, makes a token for th
 Listening at http://127.0.0.1:47830/mcp
 ```
 
-It stays on: Lumovi listens again each time it starts. The switch at the top right of the dialog turns it off. Lumovi then stops listening, lets every assistant go, and withdraws every change still waiting. Turned on again, it keeps the same token.
+It stays on: Lumovi listens again each time it starts. The switch at the top right of **On this computer** turns it off. Lumovi then stops listening, lets every assistant go, and withdraws every change still waiting. Turned on again, it keeps the same token.
 
 ### The port
 
 Lumovi listens on port 47830 unless you choose another. To change it, type a port from 1024 to 65535 in **Port**, and choose **Use**, or press <kbd>↵</kbd>.
 
-If another program already uses the port, the dialog says so, in red, and shows no way to connect until you choose another:
+If another program already uses the port, the tab says so, in red, and shows no way to connect until you choose another:
 
 > Lumovi can't use port 47830 (listen EADDRINUSE: …): choose another one.
 
@@ -91,7 +93,7 @@ Changing the port lets every assistant go and withdraws every change still waiti
 
 ## Connect an assistant
 
-Under **Connect an assistant**, a tab for each assistant says how. What you copy has the token in it: the dialog shows only its first four characters, then `…`, and the copy buttons copy all of it. The assistant keeps the token in its own settings.
+Under **Connect an assistant**, a tab for each assistant says how. What you copy has the token in it: the tab shows only its first four characters, then `…`, and the copy buttons copy all of it. The assistant keeps the token in its own settings.
 
 <Tabs>
   <Tab title="Claude Code" icon="square-terminal">
@@ -190,9 +192,9 @@ An assistant leaves the list when it disconnects. One that hasn't asked anything
 
 ## A new token
 
-Assistants send Lumovi's token to connect. If a copy of it got out, make a new one: choose **New token…** at the bottom of the dialog, then **Make a new token**. **Cancel** keeps the one you have.
+Assistants send Lumovi's token to connect. If a copy of it got out, make a new one: choose **New token…** at the bottom of the **Connect** tab, then **Make a new token**. **Cancel** keeps the one you have.
 
-The dialog says what that does: "Assistants connected with the token now disconnect: set them up again (Claude Desktop picks the new one up itself)." Every connected assistant is let go, every change still waiting is withdrawn, and the old token stops working. Set up Claude Code, Cursor, VS Code and the others again, from the dialog. Claude Desktop reads the new token by itself.
+Lumovi says what that does: "Assistants connected with the token now disconnect: set them up again (Claude Desktop picks the new one up itself)." Every connected assistant is let go, every change still waiting is withdrawn, and the old token stops working. Set up Claude Code, Cursor, VS Code and the others again, from the **Connect** tab. Claude Desktop reads the new token by itself.
 
 ## Security
 
@@ -202,11 +204,11 @@ Lumovi lets assistants in only from this computer, and only with its token:
 - **Only with the token.** Every request has to carry it, as `Authorization: Bearer <token>`. It's 43 random characters, made the first time you turn assistants on, and Lumovi compares it in constant time. A request without it gets "Lumovi needs its token: set this assistant up again from Lumovi."
 - **Not from web pages.** A browser marks the requests a page makes with an `Origin` header, and Lumovi refuses them: "Web pages may not connect to Lumovi." A page that points a name of its own at your computer (DNS rebinding) sends that name as the `Host`, and is refused too: "Only this computer may connect." Only requests addressed to `127.0.0.1` or `localhost`, at Lumovi's port, get in.
 - **Small messages.** A message is at most 4 MB. A larger one gets "That's more than Lumovi takes: 4 MB at most." Only `/mcp` answers.
-- **Kept where only you can read it.** The token is in Lumovi's `settings.json`, with what each cluster lets assistants change. On macOS and Linux, Lumovi keeps that file readable by your account only. See [Privacy and security](/reference/privacy-and-security#what-it-keeps-on-your-computer).
+- **Kept where only you can read it.** The token is in Lumovi's `settings.json`, with what assistants may do. On macOS and Linux, Lumovi keeps that file readable by your account only. See [Privacy and security](/reference/privacy-and-security#what-it-keeps-on-your-computer).
 
 Any program on your computer that has the token can use Lumovi as an assistant would: read your clusters, and ask for changes. The commands and settings you copy have it in them, the one for Claude Code in your shell's history too. Make a new token if one got out.
 
-Lumovi itself calls no AI service, and sends what it gives an assistant to that assistant only. The assistant handles it as it handles everything else you show it, which for most means sending it to their AI provider. Lumovi hides Secrets' values from them, but not what's outside Secrets, like ConfigMaps, environment variables in a pod's spec, or what a container logs. See [What's hidden](/assistants/tools#whats-hidden).
+Lumovi itself calls no AI service, and sends what it gives an assistant to that assistant only. The assistant handles it as it handles everything else you show it, which for most means sending it to their AI provider. Your [permissions](/assistants/permissions) say what Lumovi hides from them: by default, Secrets' values and env values that look sensitive. A ConfigMap's data, or what a container logs, they read unless you hide its namespace, or its logs. See [What's hidden](/assistants/tools#whats-hidden).
 
 <Columns cols={2}>
   <Card title="Approving changes" icon="check-check" href="/assistants/approvals">

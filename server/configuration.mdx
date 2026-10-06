@@ -45,6 +45,10 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
   What it calls the cluster: `in-cluster` (or the kubeconfig's context) unless set. In a fleet, the cluster it runs in.
 </ResponseField>
 
+<ResponseField name="LUMOVI_CLUSTER_LABELS" type="string">
+  The labels of the cluster Lumovi runs in, like `env=production,region=eu-west`: in a fleet, as one of its clusters; on a Lumovi of one cluster, for [AI assistants' rules](/server/assistants#limits-for-everyone) that match clusters by label. Labels that aren't like this stop Lumovi.
+</ResponseField>
+
 <ResponseField name="KUBECONFIG" type="string">
   A kubeconfig to show a cluster from, instead of the cluster Lumovi runs in.
 </ResponseField>
@@ -91,10 +95,6 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 
 <ResponseField name="LUMOVI_FLEET_REFRESH_SECONDS" type="number" default="30">
   How often kubeconfig files and Secrets are read again, in seconds: from 1 to 3600.
-</ResponseField>
-
-<ResponseField name="LUMOVI_CLUSTER_LABELS" type="string">
-  The labels of the cluster Lumovi runs in, in a fleet, like `env=production,region=eu-west`. Labels that aren't like this stop Lumovi.
 </ResponseField>
 
 ## Sign-in
@@ -211,8 +211,20 @@ See [AI assistants for your team](/server/assistants).
   `on` or `off`: whether AI assistants may sign in and connect, at `mcp` below the base path. With `off`, their addresses answer `404`, saying `This server's administrator has turned AI assistants off.` Anything else stops Lumovi, saying `LUMOVI_ASSISTANTS must be on or off, not "…".`
 </ResponseField>
 
-<ResponseField name="LUMOVI_ASSISTANT_CHANGES" type="string" default="ask">
-  What the changes assistants ask for do: `ask` (each waits for its person's approval), `allow` (made without asking, but deletions, and changes that take fields over from what manages them, still ask) or `never`. Then clusters' own, by name, separated by commas: `ask,staging=allow,production=never`. Anything else stops Lumovi, saying `LUMOVI_ASSISTANT_CHANGES must be ask, allow or never, with clusters' own after it (ask,staging=allow), not "…".`
+<ResponseField name="LUMOVI_ASSISTANT_RULES" type="string">
+  Limits on what everyone's assistants may do, which nothing of theirs loosens: a list of rules, as YAML or JSON, or either encoded in base64 on one line. Each has a `name`, where it applies (`clusters`, `namespaces`), and what it limits (`visibility`, `changes`, `secrets`, `env`, `logs`). One that doesn't make sense stops Lumovi, and its log says which. See [Limits for everyone](/server/assistants#limits-for-everyone).
+</ResponseField>
+
+<ResponseField name="LUMOVI_ASSISTANT_CHANGES" type="string">
+  Changes as Lumovi 1.4 limited them, kept as limits: `ask` or `never` for every cluster, then clusters' own, by name, separated by commas: `ask,staging=allow,production=never`. `allow` limits nothing: people choose. Unset, people choose everywhere. Anything else stops Lumovi, saying `LUMOVI_ASSISTANT_CHANGES must be ask, allow or never, with clusters' own after it (ask,staging=allow), not "…".` See [What their changes do](/server/assistants#what-their-changes-do).
+</ResponseField>
+
+<ResponseField name="LUMOVI_ASSISTANT_RULES_CONFIGMAP" type="string">
+  A ConfigMap in the namespace Lumovi runs in, where it keeps each person's own rules for their assistants. The chart sets it to `<release>-assistant-rules`, which it makes. Lumovi needs `get` and `update` on it, and doesn't start when it can't read it, or isn't running in a cluster. See [Where people's rules are kept](/server/assistants#where-peoples-rules-are-kept).
+</ResponseField>
+
+<ResponseField name="LUMOVI_DATA_DIR" type="string">
+  Without `LUMOVI_ASSISTANT_RULES_CONFIGMAP`, a folder where Lumovi keeps each person's own rules for their assistants, in `assistant-rules.json`, which only its user can read. Without either, it keeps them in memory, and they're gone when it stops.
 </ResponseField>
 
 <ResponseField name="LUMOVI_ASSISTANT_REDIRECT_HOSTS" type="string">

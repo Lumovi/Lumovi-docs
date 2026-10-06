@@ -1,11 +1,11 @@
 ---
 title: "AI assistants for your team"
 sidebarTitle: "AI assistants"
-description: "Let your team's AI assistants use Lumovi as them, signed in through Lumovi with OAuth, and decide what the changes they ask for do, cluster by cluster."
+description: "Let your team's AI assistants use Lumovi as them, signed in through Lumovi with OAuth, set limits on what they may do, and keep each person's own rules."
 icon: "users"
 ---
 
-Lumovi's server is an MCP server too, at its address with `/mcp` after it: `https://lumovi.example.com/mcp`. Claude Code, Cursor, VS Code and other MCP clients that speak HTTP and OAuth connect there, with the same [tools](/assistants/tools) as the desktop app's. Each signs in through Lumovi, as MCP has clients do: Lumovi opens in the person's browser, they sign in as they always do, and allow the assistant. From then on, it acts as them, with their RBAC on each cluster, a [fleet's](/server/fleet) too. The changes it asks for wait on that person's own Lumovi pages for their answer.
+Lumovi's server is an MCP server too, at its address with `/mcp` after it: `https://lumovi.example.com/mcp`. Claude Code, Cursor, VS Code and other MCP clients that speak HTTP and OAuth connect there, with the same [tools](/assistants/tools) as the desktop app's. Each signs in through Lumovi, as MCP has clients do: Lumovi opens in the person's browser, they sign in as they always do, and allow the assistant. From then on, it acts as them, with their RBAC on each cluster, a [fleet's](/server/fleet) too, and as their [permissions](/assistants/permissions) say, within limits you may set. The changes it asks for wait on that person's own Lumovi pages for their answer.
 
 What people see and do is on [AI assistants on a server](/assistants/server). This page is for whoever runs Lumovi.
 
@@ -26,17 +26,62 @@ What people see and do is on [AI assistants on a server](/assistants/server). Th
   ```
 </CodeGroup>
 
-Off, `mcp`, the OAuth endpoints and the addresses where assistants look for how to sign in answer `404`, with "This server's administrator has turned AI assistants off." The page for allowing an assistant says the same, and so does the **AI assistants** dialog, while the sidebar has no button for it. `LUMOVI_ASSISTANTS` is `on` or `off`: anything else stops Lumovi, saying `LUMOVI_ASSISTANTS must be on or off, not "maybe".`
+Off, `mcp`, the OAuth endpoints and the addresses where assistants look for how to sign in answer `404`, with "This server's administrator has turned AI assistants off." The page for allowing an assistant says the same, and so does the **AI assistants** page, while the sidebar has no button for it. `LUMOVI_ASSISTANTS` is `on` or `off`: anything else stops Lumovi, saying `LUMOVI_ASSISTANTS must be on or off, not "maybe".`
+
+## Limits for everyone
+
+Each person says what their assistants may do, and where, on the **Permissions** tab of their **AI assistants** page: see [What assistants may do](/assistants/permissions). Your rules are limits on that, which nothing of theirs loosens. People see them first on the tab, locked, with **Set by your administrator**, and their assistants are told "this server's administrator says so" when one refuses them.
+
+<CodeGroup>
+  ```yaml values.yaml
+  assistants:
+    rules:
+      - name: System namespaces
+        namespaces: [kube-*, cert-manager]
+        visibility: hidden
+      - name: Production
+        clusters: [env=production] # labelled so: see below
+        changes: ask
+        secrets: keys
+  ```
+
+  ```bash Environment
+  LUMOVI_ASSISTANT_RULES='[{"name":"System namespaces","namespaces":["kube-*","cert-manager"],"visibility":"hidden"},{"name":"Production","clusters":["env=production"],"changes":"ask","secrets":"keys"}]'
+  ```
+</CodeGroup>
+
+`LUMOVI_ASSISTANT_RULES` takes the list as YAML or JSON, or either encoded in base64 on one line. The chart sets it from `assistants.rules`. Each rule has:
+
+- **`name`**, up to 100 characters, as people and assistants read it.
+- **`clusters`** and **`namespaces`**, a name or a list, matched as people's rules are: names, patterns like `tenant-*`, labels like `team=payments`, and `!` first to leave one out. Without either, all of them. See [Where a rule applies](/assistants/permissions#where-a-rule-applies).
+- **What it limits**, at least one: `visibility: hidden`; `changes: ask` or `never`; `secrets: keys` or `hidden`; `env: sensitive` or `all`; `logs: off`. Where your rule is stricter than what someone's own say, yours wins. A setting's loosest value, like `changes: allow` or `logs: read`, would limit nothing, and stops Lumovi.
+
+Rules match clusters by label as the cluster is labelled: in a [fleet](/server/fleet), by the fleet's labels for each cluster; on a Lumovi of one cluster, by the labels you give it, with `clusterLabels` in the chart (`LUMOVI_CLUSTER_LABELS`):
+
+```yaml values.yaml
+clusterLabels:
+  env: production
+```
+
+On a Lumovi of one cluster, a rule that matches clusters by a label the cluster doesn't have would do nothing, so it stops Lumovi: give the cluster its labels, or name it. Only the label's key counts for that: a rule naming a value the cluster doesn't have, like `env=staging` on a cluster labelled `env=production`, starts, and doesn't apply there, so one set of rules can serve several servers. A typo in a value looks the same, so check them. Where a namespace's labels can't be read as the person, a rule that matches by label counts as a limit there.
+
+A rule that doesn't make sense stops Lumovi, and its log says which, and why:
+
+```text
+LUMOVI_ASSISTANT_RULES[0] (Shop) limits nothing: give it visibility, changes, secrets, env or logs.
+LUMOVI_ASSISTANT_RULES[0] (Shop) says logs: read, which limits nothing: it’s the loosest there is.
+LUMOVI_ASSISTANT_RULES[0]’s logs must be read, off, not “maybe”.
+LUMOVI_ASSISTANT_RULES[0]’s namespaces[0] (“a b”): It has a space.
+The AI rule “Production” matches clusters by the label env, which this server’s cluster doesn’t have: give it its labels (LUMOVI_CLUSTER_LABELS, the chart’s clusterLabels), or name it.
+```
+
+With the chart, `helm install` refuses keys and values its schema doesn't take first. In `assistants.rules`, it takes only what limits: `visibility: hidden`, `changes: ask` or `never`, `secrets: keys` or `hidden`, `env: sensitive` or `all`, and `logs: off`.
+
+Whatever your rules and theirs say, each person's RBAC applies, and `readOnly: true` (`LUMOVI_READ_ONLY`) keeps assistants from changing anything, as it keeps everyone. So does read-only that people set for themselves: a cluster someone made read-only in their browser is read-only for their assistants too, as their latest Lumovi page says.
 
 ## What their changes do
 
-Each cluster's assistants' changes are asked about, made without asking, or never made, as you say: for every cluster, and for some on their own.
-
-| | What happens to a change |
-| --- | --- |
-| `ask` | The default. It waits for the person's approval, on their Lumovi pages. |
-| `allow` | Made without asking, after the cluster checks it with a dry run, and the person is told on their pages. Deletions, and changes that take fields over from what manages them (Helm, Argo CD, an autoscaler), still ask. |
-| `never` | Assistants only read. A change is refused before anything is tried. |
+Before rules, Lumovi 1.4 said what assistants' changes do, cluster by cluster, with `LUMOVI_ASSISTANT_CHANGES` (the chart's `assistants.changes` and `assistants.clusters`). They still work, as limits:
 
 <CodeGroup>
   ```yaml values.yaml
@@ -52,15 +97,49 @@ Each cluster's assistants' changes are asked about, made without asking, or neve
   ```
 </CodeGroup>
 
-In `LUMOVI_ASSISTANT_CHANGES`, an entry without a name is every cluster's, and `name=…` entries are those clusters' own, separated by commas. Unset, every cluster's is `ask`. Spaces around them don't matter. The chart builds it from `assistants.changes` and `assistants.clusters`. Anything else stops Lumovi:
+| | Now |
+| --- | --- |
+| `ask` | A limit: changes ask, whatever people's own say. |
+| `never` | A limit: no changes. |
+| `allow` | No limit: people choose. Their changes ask unless they say otherwise. |
+
+Lumovi makes them into rules, which people see on their **Permissions** tab: `Changes (LUMOVI_ASSISTANT_CHANGES)` for every cluster but those named, and `Changes to production (LUMOVI_ASSISTANT_CHANGES)` for each one named.
+
+<Warning>
+  Since this version, `allow` no longer makes changes without asking by itself: each person chooses **Without asking** for their own. And the chart sets `assistants.changes` only when you do, so after upgrading, people may let their assistants change things without asking, or read Secrets' values, unless you set limits. See [Upgrading](/server/upgrade).
+</Warning>
+
+In `LUMOVI_ASSISTANT_CHANGES`, an entry without a name is every cluster's, and `name=…` entries are those clusters' own, separated by commas. Spaces around them don't matter. Anything else stops Lumovi:
 
 ```text
 LUMOVI_ASSISTANT_CHANGES must be ask, allow or never, with clusters' own after it (ask,staging=allow), not "sometimes".
 ```
 
-A cluster's name is the one Lumovi shows: `clusterName` (`in-cluster` unless set) for a Lumovi of one cluster, and each cluster's name in a fleet. People see what you chose under **Changes they ask for** in their dialog, without a way to change it: **Ask you**, **Made without asking** or **Never**.
+A cluster's name is the one Lumovi shows: `clusterName` (`in-cluster` unless set) for a Lumovi of one cluster, and each cluster's name in a fleet. For more than changes, or for namespaces, use [rules](#limits-for-everyone).
 
-Whatever you choose, the person's RBAC applies, and `readOnly: true` (`LUMOVI_READ_ONLY`) keeps assistants from changing anything, as it keeps everyone. So does read-only that people set for themselves: a cluster someone made read-only in their browser is read-only for their assistants too, as their latest Lumovi page says. For a cluster nobody's assistants should change, set it to `never`.
+## Where people's rules are kept
+
+Each person's rules are kept on the server, by the name they're signed in as: the same in every browser, and every page of theirs, and their assistants, follow a change at once. Lumovi keeps them in the first of these it has:
+
+1. **A ConfigMap**, in the namespace Lumovi runs in, named by `LUMOVI_ASSISTANT_RULES_CONFIGMAP`. The Helm chart makes it, `<release>-assistant-rules`, and sets the variable, whenever assistants are on.
+2. **A file**, `assistant-rules.json` in the folder `LUMOVI_DATA_DIR` names. Only Lumovi's user can read it, and it's written whole or not at all.
+3. **Memory**, until Lumovi stops. Its log says so as it starts: `AI rules are kept in memory: people’s are lost when Lumovi stops. Set LUMOVI_DATA_DIR, or install the Helm chart, to keep them.` People's **Permissions** tab warns them too, and after a restart their assistants do what the defaults say.
+
+With the chart:
+
+- **Lumovi may only read and update that one ConfigMap**: a Role, `<release>-assistant-rules`, gives its service account `get` and `update` on it by name, and nothing else. The chart makes the Role with `rbac.create`. With `rbac.create: false`, the chart still makes the ConfigMap and tells Lumovi to use it: grant Lumovi's service account `get` and `update` on `<release>-assistant-rules` yourself, or it doesn't start.
+- **Uninstalling keeps it**, with what people set, on purpose (`helm.sh/resource-policy: keep`): installing again finds their rules as they were. Upgrades leave what's in it. Delete it yourself to forget them.
+- **It holds everyone's**, as JSON under `rules.json`, up to 1 MB in all: past that, a person's change isn't kept, and their tab says "Not kept: Lumovi can't keep more AI rules: everyone's together would be over 1 MB."
+- **Whoever may update ConfigMaps in Lumovi's namespace can change anyone's rules**, and whoever may read them sees everyone's. Keep that namespace to administrators.
+
+Lumovi reads what's kept when it starts, and stops rather than loosen anyone's when it can't:
+
+```text
+Lumovi can’t read ConfigMap lumovi/lumovi-assistant-rules, where it keeps people’s AI rules: configmaps "lumovi-assistant-rules" not found
+ConfigMap lumovi/lumovi-assistant-rules isn’t JSON: Lumovi can’t read the AI rules it kept there.
+```
+
+A file says the same, by its path. `LUMOVI_ASSISTANT_RULES_CONFIGMAP` needs Lumovi to run in a cluster, and a ConfigMap's name. Edited by hand while Lumovi runs, what's kept is read again when Lumovi starts, or when someone next keeps a change of theirs: then Lumovi takes in your edits, and keeps that person's own change over what you edited for them.
 
 ## Where assistants go back to
 
@@ -94,7 +173,7 @@ redirect_uris must go back to this computer (http://localhost), to an app (its o
 
 ## In a fleet
 
-In a [fleet](/server/fleet), an assistant acts in every cluster its person may see, as Lumovi acts for them: impersonating them with Lumovi's credentials for each cluster, or passing their own token on where the cluster takes it. Name the fleet's clusters in `assistants.clusters` to give some their own rule.
+In a [fleet](/server/fleet), an assistant acts in every cluster its person may see, as Lumovi acts for them: impersonating them with Lumovi's credentials for each cluster, or passing their own token on where the cluster takes it. Rules, yours and people's, match the fleet's clusters by name, or by their labels, as the fleet describes them, like `env=production`.
 
 ## Below a base path
 
@@ -183,9 +262,9 @@ The cluster's audit log records the changes themselves, as the person's: Lumovi 
 - **A person allows each one, on Lumovi's own page.** The page names the assistant, who it would act as, and where it goes back to. Lumovi takes the answer only from its own page, by its origin, as it does sign-ins: another site can't allow an assistant for someone.
 - **Sent back only to the person's computer, an app, or sites you name.** See [Where assistants go back to](#where-assistants-go-back-to). The address must also match one the assistant registered exactly, and the answer names Lumovi as its issuer (`iss`). A site you stop naming can no longer be sent back to, even by an assistant that registered with it.
 - **Codes and tokens.** A code works once, for two minutes, for the assistant and address it was given to, with the PKCE verifier it was made for. Access tokens last an hour. Refresh tokens work once: each renewal gives a new one. One that's used again within 30 seconds is taken for a retry, and refused; later, for a copy someone else has, and Lumovi ends what was allowed. Codes and tokens that run out are cleared every minute. Assistants sign out at `oauth/revoke` ([RFC 7009](https://www.rfc-editor.org/rfc/rfc7009)).
-- **In memory only.** What people allowed, codes, tokens and the changes waiting live in Lumovi's memory, and nothing is written down. A registration needs no keeping: its client ID holds it. Restarting Lumovi signs every assistant out, and they sign in again. For the same reason, Lumovi runs one replica while assistants are on: their requests carry no cookies to keep them to one pod. The chart refuses `replicaCount` above 1 with `assistants.enabled`, saying `AI assistants need a single replica (replicaCount 1): …`.
+- **In memory.** What people allowed, codes, tokens and the changes waiting live in Lumovi's memory, and nothing of them is written down. A registration needs no keeping: its client ID holds it. People's rules are the exception: see [Where people's rules are kept](#where-peoples-rules-are-kept). Restarting Lumovi signs every assistant out, and they sign in again. For the same reason, Lumovi runs one replica while assistants are on: their requests carry no cookies to keep them to one pod. The chart refuses `replicaCount` above 1 with `assistants.enabled`, saying `AI assistants need a single replica (replicaCount 1): …`.
 - **As long as the session it was allowed in.** An assistant acts as its person until they disconnect it, sign out, or their session ends. Its tokens work only at `mcp`, not for Lumovi's pages.
-- **What an assistant can do** is what its person can, through Lumovi's tools only: read, and ask for the changes those tools make, which wait for that person, or follow the rule you set for the cluster. It never sees a Secret's values. Its changes are refused under `readOnly: true`, like everyone's, and in the clusters its person made read-only.
+- **What an assistant can do** is what its person can, through Lumovi's tools only, as their permissions say, within your rules: read, and ask for the changes those tools make. By default, it sees a Secret's keys, not its values, and env values that look sensitive are hidden. Its changes are refused under `readOnly: true`, like everyone's, and in the clusters its person made read-only.
 - **Each person's own.** People see and disconnect only their own assistants, and only their pages show their assistants' changes.
 
 <Warning>
@@ -217,7 +296,7 @@ The cluster's audit log records the changes themselves, as the person's: Lumovi 
     Their access ends with the session it was allowed in: when the person signs out, the session ends (`auth.sessionHours`), or Lumovi restarts, as an upgrade does. The log says `can no longer use Lumovi` when an assistant's access ends with its session, and `was let go: its refresh token was used again` when Lumovi ended it because an old refresh token came back.
   </Accordion>
   <Accordion title="Lumovi doesn't start" icon="power-off">
-    `LUMOVI_ASSISTANTS` is `on` or `off`, `LUMOVI_ASSISTANT_CHANGES` is like `ask,staging=allow`, and `LUMOVI_ASSISTANT_REDIRECT_HOSTS` is host names. The log says which, and what it got. With the chart, `helm install` refuses values its schema doesn't take, and more than one replica while assistants are on. See [Configuration](/server/configuration#ai-assistants).
+    `LUMOVI_ASSISTANTS` is `on` or `off`, `LUMOVI_ASSISTANT_CHANGES` is like `ask,staging=allow`, `LUMOVI_ASSISTANT_RULES` is a list of rules, and `LUMOVI_ASSISTANT_REDIRECT_HOSTS` is host names. Lumovi also stops when it can't read people's rules where they're kept: see [above](#where-peoples-rules-are-kept). The log says which, and what it got. With the chart, `helm install` refuses values its schema doesn't take, and more than one replica while assistants are on. See [Configuration](/server/configuration#ai-assistants).
   </Accordion>
 </AccordionGroup>
 

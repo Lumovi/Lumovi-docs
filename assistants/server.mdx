@@ -5,17 +5,19 @@ description: "Connect Claude Code, Cursor, VS Code or another assistant to your 
 icon: "server"
 ---
 
-Your team's Lumovi, [in a cluster](/server/overview) or as a [fleet](/clusters/fleet), takes AI assistants too. Claude Code, Cursor, VS Code and other assistants that speak MCP connect to its address, and sign in through Lumovi in your browser: there's no token to copy. Then they act as you. They read the clusters you can see (in a fleet, every one you may see), with what you may do in each, and the changes they ask for wait on your own Lumovi pages for your answer.
+Your team's Lumovi, [in a cluster](/server/overview) or as a [fleet](/clusters/fleet), takes AI assistants too. Claude Code, Cursor, VS Code and other assistants that speak MCP connect to its address, and sign in through Lumovi in your browser: there's no token to copy. Then they act as you. They read the clusters you can see (in a fleet, every one you may see), with what you may do in each and what your [permissions](/assistants/permissions) let them, and the changes they ask for wait on your own Lumovi pages for your answer.
 
-They have the same [tools](/assistants/tools) as in the desktop app, and their changes show in the same [approval dialog](/assistants/approvals). What differs is how they connect, how they sign in, and who decides what their changes do. Running the server? See [AI assistants for your team](/server/assistants).
+They have the same [tools](/assistants/tools) as in the desktop app, and their changes show in the same [approval dialog](/assistants/approvals). What differs is how they connect, how they sign in, and that your permissions are kept on the server, within limits the administrator may set. Running the server? See [AI assistants for your team](/server/assistants).
 
 ## Connect an assistant
 
-Open the **AI assistants** dialog: the sparkles at the bottom of the sidebar, next to the theme (at the top right of a fleet's page of clusters), or **AI assistants…** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux). It says:
+Open the **AI assistants** page: the sparkles at the bottom of the sidebar, next to the theme (at the top right of a fleet's page of clusters), or **AI assistants…** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux). It says:
 
-> Claude Code, Cursor, VS Code and other assistants read the clusters you can see through Lumovi, as you, and ask you here before they change anything.
+> Claude Code, Cursor, VS Code and other assistants act as you through Lumovi. They never get more than your own access, and your permissions narrow it further.
 
-Under **Connect an assistant**, a tab for each:
+Its tabs are **Connect**, **Your assistants**, [Permissions](/assistants/permissions) and **Activity**: what assistants changed, or asked to, since Lumovi opened. **Back** takes you back where you were.
+
+On the **Connect** tab, under **Connect an assistant**, a tab for each:
 
 <Tabs>
   <Tab title="Claude Code" icon="square-terminal">
@@ -34,7 +36,7 @@ Under **Connect an assistant**, a tab for each:
     Choose **Add to VS Code**. VS Code asks you to confirm, then opens Lumovi in your browser to sign in.
   </Tab>
   <Tab title="Other" icon="plug">
-    Assistants that connect to MCP servers over HTTP use the address the dialog shows, with **Copy address**: the server's own, with `/mcp` after it, like `https://lumovi.example.com/mcp`. They sign in with OAuth, as MCP has them do: Lumovi opens in your browser, and asks you to allow them.
+    Assistants that connect to MCP servers over HTTP use the address the tab shows, with **Copy address**: the server's own, with `/mcp` after it, like `https://lumovi.example.com/mcp`. They sign in with OAuth, as MCP has them do: Lumovi opens in your browser, and asks you to allow them.
   </Tab>
 </Tabs>
 
@@ -49,9 +51,15 @@ When the assistant connects for the first time, it opens Lumovi in your browser:
     As you always do: with a token, single sign-on, or your company's login. If you're signed in already, there's nothing to do. See [Signing in](/get-started/sign-in).
   </Step>
   <Step title="Read what it asks">
-    **Allow an AI assistant?** names the assistant, as it calls itself, and who it would act as:
+    **Allow an AI assistant?** names the assistant, as it calls itself, and who it would act as: "Claude Code wants to use Lumovi as alice@example.com. With your AI permissions, it will:", then what it will be able to do, counted over the namespaces you can list:
 
-    > Claude Code wants to use Lumovi as alice@example.com: to read the clusters you can see, and to ask to change them. Each change waits for your approval in Lumovi, unless a cluster lets assistants make it without asking.
+    - See 14 namespaces in 1 cluster; 2 hidden from it.
+    - Ask you before it changes anything in 12 namespaces, and never change 2.
+    - Change 0 namespaces without asking.
+    - Read Secrets' values in 0 namespaces.
+    - Read logs in 14 namespaces.
+
+    Changes without asking, and Secrets' values, show in the warning's color when there are any. A cluster whose namespaces you can't list isn't counted, and the page says so. **Change what assistants may do** opens your [permissions](/assistants/permissions) in another tab: change them before you allow it, if you like.
 
     Below that, where it goes back to: an address on your computer, like `127.0.0.1:33418`, an app, like `cursor`, or a site, like `vscode.dev`, which passes it on to VS Code. Lumovi sends you back only to your computer, an app, VS Code's site, or sites your team allowed. "Allow it only if you started this from Claude Code."
   </Step>
@@ -70,7 +78,7 @@ If something is wrong with the request, the page says so instead, and asks you t
 
 An assistant you allow acts as you, with your RBAC on each cluster, until:
 
-- **You disconnect it**, under **Your assistants** in the dialog.
+- **You disconnect it**, on the page's **Your assistants** tab.
 - **Your session ends**: you sign out of Lumovi, it's been 12 hours (or what your team set), or Lumovi restarts.
 - **The assistant signs out** of Lumovi itself.
 - **Lumovi lets it go**, when a token it renewed its access with comes back later, used already, as it would if someone else had a copy.
@@ -83,7 +91,7 @@ It renews its access every hour by itself, without asking you. Once it can no lo
 
 ## Your assistants
 
-**Your assistants** lists each assistant you allowed, by the name it gives as it connects, like **Claude Code**: when you allowed it, and when it last used Lumovi, like "Allowed 2h ago · used 4m ago". The dialog says:
+The **Your assistants** tab, with how many there are, lists each assistant you allowed, by the name it gives as it connects, like **Claude Code**: when you allowed it, and when it last used Lumovi, like "Allowed 2h ago · used 4m ago". It says:
 
 > They act as you, with what you may do in each cluster, until you disconnect them or sign out of Lumovi.
 
@@ -97,13 +105,13 @@ The changes your assistants ask for wait on your own Lumovi pages, in the same d
 
 - **No page open?** The change waits for the next one you open, up to its five minutes. The assistant is told where to send you: "Still waiting for the person's answer in Lumovi (https://lumovi.example.com): nothing has changed yet. …"
 - **What it changes, and why**, the check that it still does what you saw once you approve it, and the typed name for some deletions: all as in the desktop app.
-- **The activity log** of each page shows what became of them, with "via Claude Code".
+- **The activity log** of each page shows what became of them, with "via Claude Code", and so does the page's **Activity** tab.
 
 ## Notifications
 
-Your browser can tell you when a change waits, while Lumovi's tab isn't in front. At the bottom of the dialog, **Notify me** asks the browser to let it:
+Your browser can tell you when a change waits, while Lumovi's tab isn't in front. At the bottom of the **Connect** tab, **Notify me** asks the browser to let it:
 
-| The dialog says | Means |
+| The tab says | Means |
 | --- | --- |
 | Let this browser tell you when a change waits for you, while you're elsewhere. | You haven't been asked yet: choose **Notify me**. |
 | This browser tells you when a change waits for you. | It will, while the tab is in the background. |
@@ -111,23 +119,25 @@ Your browser can tell you when a change waits, while Lumovi's tab isn't in front
 
 A notification says what's waiting, like **Claude Code asks to change demo**, "Scale Deployment cart to 3 replicas. Review it in Lumovi." Clicking it brings Lumovi's window forward. With the tab in front, the dialog shows, and nothing else does.
 
-Some browsers have no notifications for pages, like Safari on a phone outside an app on the home screen. There, the dialog has no **Notifications** part, and changes show only on your pages.
+Some browsers have no notifications for pages, like Safari on a phone outside an app on the home screen. There, the **Connect** tab has no **Notifications** part, and changes show only on your pages.
 
 ## What your team decides
 
-The server's administrator decides, not you:
+The server's administrator decides:
 
-- **Whether assistants may connect at all.** When they've turned them off, the dialog says "This server's administrator has turned AI assistants off.", and so does the page for allowing one. The sidebar has no button for it.
-- **What their changes do, in each cluster.** **Changes they ask for** shows it, without a way to change it: **Ask you**, **Made without asking** or **Never**, for each cluster. "As this server's administrator set them, and none where you made a cluster read-only. Deletions, and changes that take fields over from Helm or Argo CD, ask you wherever changes are made without asking."
+- **Whether assistants may connect at all.** When they've turned them off, the page says "This server's administrator has turned AI assistants off.", and so does the page for allowing one. The sidebar has no button for it.
+- **Limits for everyone.** Rules of theirs, which come first on your **Permissions** tab, with **Set by your administrator**. Nothing you set loosens them. See [Your administrator's rules](/assistants/permissions#your-administrators-rules).
 - **Read-only for everyone.** When the server is read-only, assistants change nothing either.
 
-Read-only for yourself reaches your assistants too. A cluster you made [read-only](/changes/read-only) shows **Read-only: no changes** under **Changes they ask for**, `list_clusters` tells your assistants it's `read-only`, and a change one asks for there is refused: "… is read-only in Lumovi. Allow changes to it to continue." Lumovi keeps it as your latest page says, so a page in a browser where it isn't read-only allows changes there again.
+Within those, what your assistants may do is yours to say, on the [Permissions](/assistants/permissions) tab. Your permissions are kept on the server, the same in every browser you sign in with.
+
+Read-only for yourself reaches your assistants too. In a cluster you made [read-only](/changes/read-only), **Check a namespace** shows **Never: read-only**, `list_clusters` tells your assistants it's `read-only`, and a change one asks for there is refused: "… is read-only in Lumovi. Allow changes to it to continue." Lumovi keeps it as your latest page says, so a page in a browser where it isn't read-only allows changes there again.
 
 <Columns cols={2}>
   <Card title="Approving changes" icon="check-check" href="/assistants/approvals">
     What a change shows you, and how to answer it.
   </Card>
   <Card title="AI assistants for your team" icon="users" href="/server/assistants">
-    For administrators: turning them on or off, and what their changes do.
+    For administrators: turning them on or off, and limits for everyone.
   </Card>
 </Columns>

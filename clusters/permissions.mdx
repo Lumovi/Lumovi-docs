@@ -115,7 +115,7 @@ Lumovi doesn't ask the cluster up front for an assistant. It sends each change a
 | `delete_resource` | `get` and `delete` on the kind |
 | `wait_for_change` | Nothing: it waits for your answer in Lumovi |
 
-A cluster you made [read-only](/changes/read-only) refuses assistants' changes whatever your RBAC allows, and so does one whose **Changes they ask for** is **Never**. See [Approving changes](/assistants/approvals#changes-they-ask-for).
+Within what your RBAC allows, your [AI permissions](/assistants/permissions) narrow what assistants may do: namespaces they don't see, Secrets' values, env values and logs they don't read, and changes they don't make. A cluster you made [read-only](/changes/read-only) refuses assistants' changes whatever your RBAC allows, and so does one where your permissions say **Never**.
 
 ## An example
 

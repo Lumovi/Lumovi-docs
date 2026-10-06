@@ -43,6 +43,10 @@ agent.tokenSecret must name a Secret with the agent's token under token
   What Lumovi calls the cluster: in its pages, their addresses and titles. No slashes or spaces. In a fleet, the name of the cluster Lumovi runs in. For a member, the name its kubeconfig entry has, and for an agent, its name in the fleet.
 </ResponseField>
 
+<ResponseField name="clusterLabels" type="object" default="{}">
+  What the cluster is labelled with, like `{ env: production }`, for [AI assistants' rules](/server/assistants#limits-for-everyone) that match clusters by label. In a fleet, the cluster Lumovi runs in takes `fleet.labels` instead.
+</ResponseField>
+
 <ResponseField name="url" type="string">
   The address people open Lumovi at, like `https://lumovi.example.com`. [Single sign-on](/server/auth/single-sign-on) needs it, as the provider sends people back there. With `https:`, cookies are sent over HTTPS only. And Lumovi accepts sign-ins and connections from pages at this address even when a proxy in front of it changes the `Host` header. See [Security](/server/security#sessions-and-cookies).
 </ResponseField>
@@ -172,15 +176,33 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 </ResponseField>
 
 <ResponseField name="assistants.enabled" type="boolean" default="true">
-  Whether AI assistants (Claude Code, Cursor, VS Code and other MCP clients) may sign in through Lumovi and connect, at `mcp` below the base path, to act as whoever allows them. Below a base path, the chart's ingress also routes the two addresses at the origin's root where they look for how to sign in. See [AI assistants for your team](/server/assistants).
+  Whether AI assistants (Claude Code, Cursor, VS Code and other MCP clients) may sign in through Lumovi and connect, at `mcp` below the base path, to act as whoever allows them. Below a base path, the chart's ingress also routes the two addresses at the origin's root where they look for how to sign in. With it on, the chart makes a ConfigMap, `<release>-assistant-rules`, where Lumovi keeps each person's own rules, and which uninstalling keeps. See [AI assistants for your team](/server/assistants).
 </ResponseField>
 
-<ResponseField name="assistants.changes" type="string" default="ask">
-  What the changes assistants ask for do, in every cluster that has no rule of its own: `ask` (each waits for its person's approval), `allow` (made without asking, but deletions, and changes that take fields over from what manages them, still ask) or `never`.
+<ResponseField name="assistants.rules" type="object[]" default="[]">
+  Limits on what everyone's assistants may do, which nothing of theirs loosens. Each rule has a `name`; where it applies, `clusters` and `namespaces` (names, patterns like `tenant-*`, labels like `team=payments`, or `!` first to leave one out; none: all of them); and what it limits: `visibility: hidden`, `changes` (`ask`, `never`), `secrets` (`keys`, `hidden`), `env` (`sensitive`, `all`) or `logs: off`. The schema takes only these: a setting's loosest value would limit nothing. A cluster's labels are `clusterLabels`, or in a fleet, its clusters' own.
+
+  ```yaml values.yaml
+  assistants:
+    rules:
+      - name: System namespaces
+        namespaces: [kube-*, cert-manager]
+        visibility: hidden
+      - name: Production
+        clusters: [env=production] # clusterLabels, or in a fleet, its clusters'
+        changes: ask
+        secrets: keys
+  ```
+
+  See [Limits for everyone](/server/assistants#limits-for-everyone).
+</ResponseField>
+
+<ResponseField name="assistants.changes" type="string" default="''">
+  Changes as Lumovi 1.4 limited them, kept as a limit for every cluster that has none of its own: `ask` or `never`, or `allow`, which limits nothing. Unset, people choose. See [What their changes do](/server/assistants#what-their-changes-do).
 </ResponseField>
 
 <ResponseField name="assistants.clusters" type="object" default="{}">
-  Clusters' own rules, by name: `{ staging: allow, production: never }`. In a fleet, the fleet's clusters' names.
+  Clusters' own limits on changes, by name: `{ staging: allow, production: never }`. In a fleet, the fleet's clusters' names.
 </ResponseField>
 
 <ResponseField name="assistants.redirectHosts" type="string[]" default="[]">
@@ -239,7 +261,8 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
   Whether the chart gives Lumovi's service account the permissions it needs:
 
   - to impersonate users and groups: for one cluster, with `oidc` (unless tokens are passed on) and `proxy`; in a fleet, when it includes this cluster; and always as a member or an agent,
-  - in a fleet, to list Secrets where `fleet.secrets` are.
+  - in a fleet, to list Secrets where `fleet.secrets` are,
+  - with `assistants.enabled`, to `get` and `update` the ConfigMap where it keeps people's rules for their assistants, and no other.
 
   Otherwise, the chart makes no RBAC objects either way. Set it to `false` to manage those permissions yourself.
 </ResponseField>
