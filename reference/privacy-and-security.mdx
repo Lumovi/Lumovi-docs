@@ -24,6 +24,8 @@ The desktop app talks to:
 - **The chart repositories and registries you choose**, when you upgrade or install a Helm release from one.
 - **GitHub**, to look for new versions of Lumovi. **Help → Check for Updates Automatically** turns that off.
 
+Behind a company's proxy, it reaches them through the proxy your shell uses, and trusts the certificate authorities your computer does: see [Proxies and certificates](/desktop/network).
+
 That's all. Links to anything else, like a release's notes, open in your browser. Fonts come with the app, the icons of terminals' prompts included, so nothing is downloaded for them.
 
 What you run in a [terminal](/debug/terminal) is yours: it connects wherever it would in any other terminal.
@@ -44,12 +46,16 @@ A [terminal](/debug/terminal) gets a kubeconfig of its own that names the cluste
 - **Every request is checked.** The main process only answers calls from the app's own page, and validates every argument.
 - **Terminals run in the main process.** A [terminal](/debug/terminal)'s shell is started by the main process, on your computer and as you, like any terminal app's. The page shows what it prints, and passes on what you type.
 - **No browser permissions.** The page can't use the camera, notifications or anything else a website could ask for. It can only copy to the clipboard.
-- **Changes go through a small set of operations.** Each is checked against what you've made read-only, and refused for those clusters, or for all of them with `LUMOVI_READ_ONLY`. See [Read-only mode](/changes/read-only).
+- **Changes go through a small set of operations.** Each is checked against what you've made read-only, and refused for those clusters, or for all of them with `LUMOVI_READ_ONLY`, or for those your organization's [policy](/desktop/policy) makes read-only. See [Read-only mode](/changes/read-only).
 - **Links are limited.** Only `https://` links, and `http://localhost:<port>` for your own [port forwards](/debug/port-forwarding), are handed to the operating system. Besides those, **Add to Cursor** and **Add to VS Code** hand it Cursor's and VS Code's own links to add Lumovi, with its address and token in them.
 - **AI assistants connect only from this computer**, and only once you turn them on: on `127.0.0.1`, with Lumovi's token. Requests from web pages are refused, and so are requests addressed to any name but `127.0.0.1` or `localhost`, and messages over 4 MB. Each change they ask for goes through the same operations as yours, and waits for you. See [AI assistants](/assistants/overview#security).
 - **Updates are verified.** New versions come from the project's GitHub releases over HTTPS. Each download is checked against the SHA-512 checksum the release lists, and on macOS the new version must carry the same Developer ID signature.
 
-The source is [on GitHub](https://github.com/Lumovi/Lumovi), so you can check any of this. Every release's installers come with checksums and signed build provenance: see [Verify your download](/get-started/desktop#verify-your-download).
+The source is [on GitHub](https://github.com/Lumovi/Lumovi), so you can check any of this. Every release's installers come with checksums, signed build provenance, and an attested bill of materials: see [Verify your download](/get-started/desktop#verify-your-download).
+
+## On your organization's computers
+
+A company rolling Lumovi out can set what it does on every computer, in a [policy](/desktop/policy) only an administrator can write: clusters read-only, AI assistants off or limited, updates left to IT, and the proxy and certificate authorities to use. What it sets is locked in the app, which says so: "Set by your organization". Lumovi reads the policy as it starts, and saves none of it over your settings. It sets what Lumovi does, and isn't a wall against you: your kubeconfig's credentials work with `kubectl` too, and what you may do in a cluster is its RBAC's to say.
 
 ## Secrets on screen
 
@@ -94,6 +100,6 @@ A [fleet](/server/fleet)'s Lumovi, for many clusters, also holds credentials for
 
 ## Reporting a vulnerability
 
-Please report vulnerabilities privately, through a [GitHub security advisory](https://github.com/Lumovi/Lumovi/security/advisories/new) or as the [security policy](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md) describes. Please don't open a public issue.
+Please report vulnerabilities privately, by email to [security@lumovi.dev](mailto:security@lumovi.dev), through a [GitHub security advisory](https://github.com/Lumovi/Lumovi/security/advisories/new), or as the [security policy](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md) describes. Please don't open a public issue.
 
 Include what you found, how to reproduce it, and the impact you expect. You'll get an acknowledgement within a few days. Security fixes go into the latest release.

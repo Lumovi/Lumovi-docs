@@ -64,6 +64,12 @@ icon: "circle-question-mark"
   <Accordion title="Can my team let people do less through Lumovi than their RBAC allows?">
     Yes, when it runs in your cluster. Its admins say what everyone gets, give teams more where they work, and hold anyone back where it matters, like no shells or Secret values in production. Lumovi's server holds to it, and never lets anyone do more than RBAC. Each person sees theirs in [Your access](/clusters/your-access). See [Access for your team](/server/access).
   </Accordion>
+  <Accordion title="Does it work behind a company proxy?">
+    Yes. Lumovi goes through the proxy in `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY`, as `kubectl` and `helm` do, and trusts the certificate authorities your computer trusts, like the one a proxy that inspects HTTPS signs with. The desktop app takes the proxy from your shell. In your cluster, the chart's `proxy` and `extraCA` set them. See [Proxies and certificates](/desktop/network), or for a server, [Proxies and certificate authorities](/server/network).
+  </Accordion>
+  <Accordion title="Can IT set what Lumovi allows on our computers?">
+    Yes, with a [policy](/desktop/policy) deployed by your MDM, Group Policy, Intune or configuration management: clusters read-only, AI assistants off or limited, updates left to IT, and the proxy and certificate authorities to use. What it sets is locked, and the app says "Set by your organization". It sets what Lumovi does: what people may do in a cluster is still its RBAC's to say.
+  </Accordion>
   <Accordion title="What permissions do I need?">
     Only what you want to do. Lumovi acts with your own credentials and RBAC, so a read-only `view` role is enough to look around. It asks the cluster what you may do before offering an action, and says why when you can't. See [Permissions](/clusters/permissions).
   </Accordion>
@@ -122,6 +128,9 @@ icon: "circle-question-mark"
     - **Star it** on [GitHub](https://github.com/Lumovi/Lumovi), so others find it.
   </Accordion>
   <Accordion title="Where do I report a security problem?">
-    Privately, please, through a [GitHub security advisory](https://github.com/Lumovi/Lumovi/security/advisories/new). See [Reporting a vulnerability](/reference/privacy-and-security#reporting-a-vulnerability).
+    Privately, please, by email to [security@lumovi.dev](mailto:security@lumovi.dev), or through a [GitHub security advisory](https://github.com/Lumovi/Lumovi/security/advisories/new). See [Reporting a vulnerability](/reference/privacy-and-security#reporting-a-vulnerability).
+  </Accordion>
+  <Accordion title="How do I check a release is genuine?">
+    Each installer, the image and the chart is built by Lumovi's release workflow on GitHub, which attests it, and lists what it's made of in a bill of materials. The image and the chart are signed with cosign too. Check an installer with `gh attestation verify`: see [Verify your download](/get-started/desktop#verify-your-download). For the image and the chart, see [Check a release](/server/security#check-a-release).
   </Accordion>
 </AccordionGroup>

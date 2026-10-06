@@ -30,6 +30,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 
     - Check that the cluster is running, and that this computer can reach it. Many clusters are only reachable over a VPN or a tunnel.
     - If you have `kubectl`, `kubectl --context <name> get --raw /version` tells you whether the API server answers from this computer.
+    - Behind a company's proxy, Lumovi goes through the one your shell uses (`HTTPS_PROXY`), or your kubeconfig's `proxy-url`. *The proxy needs credentials (407)* wants them in the proxy's URL (`http://user:password@proxy:3128`), and *The proxy didn't open a tunnel (it answered 403)* means it refused the address. A cluster on your own network may need to be in `NO_PROXY`. See [Proxies and certificates](/desktop/network).
     - Choose **Try again**, or **Reload** on the start screen, once the network is back.
   </Accordion>
   <Accordion title="Timed out: The cluster isn't responding" icon="clock">
@@ -42,9 +43,14 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     ```
   </Accordion>
   <Accordion title="Certificate error: The cluster's certificate couldn't be verified" icon="shield-alert">
-    The certificate authority in your kubeconfig doesn't match the API server's certificate. The full message starts with `TLS handshake failed`.
+    Hover the label for which it is:
 
-    This happens when a cluster is recreated or its certificates rotate. Get a fresh kubeconfig entry from wherever the cluster came from, for example `aws eks update-kubeconfig`, `gcloud container clusters get-credentials` or `az aks get-credentials`, then choose **Reload**.
+    - *Its certificate isn't signed by a certificate authority Lumovi trusts*: the certificate authority in your kubeconfig doesn't match the API server's certificate. This happens when a cluster is recreated or its certificates rotate. Get a fresh kubeconfig entry from wherever the cluster came from, for example `aws eks update-kubeconfig`, `gcloud container clusters get-credentials` or `az aks get-credentials`, then choose **Reload**. Behind a proxy that inspects HTTPS, the proxy signs it with its own: ask for the cluster to be left uninspected, or put the proxy's authority in your kubeconfig.
+    - *Its certificate has expired*: the cluster's, or the proxy's.
+    - *Its certificate is for another name*: the address in your kubeconfig isn't one the certificate names. `tls-server-name` on the cluster can name the one it does.
+    - *TLS handshake failed*, and why, for anything else.
+
+    See [Proxies and certificates](/desktop/network#when-it-doesn’t-connect).
   </Accordion>
   <Accordion title="Plain HTTP blocked: Plain HTTP isn't allowed" icon="shield-off">
     The cluster's address starts with `http://`, for example through `kubectl proxy`. Lumovi only uses unencrypted connections when the kubeconfig says so for that cluster, the same rule as the official JavaScript client:
@@ -74,7 +80,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     - **No clusters found.** Lumovi found no contexts. Set `KUBECONFIG`, or create `~/.kube/config`, then reload. See [Connecting clusters](/clusters/connect).
   </Accordion>
   <Accordion title="Clusters are missing, though kubectl sees them" icon="eye-off">
-    `kubectl` in your terminal uses the `KUBECONFIG` your shell profile exports. Lumovi opened from the Dock, Spotlight or a launcher doesn't see that variable (it takes only `PATH` from your shell), so it reads `~/.kube/config`. **Loaded from**, at the bottom of the start screen, shows which files it read.
+    `kubectl` in your terminal uses the `KUBECONFIG` your shell profile exports. Lumovi opened from the Dock, Spotlight or a launcher doesn't see that variable (it takes only `PATH` and the proxy from your shell), so it reads `~/.kube/config`. **Loaded from**, at the bottom of the start screen, shows which files it read.
 
     Start Lumovi from your terminal, or set `KUBECONFIG` where apps see it. See [Setting environment variables](/reference/environment-variables#setting-them).
   </Accordion>
@@ -97,7 +103,19 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     Lumovi asks the cluster what you're allowed to do before offering an action, and says why it can't:
 
     - **Your account can't … in ….** Your RBAC doesn't allow it. See [Permissions](/clusters/permissions).
-    - **Changes are turned off for this cluster.** You, or `LUMOVI_READ_ONLY`, made it read-only. See [Read-only mode](/changes/read-only).
+    - **Changes are turned off for this cluster.** You, `LUMOVI_READ_ONLY`, or your organization's [policy](/desktop/policy) made it read-only. See [Read-only mode](/changes/read-only).
+  </Accordion>
+  <Accordion title="Lumovi started without something it was given" icon="triangle-alert">
+    As the desktop app started, it couldn't use something it was given, and says what, and why:
+
+    - **Your organization's [policy](/desktop/policy)**, which then locks the most it could: see below.
+    - **A certificate authority's file** the policy names: *The certificate authorities in … can't be read: …*. Lumovi trusts the others, and the system's.
+    - **A proxy that isn't a URL**, in `HTTPS_PROXY` or `HTTP_PROXY`: `HTTPS_PROXY isn’t a proxy’s URL: give it as http://host:port (or https://).` Lumovi connects without it. Check your shell's profile, or the [environment variable](/reference/environment-variables).
+
+    See [Proxies and certificates](/desktop/network).
+  </Accordion>
+  <Accordion title="Every cluster is read-only, and AI assistants are off" icon="building-2">
+    Your organization's [policy](/desktop/policy) can't be used, so Lumovi locks the most it could until it's put right. As it starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge next to an object's actions says why: "Lumovi can't use your organization's policy (…), so it changes no cluster until it's put right." Send that to your IT: the policy isn't an administrator's alone, isn't JSON, has a key Lumovi doesn't know, or, on Windows, couldn't be read from the registry (where people may run neither `reg.exe` nor PowerShell, let them run `reg.exe`). See [When it can't be used](/desktop/policy#when-it-can’t-be-used).
   </Accordion>
   <Accordion title="It changed in the meantime" icon="git-pull-request">
     Someone else changed the object while you were editing its YAML. Lumovi doesn't overwrite their change. Choose **Start over from the latest**, and make your edit again. See [Edit YAML](/changes/yaml).
@@ -185,6 +203,15 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     The error shown is what `helm` said. A failed upgrade is often a chart or values problem, which the [dry run](/helm/upgrade-and-rollback) usually catches first.
 
     If the release is managed by Flux, Lumovi says so and links to its `HelmRelease`. Flux puts back changes made any other way, so make the change in Flux instead.
+  </Accordion>
+  <Accordion title="Couldn't reach a chart repository or Artifact Hub" icon="globe-lock">
+    Behind a company's proxy, the message says what the proxy or the certificate made of it:
+
+    - *The proxy needs credentials (407): give them in its URL, as `http://user:password@host:port`.*
+    - *The proxy didn't open a tunnel (it answered 403).*: the proxy doesn't allow the address.
+    - *Its certificate isn't signed by a certificate authority Lumovi trusts (…)*: a proxy that inspects HTTPS signs with an authority your computer doesn't trust yet. IT installs it in your system's certificates, or names it in your organization's [policy](/desktop/policy#network). On a server, give it with `extraCA`.
+
+    See [Proxies and certificates](/desktop/network), or for a server, [Proxies and certificate authorities](/server/network).
   </Accordion>
 </AccordionGroup>
 
@@ -307,6 +334,24 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 
     Lumovi also checks each connection every 30 seconds (`LUMOVI_HEARTBEAT_SECONDS`). Keep that shorter than the idle timeouts of the proxies in between. See [Address and ingress](/server/expose).
   </Accordion>
+  <Accordion title="Lumovi stops: the certificate authorities can't be read" icon="file-x">
+    `LUMOVI_CA_FILE`, which the chart sets from `extraCA`, names a file Lumovi can't read, one without certificates in it, or one with something that isn't a certificate:
+
+    - *The certificate authorities in /etc/lumovi/ca/ca.crt can't be read: ENOENT …*: the ConfigMap or Secret has no key `extraCA.key` (`ca.crt` unless set). Check the key it has with `kubectl describe configmap`.
+    - */etc/lumovi/ca/ca.crt has no certificates in it (PEM, as -----BEGIN CERTIFICATE-----).*: the file isn't PEM. Convert a DER certificate with `openssl x509 -inform der -in corp-root.cer -out corp-root.pem`.
+    - *… can't be read: its certificate 2 isn't one (…)*: the second block between `-----BEGIN CERTIFICATE-----` and `-----END CERTIFICATE-----` is damaged. Check it with `openssl x509 -noout -text`.
+
+    See [Proxies and certificate authorities](/server/network#certificate-authorities).
+  </Accordion>
+  <Accordion title="The pod doesn't start: CreateContainerConfigError" icon="globe-lock">
+    With `proxy.secret`, the pod needs that Secret, in Lumovi's namespace, with the key `HTTPS_PROXY`. Without either, Kubernetes doesn't start the container, and `kubectl describe pod` says which is missing. Create it, or fix its key's name: see [Proxies and certificate authorities](/server/network#with-the-chart).
+  </Accordion>
+  <Accordion title="Lumovi stops: HTTPS_PROXY isn't a proxy's URL" icon="globe-lock">
+    `HTTPS_PROXY` or `HTTP_PROXY`, which the chart sets from `proxy`, can't be read as a URL: `HTTPS_PROXY isn’t a proxy’s URL: give it as http://host:port (or https://).` Lumovi doesn't say what it was, as it can hold credentials. Check it, and encode characters like `@` in a password as `%40`. See [Proxies and certificate authorities](/server/network#credentials).
+  </Accordion>
+  <Accordion title="Signing in or the webhook fails on a certificate" icon="shield-alert">
+    Behind a proxy that inspects HTTPS, Lumovi gets a certificate signed by the proxy's own authority. The sign-in page says *Signing in didn't work*, and Lumovi's log, or the **Audit log** page for the webhook, says *Its certificate isn't signed by a certificate authority Lumovi trusts (…)*. Give Lumovi that authority with `extraCA`, or leave the address out of the proxy with `proxy.noProxy`. *Its certificate has expired* and *Its certificate is for another name* are said the same way. See [Proxies and certificate authorities](/server/network#when-it-doesn’t-connect).
+  </Accordion>
   <Accordion title="Lumovi's pod is Pending" icon="hard-drive">
     The chart keeps the [audit log](/server/audit-log) on a volume, from the cluster's default storage class. Without a default, the volume's claim waits, and so does the pod. Set `audit.persistence.storageClass`, or `audit.persistence.enabled: false`. See [Where it's kept](/server/audit-log#where-it’s-kept).
   </Accordion>
@@ -345,7 +390,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 
     - *The hub at … refused this agent: it doesn't know this name and token.* Lumovi's log says *An agent was refused*, with the name. The token's SHA-256 was taken with a trailing newline, the agent's name (`clusterName`, `in-cluster` unless you set it) isn't the one Lumovi lists, Lumovi wasn't restarted after its list of agents changed, or a proxy in front of Lumovi answers `api/agent` itself.
     - *… refused this agent: another agent connected as it (do two clusters use the same name and token?)*. Give each agent its own name and token.
-    - *Can't reach the hub at …*, then *Connecting again in … s*: the agent can't reach Lumovi's address. It keeps trying.
+    - *Can't reach the hub at …*, then *Connecting again in … s*: the agent can't reach Lumovi's address. It keeps trying. Behind a proxy, give it `proxy` in the chart: *The proxy … needs credentials to … (407)* wants them in its URL, and *… didn't open a tunnel to …* refused the address. See [Proxies and certificate authorities](/server/network).
     - *Nothing from the hub in 61 s*: something between them, often a proxy's idle timeout, drops a quiet connection. Lumovi pings every 30 seconds by default, so let idle connections live longer than that.
 
     Until it's connected, the agent's pod isn't ready, and its card says *Its agent isn't connected.* See [Agents](/server/fleet/agents).
