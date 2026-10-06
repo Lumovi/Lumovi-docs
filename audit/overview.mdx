@@ -1,0 +1,154 @@
+---
+title: "The audit log"
+sidebarTitle: "The audit log"
+description: "What was done through Lumovi, by whom, from where, and how it went: search it, follow it as it happens, see each object's, and export it."
+icon: "scroll-text"
+---
+
+Lumovi records what's done through it: changes, yours and your AI assistants', with how each was approved; Helm installs, upgrades, rollbacks and uninstalls; shells, port forwards, and logs and Secrets read; and on a server, who signed in. Each event says who did it, from where, to what, how it went, and the `kubectl` or `helm` command that does the same. The desktop app keeps its own, on your computer. Lumovi in your cluster keeps one for the team.
+
+<Frame caption="The audit log on a server, as an auditor sees it, with an AI assistant's restart open.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/audit-light-1x.webp" alt="The Audit log page for the production cluster. It says the log is kept on the server for 90 days, and that you see everyone's, as one of its auditors. Below the search box are the filters: Last 7 days, Kind, Outcome, Who, Through and Cluster. Today's events, newest first: Lumovi 1.5.0 started; ops@example.com opened a shell on Node worker-2, as root; jane@example.com's Claude Code read the logs of a checkout pod; jane made staging read-only, and changed what AI assistants may do; ops failed to scale Deployment recommendations to 12 replicas; ana read Secret postgres-credentials; Claude Code's delete of a checkout pod was refused; and Claude Code restarted Deployment checkout, which is open on the right: done, by jane@example.com in the platform and on-call groups, through Claude Code, from 203.0.113.24; in production, namespace shop; approved by jane after 18 seconds; the kubectl rollout restart command; its fields, patch type and the assistant's reason; and its place in the log, number 6." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/audit-dark-1x.webp" alt="The Audit log page for the production cluster. It says the log is kept on the server for 90 days, and that you see everyone's, as one of its auditors. Below the search box are the filters: Last 7 days, Kind, Outcome, Who, Through and Cluster. Today's events, newest first: Lumovi 1.5.0 started; ops@example.com opened a shell on Node worker-2, as root; jane@example.com's Claude Code read the logs of a checkout pod; jane made staging read-only, and changed what AI assistants may do; ops failed to scale Deployment recommendations to 12 replicas; ana read Secret postgres-credentials; Claude Code's delete of a checkout pod was refused; and Claude Code restarted Deployment checkout, which is open on the right: done, by jane@example.com in the platform and on-call groups, through Claude Code, from 203.0.113.24; in production, namespace shop; approved by jane after 18 seconds; the kubectl rollout restart command; its fields, patch type and the assistant's reason; and its place in the log, number 6." />
+</Frame>
+
+## Open it
+
+- **Audit log**, at the bottom of the sidebar (the scroll).
+- **Audit log** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>). Typing `history`, `who changed what` or `security` finds it too.
+- **Everything done through Lumovi, kept: the audit log**, at the bottom of the [Activity log](/changes/undo-and-activity#the-activity-log).
+- **Everything they did, kept, is in the audit log.**, on the **AI assistants** page's **Activity** tab. It opens the log with only what assistants did.
+
+Each object has its own events too, on its [Audit tab](#an-objects-audit-tab).
+
+The page's address is `/audit`, below the base path on a server. **Back** takes you back where you were. At the top, it names where the log is from: **This computer** in the desktop app, the cluster on a server, or **Fleet**. Below its title, it says where the log is kept and for how long, and the date of its oldest event.
+
+<Note>
+  Shortcuts are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>.
+</Note>
+
+## What's recorded
+
+Events come in six kinds, which the **Kind** filter offers:
+
+| Kind | What's recorded |
+| --- | --- |
+| **Changes** | Objects created, applied, edited as YAML, changed (labels, an image, a cordon), scaled, restarted and deleted; pods evicted; debug containers added. Helm releases installed, upgraded, rolled back and uninstalled. Made from the page or by an [AI assistant](/assistants/overview). |
+| **Access** | Shells in containers, and [on nodes](/debug/node-shell): opened, and closed, with how long they ran and how they ended. [Port forwards](/debug/port-forwarding), started and stopped, in the desktop app. Logs read. Secrets read, when their values reach the page or an assistant, or refused. A Helm release's values and manifests read, which can hold what its Secrets do. |
+| **Sign-ins** | On a server: signing in, with a token or single sign-on, and attempts that didn't succeed; signing out; and a session that ended by itself, with why. |
+| **AI assistants** | On a server: each assistant someone allowed, or didn't, and each that was let go. Everywhere: each tool an assistant calls. |
+| **Settings** | A cluster made read-only, or changeable again. Where a cluster's [node shells](/debug/node-shell#settings-for-each-cluster) run, and from what image. [What AI assistants may do](/assistants/permissions), changed. In the desktop app, letting assistants connect, their port, and a new token. |
+| **Server** | Lumovi starting and stopping, and audit events it couldn't keep or send. |
+
+Each change is recorded once it's over, as it went: **Done**, **Failed**, **Refused** or **Cancelled** (see [Outcomes](/audit/events#outcomes)). A change the cluster refuses, or [read-only mode](/changes/read-only) stops, is recorded as **Refused**.
+
+Sign-ins that don't succeed are recorded too, since anyone can try them: each, up to 60 a minute. Past that, they're counted, and one event a minute, and one as the server stops, says how many, and from where: "25 more sign-ins didn't succeed, each not recorded: more than 60 were tried in a minute", with `count`, and in `from`, each address with how many, the most first, 20 at most. They're nobody's own: only auditors see them.
+
+- **Logs** are recorded once for each container, **Secrets** once for each Secret, and **Helm releases' values** once for each release, at most every ten minutes for each page or assistant: pages read them again as they refresh, and that isn't someone reading them again. Opening a Secret counts, since its values reach the page, and so does a dry run of a change to one, which answers with it; a list of Secrets doesn't, since it shows their keys only.
+- **Your own [terminals](/debug/terminal)** in the desktop app aren't recorded: they run on your computer, outside Lumovi.
+- **Behind an authenticating proxy**, signing in and out happens at the proxy, which keeps its own log.
+
+- **What you only look at** isn't recorded: lists, objects other than Secrets, events, metrics and maps. Nor are dry runs, but of a change to a Secret, nor where a cluster's usage history comes from.
+
+On a server, administrators can choose to record less: changes, sign-ins and settings, but not the **Access** kind, nor assistants' tool calls. The page then says so. See [How much it records](/server/audit-log#how-much-it-records).
+
+### Never in it
+
+- **Values.** A Secret's keys, never its values. What a change set, by field (`spec.replicas`), never what to. A Helm release's top-level value names, never the values.
+- **Manifests' contents.** An object created, applied or edited as YAML is named, not copied.
+- **Tokens and session IDs.** A session is named by a hash of it, 16 characters, which tells one from another without giving it away.
+
+What it does keep: people's names and groups, the address they came from and their browser, clusters, namespaces and objects' names, commands, errors, an AI assistant's reason for a change, and the note you wrote when you rejected it.
+
+An error is kept as the cluster or Lumovi said it, with two exceptions, since they could quote what isn't to be kept. About a Secret, an error from the cluster, or a webhook in it, says only what happened, like "It isn't there." or "The cluster doesn't let them.", and that what the cluster said isn't kept, since it can quote the Secret's values: see [Errors about Secrets](/audit/events#errors-about-secrets). About a manifest an AI assistant sent that isn't valid YAML, it says where, by line and column, not what's there. A Helm chart's or repository's URL is kept without a user, password or query.
+
+Events are bounded, whoever's sending what: names to 256 characters, sentences to 4,000, a detail to 1,000, and an event to a line of 64 KiB. See [The format](/audit/events#the-format).
+
+## Find what happened
+
+Events show newest first, a day at a time: **Today**, **Yesterday**, then the date. Each shows when, what happened, how it went when it wasn't **Done**, who (and through which assistant), and the cluster and namespace.
+
+- **The search box** finds events with every word you type, in what happened, who, the assistant, the cluster, namespace, kind or name, the command, the error, or a rejection's note. Press <kbd>/</kbd> to get there, and <kbd>↓</kbd> to move into the list.
+- **How far back**: **Last hour**, **Last 24 hours**, **Last 7 days** (to start with), **Last 30 days** or **All kept**.
+- **Kind**, **Outcome**, **Who**, **Through** (**Lumovi's page**, **An AI assistant**, **Lumovi itself**) and **Cluster** each take several choices. **Who** lists the people among the events found so far. It's there for [auditors](#who-sees-what), and in the desktop app.
+
+Your choices show as chips below the filters: the cross on one takes it off, and **Clear all** takes them all off. They're in the page's address too, so a link to it opens the same view, for whoever may see it.
+
+New events come in at the top as they happen. If you've scrolled down, a button says how many, like **3 new events**, and takes you back up. Older events load as you scroll. When a search has looked through many events without filling the list, it says so, and **Look further back** goes on from there.
+
+Every line it reads counts toward how far one search looks, 200,000 unless the server says otherwise. An auditor reads how many: "Lumovi looked through the 200,000 most recent events." Anyone else, "Lumovi looked as far back as one search goes.", since the number counts everyone's events. Lumovi reads the history for four searches, or checks, at a time: more wait their turn. Where a page of results ended is good until the server restarts: after that, the list says "Where the page ended isn't one this Lumovi gave (it may have started again since): search again."
+
+## One event
+
+Choose an event for all of it, in a panel at the side. <kbd>↑</kbd> and <kbd>↓</kbd> move to the next one, and <kbd>Esc</kbd> closes it.
+
+- **Who**: the person (the computer's account in the desktop app), their groups, and **Through**: Lumovi's page, or an AI assistant acting as them. In the desktop app, the name of the kubeconfig user it used for the cluster. On a server, where the request came **From**, and when a proxy said so, who it says it's forwarding for, the **Browser**, and the **Session**, by its hash. **Everything** _person_ **did** shows only theirs.
+- **Where**: the cluster, namespace and object, with its UID. **Open in Lumovi** opens the object, unless it was deleted or uninstalled. **Its history** shows every event about it, as far back as the log keeps.
+- **Approval**, for an AI assistant's change: **Approved**, **Made without asking**, **Rejected**, **Nobody answered**, or **The assistant stopped waiting**; by whom, how long it waited, and the note you wrote. See [AI assistants' changes](#ai-assistants-changes).
+- **Does the same**: the `kubectl` or `helm` command, with **Copy command**, when there's one that needs nothing more. An object created or edited as YAML has none, since its manifest isn't kept; an AI assistant's change has the command it showed you.
+- **Details**: what else the event says, like the fields a change set, a release's value names, a shell's container and how long it ran, or an assistant's reason. See [Details](/audit/events#details).
+- **In the log**: its place in the [chain](/audit/verify) (**Place**, like #6), its **Id**, its **Hash** with **Copy hash**, and the hash of the event before it. **The event as recorded, as JSON** copies all of it.
+
+An error, when there was one, is at the top, as the cluster or Lumovi said it.
+
+### AI assistants' changes
+
+A change an [assistant](/assistants/approvals) asked for is recorded as yours, through the assistant, and says what you decided:
+
+| Answer | Outcome | When |
+| --- | --- | --- |
+| **Approved** | **Done**, or **Failed** | You approved it, and how long it waited for your answer. |
+| **Made without asking** | **Done**, or **Failed** | Your [permissions](/assistants/permissions) let assistants make it without asking. |
+| **Rejected** | **Refused** | You rejected it, with your note when you wrote one. |
+| **Nobody answered** | **Cancelled** | Nobody approved it within its five minutes. |
+| **The assistant stopped waiting** | **Cancelled** | It was withdrawn, before anyone answered, and why: "The assistant stopped waiting for an answer.", "The assistant was let go before it was answered.", or "AI assistants were turned off before it was answered." |
+
+How long it waited runs from when you were asked to your answer. **By** is you: only the person an assistant acts as answers its changes. Its tool call has the same outcome: **Refused** when you rejected the change, **Cancelled** when nobody answered or it was withdrawn.
+
+Each tool an assistant calls is recorded too, as **An AI assistant's tool call**, with what it asked for.
+
+## An object's Audit tab
+
+Every object's [detail panel](/explore/details) has an **Audit** tab: who changed it, read it or opened a shell in it, through Lumovi, newest first, with how it went when it wasn't **Done**. It shows its 50 latest events, and new ones as they happen. It finds events by kind, name and namespace, so an object that had the same name before shows too. **Open in the audit log** opens the page with its events only, as far back as the log keeps.
+
+A pod's tab has its logs read and shells opened. A Deployment's has its changes: the logs read from its **Logs** tab are its pods'.
+
+## Export
+
+**Export** saves what the search and filters find, in the time they cover, oldest first:
+
+- **CSV**, for spreadsheets, with the columns `time`, `user`, `via`, `assistant`, `action`, `outcome`, `cluster`, `namespace`, `kind`, `name`, `summary`, `command`, `approval`, `error`, `id`, `chain`, `seq` and `hash`. Text a spreadsheet would run as a formula, starting with `=`, `+`, `-` or `@`, gets a `'` in front, so it stays text.
+- **JSON Lines**, for log tools: each event as it was recorded, one a line. See [the format](/audit/events#the-format).
+
+The file is named for the day, like `lumovi-audit-2026-10-06.csv`. An export holds at most 50,000 events, unless the server says otherwise. With more, it has the most recent, and the notification says how to get the rest: narrow the filters, by time say.
+
+A JSON Lines export of everything, by someone who sees everyone's, can be [checked](/audit/verify#check-it-yourself) away from Lumovi. A CSV can't: it leaves out what the hash covers.
+
+## Who sees what
+
+In the desktop app, everything in the log is yours: you see all of it, and can check it.
+
+On a server, you see your own events: what you did, and what your assistants did as you. The server's [auditors](/server/audit-log#auditors) see everyone's. The page says which you are: "You see your own: its auditors see everyone's." That holds for everything that reads the log: the list, the Audit tab, an export, and events as they come in.
+
+Only auditors have the **Who** filter, and **Check integrity**: see [Check it hasn't changed](/audit/verify).
+
+Someone who isn't an auditor sees their own events, and how long the log keeps them, but not where else events go, what couldn't be kept or sent, the date of the oldest event, nor how many events a search looked through: those would say what others did.
+
+## In the desktop app
+
+<Note>
+  **Desktop app only:** the desktop app keeps its log on your computer, in the `audit` folder in [Lumovi's folder for app data](/reference/privacy-and-security#what-it-keeps-on-your-computer), a file a day, for 90 days. It records everything it can, as your computer's account, with each cluster's kubeconfig user. It sends it nowhere, and there's nothing to set. If that folder can't be used, because another Lumovi on your computer keeps its log there, say, it doesn't wait for it: it keeps the log in memory until it quits, and the page says why: "Kept in memory until Lumovi quits: …".
+</Note>
+
+## Lumovi's, and the cluster's
+
+Lumovi's audit log records what's done through Lumovi, and how: the page, the assistant, the approval, the command. Kubernetes' own audit log, where the cluster has one, records every request its API server gets, from every tool, Lumovi's among them, as the person Lumovi acts as. They answer different questions, and each fills in the other. Lumovi doesn't see what's done with `kubectl` or other tools.
+
+<Columns cols={2}>
+  <Card title="Check it hasn't changed" icon="shield-check" href="/audit/verify">
+    How events are chained, on the page and with jq.
+  </Card>
+  <Card title="Audit log for your team" icon="scroll-text" href="/server/audit-log">
+    Where a server keeps it, sends it, and who reads everyone's.
+  </Card>
+</Columns>

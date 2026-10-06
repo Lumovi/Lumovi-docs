@@ -1,0 +1,239 @@
+---
+title: "Audit events"
+sidebarTitle: "Events and their format"
+description: "Every kind of event the audit log records, how it came out, and the JSON each is kept and sent as."
+icon: "braces"
+---
+
+Every [audit event](/audit/overview) is one JSON object: the same in the history, in an export's JSON Lines, on a server's output and to its webhook.
+
+## The format
+
+```json An AI assistant's restart, approved
+{
+  "type": "lumovi.audit",
+  "version": 1,
+  "id": "0b6c1f9e-4d2a-4c55-9a1e-7f3d2b8c6e41",
+  "chain": "9a829611-9c63-48cf-94fb-90576b07837d",
+  "seq": 6,
+  "time": "2026-10-06T12:10:40.512Z",
+  "category": "change",
+  "action": "resource.restart",
+  "outcome": "success",
+  "actor": {
+    "user": "jane@example.com",
+    "groups": ["platform", "on-call"],
+    "via": "assistant",
+    "assistant": "Claude Code",
+    "session": "5f0c2a9e41b37d86",
+    "address": "203.0.113.24"
+  },
+  "cluster": "production",
+  "target": {
+    "kind": "Deployment",
+    "name": "checkout",
+    "namespace": "shop",
+    "uid": "9a7e4d61-2c1b-4f0e-8d3a-6b5c4e3f2a10"
+  },
+  "summary": "Restarted Deployment checkout",
+  "command": "kubectl rollout restart deployment/checkout -n shop --context production",
+  "approval": { "status": "approved", "by": "jane@example.com", "waitedMs": 18342 },
+  "details": {
+    "fields": ["spec.template.metadata.annotations[\"kubectl.kubernetes.io/restartedAt\"]"],
+    "patchType": "strategic",
+    "reason": "Its pods crash-loop since the database credentials rotated."
+  },
+  "prev": "4f1d0c7e9b2a6d3851e0c4b7a9f2e6d1c8b5a3f7e2d9c6b1a4f8e3d7c2b6a5f9",
+  "hash": "676e4035e9c43c3864242ee97a39a96521108743afd3533462f72952ea5004f4"
+}
+```
+
+Lumovi writes each on one line. A field with nothing to say is left out, rather than empty or `null`.
+
+| Field | What it holds |
+| --- | --- |
+| `type` | Always `lumovi.audit`. On a server's output, lines without it are Lumovi's own log lines. |
+| `version` | `1`. A later version may add fields. |
+| `id` | A UUID, the event's own. |
+| `chain` | Which chain it's in, by a UUID: one for each history. A server that keeps its history in memory starts one each time it starts, and each replica without the volume has its own. |
+| `seq` | Its place in its chain: one more than the event before it. See [How events are chained](/audit/verify#how-events-are-chained). |
+| `time` | When, to the millisecond, in UTC: `2026-10-06T12:10:40.512Z`. |
+| `category` | Its kind: `change`, `access`, `sign-in`, `assistant`, `settings` or `server`. |
+| `action` | What happened: see [Actions](#actions). |
+| `outcome` | How it came out: see [Outcomes](#outcomes). |
+| `actor.user` | Who: as they signed in, on a server; the computer's account, in the desktop app; `lumovi` for Lumovi itself. |
+| `actor.groups` | Their groups, as they signed in, when they have any. |
+| `actor.via` | `ui` (Lumovi's page), `assistant` (an AI assistant acting as them) or `server` (Lumovi itself). |
+| `actor.assistant` | The assistant, by the name it gave: `Claude Code`. |
+| `actor.session` | Which of their sessions, or which assistant they allowed, by a hash: 16 hex characters. On a server. |
+| `actor.address` | The address the request came from, as the server saw it: often the ingress controller's. On a server. |
+| `actor.forwardedFor` | What the request's `X-Forwarded-For` header said, as it said it: who a proxy says it's forwarding for. Nothing checks it. |
+| `actor.userAgent` | The browser, or the assistant, as it named itself. |
+| `actor.kubeUser` | In the desktop app, for an event in a cluster: the name of the kubeconfig's user entry it used there, not necessarily who the cluster knows it as. |
+| `cluster` | The cluster, by its context's name, or its name in a fleet. |
+| `target` | What it was done to: its `kind`, and its `name`, `namespace` and `uid` when it has them. A Helm release's kind is `HelmRelease`. |
+| `summary` | What happened, in a sentence: "Restarted Deployment checkout". When it didn't happen, what was asked: "Scale Deployment recommendations to 12 replicas". |
+| `command` | The `kubectl` or `helm` command that does the same, when there's one that needs nothing more. |
+| `approval` | For an AI assistant's change: `status`, `by`, `waitedMs` (from when the person was asked to their answer), and `note`. See [Approvals](#approvals). |
+| `details` | What else the action says: see [Details](#details). Text, numbers, `true` or `false`, or lists of text. |
+| `error` | Why it failed or was refused, as the cluster or Lumovi said it. About a Secret, what the cluster said isn't kept: see [Errors about Secrets](#errors-about-secrets). |
+| `prev` | The hash of the event before it, or empty for the first of a chain. |
+| `hash` | Its own: the SHA-256 of the event without `hash`, as `jq -jcS 'del(.hash)'` writes it. |
+
+Whatever's sent, an event stays one line of at most 64 KiB:
+
+- **Text is cut at whole characters**, and ends in `…`: names (a user, a cluster, an object) at 256 characters, sentences (`summary`, `command`, `error`) at 4,000, a detail or a note at 1,000. Half of a character pair, which no two JSON tools read alike, becomes `�` (U+FFFD).
+- **Details**: at most 50, a list at most 100 items, and 16 KiB in all. Past that, the rest are left out, and `truncated: true` says so. `forwardedFor` keeps 200 characters, and `userAgent` 300.
+- **An event over 64 KiB** even so has its sentences cut to 1,000 characters, at most 10 groups, and only `truncated: true` in its details.
+- **A number in its details** that isn't a whole one within JSON's safe range, like `1e21` or `0.1`, is kept as its text: `"1e+21"`, `"0.1"`. JSON tools write those each their own way, and this way every hash is the same in all of them.
+
+### Errors about Secrets
+
+What the cluster, or an admission webhook, says about a Secret can quote its values. So when a change to a Secret fails, from the page or an AI assistant, its `error` says what happened, by its cause, and not what the cluster said:
+
+| What happened | `error` |
+| --- | --- |
+| It isn't there (`not-found`) | "It isn't there." |
+| The cluster's RBAC refused it (`forbidden`) | "The cluster doesn't let them." |
+| The cluster didn't take their credentials (`unauthorized`) | "The cluster doesn't know who they are." |
+| It changed since it was read (`conflict`) | "It changed since it was read." |
+| The cluster, or a webhook in it, found it not valid (`invalid`) | "The cluster says it isn't valid." |
+| Anything else | "It failed (timeout).", with what went wrong: `unreachable`, `timeout`, `server`, and so on |
+
+Each followed by "What the cluster said of the Secret isn't kept: it can quote its values." Lumovi's own refusals, by [read-only mode](/changes/read-only), are kept as they're said. An AI assistant's tool call about a Secret that fails says "It failed. What the cluster said of the Secret isn't kept: it can quote its values.": one whose kind has "secret" in it, in any case, like `Secret` or `SealedSecret`, or with a manifest of a Secret. A tool call that's refused is kept as Lumovi said it.
+
+## Actions
+
+Each action, by kind, and what the page calls it.
+
+### Changes (`change`)
+
+| Action | On the page | When |
+| --- | --- | --- |
+| `resource.create` | Created an object | An object was created: from YAML, a Job run from a CronJob, or by a view's action. |
+| `resource.apply` | Applied an object | An AI assistant's manifest was applied, as `kubectl apply --server-side` does. |
+| `resource.replace` | Replaced an object | An object edited as [YAML](/changes/yaml) was saved: "Replaced Deployment cart with an edited one". |
+| `resource.patch` | Changed an object | Part of an object was changed: its labels, an image, its status, a node cordoned or uncordoned. |
+| `resource.scale` | Scaled a workload | Its replicas were set, and nothing else. |
+| `resource.restart` | Restarted a workload | Its pods were restarted, as `kubectl rollout restart` does. |
+| `resource.delete` | Deleted an object | |
+| `resource.evict` | Evicted a pod | A pod was evicted: draining a node evicts each. |
+| `resource.debug` | Added a debug container | |
+| `helm.install` | Installed a Helm release | |
+| `helm.upgrade` | Upgraded a Helm release | To another chart version, or with new values. |
+| `helm.rollback` | Rolled a Helm release back | |
+| `helm.uninstall` | Uninstalled a Helm release | |
+
+### Access (`access`)
+
+| Action | On the page | When |
+| --- | --- | --- |
+| `shell.open`, `shell.close` | Opened a shell, Closed a shell | A shell in a container. Closing says how long it ran, and the exit code. |
+| `node-shell.open`, `node-shell.close` | Opened a node shell, Closed a node shell | A [shell on a node](/debug/node-shell), and the pod Lumovi started for it. |
+| `port-forward.open`, `port-forward.close` | Forwarded a port, Stopped forwarding a port | A [port forward](/debug/port-forwarding), in the desktop app. |
+| `logs.read` | Read logs | A container's logs: once for each container every ten minutes, at most, for each page or assistant. |
+| `secret.read` | Read a Secret | A Secret's values reached the page or an assistant, or reading it was refused: once for each Secret every ten minutes, at most, for each page or assistant. A dry run of a change to a Secret counts, since it answers with the Secret. |
+| `helm.values.read` | Read a release's values | A [Helm release](/helm/releases)'s values and manifests reached the page, which can hold what its Secrets do: once for each release every ten minutes, at most. Not where they're withheld. |
+
+### Sign-ins (`sign-in`)
+
+On a server, unless people sign in at an [authenticating proxy](/server/auth/proxy).
+
+Sign-ins that don't succeed are recorded too, each, up to 60 a minute. Past that, they're counted, and one event a minute, by Lumovi itself, says how many and from where: "25 more sign-ins didn't succeed, each not recorded: more than 60 were tried in a minute". So does one as the server stops, for those it hasn't said yet. They're nobody's own: only auditors see them.
+
+| Action | On the page | When |
+| --- | --- | --- |
+| `session.sign-in` | Signed in | Signing in, with a token or single sign-on: "Signed in with a token". |
+| `session.sign-out` | Signed out | Someone signed out. |
+| `session.expired` | Session ended | A session ended by itself: "Signed out by Lumovi: the session ended", with why in `details.why`. |
+
+### AI assistants (`assistant`)
+
+| Action | On the page | When |
+| --- | --- | --- |
+| `assistant.allowed` | Allowed an AI assistant | On a server: someone allowed an assistant to act as them. |
+| `assistant.denied` | Didn't allow an AI assistant | On a server: someone chose not to. |
+| `assistant.ended` | An AI assistant was let go | On a server: it signed out, its person let it go, their session ended, or a refresh token came back used, which is **Refused**. |
+| `assistant.tool` | An AI assistant's tool call | Each [tool](/assistants/tools) an assistant called, with what it asked for. |
+
+### Settings (`settings`)
+
+| Action | On the page | When |
+| --- | --- | --- |
+| `permissions.changed` | Changed AI permissions | Someone changed [what their assistants may do](/assistants/permissions): their defaults, and their rules' names. |
+| `read-only.changed` | Changed read-only | A cluster was made [read-only](/changes/read-only), or changeable again. |
+| `node-shell.changed` | Changed node shells | Where a cluster's [node shells](/debug/node-shell#settings-for-each-cluster) run, and from what image, changed: "Made node shells in production run alpine:3.22 in kube-system", or "Made node shells in production run as Lumovi's defaults". |
+| `assistants.changed` | Changed AI assistants | In the desktop app: assistants let connect, or stopped; their port; a new token. |
+
+### Server (`server`)
+
+| Action | On the page | When |
+| --- | --- | --- |
+| `server.started` | Lumovi started | A server started: its version, how people sign in, and where its events go. |
+| `server.stopped` | Lumovi stopped | A server stopped. |
+| `audit.dropped` | Audit events lost | Events couldn't be kept in the history, or sent: how many, where, and why. See [When events are lost](/server/audit-log#when-events-are-lost). |
+
+With the `changes` level, a server records everything but the **Access** kind and `assistant.tool`, but for an assistant's call to change something that was refused: that's a change asked for, and it's kept, with `changing: true` in its details.
+
+## Outcomes
+
+| Outcome | On the page | When |
+| --- | --- | --- |
+| `success` | Done | It was done. |
+| `failure` | Failed | The cluster, or Lumovi, couldn't do it. |
+| `refused` | Refused | It wasn't allowed: by the cluster's RBAC, read-only mode, an assistant's permissions, or the person who rejected it. |
+| `cancelled` | Cancelled | Nobody answered an assistant's change in time, or it was withdrawn: by the assistant, as it was let go, or as assistants were turned off. Its tool call too. A node shell closed before its pod started. |
+
+## Approvals
+
+`approval.status` says what became of an AI assistant's change:
+
+| Status | Outcome | What else |
+| --- | --- | --- |
+| `approved` | `success`, or `failure` | `by`, `waitedMs` |
+| `unasked` | `success`, or `failure` | Made without asking, where the person's permissions allowed it |
+| `rejected` | `refused` | `by`, `waitedMs`, and `note`, when they wrote one |
+| `expired` | `cancelled` | `waitedMs`: nobody answered in time |
+| `withdrawn` | `cancelled` | `waitedMs`, and why, in `error`: "The assistant stopped waiting for an answer.", "The assistant was let go before it was answered.", or "AI assistants were turned off before it was answered." |
+
+`waitedMs` runs from when the person was asked to their answer. `by` is the person: only they answer their assistants' changes. The change's tool call (`assistant.tool`) comes out the same: `refused` when rejected, `cancelled` when nobody answered or it was withdrawn. A call that ends while the change still waits for its answer is `success`, with `waiting: true`: nothing has happened yet, and the change's own event, or the `wait_for_change` call that gets the answer, says what did.
+
+A change an assistant's permissions don't allow, or the cluster's dry run turns down, has no `approval`: nobody was asked.
+
+## Details
+
+What each action adds in `details`, when it applies:
+
+| Actions | Details |
+| --- | --- |
+| `resource.*` | `fields` (the fields a change set, by path: never their values), `patchType`, `subresource`, `replicas`; `fieldManager` and `force` for an apply; `propagation` and `gracePeriodSeconds` for a delete; `container`, `image` and `target` for a debug container |
+| An assistant's change | `reason` (the reason it gave), and `takesOver` when an apply takes fields from another manager |
+| `helm.install`, `helm.upgrade` | `chart`, `version`, `repository`, and `values`: the top-level names of the values set, never what they're set to |
+| `helm.rollback` | `revision` |
+| `helm.uninstall` | `keepHistory` |
+| `shell.*` | `container`; on closing, `seconds`, and `exit`, how it ended |
+| `node-shell.*` | `mode`, and `pod`, the pod Lumovi started for it; on closing, `seconds`, `exit`, and `left` when its pod couldn't be deleted |
+| `port-forward.*` | `pod`, `podPort`, `localPort`; on closing, `seconds` |
+| `logs.read` | `container`, `previous` and `follow`; for an assistant, `tailLines` and `previous` |
+| `secret.read` | `keys`: the Secret's keys, never their values (none when it was refused) |
+| `session.sign-in`, `session.sign-out` | `method` (`token` or `oidc`), and `with`: `a token`, or the provider's name |
+| `session.expired` | `why` |
+| `session.sign-in`, by Lumovi itself | `count` (sign-ins that didn't succeed, past the 60 a minute recorded each) and `from`: where they came from, with how many each, the most first, 20 at most, like `203.0.113.9: 240` |
+| `assistant.allowed`, `assistant.denied` | `assistant`, `client` (its ID with Lumovi), and `returnsTo`, the site it sends people back to |
+| `assistant.ended` | `how` (`signed out`, `let go`, `expired` or `reused`) and `since`, when it was allowed |
+| `assistant.tool` | `tool`, `changing: true` for a tool that changes things, `waiting: true` for a change still waiting for its answer (its own event says what became of it), and what the assistant asked for, by name: never a manifest it applies |
+| `permissions.changed` | `changes`, `secrets`, `env` and `logs` (the defaults), and `rules`: their names |
+| `read-only.changed` | `readOnly` |
+| `node-shell.changed` | `namespace` and `image`, unless set back to Lumovi's defaults |
+| `assistants.changed` | `enabled`, `port` |
+| `server.started` | `version`, `auth`, `level`, `kept` (`files` or `memory`), `retentionDays`, `sinks` (where events go) and `auditors` |
+| `audit.dropped` | `sink` and `count`, with why in `error` |
+
+<Columns cols={2}>
+  <Card title="Check it hasn't changed" icon="shield-check" href="/audit/verify">
+    How the chain works, and how to check it.
+  </Card>
+  <Card title="Audit log for your team" icon="scroll-text" href="/server/audit-log">
+    The server's output, a webhook, and who reads everyone's.
+  </Card>
+</Columns>
