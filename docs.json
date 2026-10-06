@@ -204,6 +204,7 @@
               "server/security",
               "server/views",
               "server/assistants",
+              "server/audit-log",
               "server/docker"
             ]
           },

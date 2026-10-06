@@ -11,7 +11,7 @@ Lumovi reads them when it starts, and checks most of them: one that doesn't make
 
 ## Set by the chart itself
 
-The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
+The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-its-kept), and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
 
 The chart puts `extraEnv` after its own variables. When two have the same name, Kubernetes uses the last, so a variable repeated in `extraEnv` wins over the chart's. For the ones above, that breaks Lumovi: it listens on a port nothing sends to, or reads files from a folder the chart doesn't mount. For the others, set the chart's value instead. The chart builds more than the variable on its values, like the permission to impersonate for `auth.mode`, or the probes and the ingress path for `basePath`, while a variable in `extraEnv` changes only Lumovi.
 
@@ -224,12 +224,70 @@ See [AI assistants for your team](/server/assistants).
 </ResponseField>
 
 <ResponseField name="LUMOVI_DATA_DIR" type="string">
-  Without `LUMOVI_ASSISTANT_RULES_CONFIGMAP`, a folder where Lumovi keeps each person's own rules for their assistants, in `assistant-rules.json`, which only its user can read. Without either, it keeps them in memory, and they're gone when it stops.
+  Without `LUMOVI_ASSISTANT_RULES_CONFIGMAP`, a folder where Lumovi keeps each person's own rules for their assistants, in `assistant-rules.json`, which only its user can read. Without either, it keeps them in memory, and they're gone when it stops. Without `LUMOVI_AUDIT_DIR`, the [audit history](#the-audit-log) is kept in its `audit` folder.
 </ResponseField>
 
 <ResponseField name="LUMOVI_ASSISTANT_REDIRECT_HOSTS" type="string">
   Sites, by host name and separated by commas, that an assistant may send people back to over `https` once they allow it: `assistant.example.com`. People's own computers, apps, and VS Code's `vscode.dev` need none. Anything but host names stops Lumovi, saying `LUMOVI_ASSISTANT_REDIRECT_HOSTS must be host names, like assistant.example.com, not "…".` See [Where assistants go back to](/server/assistants#where-assistants-go-back-to).
 </ResponseField>
+
+## The audit log
+
+See [Audit log for your team](/server/audit-log). The Helm chart sets the first eight from its [`audit` values](/server/helm-values#the-audit-log). Set the others with `extraEnv`.
+
+<ResponseField name="LUMOVI_AUDIT_LEVEL" type="string" default="access">
+  `access` records everything; `changes` records changes, sign-ins, settings and Lumovi's own events, but not shells, port forwards, logs and Secrets read, nor each tool an AI assistant calls. Anything else stops Lumovi, saying `LUMOVI_AUDIT_LEVEL must be changes or access, not "…".` See [How much it records](/server/audit-log#how-much-it-records).
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDITORS" type="string">
+  Who sees everyone's events, separated by commas: groups, as people sign in with them, and people as `user:` and their name, like `platform-admins,user:ana@example.com`. Everyone else sees their own. See [Auditors](/server/audit-log#auditors).
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_DIR" type="string">
+  The folder for the audit history, a file a day. Unset, the `audit` folder in `LUMOVI_DATA_DIR`, or, without that either, memory: what happened since Lumovi started. See [Where it's kept](/server/audit-log#where-its-kept).
+
+  One Lumovi keeps a folder at a time: another that finds it held (`audit.lock` in it) waits for it to be let go, or not renewed for 30 seconds. Still held after about 40 seconds, it doesn't start, saying `Another Lumovi (process … on …) keeps its audit history in …: two can’t, or they’d number events the same. Stop it, or give this one a folder of its own.` Lumovi's user must be able to write there, or it doesn't start either: `LUMOVI_AUDIT_DIR (…) can’t be written in: …`. As it starts, it makes the folder and its files only its own (`0700`, `0600`).
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_RETENTION_DAYS" type="number" default="90">
+  How many days the history in `LUMOVI_AUDIT_DIR` keeps, from 1 to 3,650.
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_STDOUT" type="string" default="true">
+  `true` or `false`: whether each event is also a line of JSON on Lumovi's output, for the cluster's log collector. See [On the server's output](/server/audit-log#on-the-servers-output).
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_WEBHOOK_URL" type="string">
+  An `http` or `https` URL, in any case, to send each event to, in batches. One that isn't stops Lumovi, saying `LUMOVI_AUDIT_WEBHOOK_URL must be an http or https URL.`, without repeating it, since a URL can hold a token. It can't hold a user and password: Lumovi stops, saying `LUMOVI_AUDIT_WEBHOOK_URL can't carry a user and password: put an Authorization header in LUMOVI_AUDIT_WEBHOOK_HEADERS.` See [To a webhook](/server/audit-log#to-a-webhook).
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_WEBHOOK_FORMAT" type="string" default="json">
+  `json`, an array of events in each request, or `ndjson`, a line of JSON each.
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_WEBHOOK_HEADERS" type="string">
+  Headers to send with each request, like an `Authorization` header: a map of text, as YAML or JSON, or either encoded in base64 on one line. The chart reads it from the `headers.yaml` of the Secret that `audit.webhook.headersSecret` names. Lumovi checks each as it starts, and says which can't be sent without repeating its value: `LUMOVI_AUDIT_WEBHOOK_HEADERS: Authorization’s value can’t be sent in a header (it has a line break, say).`
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_WEBHOOK_BUFFER" type="number" default="10000">
+  How many events wait for the webhook, at most, while it doesn't take them, from 10 to 1,000,000.
+
+  They hold 64 MiB at most, too. Past either, the oldest are let go, and counted. See [To a webhook](/server/audit-log#to-a-webhook).
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_MEMORY_EVENTS" type="number" default="10000">
+  Without a folder, how many of the most recent events memory keeps, from 100 to 1,000,000.
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_SCAN_LIMIT" type="number" default="200000">
+  How many events one search looks through before it stops, and the page offers to look further back, from 100 to 10,000,000.
+</ResponseField>
+
+<ResponseField name="LUMOVI_AUDIT_EXPORT_LIMIT" type="number" default="50000">
+  How many events an export holds, at most, from 10 to 1,000,000.
+</ResponseField>
+
+The numbers must be whole numbers in their range. Anything else stops Lumovi, saying, for example, `LUMOVI_AUDIT_RETENTION_DAYS must be a whole number from 1 to 3,650, not "…".` So do `LUMOVI_AUDIT_WEBHOOK_HEADERS`, `_FORMAT` or `_BUFFER` without `LUMOVI_AUDIT_WEBHOOK_URL`.
 
 ## Large clusters and slow API servers
 

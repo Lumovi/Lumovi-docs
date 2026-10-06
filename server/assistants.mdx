@@ -271,7 +271,7 @@ Lumovi's log (`kubectl logs`) records each assistant that's allowed or goes, and
 | `signed out` | The assistant signed out itself |
 | `can no longer use Lumovi` | Its person's session ended, or, behind a proxy, its time was up |
 
-The cluster's audit log records the changes themselves, as the person's: Lumovi makes them as it makes theirs.
+Lumovi's [audit log](/server/audit-log) records all of this too, with more: who approved each change and after how long, each tool an assistant calls (at the `access` level), and who allowed or denied which assistant, from where. The cluster's own audit log records the changes themselves, as the person's: Lumovi makes them as it makes theirs.
 
 ## Security
 

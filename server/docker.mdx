@@ -71,6 +71,19 @@ docker run -d --restart unless-stopped -p 8080:8080 \
 
 Lumovi reads the file again every 30 seconds, so mount its folder rather than the file: an editor that replaces the file leaves a file mounted on its own as it was. Without files to mount, put the kubeconfig in `LUMOVI_FLEET_KUBECONFIG` instead, as YAML or encoded in base64, as on [Sevalla](/server/fleet/sevalla). Clusters it can't reach join through an [agent](/server/fleet/agents) that dials it, listed in `LUMOVI_FLEET_AGENTS`. See [A fleet of clusters](/server/fleet).
 
+## Keep the audit log
+
+Without a folder for it, Lumovi keeps its [audit log](/server/audit-log) in memory, from when the container started. Every event is also a line of JSON on the container's output. To keep its history, give it a volume, and `LUMOVI_AUDIT_DIR`:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -v "$PWD/kubeconfig:/kubeconfig:ro" -e KUBECONFIG=/kubeconfig \
+  -v lumovi-audit:/var/lib/lumovi/audit -e LUMOVI_AUDIT_DIR=/var/lib/lumovi/audit \
+  ghcr.io/lumovi/lumovi
+```
+
+The image's `/var/lib/lumovi/audit` belongs to Lumovi's user (UID 65532), so a new named volume mounted there does too. A folder of your own on the host must be one that user may write to, or Lumovi doesn't start, and says why. One container keeps a volume at a time: a second on it waits for the first to stop, and doesn't start if it's still running after about 40 seconds.
+
 ## Pin a version
 
 Without a tag, Docker pulls `latest`, the latest release. Pin a version to know what runs:

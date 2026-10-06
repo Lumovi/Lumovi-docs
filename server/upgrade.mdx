@@ -39,7 +39,7 @@ The desktop app updates itself. In a cluster, Lumovi is upgraded like anything e
     kubectl logs --namespace lumovi deployment/lumovi
     ```
 
-    The first line of the log names the version that's running.
+    Its line `Lumovi … shows …` names the version that's running. The log's lines of JSON, with `"type":"lumovi.audit"`, are its [audit events](/server/audit-log#on-the-servers-output).
   </Step>
 </Steps>
 
