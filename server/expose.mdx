@@ -56,11 +56,13 @@ extraEnv:
 ## The address people open
 
 <ResponseField name="url" type="string">
-  The address people open Lumovi at, like `https://lumovi.example.com`. [Single sign-on](/server/auth/single-sign-on) needs it, as the provider sends people back there. When it starts with `https:`, Lumovi's cookies are sent over HTTPS only.
+  The address people open Lumovi at, like `https://lumovi.example.com`. [Single sign-on](/server/auth/single-sign-on) needs it, as the provider sends people back there. When it starts with `https:`, Lumovi's cookies are sent over HTTPS only. [AI assistants](/server/assistants) are told where to sign in from it too: without it, from the address each request was sent to.
 </ResponseField>
 
 <ResponseField name="basePath" type="string" default="/">
   Where Lumovi is below that address, when it shares a host with other apps: `/lumovi`, say. Its pages, its health check and the chart's ingress path all move below it, and the address without the trailing slash leads there too.
+
+  With [AI assistants](/server/assistants) on, two addresses stay at the origin's root, because that's where assistants look for how to sign in: `/.well-known/oauth-authorization-server/lumovi` and `/.well-known/oauth-protected-resource/lumovi/mcp`. The chart's ingress routes them to Lumovi too. See [Below a base path](/server/assistants#below-a-base-path).
 </ResponseField>
 
 <ResponseField name="clusterName" type="string" default="in-cluster">
@@ -95,6 +97,8 @@ Leave `ingress.enabled` off, and point yours at the `lumovi` Service, port 80 (n
     type: NodePort
   ```
 </CodeGroup>
+
+Below a base path, route the two addresses [AI assistants](/server/assistants#below-a-base-path) look for at the origin's root to Lumovi too, each exactly.
 
 If what you put in front of Lumovi changes the `Host` header the browser sent, set `url` to the address people open. Lumovi accepts sign-ins, sign-outs and pages' connections only from its own pages: from an origin whose host is the one in the `Host` header, or the origin of `url`. Without either, signing in with a token says **Sign in from Lumovi's own page.**, and pages keep saying **Reconnecting to Lumovi…**. See [Security](/server/security#sessions-and-cookies).
 

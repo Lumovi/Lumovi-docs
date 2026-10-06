@@ -12,7 +12,7 @@ Lumovi never gives anyone more than their own permissions: every request reaches
 | [Token](/server/auth/tokens) | Each person's token, in memory, while they're signed in | Nothing |
 | [Single sign-on, tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) | Each person's token and refresh token, in memory | Nothing |
 | [Single sign-on](/server/auth/single-sign-on) | Who people are, in memory | Impersonate any user or group |
-| [Authenticating proxy](/server/auth/proxy) | Nothing: it reads the proxy's headers on every request | Impersonate any user or group |
+| [Authenticating proxy](/server/auth/proxy) | Nothing: it reads the proxy's headers on every request. For [AI assistants](#ai-assistants), who allowed each one, in memory | Impersonate any user or group |
 
 A [fleet](/server/fleet) needs single sign-on or a proxy, and Lumovi also holds a way into each of its clusters: see [A fleet](#a-fleet).
 
@@ -74,6 +74,17 @@ Lumovi sets three cookies, all `SameSite=Lax` and limited to the base path:
 
 The first two are `HttpOnly`, so scripts can't read them, and `Secure` when `url` starts with `https:` or the proxy in front sends `X-Forwarded-Proto: https`. The page sets `lumovi-theme` itself, and it holds nothing else.
 
+## AI assistants
+
+Unless you turn them off, AI assistants connect at `mcp` below the base path, and sign in through Lumovi with OAuth: a person signs in to Lumovi, and allows each one on Lumovi's own page. See [AI assistants for your team](/server/assistants#security) for the details.
+
+- **An assistant acts as the person who allowed it**, with their RBAC, through Lumovi's tools only, until they disconnect it or their session ends. Behind a proxy, as the proxy last named them, for as long as a session would last.
+- **Its changes wait for that person**, unless you let a cluster's assistants make some without asking (`assistants.changes`, `assistants.clusters`). Deletions always ask. `readOnly: true` refuses them all, and so does a cluster its person made read-only.
+- **Its tokens live in Lumovi's memory**, like sessions: access tokens for an hour, refresh tokens once each. A refresh token that comes back later, used already, ends what was allowed. They work only for assistants' requests, not for pages. So the chart runs one replica while assistants are on, and refuses more.
+- **Allowing an assistant hands someone's access to it.** Lumovi sends people back only to their own computer, an app, VS Code's site, or sites you name in `assistants.redirectHosts`, so a link to its page made by someone else can't send their access to a site of that person's choosing. The page says where it goes back to, and asks people to allow only what they started.
+
+Turn them off with `assistants.enabled: false` (`LUMOVI_ASSISTANTS=off`) if your team doesn't use them.
+
 ## The page
 
 Pages are served with a strict Content Security Policy (scripts only from Lumovi itself, no frames, no plugins), and with headers that keep them out of other sites' frames (`X-Frame-Options: DENY`), stop content-type sniffing, and send no referrers.
@@ -109,7 +120,7 @@ To turn node shells off for everyone, set `nodeShell.enabled: false` (`LUMOVI_NO
 - `readOnly: true` keeps everyone from changing anything through Lumovi, whatever their permissions.
 - Each person can also make Lumovi read-only for themselves, in their own browser.
 
-Lumovi's server enforces it, not only the page: it refuses changes, shells (on nodes too) and Helm changes while it's on. See [Read-only mode](/changes/read-only).
+Lumovi's server enforces it, not only the page: it refuses changes, shells (on nodes too), Helm changes and AI assistants' changes while it's on. See [Read-only mode](/changes/read-only). Read-only that people set for themselves applies to their pages, and to their AI assistants.
 
 ## The pod
 
@@ -141,6 +152,7 @@ The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. I
 <Check>Serve it over HTTPS, and set `url` to the `https:` address, so cookies are sent over HTTPS only.</Check>
 <Check>Leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
 <Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
+<Check>Turn AI assistants off (`assistants.enabled: false`) unless your team uses them, or set their changes to `never` (`assistants.changes`, `assistants.clusters`) where they should only read.</Check>
 <Check>Set `nodeShell.enabled: false` unless people should open shells on nodes through Lumovi. Either way, only those who may create pods where privileged pods are allowed can open one.</Check>
 <Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and run Lumovi where only the administrators of all its clusters can.</Check>
 <Check>In a fleet, give Lumovi agents' `tokenSha256`, not their tokens, and keep each token in a Secret in its own cluster.</Check>

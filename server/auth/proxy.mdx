@@ -97,11 +97,30 @@ In one entry, both have to match: the proxy's pods, in that namespace. As two en
 
 Lumovi never acts as one of Kubernetes' own users or groups (`system:…`), whatever the proxy says. It leaves out groups whose names start with `system:`, and refuses a user whose name does.
 
+## AI assistants
+
+[AI assistants](/server/assistants) can't sign in to your proxy: they sign in to Lumovi, which gives them tokens of its own, and checks them itself. Let these through to Lumovi without signing in, below the base path:
+
+- `mcp`
+- `oauth/register`, `oauth/token` and `oauth/revoke`
+- `.well-known/oauth-authorization-server`, `.well-known/oauth-protected-resource` and `.well-known/oauth-protected-resource/mcp`
+- Below a base path like `/lumovi`, also `/.well-known/oauth-authorization-server/lumovi` and `/.well-known/oauth-protected-resource/lumovi/mcp`, at the origin's root.
+
+None of them takes the proxy's headers. Keep everything else behind the proxy, `authorize` and `api/assistants/authorize` included: that's where people allow an assistant, and Lumovi needs to know who they are. With [oauth2-proxy](https://oauth2-proxy.github.io/oauth2-proxy/configuration/overview/), at its own host, with its `--skip-auth-route` option:
+
+```bash oauth2-proxy
+--skip-auth-route='^/mcp$'
+--skip-auth-route='^/oauth/(register|token|revoke)$'
+--skip-auth-route='^/\.well-known/oauth-(authorization-server|protected-resource(/mcp)?)$'
+```
+
+An assistant someone allows acts as that person, as the proxy last named them: each time they open a Lumovi page, their assistants take on what the proxy says about them there, like their groups, and connect again when that changed. It lasts as long as a session would (`auth.sessionHours`, 12 hours unless set), from when they allowed it. Signing out of the proxy doesn't end it: people disconnect it in Lumovi's **AI assistants** dialog. To have no assistants at all, set `assistants.enabled: false`.
+
 ## What it means for the cluster
 
 Behind a proxy, Lumovi impersonates people, so the chart gives its service account permission to impersonate users and groups, cluster-wide. Whoever can reach Lumovi's pod, or read its service account's token, can act as anyone. Keep Lumovi in a namespace only cluster administrators can exec into. See [Security](/server/security).
 
-There are no Lumovi sessions behind a proxy: it reads the headers on every request. Restarting Lumovi doesn't sign anyone out, and how long people stay signed in is up to the proxy.
+There are no Lumovi sessions behind a proxy: it reads the headers on every request. Restarting Lumovi doesn't sign anyone out, and how long people stay signed in is up to the proxy. AI assistants are the exception: Lumovi keeps who allowed each one, in memory, and restarting it signs them out.
 
 ## In a fleet
 

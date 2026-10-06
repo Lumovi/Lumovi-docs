@@ -73,7 +73,7 @@ Actions that are off stay visible, disabled, with "Changes are turned off for th
 
 A shell's tab, in a pod or on a node, says **Shells are off** instead of opening one.
 
-In the desktop app, [AI assistants](/assistants/overview) still read a read-only cluster, but can't change it. The **AI assistants** dialog says **Read-only: no changes** next to it, instead of asking what its assistants may change, and `list_clusters` tells assistants it's `read-only`. A change one asks for anyway is refused before you're asked, and the assistant gets the message above.
+[AI assistants](/assistants/overview) still read a read-only cluster, but can't change it. In the desktop app, the **AI assistants** dialog says **Read-only: no changes** next to it, instead of asking what its assistants may change, and `list_clusters` tells assistants it's `read-only`. A change one asks for anyway is refused before you're asked, and the assistant gets the message above.
 
 ## Terminals aren't covered
 
@@ -83,8 +83,8 @@ The read-only switch doesn't apply to the desktop app's [terminals](/debug/termi
 
 When Lumovi runs in your cluster as a shared dashboard, read-only works at two levels:
 
-- **For everyone.** Set `readOnly: true` in the Helm chart's values (`LUMOVI_READ_ONLY=true` when you run the image another way). Nobody changes anything through Lumovi, whatever their RBAC allows. The switch shows "For everyone, on this server". See [Helm values](/server/helm-values).
-- **For yourself.** Anyone can make the cluster read-only for themselves from the cluster switcher or the command palette. It's kept in their browser, and the server enforces it for them.
+- **For everyone.** Set `readOnly: true` in the Helm chart's values (`LUMOVI_READ_ONLY=true` when you run the image another way). Nobody changes anything through Lumovi, whatever their RBAC allows, and neither do their [AI assistants](/assistants/server). The switch shows "For everyone, on this server". See [Helm values](/server/helm-values).
+- **For yourself.** Anyone can make the cluster read-only for themselves from the cluster switcher or the command palette. It's kept in their browser, and the server enforces it for them, and for their [AI assistants](/assistants/server), as their latest page says: a page from a browser where the cluster isn't read-only allows changes there again.
 
 <Note>
   Read-only mode is a guard rail in Lumovi, not a permission. To keep someone from changing a cluster at all, give their account read-only RBAC, like the built-in `view` ClusterRole. See [Permissions](/clusters/permissions).

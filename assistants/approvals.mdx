@@ -13,7 +13,7 @@ An assistant doesn't change your clusters by itself. When it asks to apply a man
 </Frame>
 
 <Note>
-  **Desktop app only:** like [AI assistants](/assistants/overview) themselves, for now.
+  **In your cluster:** your team's Lumovi shows your assistants' changes on your own pages, in the same dialog, and its administrator decides what they do in each cluster. See [On a server](#on-a-server).
 </Note>
 
 The keys on this page are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>.
@@ -94,11 +94,13 @@ You're usually in your assistant when it asks. When Lumovi's window isn't in fro
 
 Click it to bring Lumovi to the front. On a Mac, Lumovi's icon in the Dock bounces too. The notifications close once you come to Lumovi.
 
+On a server, your browser says the same while Lumovi's tab isn't in front, once you've let it: choose **Notify me** in the **AI assistants** dialog. See [Notifications](/assistants/server#notifications).
+
 ## While it waits
 
 A change waits in Lumovi for five minutes in all. The assistant's call doesn't wait that long at once: many assistants give a call about a minute.
 
-- **A call waits up to about 50 seconds.** Then it returns, not as an error, saying the change is still waiting, with its id: "Still waiting for the person's answer in Lumovi: nothing has changed yet. Tell them to look at Lumovi, and call wait_for_change with id "…" to keep waiting for it."
+- **A call waits up to about 50 seconds.** Then it returns, not as an error, saying the change is still waiting, with its id: "Still waiting for the person's answer in Lumovi: nothing has changed yet. Tell them to look at Lumovi, and call wait_for_change with id "…" to keep waiting for it." On a server, it names where: "Still waiting for the person's answer in Lumovi (https://lumovi.example.com): …"
 - **`wait_for_change` waits again**, the same way, and says what became of the change once you've answered: made, rejected with your note, or not approved in time. Lumovi tells assistants to call it until you answer. See [Assistant tools](/assistants/tools).
 - **Assistants that ask for progress hear from it** every 10 seconds or so, while a call waits: "Waiting for the person to approve it in Lumovi".
 - **You can answer while no call waits.** The change is made, or not, all the same, and the next `wait_for_change` tells the assistant how it went.
@@ -108,7 +110,7 @@ A change waits in Lumovi for five minutes in all. The assistant's call doesn't w
 Nothing changes unless you approve. A change ends without it in two ways:
 
 - **Not approved in time.** After five minutes, the dialog closes, and Lumovi says **Not approved in time**: "Claude Code asked to scale Deployment storefront to 5 replicas. Nothing was changed." The assistant is told: "Nobody approved it in Lumovi within 5 minutes: nothing was changed. Ask the person to look at Lumovi, and try again."
-- **Withdrawn.** When the assistant gives up on a call that's waiting for the change, the one that asked or a `wait_for_change`, because you stopped it there, or it ended its session with Lumovi, the dialog closes, and Lumovi says **Claude Code withdrew a change**: "Scale Deployment storefront to 5 replicas. Nothing was changed." Turning assistants off, changing the port or making a new token lets every assistant go, and withdraws every change still waiting, whether or not a call is waiting on it: nothing left can be approved.
+- **Withdrawn.** When the assistant gives up on a call that's waiting for the change, the one that asked or a `wait_for_change`, because you stopped it there, or it ended its session with Lumovi, the dialog closes, and Lumovi says **Claude Code withdrew a change**: "Scale Deployment storefront to 5 replicas. Nothing was changed." Turning assistants off, changing the port or making a new token lets every assistant go, and withdraws every change still waiting, whether or not a call is waiting on it: nothing left can be approved. On a server, so does disconnecting the assistant, or the end of the session you allowed it in, for every change it asked for.
 
 Otherwise, a change keeps waiting in Lumovi until you answer it or its five minutes are up, also when its call has already said it's still waiting, or the assistant's connection dropped without stopping it. Approved then, it's still made, as you saw it: the assistant just doesn't hear back, unless it asks with `wait_for_change`.
 
@@ -137,7 +139,7 @@ Changes made [without asking](#changes-they-ask-for) are made right after their 
 
 ## Changes they ask for
 
-Each cluster decides what becomes of its assistants' changes. In the **AI assistants** dialog, **Changes they ask for** lists every cluster in your kubeconfig, each with three choices:
+Each cluster decides what becomes of its assistants' changes. In the desktop app, you choose; on a server, its administrator does (see [On a server](#on-a-server)). In the desktop app's **AI assistants** dialog, **Changes they ask for** lists every cluster in your kubeconfig, each with three choices:
 
 | Choice | What happens to a change |
 | --- | --- |
@@ -162,6 +164,15 @@ Whatever you choose:
 - **Assistants know.** `list_clusters` tells them each cluster's choice, `ask`, `allow` or `never`, or `read-only`, so they don't ask for what won't be made.
 
 Lumovi keeps each cluster's choice by its kubeconfig context name, with its other settings.
+
+## On a server
+
+On your team's Lumovi, approving works as above, with a few differences. See [AI assistants on a server](/assistants/server).
+
+- **Your pages.** Your assistants' changes show on every Lumovi page you have open, in any tab or browser you're signed in on, and you answer on any of them. Nobody else sees them. With no page open, a change waits for the next one you open, up to its five minutes.
+- **Your browser's notifications**, instead of your computer's, once you choose **Notify me**: while Lumovi's tab is in the background.
+- **The administrator's rules.** What assistants' changes do in each cluster is set on the server. The **AI assistants** dialog shows it, without a way to change it: **Ask you**, **Made without asking** or **Never**. "As this server's administrator set them, and none where you made a cluster read-only. Deletions, and changes that take fields over from Helm or Argo CD, ask you wherever changes are made without asking." A change made without asking is told to the pages you have open; with none open, only the server's log records it.
+- **Read-only.** When the server is read-only for everyone, assistants change nothing. Nor do they in a cluster you made read-only for yourself: the dialog says **Read-only: no changes** for it.
 
 <Columns cols={2}>
   <Card title="AI assistants" icon="sparkles" href="/assistants/overview">

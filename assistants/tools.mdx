@@ -8,7 +8,7 @@ icon: "wrench"
 These are the tools an assistant gets when it connects to Lumovi. The assistant decides which to call, and with what, and may show you their names as it uses them. Lumovi answers in short YAML, with each object's health as Lumovi shows it.
 
 <Note>
-  **Desktop app only:** like [AI assistants](/assistants/overview) themselves, for now.
+  **In your cluster:** your team's Lumovi gives assistants the same tools. `list_clusters` lists the clusters you may see there, and a change that's still waiting names the server's address. See [AI assistants on a server](/assistants/server).
 </Note>
 
 | Tool | Title | What it does |
@@ -236,7 +236,7 @@ Deletes an object, as `kubectl delete` does. What it owns goes too, in the backg
 
 A change waits in Lumovi for your answer up to five minutes, but the call that asks for it doesn't wait that long:
 
-- **It waits up to about 50 seconds**, under the minute many assistants give a call. Then it returns, not as an error: "Still waiting for the person's answer in Lumovi: nothing has changed yet. Tell them to look at Lumovi, and call wait_for_change with id "…" to keep waiting for it." The change keeps waiting in Lumovi.
+- **It waits up to about 50 seconds**, under the minute many assistants give a call. Then it returns, not as an error: "Still waiting for the person's answer in Lumovi: nothing has changed yet. Tell them to look at Lumovi, and call wait_for_change with id "…" to keep waiting for it." The change keeps waiting in Lumovi. On a server, the message names the server's address after "in Lumovi", like `(https://lumovi.example.com)`, for the assistant to send you there.
 - **It says how it's going**, to an assistant that asks for progress (MCP's `progressToken`): "Waiting for the person to approve it in Lumovi", every 10 seconds or so.
 - **Stopping it withdraws the change.** Cancel a call that's waiting, this one or a `wait_for_change`, and the change is withdrawn: it leaves Lumovi, and nothing is changed.
 

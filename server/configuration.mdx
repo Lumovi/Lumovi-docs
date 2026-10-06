@@ -156,7 +156,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_SESSION_HOURS" type="number" default="12">
-  How long sessions last, in hours: more than 0, at most 168, a week.
+  How long sessions last, in hours: more than 0, at most 168, a week. Behind a proxy, also how long an [AI assistant](/server/assistants) someone allows acts as them.
 </ResponseField>
 
 <ResponseField name="LUMOVI_HEARTBEAT_SECONDS" type="number" default="30">
@@ -166,7 +166,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 ## What people can do
 
 <ResponseField name="LUMOVI_READ_ONLY" type="boolean" default="false">
-  `true` or `1`: nobody changes anything through Lumovi, in any cluster of a fleet. Anything else leaves changes on.
+  `true` or `1`: nobody changes anything through Lumovi, in any cluster of a fleet, AI assistants included. Anything else leaves changes on.
 </ResponseField>
 
 <ResponseField name="LUMOVI_METRICS_SOURCE" type="string" default="auto">
@@ -203,6 +203,22 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   The helm to run: `helm` on the `PATH` unless set. The image sets it to `/usr/local/bin/helm`, the helm it comes with.
 </ResponseField>
 
+## AI assistants
+
+See [AI assistants for your team](/server/assistants).
+
+<ResponseField name="LUMOVI_ASSISTANTS" type="string" default="on">
+  `on` or `off`: whether AI assistants may sign in and connect, at `mcp` below the base path. With `off`, their addresses answer `404`, saying `This server's administrator has turned AI assistants off.` Anything else stops Lumovi, saying `LUMOVI_ASSISTANTS must be on or off, not "…".`
+</ResponseField>
+
+<ResponseField name="LUMOVI_ASSISTANT_CHANGES" type="string" default="ask">
+  What the changes assistants ask for do: `ask` (each waits for its person's approval), `allow` (made without asking, but deletions, and changes that take fields over from what manages them, still ask) or `never`. Then clusters' own, by name, separated by commas: `ask,staging=allow,production=never`. Anything else stops Lumovi, saying `LUMOVI_ASSISTANT_CHANGES must be ask, allow or never, with clusters' own after it (ask,staging=allow), not "…".`
+</ResponseField>
+
+<ResponseField name="LUMOVI_ASSISTANT_REDIRECT_HOSTS" type="string">
+  Sites, by host name and separated by commas, that an assistant may send people back to over `https` once they allow it: `assistant.example.com`. People's own computers, apps, and VS Code's `vscode.dev` need none. Anything but host names stops Lumovi, saying `LUMOVI_ASSISTANT_REDIRECT_HOSTS must be host names, like assistant.example.com, not "…".` See [Where assistants go back to](/server/assistants#where-assistants-go-back-to).
+</ResponseField>
+
 ## Large clusters and slow API servers
 
 These work the same as in the desktop app, and the chart has no values for them: set them with `extraEnv`.
@@ -235,10 +251,14 @@ All of these are below the base path. Whatever stands in front of Lumovi must pa
 | `auth/callback` | Where your OpenID Connect provider sends people back. Register it as the redirect URI. Only with `oidc`. |
 | `api/socket` | Each page's WebSocket. Proxies in front of Lumovi must pass WebSockets here. |
 | `api/agent` | Where a fleet's [agents](/server/fleet/agents) connect, with a WebSocket. Only a fleet takes them. |
+| `mcp` | Where [AI assistants](/server/assistants) connect (`GET`, `POST` and `DELETE`), with a token Lumovi gave them. |
+| `POST oauth/register`, `POST oauth/token`, `POST oauth/revoke` | Where assistants register, get and renew their tokens, and sign out. |
+| `GET .well-known/oauth-authorization-server`, `GET .well-known/oauth-protected-resource`, `GET .well-known/oauth-protected-resource/mcp` | How assistants sign in. |
+| `authorize` and `api/assistants/authorize` | The page where people allow an assistant, signed in, and what it asks Lumovi. |
 
 Any other address below the base path is Lumovi's page or one of its files, for `GET` and `HEAD`. Other methods get `405`, and other addresses under `api/` and `auth/` get `404`.
 
-Addresses outside the base path get `404`, with a note saying where Lumovi is. The base path without its trailing slash, like `/lumovi`, leads to `/lumovi/`.
+Without AI assistants (`LUMOVI_ASSISTANTS=off`), their addresses answer `404`, and the `authorize` page says they're off. Addresses outside the base path get `404`, with a note saying where Lumovi is, except two for AI assistants, which Lumovi answers at the origin's root when it has a base path, like `/lumovi`: `GET /.well-known/oauth-authorization-server/lumovi` and `GET /.well-known/oauth-protected-resource/lumovi/mcp`. See [Below a base path](/server/assistants#below-a-base-path). The base path without its trailing slash, like `/lumovi`, leads to `/lumovi/`.
 
 <Columns cols={2}>
   <Card title="Helm values" icon="sliders-horizontal" href="/server/helm-values">

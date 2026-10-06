@@ -7,7 +7,7 @@ icon: "sliders-horizontal"
 Set these in a values file, and install or upgrade with `--values values.yaml`. The chart checks them against its schema, and refuses settings that don't make sense before anything is installed.
 
 <Warning>
-  The schema checks the values below, but mostly not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`. Under `fleet`, `agent` and `nodeShell`, the schema refuses names it doesn't know.
+  The schema checks the values below, but mostly not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`. Under `fleet`, `agent`, `nodeShell` and `assistants`, the schema refuses names it doesn't know.
 </Warning>
 
 To see the defaults, with a comment on each:
@@ -168,7 +168,23 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 ## What people can do
 
 <ResponseField name="readOnly" type="boolean" default="false">
-  When `true`, nobody changes anything through Lumovi, whatever their RBAC allows, in any cluster of a fleet. Each person can also make a cluster read-only for themselves. See [Read-only mode](/changes/read-only).
+  When `true`, nobody changes anything through Lumovi, whatever their RBAC allows, in any cluster of a fleet, and neither do their AI assistants. Each person can also make a cluster read-only for themselves. See [Read-only mode](/changes/read-only).
+</ResponseField>
+
+<ResponseField name="assistants.enabled" type="boolean" default="true">
+  Whether AI assistants (Claude Code, Cursor, VS Code and other MCP clients) may sign in through Lumovi and connect, at `mcp` below the base path, to act as whoever allows them. Below a base path, the chart's ingress also routes the two addresses at the origin's root where they look for how to sign in. See [AI assistants for your team](/server/assistants).
+</ResponseField>
+
+<ResponseField name="assistants.changes" type="string" default="ask">
+  What the changes assistants ask for do, in every cluster that has no rule of its own: `ask` (each waits for its person's approval), `allow` (made without asking, but deletions, and changes that take fields over from what manages them, still ask) or `never`.
+</ResponseField>
+
+<ResponseField name="assistants.clusters" type="object" default="{}">
+  Clusters' own rules, by name: `{ staging: allow, production: never }`. In a fleet, the fleet's clusters' names.
+</ResponseField>
+
+<ResponseField name="assistants.redirectHosts" type="string[]" default="[]">
+  Sites, by host name, that an assistant may send people back to over `https` once they allow it, like `[assistant.example.com]`. Their own computer, apps, and VS Code's `vscode.dev` need none: Claude Code, Cursor and VS Code work without it. See [Where assistants go back to](/server/assistants#where-assistants-go-back-to).
 </ResponseField>
 
 <ResponseField name="metrics.source" type="string" default="auto">
@@ -229,7 +245,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 </ResponseField>
 
 <ResponseField name="replicaCount" type="integer" default="1">
-  How many Lumovi pods to run. Sessions live in each pod's memory, and single sign-on has to finish on the pod it started on: more than one needs sticky sessions. Keep a fleet's at one: each agent connects to one pod.
+  How many Lumovi pods to run. Sessions live in each pod's memory, and single sign-on has to finish on the pod it started on: more than one needs sticky sessions. Keep a fleet's at one: each agent connects to one pod. With `assistants.enabled`, the chart refuses more than one, saying `AI assistants need a single replica (replicaCount 1): …`: what people allowed, their assistants' tokens, and the changes those ask for live in one pod's memory, and assistants' requests carry no cookies to stick to it. Set `assistants.enabled: false` to run more.
 </ResponseField>
 
 <ResponseField name="service.type" type="string" default="ClusterIP">
