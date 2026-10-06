@@ -1,0 +1,57 @@
+---
+title: "Your access"
+sidebarTitle: "Your access"
+description: "On your team's Lumovi, what its admins let you do, cluster by cluster, and why: your groups, the grants that give you more, and the limits that hold you back."
+icon: "shield-check"
+---
+
+When Lumovi runs [in your cluster](/server/overview), its admins can say what it lets each person do, team by team: who makes changes, opens shells, reads logs, sees Secrets' values, uses Helm or AI assistants, and where. It's never more than your own [permissions](/clusters/permissions) in the cluster allow, and often less. **Your access** says what it is for you, and why.
+
+<Note>
+  **In your cluster:** only Lumovi in a cluster, or a [fleet](/clusters/fleet), has it. The desktop app does what your kubeconfig allows.
+</Note>
+
+Open it from your initials, at the bottom of the sidebar: **Your access**, "What you may do, and why". Or choose **Your access** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux). Wherever Lumovi says you can't do something, **See your access** opens it too. Its address is `/your-access`.
+
+<Frame caption="Your access: what Lumovi lets you do, cluster by cluster, and why.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/your-access-light-1x.webp" alt="Your access, for jane@example.com, signed in with the proxy, with its groups platform and on-call, so in Lumovi's groups Platform team and On-call SRE; she's one of Lumovi's admins, with Open Admin. Cluster by cluster, for production, staging, load-test and edge: Changes, Make changes everywhere; Shells, Open them; Node shells, Off on production and edge, held back by the limit Production, and Open them on staging and load-test, from The platform team runs everything; Logs, Read them; Secrets, Values in 8 of 9 namespaces on production and keys only in 1, held back by Card data (PCI); Helm, Upgrade, roll back on production and edge, and Install, uninstall elsewhere; AI assistants, As they set them, off in 1. On edge, its namespaces can't be listed. Below: everywhere, everyone's events in the audit log. Then Why: what everyone signed in gets, and the grant The platform team runs everything, with what it gives." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/your-access-dark-1x.webp" alt="Your access, for jane@example.com, signed in with the proxy, with its groups platform and on-call, so in Lumovi's groups Platform team and On-call SRE; she's one of Lumovi's admins, with Open Admin. Cluster by cluster, for production, staging, load-test and edge: Changes, Make changes everywhere; Shells, Open them; Node shells, Off on production and edge, held back by the limit Production, and Open them on staging and load-test, from The platform team runs everything; Logs, Read them; Secrets, Values in 8 of 9 namespaces on production and keys only in 1, held back by Card data (PCI); Helm, Upgrade, roll back on production and edge, and Install, uninstall elsewhere; AI assistants, As they set them, off in 1. On edge, its namespaces can't be listed. Below: everywhere, everyone's events in the audit log. Then Why: what everyone signed in gets, and the grant The platform team runs everything, with what it gives." />
+</Frame>
+
+## What it shows
+
+- **You**: who you're signed in as, the groups your sign-in sent, and so the groups of Lumovi's you're in. With none, you get what everyone does. Lumovi's admins are named under it: they decide. If you're one, **Open Admin** opens the [Access pages](/server/access#the-access-pages).
+- **In this cluster**, or in a fleet **Cluster by cluster**: for each of **Changes**, **Shells**, **Node shells**, **Logs**, **Secrets**, **Helm** and **AI assistants**, the most you may do there, and where that's so: "everywhere", or how many namespaces, like "in 8 of 9; keys only in 1: Card data (PCI)", with the limit that holds the rest back when one does. Node shells are decided for each cluster's nodes, never by namespace.
+- **Whose audit events** you see: your own, or everyone's, when the server names you an auditor or your access says so.
+- **Why**: what everyone signed in gets, each grant that gives you more, with its profile and what that adds, and each limit that holds you back, with what it holds back. Where grants overlap, you get the most of them. Limits win over all of them.
+
+What the page says is decided with the same code the server uses. Your RBAC still applies after it.
+
+## Where it's said
+
+Wherever your access doesn't let you do something, Lumovi says so there, with why, and a way here:
+
+- **Actions** you may not take are turned off, saying why when you point at them: "Your access doesn't let you make changes in shop: none of your grants gives it here." The reason names the grant or limit that decides, like *the limit "Production" holds it back*, or *your grant "Developers" gives Developer, and no more*.
+- **Shell**, a node's **Shell**, and **Logs** tabs say **You can't open shells here**, **You can't open shells on nodes here** or **You can't read logs here**, with why, who Lumovi's admins are, and **See your access**.
+- **Secrets**: where you see keys only, their **Data** says "Only the keys", each value reads **Value hidden by your access**, and **YAML** says **Values hidden by your access** in place of **Reveal values**. Their values never reach your browser, not even in what a change you make answers with. Editing one as YAML is turned off, since that writes the Secret whole. Where Secrets are hidden, you can't open or change them, and lists across every namespace leave them out.
+- **Helm releases**: **Upgrade…**, **Roll back…** and **Uninstall…** are turned off where you may not, with why. Where you don't see Secrets' values, a release keeps its tabs, but **Resources**, **Values**, **Manifest** and **History** say **Its values and manifests are hidden**, since they can hold Secrets, and why: your access shows only their keys there, or hides them. It can't be upgraded. **Install chart** says up front when you may not install there.
+- **A list** you may not see says **Not for you, here**, with **See your access**.
+
+Anything that gets past the page is refused by Lumovi's server all the same: "Lumovi doesn't let you open shells in shop: no grant of yours gives it there." Changes, shells, logs, Secret reads and Helm refused this way are in your [audit log](/audit/overview) as **Refused**.
+
+## When it changes
+
+What admins change applies at once, everywhere: open pages, this one included, follow it without reloading. Your groups are the ones your sign-in sent: when they change at your identity provider, they count here once you sign in again, or behind a company login, once the page connects again.
+
+## Your AI assistants
+
+Your [assistants](/assistants/server) never do more than you may: they don't see namespaces where your access turns them off, ask you first where it says **Changes ask first**, change nothing where you may not, and see Secrets and logs no further than you. If your access lets you use them nowhere, you can't allow one. See [AI assistants](/server/access#ai-assistants).
+
+<Columns cols={2}>
+  <Card title="Permissions" icon="lock-keyhole" href="/clusters/permissions">
+    What your RBAC needs to allow, for each feature.
+  </Card>
+  <Card title="Access for your team" icon="shield" href="/server/access">
+    How admins decide who may do what.
+  </Card>
+</Columns>

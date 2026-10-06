@@ -80,7 +80,8 @@
               "clusters/connect",
               "clusters/fleet",
               "clusters/namespaces",
-              "clusters/permissions"
+              "clusters/permissions",
+              "clusters/your-access"
             ]
           },
           {
