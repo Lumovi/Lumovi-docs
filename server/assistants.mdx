@@ -49,6 +49,8 @@ Off, `mcp`, the OAuth endpoints and the addresses where assistants look for how 
 
 Each person says what their assistants may do, and where, on the **Permissions** tab of their **AI assistants** page: see [What assistants may do](/assistants/permissions). Your rules are limits on that, which nothing of theirs loosens. People see them first on the tab, locked, with **Set by your administrator**, and their assistants are told "this server's administrator says so" when one refuses them.
 
+People's [access](/server/access) applies over both: an assistant never does more than its person may through Lumovi. **AI assistants** in a profile says whether they may use assistants there, and whether their changes always ask first, and their Secrets, logs and changes cap their assistants'. Someone who may use them nowhere can't allow one.
+
 <CodeGroup>
   ```yaml values.yaml
   assistants:
@@ -139,12 +141,12 @@ A cluster's name is the one Lumovi shows: `clusterName` (`in-cluster` unless set
 Each person's rules are kept on the server, by the name they're signed in as: the same in every browser, and every page of theirs, and their assistants, follow a change at once. Lumovi keeps them in the first of these it has:
 
 1. **A ConfigMap**, in the namespace Lumovi runs in, named by `LUMOVI_ASSISTANT_RULES_CONFIGMAP`. The Helm chart makes it, `<release>-assistant-rules`, and sets the variable, whenever assistants are on.
-2. **A file**, `assistant-rules.json` in the folder `LUMOVI_DATA_DIR` names. Only Lumovi's user can read it, and it's written whole or not at all.
-3. **Memory**, until Lumovi stops. Its log says so as it starts: `AI rules are kept in memory: people’s are lost when Lumovi stops. Set LUMOVI_DATA_DIR, or install the Helm chart, to keep them.` People's **Permissions** tab warns them too, and after a restart their assistants do what the defaults say.
+2. **A file**, `assistant-rules.json` in the folder `LUMOVI_DATA_DIR` names. Only Lumovi's user can read it, and it's written whole or not at all, by one Lumovi at a time (it takes `assistant-rules.json.lock` as it writes). When another Lumovi sharing the folder wrote it since, Lumovi reads theirs and adds the person's change to it, rather than write over it.
+3. **Memory**, until Lumovi stops. Its log says so as it starts: `People’s AI rules are kept in memory: they’re lost when Lumovi stops. Set LUMOVI_DATA_DIR, or install the Helm chart, to keep them.` People's **Permissions** tab warns them too, and after a restart their assistants do what the defaults say.
 
 With the chart:
 
-- **Lumovi may only read and update that one ConfigMap**: a Role, `<release>-assistant-rules`, gives its service account `get` and `update` on it by name, and nothing else. The chart makes the Role with `rbac.create`. With `rbac.create: false`, the chart still makes the ConfigMap and tells Lumovi to use it: grant Lumovi's service account `get` and `update` on `<release>-assistant-rules` yourself, or it doesn't start.
+- **Lumovi may only read and write that one ConfigMap**: a Role, `<release>-assistant-rules`, gives its service account `get` and `patch` on it by name, and nothing else. Lumovi reads it, and writes its data alone with a merge patch, so the chart's annotation and labels stay. The chart makes the Role with `rbac.create`. With `rbac.create: false`, the chart still makes the ConfigMap and tells Lumovi to use it: grant Lumovi's service account `get` and `patch` on `<release>-assistant-rules` yourself. Without `get`, it doesn't start.
 - **Uninstalling keeps it**, with what people set, on purpose (`helm.sh/resource-policy: keep`): installing again finds their rules as they were. Upgrades leave what's in it. Delete it yourself to forget them.
 - **It holds everyone's**, as JSON under `rules.json`, up to 1 MB in all: past that, a person's change isn't kept, and their tab says "Not kept: Lumovi can't keep more AI rules: everyone's together would be over 1 MB."
 - **Whoever may update ConfigMaps in Lumovi's namespace can change anyone's rules**, and whoever may read them sees everyone's. Keep that namespace to administrators.

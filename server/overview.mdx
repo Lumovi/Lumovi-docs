@@ -78,6 +78,9 @@ A [fleet](/server/fleet) signs people in with single sign-on or a proxy, never w
   <Accordion title="AI assistants sign in through Lumovi" icon="sparkles">
     Claude Code, Cursor, VS Code and other assistants connect to Lumovi's address, at `mcp`, and sign in through it in the browser: people allow each one, and it acts as them. The changes they ask for wait on their own pages. Each person says [what theirs may do](/assistants/permissions), and where, within limits the administrator sets. See [AI assistants on a server](/assistants/server), and [AI assistants for your team](/server/assistants) to turn them off or set limits.
   </Accordion>
+  <Accordion title="Admins decide who may do what" icon="shield">
+    Within what RBAC allows, its admins can let people do less through Lumovi, team by team: read-only for everyone, say, with shells and Secrets' values only where a team works. Each person sees what they may in **Your access**. See [Access for your team](/server/access).
+  </Accordion>
   <Accordion title="An audit log for the team" icon="scroll-text">
     What everyone does through Lumovi, and who signed in, is kept on a volume, written to Lumovi's output for your log collector, and sent to a webhook if you like. People see their own events, and the auditors you name see everyone's. See [Audit log for your team](/server/audit-log).
   </Accordion>

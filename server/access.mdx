@@ -1,0 +1,300 @@
+---
+title: "Access for your team"
+sidebarTitle: "Access"
+description: "Say who may do what through Lumovi, team by team: what everyone gets, profiles your groups get where you say, and limits that hold anyone back. Always within Kubernetes RBAC."
+icon: "shield"
+---
+
+Kubernetes RBAC says what anyone may do in a cluster. Access says what Lumovi lets them do there: never more than RBAC, often less. People who may delete pods with `kubectl` may still only look at them through Lumovi, or open shells only in staging, or see Secrets' keys but not their values. The server decides, whatever a page shows, and every refusal says why.
+
+It's for Lumovi in your cluster, or a [fleet](/server/fleet). The desktop app has none: it does what your kubeconfig allows.
+
+<Frame caption="Access, for Lumovi's admins: groups, and the provider's groups seen at sign-in.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/access-light-1x.webp" alt="The Access page of a fleet of 4 clusters, on its Groups tab. A note says your proxy sends groups as IDs, and that someone in more than 200 Microsoft Entra ID groups arrives with none. Five groups: Platform team, set in the Helm chart, given the Platform profile, 2 people; and Developers, open, given the Developer profile, with its name, what it's for, its member, the proxy's developers group, and the 3 people in it now, as they last signed in. On the right, Seen at sign-in: the groups the proxy sent in the last 30 days, each with how many people and the group it's in, an ID with Name it, and payments, not in a group, so they get what everyone does." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/access-dark-1x.webp" alt="The Access page of a fleet of 4 clusters, on its Groups tab. A note says your proxy sends groups as IDs, and that someone in more than 200 Microsoft Entra ID groups arrives with none. Five groups: Platform team, set in the Helm chart, given the Platform profile, 2 people; and Developers, open, given the Developer profile, with its name, what it's for, its member, the proxy's developers group, and the 3 people in it now, as they last signed in. On the right, Seen at sign-in: the groups the proxy sent in the last 30 days, each with how many people and the group it's in, an ID with Name it, and payments, not in a group, so they get what everyone does." />
+</Frame>
+
+## How it works
+
+Five pieces decide what someone may do:
+
+- **Everyone**: what everyone signed in gets, wherever nothing gives more.
+- **Groups**: Lumovi's own. Their members are your identity provider's groups, so people who join or leave there do here, and people by name. They decide what Lumovi lets people do, and nothing else: they never reach the cluster, and Lumovi acts as people with their own name and groups, as it always does.
+- **Profiles**: a level of each thing Lumovi lets people do, as a set: **Developer**, **Operator**, **Auditor**.
+- **Grants**: give groups a profile, in some clusters and namespaces. Someone in several groups gets the most any of their grants gives there, setting by setting.
+- **Limits**: hold back the groups they name, wherever they match, whatever grants give. A limit that names no group holds back everyone, admins included.
+
+What's left is still checked by the cluster, as the person.
+
+### What it decides
+
+Each has levels, from the least to the most:
+
+| Setting | Levels | What it's for |
+| --- | --- | --- |
+| **Changes** | **Read-only**, **Make changes** | Editing, scaling, restarting, deleting and creating objects, and every other change. Helm needs it too. |
+| **Shells** | **Off**, **Open them** | Shells in containers, and debug containers. |
+| **Node shells** | **Off**, **Open them** | [Shells on nodes](/debug/node-shell), as root. Decided for a cluster's nodes, never by namespace. **Changes** don't decide them: someone read-only may still open one, if this says so. |
+| **Logs** | **Off**, **Read them** | Containers' logs, for people and their AI assistants. |
+| **Secrets** | **Hidden**, **Keys only**, **Values** | What Secrets show. |
+| **Helm** | **Off**, **Upgrade, roll back**, **Install, uninstall** | Changing [Helm releases](/helm/releases). |
+| **AI assistants** | **Off**, **Changes ask first**, **As they set them** | Connecting [assistants](/assistants/server), and what their changes do. |
+| **Audit log** | **Their own**, **Everyone's** | Whose events they see in the [audit log](/server/audit-log). It isn't a cluster's: a grant that gives **Everyone's** gives it everywhere, wherever the grant reaches, and makes someone an auditor. A limit on it holds them back everywhere. |
+
+In settings, the levels are `read`, `write`; `off`, `on`; `hidden`, `keys`, `values`; `off`, `upgrade`, `install`; `off`, `ask`, `self`; and `own`, `all`.
+
+### Where a grant or limit applies
+
+Each says where, as [AI assistants' rules](/assistants/permissions#where-a-rule-applies) do. `clusters` and `namespaces` each take names, patterns like `tenant-*`, labels like `team=payments`, and `!` first to leave some out, like `!kube-*`. None means all of them. A cluster's labels are `clusterLabels`, or in a fleet, its clusters' own.
+
+- **A Namespace object** counts as being in itself: a grant for `shop` lets someone change the `shop` Namespace too.
+- **A cluster's own objects**, like nodes, persistent volumes and cluster roles, follow only grants and limits that name no namespaces. So do **node shells**, decided for a cluster's nodes. See [A cluster's own objects](#a-clusters-own-objects).
+- **Where a namespace's labels can't be read**, a grant that needs them doesn't apply, and a limit that might does: what's decided is never more than what's so.
+
+### A cluster's own objects
+
+A grant or limit that names namespaces is about what's in them, and leaves a cluster's own objects alone: nodes, persistent volumes, storage classes, cluster roles, CustomResourceDefinitions. A limit on `prod-*` that makes changes read-only there doesn't stop anyone cordoning a node. Only grants and limits that name no namespaces decide a cluster's own objects, and those reach every namespace too:
+
+```yaml values.yaml
+access:
+  policy:
+    limits:
+      - id: production-read-only
+        name: Production is read-only
+        clusters: [env=production]   # no namespaces: its own objects, and every namespace
+        caps: { changes: read }
+```
+
+For people, that's all. Their [AI assistants](#ai-assistants) are held stricter there: a change to a cluster's own objects can reach every namespace, so it's decided as the strictest of them all.
+
+## Turn it on
+
+Name Lumovi's admins: groups, exactly as people sign in with them, and people as `user:` and their name, whatever its case.
+
+```yaml values.yaml
+access:
+  admins: [platform-admins, user:ana@example.com]
+```
+
+Admins see the **Access** pages, and decide who may do what there. Being one changes nothing else: what an admin may do themselves, grants and limits say, as for everyone.
+
+With no admins, everyone may do all their RBAC allows, and sees their own events in the audit log. Everyone has **[Your access](/clusters/your-access)**, which says so.
+
+## Set it in the chart
+
+What `access.policy` says applies as Lumovi starts, and admins can't change it on the page: it shows there with **Helm chart**, and changes with the chart. It's the place for what shouldn't depend on anyone's clicks, like the platform team's access, or a limit on production. Admins add the rest on the page.
+
+```yaml values.yaml expandable
+access:
+  admins: [platform-admins]
+  policy:
+    # Everyone signed in: read-only, keys of Secrets, logs, and assistants that ask.
+    everyone:
+      { changes: read, shells: off, nodeShells: off, logs: on, secrets: keys,
+        helm: off, assistants: ask, audit: own }
+    groups:
+      - id: platform
+        name: Platform team
+        provider: [platform-admins]   # groups as your identity provider sends them
+      - id: developers
+        name: Developers
+        provider: [developers]
+        people: [contractor@example.com]
+    profiles:
+      - id: platform
+        name: Platform
+        values:
+          { changes: write, shells: on, nodeShells: on, logs: on, secrets: values,
+            helm: install, assistants: self, audit: all }
+      - id: developer
+        name: Developer
+        values:
+          { changes: write, shells: on, nodeShells: off, logs: on, secrets: values,
+            helm: upgrade, assistants: ask, audit: own }
+    grants:
+      - id: platform
+        name: The platform team runs everything
+        who: [platform]
+        profile: platform
+      - id: developers
+        name: Developers build outside production
+        who: [developers]
+        profile: developer
+        clusters: [env=staging, env=test]
+    limits:
+      - id: production
+        name: Production
+        clusters: [env=production]   # nobody named: everyone, admins included
+        caps: { nodeShells: off, helm: upgrade }
+```
+
+With this, the platform team may do everything, but nobody opens node shells on production or installs charts there. Developers change things, open shells and read Secrets in staging and test clusters, and only read elsewhere. Everyone else reads, without Secrets' values.
+
+- **`everyone`** gives every setting a level, and so does each profile's `values`. `on` and `off` can be written unquoted: Helm reads them as `true` and `false`, and Lumovi takes them as meant. A limit's `caps` names only what it holds back, and never the most there is: that would limit nothing.
+- **Ids** are lowercase letters, digits and `-`. Grants and limits name groups and profiles by their ids.
+- **`names`** gives provider groups a name to show, for providers that send IDs: `{ 61e0b4d7-8a2f-4c95-9d3e-7b1a5f2c4e80: Security }`.
+- **Without `everyone`**, what everyone gets is the admins' to say on the page: everything, until they say less.
+
+The chart passes it to Lumovi as `LUMOVI_ACCESS`. The chart's schema checks its shape: each level and id. Lumovi checks the rest as it starts, like what a grant names, and one that doesn't make sense stops it, saying where, like:
+
+```text
+LUMOVI_ACCESS: limits[0].caps.helm is install, which limits nothing: it’s the most there is.
+LUMOVI_ACCESS: grants[0].who[0] names a group there isn’t: “nobody”.
+```
+
+With no admins, `access.policy` still applies, and nobody can change it but the chart.
+
+## The Access pages
+
+Admins open them from the shield (**Admin: who may do what**) at the bottom of the sidebar, or at the top of a fleet's page of clusters; **Admin** in the account menu; or **Access** in the [command palette](/explore/finding-things). The address is `/access`. Anyone else who opens it reads **Only Lumovi's admins see this**, and who they are.
+
+Changes made on the tabs are a draft until you save them, together. See [Saving](#saving).
+
+### Groups
+
+Each group, with its members: groups from your identity provider, and people by name. Type to add one: the provider's groups seen lately and people who signed in are offered, or what you typed, as a group or a person not seen yet. A member nobody who signed in lately matches is marked **not seen yet**: a typo, maybe, or someone who hasn't signed in. People match whatever the case of their name; the provider's groups match exactly. A card shows the profiles its grants give, **Limited** when a limit names it, and how many people are in it now. Opened, it lists them, **In it now, as they last signed in**.
+
+**Seen at sign-in**, at the side, lists the groups your provider sent as people signed in, in the last 30 days, with how many people each, and which of Lumovi's groups it's in. **Add to…** adds it to one. One in no group says **Not in a group: they get what everyone does**.
+
+- **IDs**: Microsoft Entra ID sends groups as IDs. **Name it** gives one the name your team knows it by, once, and it shows everywhere. Someone in more than 200 Entra groups arrives with none: send the groups assigned to Lumovi's app instead.
+- **No groups**: when your provider sends none, a note says how to send them: a groups claim in the ID token (`auth.oidc.groupsClaim`, `groups` unless set), or the proxy's groups header (`auth.proxy.groupsHeader`). Until then, only people named in a group are in it.
+- **Who's seen**: each person as their page last connected, with the groups they signed in with. As it starts, Lumovi finds who signed in, or did something through the page, in its audit history: the latest 1,000 such events, in the last 30 days. Each replica keeps its own list.
+
+Deleting a group takes it out of the grants that name it. A limit that names only it goes too: naming nobody, it would hold back everyone.
+
+### Profiles
+
+<Frame caption="Profiles side by side: what each adds to what everyone gets, with what shows Secret values or runs code on nodes marked.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/access-profiles-light-1x.webp" alt="The Profiles tab: a table with a row for each setting, Changes, Shells, Node shells (as root, on a node: Changes don't decide them), Logs, Secrets, Helm, AI assistants and Audit log (whose events, anywhere), and a column for Everyone, everyone signed in, then the profiles Platform, set in the Helm chart, Developer, Operator and Auditor, each with how many groups and grants give it. Each cell is a menu with the level, like Read-only, Open them, Keys only or Install, uninstall. Levels that show Secret values, open node shells, install charts, let assistants change things as they set them, or read everyone's events are marked." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/access-profiles-dark-1x.webp" alt="The Profiles tab: a table with a row for each setting, Changes, Shells, Node shells (as root, on a node: Changes don't decide them), Logs, Secrets, Helm, AI assistants and Audit log (whose events, anywhere), and a column for Everyone, everyone signed in, then the profiles Platform, set in the Helm chart, Developer, Operator and Auditor, each with how many groups and grants give it. Each cell is a menu with the level, like Read-only, Open them, Keys only or Install, uninstall. Levels that show Secret values, open node shells, install charts, let assistants change things as they set them, or read everyone's events are marked." />
+</Frame>
+
+**Everyone** comes first, then each profile, side by side, with how many groups and grants give it. Choose a level in a cell to change it. A level beyond what everyone gets stands out, and so do the ones to give with care: node shells, Secrets' values, installing charts, assistants as they set them, and everyone's events. **New profile** starts from what everyone gets. A profile a grant gives can't be deleted: give the grant another first.
+
+### Grants & limits
+
+<Frame caption="Grants and limits, each with who it names and how far it reaches.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/access-rules-light-1x.webp" alt="The Grants & limits tab. Grants, with a note that whose audit events someone reads isn't a cluster's: a grant that gives everyone's gives them everywhere. Five grants: The platform team runs everything, set in the Helm chart, Platform team in all clusters and all namespaces, Platform, 2 people and 14 namespaces; Developers build outside production, in env=staging and env=test; Developers release their teams' services, in env=production, the shop and batch namespaces; On-call fixes production, On-call SRE in env=production, every namespace but kube-*, Operator; and Security reads the audit log, Auditor. Below, three limits, noted to hold back whose audit events everywhere; the first, Production, for everyone in env=production, with No node shells and No Helm installs, 9 people and 9 namespaces, open to edit." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/access-rules-dark-1x.webp" alt="The Grants & limits tab. Grants, with a note that whose audit events someone reads isn't a cluster's: a grant that gives everyone's gives them everywhere. Five grants: The platform team runs everything, set in the Helm chart, Platform team in all clusters and all namespaces, Platform, 2 people and 14 namespaces; Developers build outside production, in env=staging and env=test; Developers release their teams' services, in env=production, the shop and batch namespaces; On-call fixes production, On-call SRE in env=production, every namespace but kube-*, Operator; and Security reads the audit log, Auditor. Below, three limits, noted to hold back whose audit events everywhere; the first, Production, for everyone in env=production, with No node shells and No Helm installs, 9 people and 9 namespaces, open to edit." />
+</Frame>
+
+Each card says who it's for, where, what it gives or holds back, and how far it reaches: the people in it as they last signed in, and the namespaces it reaches among those Lumovi lists.
+
+- **A grant**: a name, **Who** (Lumovi's groups), **Clusters** and **Namespaces**, and the profile it **Gives them**, with what that adds to what everyone gets. Make a profile first: a grant gives one.
+- **A limit**: a name, **Who it holds back** (empty: everyone, admins included), **Clusters** and **Namespaces**, and for each setting, **Not limited** or the most it lets through. They're the place for production, or namespaces with card data.
+
+Typing a cluster or namespace offers names, patterns and labels, with how many each matches. Whose audit events someone reads isn't a cluster's: a grant that gives **Everyone's** gives it everywhere, and a limit on it holds them back everywhere.
+
+### Check someone
+
+<Frame caption="What someone may do in a namespace, and which grant or limit says so.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/access-check-light-1x.webp" alt="The Check someone tab, for dan@example.com, signed in 6 hours ago through the proxy, with the groups developers and on-call, so in Lumovi's groups Developers and On-call SRE: 13 namespaces they may change, 13 they may open shells in, 7 whose Secret values they see, and 0 clusters whose nodes they may open shells on. On the right, the shop namespace on production: Changes, Make changes, and Shells, Open them, from the grant Developers release their teams' services; Node shells, Off, and Logs, Read them, from what everyone gets; Secrets, Values, and AI assistants, As they set them, from On-call fixes production; Helm, Upgrade, roll back, held back by the limit Production, where grants would give install, uninstall; and Audit log, their own." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/access-check-dark-1x.webp" alt="The Check someone tab, for dan@example.com, signed in 6 hours ago through the proxy, with the groups developers and on-call, so in Lumovi's groups Developers and On-call SRE: 13 namespaces they may change, 13 they may open shells in, 7 whose Secret values they see, and 0 clusters whose nodes they may open shells on. On the right, the shop namespace on production: Changes, Make changes, and Shells, Open them, from the grant Developers release their teams' services; Node shells, Off, and Logs, Read them, from what everyone gets; Secrets, Values, and AI assistants, As they set them, from On-call fixes production; Helm, Upgrade, roll back, held back by the limit Production, where grants would give install, uninstall; and Audit log, their own." />
+</Frame>
+
+Pick someone who signed in, or type a name to check them with no groups. Then a cluster, and a namespace or **Its own objects**. The table says what they may do there, and **Because**: what everyone gets, a grant, or a limit, with what grants would have given where a limit holds them back. For someone `audit.auditors` (`LUMOVI_AUDITORS`) names, **Audit log** says **Everyone's**, because of **Server**: "LUMOVI_AUDITORS names them". It counts what's yours unsaved too, so a change can be tried before it's saved. Their RBAC still applies after it.
+
+### History
+
+Every saved change to access, newest first: who made it, from where, and each change as it was and as it is, like **Helm** ~~Off~~ → **Upgrade, roll back**. It reads them from the audit log, where each is an **access.changed** event, and **Open in the audit log** shows them there, as far back as it keeps. A change made by hand where access is kept, not on these pages, says **Outside Lumovi, where it's kept**: see [Where it's kept](#where-its-kept).
+
+### Saving
+
+Changes on any tab go into a draft. At the bottom, "3 changes not saved", with **Read them** to read each before you save, **Discard**, and **Save changes**. Saved, they apply at once, everywhere, and the audit log records them.
+
+- **Someone else saved first?** Lumovi refuses yours, rather than undo theirs: **Someone else saved changes to access** since you started. **Start over from theirs**, and make yours again.
+- **Leaving with changes unsaved** asks first: **Leave without saving?**
+- **Locked**: what the chart sets shows **Helm chart**, and can't be changed here.
+
+## What Lumovi refuses
+
+Lumovi's server checks before it acts, as the person: changes, shells, logs, Secrets, Helm and AI assistants. A refusal is a `not-allowed` error that says what, where and why, like:
+
+```text
+Lumovi doesn’t let you open shells in shop: no grant of yours gives it there.
+Lumovi doesn’t let you upgrade releases in payments: the limit “Production” says so.
+```
+
+Changes, shells, logs, Secret reads, Helm and AI assistants' calls refused this way are recorded in the [audit log](/audit/overview) as **Refused**. Pages say the same before anyone tries: see [Your access](/clusters/your-access#where-its-said).
+
+| Setting | What it needs |
+| --- | --- |
+| **Changes** | **Make changes** for every change: editing, scaling, restarting, deleting, creating, evicting, cordoning, and AI assistants' changes. |
+| **Shells** | **Open them** for a shell in a container. A debug container needs it too, and **Make changes**. |
+| **Node shells** | **Open them** on the cluster, for a shell on a node. |
+| **Logs** | **Read them** to read a container's logs, on a page or by an AI assistant. |
+| **Secrets** | **Hidden**: Secrets can't be read, listed or changed in that namespace ("Lumovi doesn't let you change Secrets in shop: …"), and lists across every namespace leave them out. **Keys only**: their values come back empty, and so does the annotation that holds a copy of them, in everything Lumovi answers, a change's answer and its dry run included. Editing a Secret's YAML, or applying one, needs **Values**, since it writes the Secret whole; changes to part of one, like its labels, don't. |
+| **Helm** | **Upgrade, roll back** to upgrade a release or roll it back, and **Install, uninstall** for the others, each with **Make changes** there. Upgrading needs Secrets' **Values** there too: it starts from the values the release has. Without them, a release's values and manifests, which can hold Secrets, aren't shown either. |
+| **AI assistants** | See [AI assistants](#ai-assistants). |
+| **Audit log** | **Everyone's** makes someone one of the audit log's [auditors](/server/audit-log#auditors), as `audit.auditors` does. |
+
+Port forwarding isn't among them: Lumovi in a cluster forwards no ports.
+
+### AI assistants
+
+An assistant acting as someone never does more than they may themselves:
+
+- **Who may use them nowhere can't allow one.** The page for allowing it says "Lumovi's admins don't let you use AI assistants on this server. Your access, in Lumovi's account menu, says more." An assistant already allowed is refused from then on.
+- **Off** in a namespace hides it from their assistants. A cluster whose own objects are off for them, but some of its namespaces on, is still there, and its own objects are read-only to them.
+- **Changes ask first** makes every change of theirs ask, whatever their [AI permissions](/assistants/permissions) say. **Read-only** changes, never.
+- **Secrets and logs** go no further than their own: keys only where they see keys only.
+- **What's refused says why**: "Lumovi's admins don't let the person", with the grant or limit that decided. `list_clusters` tells assistants that Lumovi's admins decide, namespace by namespace.
+
+These apply over each person's [AI permissions](/assistants/permissions) and the [limits you set for assistants](/server/assistants#limits-for-everyone).
+
+## Where it's kept
+
+What admins set is kept in the first of these Lumovi has:
+
+1. **A ConfigMap**, in the namespace Lumovi runs in, named by `LUMOVI_ACCESS_CONFIGMAP`, under `access.json`. With `access.admins`, the chart makes it, `<release>-access`, and a Role that grants Lumovi `get` and `patch` on it alone. Lumovi reads it, and writes its data alone with a merge patch, so what the chart set on it stays. Upgrades leave what's in it, and uninstalling keeps it (`helm.sh/resource-policy: keep`).
+
+   With `rbac.create: false`, grant Lumovi's service account `get` and `patch` on it yourself. Without `get`, Lumovi doesn't start, and its log says why, like `Lumovi can’t read ConfigMap lumovi/lumovi-access, where it keeps access settings: configmaps "lumovi-access" is forbidden: …` Without `patch`, admins' changes aren't saved: "Not saved: Lumovi couldn't keep who may do what: …"
+2. **A file**, `access.json` in `LUMOVI_DATA_DIR`, written whole, by one Lumovi at a time: a replica takes `access.json.lock` as it writes, and a save while another holds it is refused, as one after someone else's is. A lock left more than 30 seconds, by a Lumovi that stopped as it wrote, is taken away.
+3. **Memory**, until Lumovi stops. Its log says `Access settings are kept in memory: they’re lost when Lumovi stops. Set LUMOVI_DATA_DIR, or install the Helm chart, to keep them.`, and so do the Access pages.
+
+- **Read again every 15 seconds**, from the ConfigMap or the file, so every replica follows a change. A change saved against a version someone else has replaced since is refused.
+- **Changed by hand, it's recorded.** Lumovi seals what it writes, with a SHA-256 of it kept next to it (`seal`). Whenever what's kept is changed without a seal that matches, it's recorded in the audit log as **access.changed**, by Lumovi itself, with `"outside": true` in its details:
+  - **While Lumovi runs**, as it reads again: with what changed, its summary starting `Changed outside Lumovi:`.
+  - **While it was stopped**, as it next starts, without what it was before: `Changed outside Lumovi, while it wasn’t running: what it was before can’t be known`, and the change `Changed while Lumovi wasn’t running, from what it can’t say: it now has 2 groups, 1 profile, 3 grants and no limits`.
+
+  Once recorded, Lumovi seals it, so it's recorded once, by whichever replica, or start, reads it first. Two replicas that read it within the same 15 seconds can both record it. If Lumovi can't seal it, its log says `Access: Lumovi recorded a change made outside it, and can’t seal it, so it’s recorded again as Lumovi starts: …`. History shows these as **Outside Lumovi, where it's kept**. A seal isn't a key: it tells a hand edit from Lumovi's own, not from someone who works the seal out too.
+- **Checked as Lumovi starts**: what's kept that doesn't make sense stops it, rather than let anyone do more. When the chart takes away a group or profile something kept names, the grants and limits left for nobody, or for a profile there isn't, are dropped, and the log names them, once for each set of them: `Access: the grant “…” named groups or profiles the chart no longer has, and no longer apply.` What's kept isn't written back: they're left out as it's read.
+- **Up to 1 MB.**
+- **Whoever may change that ConfigMap, or the file, is an admin in all but name**: they can change who may do what, as admins do, and a change they seal themselves isn't recorded at all. Keep Lumovi's namespace, and its data folder, to administrators.
+
+## The settings
+
+| Value | Variable | |
+| --- | --- | --- |
+| `access.admins` | `LUMOVI_ADMINS` | Groups, and `user:` names, separated by commas without the chart |
+| `access.policy` | `LUMOVI_ACCESS` | YAML or JSON, or either in base64, with `everyone`, `groups`, `profiles`, `grants`, `limits` and `names` |
+| | `LUMOVI_ACCESS_CONFIGMAP` | Set by the chart with `access.admins` |
+| | `LUMOVI_DATA_DIR` | `access.json`, without a ConfigMap |
+
+See [Helm values](/server/helm-values#access) and [Configuration](/server/configuration#access).
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Lumovi doesn't start" icon="power-off">
+    Its log says what's wrong with `LUMOVI_ACCESS`, or with what was kept, and where: `LUMOVI_ACCESS: everyone doesn’t say shells.`, `LUMOVI_ACCESS: everyone.changes is read, write, not “maybe”.` Two more stop it:
+
+    - *LUMOVI_ACCESS_CONFIGMAP keeps who may do what in the cluster Lumovi runs in, and it isn't running in one (KUBERNETES_SERVICE_HOST isn't set).*
+    - *Lumovi can't read ConfigMap lumovi/lumovi-access, where it keeps access settings: …*, when the ConfigMap isn't there, or Lumovi may not read it.
+  </Accordion>
+  <Accordion title="Nobody is in a group" icon="users">
+    Your provider sends no groups, and a note on the **Groups** tab says how to send them. Name people in the group meanwhile. With Microsoft Entra ID, people in more than 200 groups arrive with none.
+  </Accordion>
+  <Accordion title="Someone can't do what they should" icon="lock">
+    **Check someone** says which grant or limit decides, in the namespace they tried. If it says they may, their RBAC is what says no: Lumovi never lets anyone do more than that.
+  </Accordion>
+</AccordionGroup>
+
+<Columns cols={2}>
+  <Card title="Your access" icon="shield-check" href="/clusters/your-access">
+    What each person sees of theirs.
+  </Card>
+  <Card title="Security" icon="lock" href="/server/security">
+    What Lumovi is trusted with, and how to contain it.
+  </Card>
+</Columns>
