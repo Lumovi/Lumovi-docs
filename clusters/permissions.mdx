@@ -8,6 +8,10 @@ Lumovi acts with your credentials: the ones in your kubeconfig on the desktop, o
 
 In a [fleet](/server/fleet), each cluster applies your RBAC there: Lumovi impersonates you with credentials that may do nothing else, or passes your own token on. What you may do can differ from one cluster to the next. For whoever runs the fleet: in each cluster, Lumovi's own credentials need nothing but `impersonate` on users and groups. See [Add a cluster](/server/fleet/members).
 
+<Note>
+  **In your cluster:** Lumovi's admins can let you do less through Lumovi than your RBAC allows: no shells in production, say, or Secrets' keys but not their values. [Your access](/clusters/your-access) says what, and why.
+</Note>
+
 ## Asked up front
 
 Before it offers a change, Lumovi asks the cluster whether you're allowed to make it, with a [SelfSubjectAccessReview](https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access) per action (the same check as `kubectl auth can-i`). Kubernetes lets every signed-in account make these checks.
@@ -16,7 +20,7 @@ Before it offers a change, Lumovi asks the cluster whether you're allowed to mak
 - If the cluster can't say, the action stays available and the API server has the final word.
 - Answers are kept for five minutes.
 
-A cluster you made [read-only](/changes/read-only) disables every change regardless, with *Changes are turned off for this cluster.*
+A cluster you made [read-only](/changes/read-only) disables every change regardless, with *Changes are turned off for this cluster.* On a server, what your [access](/clusters/your-access) doesn't allow is disabled too, saying why: *Your access doesn't let you make changes in shop: none of your grants gives it here.*
 
 ## Looking around
 
