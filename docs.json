@@ -152,6 +152,7 @@
             "pages": [
               "assistants/overview",
               "assistants/server",
+              "assistants/permissions",
               "assistants/approvals",
               "assistants/tools"
             ]
