@@ -53,6 +53,26 @@ The same goes for any change that replaces the pod: changing a setting, or the [
   For the same reason the chart runs one replica. More than one would need sticky sessions, and each replica would still keep its own sessions.
 </Note>
 
+## AI assistants' limits, from 1.4
+
+In Lumovi 1.4, `assistants.changes` (`LUMOVI_ASSISTANT_CHANGES`) said what every assistant's changes did, cluster by cluster, and the chart set it to `ask`. Since then, each person says what their own assistants may do, on the **Permissions** tab of their **AI assistants** page, and what you set is a limit on that:
+
+- **The chart no longer sets `assistants.changes`.** Unless you set limits, people may let their assistants change things without asking, or read Secrets' values. Their defaults still ask, show Secrets' keys only, and hide env values that look sensitive.
+- **`allow` no longer makes changes without asking** by itself: it leaves it to each person, whose changes ask unless they choose otherwise. `ask` and `never` limit what they choose.
+- **People's rules are kept in a ConfigMap** the chart makes, `<release>-assistant-rules`, with a Role that lets Lumovi read and update it. See [Where people's rules are kept](/server/assistants#where-peoples-rules-are-kept).
+
+To keep what 1.4 allowed, set a limit for everyone:
+
+```yaml values.yaml
+assistants:
+  rules:
+    - name: Limits
+      changes: ask
+      secrets: keys
+```
+
+See [Limits for everyone](/server/assistants#limits-for-everyone).
+
 ## When the client secret changes
 
 A change to a Secret's contents doesn't replace the pod. Lumovi reads the single sign-on client's secret from an environment variable, when the pod starts, so it keeps the old one until it restarts. That's the case when you change `auth.oidc.clientSecret` and upgrade (the chart changes its Secret, not the pod), and when you change the Secret that `auth.oidc.existingSecret` names.

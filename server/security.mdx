@@ -79,7 +79,8 @@ The first two are `HttpOnly`, so scripts can't read them, and `Secure` when `url
 Unless you turn them off, AI assistants connect at `mcp` below the base path, and sign in through Lumovi with OAuth: a person signs in to Lumovi, and allows each one on Lumovi's own page. See [AI assistants for your team](/server/assistants#security) for the details.
 
 - **An assistant acts as the person who allowed it**, with their RBAC, through Lumovi's tools only, until they disconnect it or their session ends. Behind a proxy, as the proxy last named them, for as long as a session would last.
-- **Its changes wait for that person**, unless you let a cluster's assistants make some without asking (`assistants.changes`, `assistants.clusters`). Deletions always ask. `readOnly: true` refuses them all, and so does a cluster its person made read-only.
+- **What it may do is its person's to say**, on their **Permissions** tab, within limits you set (`assistants.rules`): which namespaces it sees, whether its changes ask, whether it reads Secrets' values, env values and logs. By default, its changes ask, it sees Secrets' keys only, and env values that look sensitive are hidden. Deletions always ask. `readOnly: true` refuses every change, and so does a cluster its person made read-only. See [What assistants may do](/assistants/permissions).
+- **People's rules are kept in a ConfigMap** in Lumovi's namespace, which Lumovi may only read and update. Whoever may update ConfigMaps there can change anyone's: keep that namespace to administrators. See [Where people's rules are kept](/server/assistants#where-peoples-rules-are-kept).
 - **Its tokens live in Lumovi's memory**, like sessions: access tokens for an hour, refresh tokens once each. A refresh token that comes back later, used already, ends what was allowed. They work only for assistants' requests, not for pages. So the chart runs one replica while assistants are on, and refuses more.
 - **Allowing an assistant hands someone's access to it.** Lumovi sends people back only to their own computer, an app, VS Code's site, or sites you name in `assistants.redirectHosts`, so a link to its page made by someone else can't send their access to a site of that person's choosing. The page says where it goes back to, and asks people to allow only what they started.
 
@@ -152,7 +153,7 @@ The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. I
 <Check>Serve it over HTTPS, and set `url` to the `https:` address, so cookies are sent over HTTPS only.</Check>
 <Check>Leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
 <Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
-<Check>Turn AI assistants off (`assistants.enabled: false`) unless your team uses them, or set their changes to `never` (`assistants.changes`, `assistants.clusters`) where they should only read.</Check>
+<Check>Turn AI assistants off (`assistants.enabled: false`) unless your team uses them, or set limits for everyone in `assistants.rules`: hide what they shouldn't see, and keep changes at `ask` or `never` where they matter.</Check>
 <Check>Set `nodeShell.enabled: false` unless people should open shells on nodes through Lumovi. Either way, only those who may create pods where privileged pods are allowed can open one.</Check>
 <Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and run Lumovi where only the administrators of all its clusters can.</Check>
 <Check>In a fleet, give Lumovi agents' `tokenSha256`, not their tokens, and keep each token in a Secret in its own cluster.</Check>

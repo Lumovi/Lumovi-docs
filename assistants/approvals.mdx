@@ -5,7 +5,7 @@ description: "A change an AI assistant asks for is checked by the cluster, then 
 icon: "check-check"
 ---
 
-An assistant doesn't change your clusters by itself. When it asks to apply a manifest, scale, restart or delete something, Lumovi has the cluster check the change, then shows it to you: what it changes, why the assistant wants it, and the `kubectl` command that does the same. Nothing happens until you approve it, unless you've let assistants make some changes to that cluster [without asking](#changes-they-ask-for). And once you approve it, Lumovi makes it only if it still does what you saw.
+An assistant doesn't change your clusters by itself. When it asks to apply a manifest, scale, restart or delete something, Lumovi has the cluster check the change, then shows it to you: what it changes, why the assistant wants it, and the `kubectl` command that does the same. Nothing happens until you approve it, unless your [permissions](/assistants/permissions) let assistants make some changes there [without asking](#changes-they-ask-for). And once you approve it, Lumovi makes it only if it still does what you saw.
 
 <Frame caption="A change Claude Code asks for: why, the diff it makes, and the kubectl command that does the same.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-approval-light-1x.webp" alt="The approval dialog over the Deployments list. Claude Code asks to Scale Deployment storefront to 5 replicas, in Deployment · shop · production, with the PRODUCTION badge. Under Why, its reason: checkout latency has doubled since 14:00, and storefront's pods are at 95% CPU. The diff turns replicas: 3 into replicas: 5, the equivalent command is kubectl scale deployment/storefront --replicas=5 -n shop --context production, and the footer says Waits 5:00 more, next to Reject… and Approve." />
@@ -13,7 +13,7 @@ An assistant doesn't change your clusters by itself. When it asks to apply a man
 </Frame>
 
 <Note>
-  **In your cluster:** your team's Lumovi shows your assistants' changes on your own pages, in the same dialog, and its administrator decides what they do in each cluster. See [On a server](#on-a-server).
+  **In your cluster:** your team's Lumovi shows your assistants' changes on your own pages, in the same dialog, and its administrator may set limits on what your permissions let them do. See [On a server](#on-a-server).
 </Note>
 
 The keys on this page are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>.
@@ -94,7 +94,7 @@ You're usually in your assistant when it asks. When Lumovi's window isn't in fro
 
 Click it to bring Lumovi to the front. On a Mac, Lumovi's icon in the Dock bounces too. The notifications close once you come to Lumovi.
 
-On a server, your browser says the same while Lumovi's tab isn't in front, once you've let it: choose **Notify me** in the **AI assistants** dialog. See [Notifications](/assistants/server#notifications).
+On a server, your browser says the same while Lumovi's tab isn't in front, once you've let it: choose **Notify me** on the **AI assistants** page's **Connect** tab. See [Notifications](/assistants/server#notifications).
 
 ## While it waits
 
@@ -139,31 +139,35 @@ Changes made [without asking](#changes-they-ask-for) are made right after their 
 
 ## Changes they ask for
 
-Each cluster decides what becomes of its assistants' changes. In the desktop app, you choose; on a server, its administrator does (see [On a server](#on-a-server)). In the desktop app's **AI assistants** dialog, **Changes they ask for** lists every cluster in your kubeconfig, each with three choices:
+What becomes of a change an assistant asks for is the **Changes** setting of your [permissions](/assistants/permissions): in the defaults, and in rules for some clusters and namespaces. It's decided where the change is, in the object's namespace. A change to one of the cluster's own objects, like a node, a cluster role or a CustomResourceDefinition, can reach every namespace, so it's decided as the strictest of the cluster and all its namespaces: it asks where any of them asks, and it's refused where any is hidden, **Never**, or hides its Secrets. See [Where a rule applies](/assistants/permissions#where-a-rule-applies).
 
-| Choice | What happens to a change |
+| Changes | What happens to a change |
 | --- | --- |
-| **Ask** | The default. You approve each one here. |
-| **Allow** | Made without asking, after the dry run, and you're told: a notification in Lumovi's window, like "Claude changed demo without asking: assistants may, there.", and a line in the Activity log. Deletions, and changes that take fields over from what manages them, still ask. |
-| **Never** | Assistants only read. A change is refused before anything's tried. |
+| **Ask you** | The default. You approve each one here. |
+| **Without asking** | Made after the dry run, and you're told: a notification in Lumovi's window, like "Claude changed demo without asking: assistants may, there.", and a line in the Activity log. |
+| **Never** | Refused before anything's tried. |
 
-The dialog sums it up: "Ask: you approve each one here. Allow: they're made without asking, and you're told (deletions, and changes that take fields over from Helm or Argo CD, still ask). Never: assistants only read. Your own access (RBAC) applies either way."
+Under **Without asking**, some changes ask you all the same:
+
+- **Deletions.**
+- **Changes that take fields over** from what manages them, like Helm, Argo CD or an autoscaler.
+- **Changes that make something read a Secret it didn't before**, through an env var, `envFrom`, a volume or a CSI driver's `nodePublishSecretRef`, since what it runs could log it. Unless your permissions let assistants read Secrets' values there. Scaling or restarting what reads one already doesn't ask for that.
 
 <Warning>
-  **Allow** lets assistants scale, restart and apply manifests with no one looking at them first, and tells you only in Lumovi's window, with no notification outside it. Keep it for clusters where that's fine, like one on your own computer.
+  **Without asking** lets assistants scale, restart and apply manifests with no one looking at them first, and tells you only in Lumovi's window, with no notification outside it. Keep it for clusters and namespaces where that's fine, like one on your own computer.
 </Warning>
 
-Refused by **Never**, the assistant is told:
+Refused by **Never**, the assistant is told why, and by whom:
 
-> Lumovi doesn't let AI assistants change sandbox: its AI assistants settings say "Never". Nothing was changed.
+> Lumovi doesn't let AI assistants change monitoring in demo: the person's AI permissions say so ("Monitoring"). Nothing was changed.
 
-Whatever you choose:
+Whatever your permissions say:
 
-- **Read-only clusters take no changes.** A cluster you made [read-only](/changes/read-only) says "Read-only: no changes" instead of the three choices. Lumovi refuses its changes, whatever asks for them, and the assistant is told: "Create ConfigMap feature-flags wouldn't work: production is read-only in Lumovi. Allow changes to it to continue."
+- **Read-only clusters take no changes.** In a cluster you made [read-only](/changes/read-only), **Check a namespace** shows **Never: read-only**. Lumovi refuses its changes, whatever asks for them, and the assistant is told: "Create ConfigMap feature-flags wouldn't work: production is read-only in Lumovi. Allow changes to it to continue."
 - **Your RBAC applies.** Lumovi makes the change with your credentials, and the dry run fails for one your account can't make. See [Permissions](/clusters/permissions#ai-assistants).
-- **Assistants know.** `list_clusters` tells them each cluster's choice, `ask`, `allow` or `never`, or `read-only`, so they don't ask for what won't be made.
+- **Assistants know.** `list_clusters` tells them each cluster's `changes`, `ask`, `allow`, `never` or `read-only`, and where some namespaces say otherwise, so they don't ask for what won't be made.
 
-Lumovi keeps each cluster's choice by its kubeconfig context name, with its other settings.
+Upgrading from Lumovi 1.4 or before, the desktop app's **Ask**, **Allow** or **Never** for each cluster becomes a rule for that context, so its changes are decided as they were.
 
 ## On a server
 
@@ -171,8 +175,8 @@ On your team's Lumovi, approving works as above, with a few differences. See [AI
 
 - **Your pages.** Your assistants' changes show on every Lumovi page you have open, in any tab or browser you're signed in on, and you answer on any of them. Nobody else sees them. With no page open, a change waits for the next one you open, up to its five minutes.
 - **Your browser's notifications**, instead of your computer's, once you choose **Notify me**: while Lumovi's tab is in the background.
-- **The administrator's rules.** What assistants' changes do in each cluster is set on the server. The **AI assistants** dialog shows it, without a way to change it: **Ask you**, **Made without asking** or **Never**. "As this server's administrator set them, and none where you made a cluster read-only. Deletions, and changes that take fields over from Helm or Argo CD, ask you wherever changes are made without asking." A change made without asking is told to the pages you have open; with none open, only the server's log records it.
-- **Read-only.** When the server is read-only for everyone, assistants change nothing. Nor do they in a cluster you made read-only for yourself: the dialog says **Read-only: no changes** for it.
+- **The administrator's limits.** Your permissions are yours, kept on the server, but its administrator can set rules that nothing loosens: **Changes** kept at **Ask you** or **Never** somewhere, say. Refused by one, the assistant hears "this server's administrator says so", with the rule's name. See [Your administrator's rules](/assistants/permissions#your-administrators-rules). A change made without asking is told to the pages you have open; with none open, only the server's log records it.
+- **Read-only.** When the server is read-only for everyone, assistants change nothing. Nor do they in a cluster you made read-only for yourself.
 
 <Columns cols={2}>
   <Card title="AI assistants" icon="sparkles" href="/assistants/overview">
