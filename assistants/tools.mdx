@@ -58,7 +58,7 @@ The clusters in your kubeconfig that your permissions don't hide, and which is t
 - **`logs`**: `read` or `off`.
 - **`inSomeNamespaces`**: the rules that say otherwise in some of its namespaces, each with the namespaces it names and what it says; an administrator's with `at most`, like `logs: at most off`. Rules that hide aren't told.
 
-See [What they're told as they start](/assistants/permissions#what-theyre-told-as-they-start).
+See [What they're told as they start](/assistants/permissions#what-they’re-told-as-they-start).
 
 It takes no parameters.
 
@@ -95,7 +95,7 @@ It says how many there are (`total`), and how many it shows when that's fewer (`
 
 ### get_resource
 
-One object as YAML, with its health on the first line, like `# Health: Running (healthy)`. It leaves out what's long and says little, and what your permissions hide: a Secret's values unless they show them, and env values that look sensitive, or all. See [What's hidden](#whats-hidden).
+One object as YAML, with its health on the first line, like `# Health: Running (healthy)`. It leaves out what's long and says little, and what your permissions hide: a Secret's values unless they show them, and env values that look sensitive, or all. See [What's hidden](#what’s-hidden).
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="kind" type="string" required />

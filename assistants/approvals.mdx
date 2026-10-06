@@ -30,7 +30,7 @@ The keys on this page are written for macOS. On Windows and Linux, use <kbd>Ctrl
     > Create ConfigMap feature-flags wouldn't work: …
   </Step>
   <Step title="Lumovi asks you">
-    The approval dialog opens, over whatever you're looking at. If Lumovi isn't in front, a [notification](#when-youre-elsewhere) says a change is waiting. The assistant [waits](#while-it-waits) for your answer.
+    The approval dialog opens, over whatever you're looking at. If Lumovi isn't in front, a [notification](#when-you’re-elsewhere) says a change is waiting. The assistant [waits](#while-it-waits) for your answer.
   </Step>
   <Step title="You answer">
     [Approve or reject](#approve-or-reject) it, with a note if you like. Unanswered, it waits five minutes, then the assistant is told it wasn't approved.
@@ -135,7 +135,7 @@ Changes made [without asking](#changes-they-ask-for) are made right after their 
 
 - **A notification** says what was done: **Scaled storefront to 5 replicas**, "As Claude Code asked, in demo." There's no **Undo**: ask the assistant, or change it back yourself. If the change wasn't made, or failed, the notification says so, like **Scale Deployment cart to 3 replicas failed**, with the reason, and the assistant is told too.
 - **The Activity log** has a line for it, with "via Claude Code", the command and whether it worked. A change you rejected is there too, as **Rejected**, with "rejected, asked by Claude Code" and your note. Changes that weren't approved in time, or were withdrawn, aren't. See [Undo and activity](/changes/undo-and-activity#the-activity-log).
-- **The [audit log](/audit/overview#ai-assistants-changes)** keeps it: as yours, through the assistant, with your answer, who gave it and how long it waited, and your note. Changes nobody answered in time, or the assistant withdrew, are there too, as **Cancelled**.
+- **The [audit log](/audit/overview#ai-assistants’-changes)** keeps it: as yours, through the assistant, with your answer, who gave it and how long it waited, and your note. Changes nobody answered in time, or the assistant withdrew, are there too, as **Cancelled**.
 - **Lists and details** refresh, then again a moment later, once the cluster's controllers have acted.
 
 ## Changes they ask for
@@ -176,7 +176,7 @@ On your team's Lumovi, approving works as above, with a few differences. See [AI
 
 - **Your pages.** Your assistants' changes show on every Lumovi page you have open, in any tab or browser you're signed in on, and you answer on any of them. Nobody else sees them. With no page open, a change waits for the next one you open, up to its five minutes.
 - **Your browser's notifications**, instead of your computer's, once you choose **Notify me**: while Lumovi's tab is in the background.
-- **The administrator's limits.** Your permissions are yours, kept on the server, but its administrator can set rules that nothing loosens: **Changes** kept at **Ask you** or **Never** somewhere, say. Refused by one, the assistant hears "this server's administrator says so", with the rule's name. See [Your administrator's rules](/assistants/permissions#your-administrators-rules). A change made without asking is told to the pages you have open; with none open, only the server's log records it.
+- **The administrator's limits.** Your permissions are yours, kept on the server, but its administrator can set rules that nothing loosens: **Changes** kept at **Ask you** or **Never** somewhere, say. Refused by one, the assistant hears "this server's administrator says so", with the rule's name. See [Your administrator's rules](/assistants/permissions#your-administrator’s-rules). A change made without asking is told to the pages you have open; with none open, only the server's log records it.
 - **Read-only.** When the server is read-only for everyone, assistants change nothing. Nor do they in a cluster you made read-only for yourself.
 
 <Columns cols={2}>

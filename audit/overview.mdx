@@ -19,7 +19,7 @@ Lumovi records what's done through it: changes, yours and your AI assistants', w
 - **Everything done through Lumovi, kept: the audit log**, at the bottom of the [Activity log](/changes/undo-and-activity#the-activity-log).
 - **Everything they did, kept, is in the audit log.**, on the **AI assistants** page's **Activity** tab. It opens the log with only what assistants did.
 
-Each object has its own events too, on its [Audit tab](#an-objects-audit-tab).
+Each object has its own events too, on its [Audit tab](#an-object’s-audit-tab).
 
 The page's address is `/audit`, below the base path on a server. **Back** takes you back where you were. At the top, it names where the log is from: **This computer** in the desktop app, the cluster on a server, or **Fleet**. Below its title, it says where the log is kept and for how long, and the date of its oldest event.
 
@@ -84,7 +84,7 @@ Choose an event for all of it, in a panel at the side. <kbd>↑</kbd> and <kbd>�
 
 - **Who**: the person (the computer's account in the desktop app), their groups, and **Through**: Lumovi's page, or an AI assistant acting as them. In the desktop app, the name of the kubeconfig user it used for the cluster. On a server, where the request came **From**, and when a proxy said so, who it says it's forwarding for, the **Browser**, and the **Session**, by its hash. **Everything** _person_ **did** shows only theirs.
 - **Where**: the cluster, namespace and object, with its UID. **Open in Lumovi** opens the object, unless it was deleted or uninstalled. **Its history** shows every event about it, as far back as the log keeps.
-- **Approval**, for an AI assistant's change: **Approved**, **Made without asking**, **Rejected**, **Nobody answered**, or **The assistant stopped waiting**; by whom, how long it waited, and the note you wrote. See [AI assistants' changes](#ai-assistants-changes).
+- **Approval**, for an AI assistant's change: **Approved**, **Made without asking**, **Rejected**, **Nobody answered**, or **The assistant stopped waiting**; by whom, how long it waited, and the note you wrote. See [AI assistants' changes](#ai-assistants’-changes).
 - **Does the same**: the `kubectl` or `helm` command, with **Copy command**, when there's one that needs nothing more. An object created or edited as YAML has none, since its manifest isn't kept; an AI assistant's change has the command it showed you.
 - **Details**: what else the event says, like the fields a change set, a release's value names, a shell's container and how long it ran, or an assistant's reason. See [Details](/audit/events#details).
 - **In the log**: its place in the [chain](/audit/verify) (**Place**, like #6), its **Id**, its **Hash** with **Copy hash**, and the hash of the event before it. **The event as recorded, as JSON** copies all of it.

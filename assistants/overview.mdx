@@ -208,7 +208,7 @@ Lumovi lets assistants in only from this computer, and only with its token:
 
 Any program on your computer that has the token can use Lumovi as an assistant would: read your clusters, and ask for changes. The commands and settings you copy have it in them, the one for Claude Code in your shell's history too. Make a new token if one got out.
 
-Lumovi itself calls no AI service, and sends what it gives an assistant to that assistant only. The assistant handles it as it handles everything else you show it, which for most means sending it to their AI provider. Your [permissions](/assistants/permissions) say what Lumovi hides from them: by default, Secrets' values and env values that look sensitive. A ConfigMap's data, or what a container logs, they read unless you hide its namespace, or its logs. See [What's hidden](/assistants/tools#whats-hidden).
+Lumovi itself calls no AI service, and sends what it gives an assistant to that assistant only. The assistant handles it as it handles everything else you show it, which for most means sending it to their AI provider. Your [permissions](/assistants/permissions) say what Lumovi hides from them: by default, Secrets' values and env values that look sensitive. A ConfigMap's data, or what a container logs, they read unless you hide its namespace, or its logs. See [What's hidden](/assistants/tools#what’s-hidden).
 
 <Columns cols={2}>
   <Card title="Approving changes" icon="check-check" href="/assistants/approvals">

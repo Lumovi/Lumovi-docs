@@ -308,10 +308,10 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     Lumovi also checks each connection every 30 seconds (`LUMOVI_HEARTBEAT_SECONDS`). Keep that shorter than the idle timeouts of the proxies in between. See [Address and ingress](/server/expose).
   </Accordion>
   <Accordion title="Lumovi's pod is Pending" icon="hard-drive">
-    The chart keeps the [audit log](/server/audit-log) on a volume, from the cluster's default storage class. Without a default, the volume's claim waits, and so does the pod. Set `audit.persistence.storageClass`, or `audit.persistence.enabled: false`. See [Where it's kept](/server/audit-log#where-its-kept).
+    The chart keeps the [audit log](/server/audit-log) on a volume, from the cluster's default storage class. Without a default, the volume's claim waits, and so does the pod. Set `audit.persistence.storageClass`, or `audit.persistence.enabled: false`. See [Where it's kept](/server/audit-log#where-it’s-kept).
   </Accordion>
   <Accordion title="Another Lumovi keeps its audit history there" icon="lock">
-    Two Lumovis were given one audit folder: the second waits for the first to let go, about 40 seconds at most, then doesn't start. Run one, or give each a folder of its own. See [Where it's kept](/server/audit-log#where-its-kept).
+    Two Lumovis were given one audit folder: the second waits for the first to let go, about 40 seconds at most, then doesn't start. Run one, or give each a folder of its own. See [Where it's kept](/server/audit-log#where-it’s-kept).
   </Accordion>
   <Accordion title="Not for you, here" icon="lock">
     Lumovi's admins don't let you do that there: their [access](/clusters/your-access) rules say less than your RBAC. **See your access** says what you may do, and which grant or limit decides. Disabled actions and tabs like **Shell** and **Logs** say the same, with who the admins are. Ask one of them for more.

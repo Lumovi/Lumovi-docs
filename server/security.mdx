@@ -80,7 +80,7 @@ Unless you turn them off, AI assistants connect at `mcp` below the base path, an
 
 - **An assistant acts as the person who allowed it**, with their RBAC and never more than their [access](#access), through Lumovi's tools only, until they disconnect it or their session ends. Behind a proxy, as the proxy last named them, for as long as a session would last.
 - **What it may do is its person's to say**, on their **Permissions** tab, within limits you set (`assistants.rules`): which namespaces it sees, whether its changes ask, whether it reads Secrets' values, env values and logs. By default, its changes ask, it sees Secrets' keys only, and env values that look sensitive are hidden. Deletions always ask. `readOnly: true` refuses every change, and so does a cluster its person made read-only. See [What assistants may do](/assistants/permissions).
-- **People's rules are kept in a ConfigMap** in Lumovi's namespace, which Lumovi may only read and update. Whoever may update ConfigMaps there can change anyone's: keep that namespace to administrators. See [Where people's rules are kept](/server/assistants#where-peoples-rules-are-kept).
+- **People's rules are kept in a ConfigMap** in Lumovi's namespace, which Lumovi may only read and update. Whoever may update ConfigMaps there can change anyone's: keep that namespace to administrators. See [Where people's rules are kept](/server/assistants#where-people’s-rules-are-kept).
 - **Its tokens live in Lumovi's memory**, like sessions: access tokens for an hour, refresh tokens once each. A refresh token that comes back later, used already, ends what was allowed. They work only for assistants' requests, not for pages. So the chart runs one replica while assistants are on, and refuses more.
 - **Allowing an assistant hands someone's access to it.** Lumovi sends people back only to their own computer, an app, VS Code's site, or sites you name in `assistants.redirectHosts`, so a link to its page made by someone else can't send their access to a site of that person's choosing. The page says where it goes back to, and asks people to allow only what they started.
 
@@ -94,7 +94,7 @@ Lumovi records what everyone does through it, who signed in, and from where: see
 - **Never values, tokens or manifests**: a Secret's keys, a change's fields and a Helm release's top-level value names, never what they're set to.
 - **The history is on a volume** in Lumovi's namespace, and each event is also on Lumovi's output, and at a webhook if you give one.
 
-- **Its chain has no key.** Whoever can write the volume, or exec into Lumovi's pod, can rewrite the history in a way the chain doesn't show. Keep a copy they can't reach, from Lumovi's output or a webhook, and compare its newest event with the history's: see [What it proves](/audit/verify#what-it-proves-and-what-it-doesnt).
+- **Its chain has no key.** Whoever can write the volume, or exec into Lumovi's pod, can rewrite the history in a way the chain doesn't show. Keep a copy they can't reach, from Lumovi's output or a webhook, and compare its newest event with the history's: see [What it proves](/audit/verify#what-it-proves-and-what-it-doesn’t).
 - **One Lumovi keeps the history**, holding a lock on its folder, so two can't number events the same.
 - **Anyone can try to sign in**, and failed attempts are recorded up to 60 a minute, then counted. They're for auditors alone, as is what couldn't be kept or sent.
 
