@@ -1,0 +1,216 @@
+---
+title: "Check the audit log hasn't changed"
+sidebarTitle: "Check it hasn't changed"
+description: "Each audit event holds its chain and the hash of the one before it. How the chain is made, how to check it on the page or with jq and sha256sum, and what it proves."
+icon: "shield-check"
+---
+
+Each event in the [audit log](/audit/overview) holds the hash of the event before it, so the events form a chain. Lumovi checks it for you on the **Audit log** page, and anyone with the events, `jq` and `sha256sum` can check them too.
+
+## How events are chained
+
+Four fields make the chain:
+
+- **`chain`**: which chain the event is in, by a UUID. A chain goes on as long as its history does: on a server's volume, across restarts. A server that keeps its history in memory starts a new one each time it starts, and each replica without the volume has its own.
+- **`seq`**: the event's place in its chain: one more than the event before it.
+- **`prev`**: the hash of the event before it, or empty for the first of a chain.
+- **`hash`**: the event's own hash: the SHA-256 of the event without its `hash`, as `jq -jcS 'del(.hash)'` writes it. That's JSON with no spaces, the keys of every object in order, and only the fields the event has.
+
+So for this event, as Lumovi writes it:
+
+```json
+{"type":"lumovi.audit","version":1,"id":"0b6c1f9e-4d2a-4c55-9a1e-7f3d2b8c6e41","chain":"9a829611-9c63-48cf-94fb-90576b07837d","seq":6,"time":"2026-10-06T12:10:40.512Z","category":"change","action":"resource.restart","outcome":"success","actor":{"user":"jane@example.com","groups":["platform","on-call"],"via":"assistant","assistant":"Claude Code","session":"5f0c2a9e41b37d86","address":"203.0.113.24"},"cluster":"production","target":{"kind":"Deployment","name":"checkout","namespace":"shop","uid":"9a7e4d61-2c1b-4f0e-8d3a-6b5c4e3f2a10"},"summary":"Restarted Deployment checkout","command":"kubectl rollout restart deployment/checkout -n shop --context production","approval":{"status":"approved","by":"jane@example.com","waitedMs":18342},"details":{"fields":["spec.template.metadata.annotations[\"kubectl.kubernetes.io/restartedAt\"]"],"patchType":"strategic","reason":"Its pods crash-loop since the database credentials rotated."},"prev":"4f1d0c7e9b2a6d3851e0c4b7a9f2e6d1c8b5a3f7e2d9c6b1a4f8e3d7c2b6a5f9","hash":"676e4035e9c43c3864242ee97a39a96521108743afd3533462f72952ea5004f4"}
+```
+
+the hash is of this text:
+
+```json
+{"action":"resource.restart","actor":{"address":"203.0.113.24","assistant":"Claude Code","groups":["platform","on-call"],"session":"5f0c2a9e41b37d86","user":"jane@example.com","via":"assistant"},"approval":{"by":"jane@example.com","status":"approved","waitedMs":18342},"category":"change","chain":"9a829611-9c63-48cf-94fb-90576b07837d","cluster":"production","command":"kubectl rollout restart deployment/checkout -n shop --context production","details":{"fields":["spec.template.metadata.annotations[\"kubectl.kubernetes.io/restartedAt\"]"],"patchType":"strategic","reason":"Its pods crash-loop since the database credentials rotated."},"id":"0b6c1f9e-4d2a-4c55-9a1e-7f3d2b8c6e41","outcome":"success","prev":"4f1d0c7e9b2a6d3851e0c4b7a9f2e6d1c8b5a3f7e2d9c6b1a4f8e3d7c2b6a5f9","seq":6,"summary":"Restarted Deployment checkout","target":{"kind":"Deployment","name":"checkout","namespace":"shop","uid":"9a7e4d61-2c1b-4f0e-8d3a-6b5c4e3f2a10"},"time":"2026-10-06T12:10:40.512Z","type":"lumovi.audit","version":1}
+```
+
+Its SHA-256 is `676e4035e9c43c3864242ee97a39a96521108743afd3533462f72952ea5004f4`, the event's `hash`, and the next event's `prev`. To work it out yourself, give one event at a time to:
+
+```bash
+jq -jcS 'del(.hash)' | sha256sum
+```
+
+## On the page
+
+**Check integrity**, at the top of the **Audit log** page, reads every event the log keeps, from the oldest to the newest, whatever the filters show, and checks that each follows from the one before it. On a server, it's there for its [auditors](/server/audit-log#auditors): checking needs everyone's events. In the desktop app, it's there for you.
+
+<Frame caption="Check integrity: every event follows from the one before it, and the newest's hash, to compare with a copy kept elsewhere.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/audit-checked-light-1x.webp" alt="The Audit log page for the production cluster, after Check integrity, with the Kind filter set to Changes. A green box says All 14 events hold: each, from the oldest kept, on Sep 16, 2026 at 9:02 AM, to the newest, follows from the one before it, and none was changed, removed or put in between them. Below it: a copy kept elsewhere, the server's output, a webhook's or an export, shows what this can't, the newest removed or all of it rewritten; compare the newest there, number 14, with its hash and a button to copy it. Below, today's changes: ops@example.com failed to scale Deployment recommendations to 12 replicas; Claude Code's delete of a checkout pod, for jane@example.com, was refused; Claude Code restarted Deployment checkout; jane scaled Deployment cart to 6 replicas; and ops upgraded ingress-nginx to ingress-nginx 4.11.2." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/audit-checked-dark-1x.webp" alt="The Audit log page for the production cluster, after Check integrity, with the Kind filter set to Changes. A green box says All 14 events hold: each, from the oldest kept, on Sep 16, 2026 at 9:02 AM, to the newest, follows from the one before it, and none was changed, removed or put in between them. Below it: a copy kept elsewhere, the server's output, a webhook's or an export, shows what this can't, the newest removed or all of it rewritten; compare the newest there, number 14, with its hash and a button to copy it. Below, today's changes: ops@example.com failed to scale Deployment recommendations to 12 replicas; Claude Code's delete of a checkout pod, for jane@example.com, was refused; Claude Code restarted Deployment checkout; jane scaled Deployment cart to 6 replicas; and ops upgraded ingress-nginx to ingress-nginx 4.11.2." />
+</Frame>
+
+When every event holds, it says how many, like "All 14 events hold.", and that each, from the oldest kept to the newest, follows from the one before it: "none was changed, and none removed or put in between them." Under it is the newest's place and hash, with **Copy its hash**, to compare with a copy kept elsewhere: see [What it proves](#what-it-proves-and-what-it-doesnt).
+
+When some don't, it says "The log doesn't hold in 3 places.", and "Of the 30 events read, each of these doesn't follow from the one before it, and says why:", and lists each: the event's place, like #10, and why. It reads on past each one, so every place is listed: 100 of them, then how many more.
+
+| It says | What happened |
+| --- | --- |
+| "Its hash isn't what its contents give: it was changed after it was recorded." | The event was edited. |
+| "Event 9 is missing." or "Events 9–11 are missing." | Events were taken out, or moved later. Or the history couldn't keep them: see below. |
+| "It's number 9, after number 10: one was repeated, or moved." | An event is there twice, or was moved earlier. |
+| "It doesn't follow from the event before it: one of them was changed, or replaced." | An event was edited and its hash worked out again, or replaced by another. |
+| "A new chain starts here, after event 30: Lumovi started again without the events before it (they were removed, or couldn't be read)." | An event #1, after others: the history lost what came before, and Lumovi started a chain afresh. Or another chain's start was put in. |
+| "It's from another chain than the events before it: two of Lumovi's servers kept their events here at once, or one was put in." | A chain not seen before, past its #1. One server keeps a folder at a time, so this is one put in. |
+| "Line 12 of audit-2026-10-06.jsonl can't be read as an audit event." | A line in the history isn't an event. |
+
+Each chain is checked against its own last event: events of another chain put in among this one's are one place it doesn't hold, and this chain's events after them still follow from its own.
+
+Two of these can happen without anyone changing anything:
+
+- **A line left unfinished**, when the computer or the pod stopped as Lumovi wrote it, can't be read. It's listed as itself, and the events after it are whole: Lumovi went on from the last event it had.
+- **An event the history couldn't keep**, when its volume was full, say, leaves "Event 9 is missing.": the chain goes on without it. An **Audit events lost** event (`audit.dropped`) says how many, and why. See [When events are lost](/server/audit-log#when-events-are-lost).
+
+On a server, the page checks the history the server keeps: on its volume, or in its memory. In the desktop app, the files on your computer.
+
+## What it proves, and what it doesn't
+
+The chain shows that, in the events you check, none was changed, and none taken out or put in between them, since they were recorded, unless whoever did it also rewrote every event after it. A careless edit, a line taken out, a bad restore, an event put in: those show, every one of them.
+
+It doesn't prove more than that:
+
+- **The hashes have no key.** Anyone who can write the history (Lumovi's volume, its pod, the node, or your account on your computer) can change an event, work out every hash after it again, and the chain holds.
+- **Events taken off the end leave no gap.** The chain just stops earlier. Nor do events taken off the start: the oldest days are deleted as the history keeps only so many, and the check starts from the oldest kept.
+- **What Lumovi never saw isn't in it**: what's done with `kubectl`, or anything but Lumovi.
+
+So keep a copy where those who can write the history can't: from the server's output, through your log collector, or a webhook into your SIEM. That copy is what anchors the chain. The page gives the newest event's place and hash: compare them with the copy's. An event's hash pins every event before it in its chain, so if the copy has the same hash for that place, nothing before it was rewritten; if it has another, or has newer events than the history, the history was rewritten, or cut short.
+
+## Check it yourself
+
+This script checks events away from Lumovi: in an export, the history's files, the server's output, or what a webhook received. It needs bash, `jq` (1.6 or later) and `sha256sum`. On a Mac without `sha256sum`, use `shasum -a 256` in its place.
+
+```bash check-audit.sh expandable
+#!/usr/bin/env bash
+# Checks Lumovi's audit events: each one's hash, and that each follows the one before it.
+# Usage: check-audit.sh [--chains] FILE...
+#   JSON Lines, oldest first. One chain (a history, an export) unless --chains: then each chain
+#   on its own (a server's output, or a webhook's: each start without a volume, and each replica,
+#   has its own).
+set -euo pipefail
+chains=0
+if [ "${1:-}" = --chains ]; then chains=1; shift; fi
+dir=$(mktemp -d)
+trap 'rm -rf "$dir"' EXIT
+
+# The events, and lines that start like one but can't be read. Other lines are left out:
+# a server's output has its own log lines between them.
+jq -cR '. as $line | try (fromjson | select(.type? == "lumovi.audit"))
+  catch (if $line | startswith("{\"type\":\"lumovi.audit\"") then {unreadable: input_line_number} else empty end)' \
+  "$@" > "$dir/events"
+# Each one's chain, place, the hash of the one before it ("-" for none), and its own hash.
+jq -r 'if .unreadable then "- \(.unreadable) - -"
+  else "\(.chain) \(.seq) \(if .prev == "" then "-" else .prev end) \(.hash)" end' \
+  "$dir/events" > "$dir/claimed"
+# What each one's hash is of: itself without it, as jq writes it, keys in order.
+jq -cS 'del(.hash)' "$dir/events" | while IFS= read -r body; do
+  printf '%s' "$body" | sha256sum | cut -d ' ' -f 1
+done > "$dir/sums"
+
+paste -d ' ' "$dir/claimed" "$dir/sums" | awk -v chains="$chains" '
+  function fail(text) { print text; bad++ }
+  $1 == "-" { fail("Line " $2 " can'\''t be read as an audit event."); next }
+  {
+    chain = $1; seq = $2 + 0; prev = $3; hash = $4; n++
+    if ($5 != hash) fail("Event " seq ": its hash isn'\''t what its contents give.")
+    if (!(chain in last)) {
+      if (chains == 0 && count > 0) fail("Event " seq ": it starts another chain (" chain "): two in one history.")
+      order[++count] = chain; first[chain] = seq
+    } else if (seq <= last[chain]) {
+      fail("Event " seq ": it comes after event " last[chain] ": it was repeated, or moved.")
+    } else if (seq > last[chain] + 1) {
+      fail("Event " seq ": it comes after event " last[chain] ": " (seq - last[chain] - 1) " missing.")
+    } else if (prev != lasthash[chain]) {
+      fail("Event " seq ": it doesn'\''t follow from event " last[chain] ": one was changed, or replaced.")
+    }
+    last[chain] = seq; lasthash[chain] = hash
+  }
+  END {
+    for (i = 1; i <= count; i++) {
+      c = order[i]
+      printf "Chain %s: #%d to #%d. Its newest hash: %s\n", c, first[c], last[c], lasthash[c]
+    }
+    if (bad) { printf "%d events read: %d %s.\n", n, bad, (bad == 1 ? "place doesn'\''t hold" : "places don'\''t hold"); exit 1 }
+    printf "%d events read: all hold.\n", n
+  }'
+```
+
+Give it the events oldest first, in files or on its input. It checks each event's hash, and that each follows the one before it in its chain, and lists every place one doesn't. Then each chain it found, from which place to which, with its newest hash, to compare with a copy kept elsewhere. It exits with `1` when something doesn't hold.
+
+- **One chain, unless `--chains`.** A history, or an export of it, is one chain: another in it is listed once, as a place it doesn't hold, as the page's check lists it. A server's output, or a webhook's, can hold several, each checked on its own with `--chains`: one for each start without a volume, and one for each replica. Either way, like the page, it checks each event against the last of its own chain.
+- **Lines that aren't events are left out**: a server's output has its own log lines between them. A line that starts like an event but can't be read is listed.
+- **The first event of a chain is taken as it is**: what came before it isn't there to check.
+
+It runs `sha256sum` once for each event, which takes about a minute for 10,000.
+
+<Tabs>
+  <Tab title="An export">
+    Export **JSON Lines** from the **Audit log** page, with no search and no filters but how far back: what the filters leave out would be gaps. On a server, only an auditor's export has everyone's events.
+
+    ```bash
+    bash check-audit.sh lumovi-audit-2026-10-06.jsonl
+    ```
+  </Tab>
+  <Tab title="The desktop app's files">
+    A file a day, in Lumovi's folder for app data. The shell lists them in order of their dates:
+
+    ```bash
+    # macOS
+    bash check-audit.sh ~/Library/Application\ Support/Lumovi/audit/audit-*.jsonl
+    # Linux
+    bash check-audit.sh ~/.config/Lumovi/audit/audit-*.jsonl
+    ```
+  </Tab>
+  <Tab title="A server's history">
+    A file a day, on the history's volume. The image has no shell, so `kubectl cp` can't copy them, but its Node.js can print them:
+
+    ```bash
+    kubectl exec --namespace lumovi deployment/lumovi -- /nodejs/bin/node -e '
+    const fs = require("fs"), dir = "/var/lib/lumovi/audit"
+    for (const file of fs.readdirSync(dir).filter((f) => /^audit-.*\.jsonl$/.test(f)).sort())
+      process.stdout.write(fs.readFileSync(`${dir}/${file}`))' > history.jsonl
+    bash check-audit.sh history.jsonl
+    ```
+
+    Someone who can exec into Lumovi's pod can also change the files: compare the newest hash with a copy elsewhere.
+  </Tab>
+  <Tab title="The server's output">
+    Each event is a line on Lumovi's output, between its own log lines, which the script leaves out:
+
+    ```bash
+    kubectl logs --namespace lumovi deployment/lumovi | bash check-audit.sh --chains
+    ```
+
+    From a log collector, use the lines as Lumovi wrote them. A collector that adds fields to each event, or changes its values, changes its hash: take what it added out first. The order of the keys and spaces don't matter.
+  </Tab>
+  <Tab title="A webhook">
+    Join what it received, in the order it came. With `json`, each request is an array of events; with `ndjson`, a JSON line each:
+
+    ```bash
+    jq -c '.[]' batch-*.json > events.jsonl   # json
+    cat batch-*.ndjson > events.jsonl         # ndjson
+    bash check-audit.sh --chains events.jsonl
+    ```
+  </Tab>
+</Tabs>
+
+## Where the chain can't be checked
+
+The chain holds only where every event of it is there, once, in order. These don't have that:
+
+- **An export with a search or a filter** has some events only, and so gaps. So has an export by someone who isn't an auditor: it has only their own events. How far back is fine: it keeps one stretch of the chain whole.
+- **A CSV export**: it leaves out `prev`, and fields the hash covers. Its `chain`, `seq` and `hash` columns still let you find each event in a copy kept elsewhere.
+- **The server's output**, once lines went missing: a log collector dropped some, or the node rotated a log file before it was collected.
+- **A webhook's events**, once some were let go: refused with `400`, `413` or `422`, pushed out of a full buffer, or still waiting as Lumovi stopped. And a batch whose answer didn't come in time is sent again, so some events can arrive twice: take repeats out by their `id`, or check the history instead. What Lumovi let go is counted: see [When events are lost](/server/audit-log#when-events-are-lost).
+- **A history in memory** begins a new chain each time Lumovi starts, and the page checks only since then.
+
+<Columns cols={2}>
+  <Card title="The audit log" icon="scroll-text" href="/audit/overview">
+    Finding events, one event's details, exports.
+  </Card>
+  <Card title="Audit events" icon="braces" href="/audit/events">
+    Every field and action, as recorded.
+  </Card>
+</Columns>

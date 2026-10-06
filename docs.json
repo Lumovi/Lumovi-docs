@@ -156,6 +156,14 @@
               "assistants/approvals",
               "assistants/tools"
             ]
+          },
+          {
+            "group": "Audit log",
+            "pages": [
+              "audit/overview",
+              "audit/verify",
+              "audit/events"
+            ]
           }
         ]
       },
