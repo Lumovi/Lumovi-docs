@@ -28,16 +28,16 @@ Lumovi never records values, tokens or manifests' contents, whatever the level: 
 
 ## Auditors
 
-Auditors see everyone's events, and can [check the chain](/audit/verify). Everyone else sees their own: what they did, and what their assistants did as them.
+Auditors see everyone's events, and can [check the chain](/audit/verify). They're those you name here, and those whose [access](/server/access) gives them **Everyone's** audit events. Everyone else sees their own: what they did, and what their assistants did as them.
 
 ```yaml values.yaml
 audit:
   auditors: [platform-admins, security, user:ana@example.com]
 ```
 
-Name groups exactly as people sign in with them, and people as `user:` and their name: as the cluster names a token's user, as your provider names them, or as your proxy does, without `auth.usernamePrefix` or `auth.groupsPrefix`. Without the chart, `LUMOVI_AUDITORS` takes the same, separated by commas: `platform-admins,user:ana@example.com`.
+Name groups exactly as people sign in with them, and people as `user:` and their name, in any case: as the cluster names a token's user, as your provider names them, or as your proxy does, without `auth.usernamePrefix` or `auth.groupsPrefix`. Without the chart, `LUMOVI_AUDITORS` takes the same, separated by commas: `platform-admins,user:ana@example.com`.
 
-Lumovi checks when a page connects, with the groups someone signed in with. Behind an [authenticating proxy](/server/auth/proxy), that's the groups the proxy's header names, so let nothing but the proxy reach Lumovi: turn on `networkPolicy`. Each start of Lumovi records its auditors in its **Lumovi started** event, so a change to them shows in the log too.
+Lumovi checks with the groups someone signed in with, when their page connects. A change to their access applies at once. Behind an [authenticating proxy](/server/auth/proxy), that's the groups the proxy's header names, so let nothing but the proxy reach Lumovi: turn on `networkPolicy`. Each start of Lumovi records its auditors in its **Lumovi started** event, so a change to them shows in the log too.
 
 Everyone else's page shows only their own events, and how long the log keeps them: not where else events go, what couldn't be kept or sent, the date of the oldest event, or how many events a search looked through. Sign-ins that didn't succeed are nobody's own, so only auditors see them.
 

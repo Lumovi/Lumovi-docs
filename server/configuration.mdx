@@ -11,7 +11,7 @@ Lumovi reads them when it starts, and checks most of them: one that doesn't make
 
 ## Set by the chart itself
 
-The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-its-kept), and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
+The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-its-kept), with `access.admins`, `LUMOVI_ACCESS_CONFIGMAP` to `<release>-access`, the ConfigMap it makes for [access](/server/access#where-its-kept), and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
 
 The chart puts `extraEnv` after its own variables. When two have the same name, Kubernetes uses the last, so a variable repeated in `extraEnv` wins over the chart's. For the ones above, that breaks Lumovi: it listens on a port nothing sends to, or reads files from a folder the chart doesn't mount. For the others, set the chart's value instead. The chart builds more than the variable on its values, like the permission to impersonate for `auth.mode`, or the probes and the ingress path for `basePath`, while a variable in `extraEnv` changes only Lumovi.
 
@@ -203,6 +203,22 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   The helm to run: `helm` on the `PATH` unless set. The image sets it to `/usr/local/bin/helm`, the helm it comes with.
 </ResponseField>
 
+## Access
+
+Who may do what through Lumovi, within what RBAC allows. See [Access for your team](/server/access).
+
+<ResponseField name="LUMOVI_ADMINS" type="string">
+  Who sees the **Access** pages and decides who may do what there, separated by commas: groups, exactly as people sign in with them, and people as `user:` and their name, in any case, like `platform-admins,user:ana@example.com`. With none, everyone may do all their RBAC allows.
+</ResponseField>
+
+<ResponseField name="LUMOVI_ACCESS" type="string">
+  What the server says, which admins see but can't change: a map with `everyone`, `groups`, `profiles`, `grants`, `limits` and `names`, as YAML or JSON, or either encoded in base64 on one line. Lumovi checks it as it starts, and one that doesn't make sense stops it, saying where, like `LUMOVI_ACCESS: limits[0].caps.helm is install, which limits nothing: it’s the most there is.` See [Set it in the chart](/server/access#set-it-in-the-chart).
+</ResponseField>
+
+<ResponseField name="LUMOVI_ACCESS_CONFIGMAP" type="string">
+  A ConfigMap in the namespace Lumovi runs in, where it keeps what admins set, under `access.json`. The chart sets it to `<release>-access`, which it makes, when `access.admins` names someone. Lumovi needs `get` on it, and `patch` to save what admins change, and stops when it can't read it, or isn't running in a cluster. Without it, `access.json` in `LUMOVI_DATA_DIR`, or memory. See [Where it's kept](/server/access#where-its-kept).
+</ResponseField>
+
 ## AI assistants
 
 See [AI assistants for your team](/server/assistants).
@@ -220,11 +236,11 @@ See [AI assistants for your team](/server/assistants).
 </ResponseField>
 
 <ResponseField name="LUMOVI_ASSISTANT_RULES_CONFIGMAP" type="string">
-  A ConfigMap in the namespace Lumovi runs in, where it keeps each person's own rules for their assistants. The chart sets it to `<release>-assistant-rules`, which it makes. Lumovi needs `get` and `update` on it, and doesn't start when it can't read it, or isn't running in a cluster. See [Where people's rules are kept](/server/assistants#where-peoples-rules-are-kept).
+  A ConfigMap in the namespace Lumovi runs in, where it keeps each person's own rules for their assistants. The chart sets it to `<release>-assistant-rules`, which it makes. Lumovi needs `get` on it, and `patch` to save people's rules, and doesn't start when it can't read it, or isn't running in a cluster. See [Where people's rules are kept](/server/assistants#where-peoples-rules-are-kept).
 </ResponseField>
 
 <ResponseField name="LUMOVI_DATA_DIR" type="string">
-  Without `LUMOVI_ASSISTANT_RULES_CONFIGMAP`, a folder where Lumovi keeps each person's own rules for their assistants, in `assistant-rules.json`, which only its user can read. Without either, it keeps them in memory, and they're gone when it stops. Without `LUMOVI_AUDIT_DIR`, the [audit history](#the-audit-log) is kept in its `audit` folder.
+  Without `LUMOVI_ASSISTANT_RULES_CONFIGMAP`, a folder where Lumovi keeps each person's own rules for their assistants, in `assistant-rules.json`, which only its user can read. Without either, it keeps them in memory, and they're gone when it stops. Without `LUMOVI_AUDIT_DIR`, the [audit history](#the-audit-log) is kept in its `audit` folder, and without `LUMOVI_ACCESS_CONFIGMAP`, what [admins set](#access) in `access.json`.
 </ResponseField>
 
 <ResponseField name="LUMOVI_ASSISTANT_REDIRECT_HOSTS" type="string">
@@ -240,7 +256,7 @@ See [Audit log for your team](/server/audit-log). The Helm chart sets the first 
 </ResponseField>
 
 <ResponseField name="LUMOVI_AUDITORS" type="string">
-  Who sees everyone's events, separated by commas: groups, as people sign in with them, and people as `user:` and their name, like `platform-admins,user:ana@example.com`. Everyone else sees their own. See [Auditors](/server/audit-log#auditors).
+  Who sees everyone's events, separated by commas: groups, exactly as people sign in with them, and people as `user:` and their name, in any case, like `platform-admins,user:ana@example.com`. Everyone else sees their own, unless their [access](#access) gives them everyone's. See [Auditors](/server/audit-log#auditors).
 </ResponseField>
 
 <ResponseField name="LUMOVI_AUDIT_DIR" type="string">

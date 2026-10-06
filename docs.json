@@ -185,7 +185,8 @@
             "pages": [
               "server/auth/tokens",
               "server/auth/single-sign-on",
-              "server/auth/proxy"
+              "server/auth/proxy",
+              "server/access"
             ]
           },
           {
