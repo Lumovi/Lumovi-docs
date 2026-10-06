@@ -1,0 +1,203 @@
+---
+title: "What assistants may do"
+sidebarTitle: "What they may do"
+description: "Say what AI assistants may see, change and read: defaults for everywhere, and rules for some clusters and namespaces, by name, pattern or label."
+icon: "sliders-horizontal"
+---
+
+An AI assistant never gets more than your own access: your kubeconfig's in the desktop app, what you signed in with on a server. Within that, you say what it may do, and where. Whether it sees a namespace at all, whether its changes ask you first, whether it reads Secrets' values, env values and logs. Lumovi's tools keep to it, and the **Permissions** tab works it out with the same code, so what the tab says is what assistants may do.
+
+<Frame caption="What assistants may do: defaults, rules for some clusters and namespaces, and one namespace checked.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-permissions-light-1x.webp" alt="The AI assistants page's Permissions tab, for a kubeconfig of 4 contexts. At a glance: 12 namespaces assistants see (2 hidden), 10 where changes ask you first, 1 where changes are made without asking, 11 where they may read logs, 0 where they may read Secret values, and edge not counted because its namespaces can't be listed. Below, the Defaults: Changes Ask you, Secrets Keys only, Env values Hide sensitive, Logs Read; then 3 rules, System namespaces hiding kube-* in all contexts, and Staging, whose changes are made without asking. On the right, Check a namespace shows data, in production: Visible, from the defaults; Changes Never, Secrets Hidden and Logs Don't read, from the Database rule; Env values Hide sensitive, from the defaults. Below it, Assistants know their limits." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-permissions-dark-1x.webp" alt="The AI assistants page's Permissions tab, for a kubeconfig of 4 contexts. At a glance: 12 namespaces assistants see (2 hidden), 10 where changes ask you first, 1 where changes are made without asking, 11 where they may read logs, 0 where they may read Secret values, and edge not counted because its namespaces can't be listed. Below, the Defaults: Changes Ask you, Secrets Keys only, Env values Hide sensitive, Logs Read; then 3 rules, System namespaces hiding kube-* in all contexts, and Staging, whose changes are made without asking. On the right, Check a namespace shows data, in production: Visible, from the defaults; Changes Never, Secrets Hidden and Logs Don't read, from the Database rule; Env values Hide sensitive, from the defaults. Below it, Assistants know their limits." />
+</Frame>
+
+Open the **AI assistants** page, from the sidebar's **AI assistants** button (the sparkles), **AI assistants…** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux), or **View → AI Assistants…** in the desktop app. Then choose **Permissions**. On a server, its address is `/assistants/permissions`.
+
+## The settings
+
+Five settings, each from the loosest to the strictest:
+
+| Setting | Values | Default | About |
+| --- | --- | --- | --- |
+| **Visibility** | **Visible**, **Hidden** | Visible: rules hide | A hidden namespace or cluster isn't there for assistants. |
+| **Changes** | **Without asking**, **Ask you**, **Never** | **Ask you** | What happens when an assistant asks to change something. |
+| **Secrets** | **Values**, **Keys only**, **Hidden** | **Keys only** | **Keys only** shows what a Secret holds, never what it says. |
+| **Env values** | **Show**, **Hide sensitive**, **Hide all** | **Hide sensitive** | Values written into a workload, like `DB_PASSWORD=…`. |
+| **Logs** | **Read**, **Don't read** | **Read** | Applications often log tokens and customers' data. |
+
+What each one does for an assistant is under [What assistants see](#what-assistants-see).
+
+## Defaults
+
+**Defaults** apply "Wherever no rule says otherwise": every namespace, and each cluster's own objects. They have every setting but **Visibility**: without a rule that hides it, everything is visible.
+
+**Values** for **Secrets** warns that "Assistants read Secret values, and send them to their model's provider." On a server, where an administrator's rule keeps a setting stricter, it says so, like "Your administrator keeps "Production" at Ask you."
+
+## Rules
+
+A rule says otherwise somewhere: some clusters, some namespaces, or some namespaces of some clusters. It has a name, where it applies, and the settings it says. A setting a rule leaves **Not set** is up to the other rules, and the defaults.
+
+### Where a rule applies
+
+A rule names clusters (**Contexts** in the desktop app, **Clusters** in a fleet) and **Namespaces**. Each takes any number of these:
+
+| | Like | Matches |
+| --- | --- | --- |
+| A name | `shop` | That one |
+| A pattern | `tenant-*` | Every name that fits: `*` is anything, nothing too |
+| A label | `team=payments` | Every one with that label, as Kubernetes spells them |
+| `!` first | `!kube-system`, `!env=dev` | Leaves out what it matches |
+
+A rule applies to any of what it names, but none of what it leaves out. With only `!` entries, it applies to everything else. With none at all, to all of them: a rule that names no namespaces is about every namespace, and the cluster's own objects too.
+
+- **A rule that names namespaces is about what's in them**, and the Namespace objects themselves. What assistants read of the cluster's own objects, every cluster-scoped kind but Namespace (nodes, CustomResourceDefinitions, cluster roles and their bindings, webhook configurations, persistent volumes, storage classes…), follows the rules that name no namespaces, and the defaults. The tab says: "A rule that names namespaces is about what's in them; a cluster's own objects (nodes, custom resource definitions, cluster roles…) are read as the rules that name none say, and changing one can reach every namespace, so it's only as allowed as every namespace is."
+- **Changing one of the cluster's own objects** can reach into every namespace: deleting a CustomResourceDefinition deletes its objects everywhere, and a cluster role or a webhook acts in all of them. So a change to one is decided as the strictest of the cluster's settings and every namespace's. It's refused where any namespace is hidden, **Never**, or hides its Secrets; it asks you where any namespace asks; and it's made without asking only where all of them allow it. Refused, the assistant hears who decided: "CustomResourceDefinition rollouts.argoproj.io is demo's own: a change to it can reach every namespace, and assistants may not change all of them: the person's AI permissions say so ("System"). Nothing was changed." When the namespaces can't be listed, Lumovi can't tell, and refuses: "Lumovi can't tell which namespaces that would reach: …"
+
+  So a rule that hides a namespace, like the system ones, or hides its Secrets, keeps assistants from changing any of the cluster's own objects. The tab says where, under its rules: "Assistants can't change the cluster's own objects in demo, staging: some of their namespaces are hidden, refused, or hide their Secrets." It counts the namespaces it can list; a cluster whose namespaces it can't list isn't named there, and assistants can't change its own objects either.
+- **Clusters have labels in a fleet**, from how the fleet describes them, and on a Lumovi of one cluster, as its administrator gives them (`LUMOVI_CLUSTER_LABELS`). The desktop app's contexts have none, so there a label matches no context, and `!` with a label leaves none out: name them, or use a pattern.
+- **On a Lumovi of one cluster**, a rule has only **Namespaces**.
+
+### Where rules overlap
+
+Where several rules apply, the strictest wins, setting by setting. Where none says a setting, the defaults do. A rule can be looser than the defaults: **Without asking** for a cluster you use to try things, say, while the defaults ask. But where two rules apply, the stricter one wins.
+
+Say the defaults ask, "Staging" lets assistants change the `staging` cluster without asking, and "Database" says **Never** for every `data` namespace. In `staging`, the `data` namespace takes no changes, and every other namespace changes without asking.
+
+### Labels Lumovi can't read
+
+Lumovi reads namespaces' labels as you may: the cluster's list of namespaces, kept for 15 seconds, or else the one namespace. When it can read neither, it can't tell whether a rule that matches by label applies there. Such a rule counts where it's stricter, and not where it's looser, so what's decided is never looser than what's so. A namespace that doesn't exist yet has no labels.
+
+- **An assistant creating or relabelling a Namespace** is decided both by its labels as they are and as the change would leave them: the stricter wins, and a namespace hidden either way isn't found. So an assistant can't label its way out of a rule.
+- **People relabelling namespaces** change which rules apply there, as soon as Lumovi reads the labels again, within 15 seconds. That's as meant: a label rule follows the label. Match by label only what you trust the label for, and keep labelling namespaces to those you trust.
+
+### Read-only, and your access
+
+A cluster you made [read-only](/changes/read-only) takes no changes, whatever the rules say. And whatever they say, an assistant can't do more than your own access (RBAC) allows.
+
+## Your administrator's rules
+
+On a server, its administrator can set rules too: limits that nothing loosens. They come first on the tab, with a lock and **Set by your administrator**, and you can't change them. Where one is stricter than what yours say, it wins: a rule card says so, like "Shop logs: Logs stay at Don't read in 1 of these namespaces, as your administrator set." See [AI assistants for your team](/server/assistants#limits-for-everyone).
+
+## What assistants see
+
+Lumovi's [tools](/assistants/tools) keep to what's decided for where they act. Changes to it apply at once, to assistants connected already too.
+
+<AccordionGroup>
+  <Accordion title="Visibility: Hidden" icon="eye-off">
+    A hidden namespace isn't there for assistants. Lists, events and `find_problems` leave out what's in it, and anything asked for in it isn't found, as the API server would say: `namespaces "kube-system" not found`. A hidden cluster isn't in `list_clusters`, and "There is no cluster called …" when an assistant names it.
+
+    What's hidden, assistants never learn exists: they're told nothing of the rules that hide. A cluster's own objects can still name a hidden namespace, though, like a persistent volume's claim.
+  </Accordion>
+  <Accordion title="Secrets: Values, Keys only, Hidden" icon="key-round">
+    With **Values**, `get_resource` shows a Secret's data as the cluster holds it. With **Keys only**, each key, with `(hidden by Lumovi)` for its value. With **Hidden**, an assistant may not read the namespace's Secrets, nor change them:
+
+    > Lumovi doesn't show AI assistants the Secrets in shop: the person's AI permissions say so ("Shop").
+
+    Listing Secrets across namespaces leaves those out, and says how many: `notShown: 3 more, in namespaces whose Secrets the person's AI permissions hide`.
+  </Accordion>
+  <Accordion title="Env values: Show, Hide sensitive, Hide all" icon="variable">
+    Env values written into containers, in pods, workloads' templates and custom resources alike, read `(hidden by Lumovi)`:
+
+    - **Hide sensitive**: those whose names say they're sensitive, by any of their words, in any case: `pass`, `password`, `passwd`, `passphrase`, `pwd`, `pw`, `secret`, `secrets`, `token`, `tokens`, `key`, `keys`, `apikey`, `credential`, `credentials`, `cred`, `creds`, `auth`, `authorization`, `private`, `cert`, `certificate`, `dsn`, `jwt`, `bearer`, `pat`, `sk`, `session`, `cookie`, `salt`, `sig`, `signature`, `hmac`, `conn`, `connstr`. Words are split at anything but a letter or a digit, and where a capital starts one: `DB_PASSWORD`, `apiKey`. Some run together count too: `password`, `passwd`, `secret`, `token`, `apikey`, `privatekey`, `credential`, `connectionstring`, so `GITHUBTOKEN` is hidden, and `MONKEY` isn't. And those whose values carry credentials: a URL with a password, like `postgres://app:hunter2@db/app` or `redis://:hunter2@cache`; one with a token in its query, like `?access_token=…` or `&sig=…`; and Slack, Discord and Office webhooks' addresses.
+    - **Hide all**: every one.
+
+    An env var taken from a Secret or a ConfigMap only names it, and stays as it is. What's elsewhere isn't hidden: a ConfigMap's data, a container's arguments, annotations, and custom resources' own fields for credentials.
+  </Accordion>
+  <Accordion title="Logs: Don't read" icon="scroll-text">
+    `get_logs` is refused:
+
+    > Lumovi doesn't let AI assistants read logs in shop: the person's AI permissions say so ("Shop").
+  </Accordion>
+  <Accordion title="Changes: Without asking, Ask you, Never" icon="pencil-line">
+    Decided where the change is: in the object's namespace, or by a Namespace's own name. For the cluster's own objects, as the strictest of the cluster and every namespace, [above](#where-a-rule-applies). With **Never**, the change is refused before anything's tried, naming where, a Namespace by its own name, like "change payments in demo":
+
+    > Lumovi doesn't let AI assistants change monitoring in demo: the person's AI permissions say so ("Monitoring"). Nothing was changed.
+
+    With **Ask you**, it waits for your answer. See [Approving changes](/assistants/approvals). With **Without asking**, it's made after the cluster's dry run, and you're told, but these still ask:
+
+    - **Deletions.**
+    - **Changes that take fields over** from what manages them, like Helm, Argo CD or an autoscaler.
+    - **Changes that make something read a Secret it didn't before**: an env var or `envFrom` from one, a volume of one (projected ones too), or a CSI driver's `nodePublishSecretRef`, since what it runs could log it. Unless **Secrets** is **Values** there. Scaling or restarting what reads one already doesn't ask for that.
+  </Accordion>
+</AccordionGroup>
+
+Each refusal says who decided: "the person's AI permissions say so", with the rule's name when a rule did, or "this server's administrator says so", with theirs.
+
+### What they're told as they start
+
+`list_clusters` tells assistants, for each cluster they may see, what they may do with it, and the rules that say otherwise in some of its namespaces, so they don't try what they can't, and can tell you why:
+
+```yaml
+clusters:
+  - name: demo
+    server: https://demo.example.com
+    changes: ask
+    secrets: keys
+    env: sensitive
+    logs: read
+    inSomeNamespaces:
+      - namespaces: shop
+        secrets: hidden
+        logs: off
+```
+
+`changes` says `read-only` for a read-only cluster. An administrator's rule says `at most`, like `logs: at most off`. Rules that hide aren't told.
+
+## The Permissions tab
+
+### At a glance
+
+Counted over every namespace of every cluster you can list: the **namespaces assistants see** (and how many are hidden), **where changes ask you first**, **where changes are made without asking**, **where they may read logs**, and **where they may read Secret values**. A cluster whose namespaces you can't list isn't counted, and the tab says so: "Not counted: edge, whose namespaces can't be listed."
+
+### Rules
+
+**Rules** lists your administrator's first, then yours. Each says where it applies, like `all contexts  /  kube-*`, what it says, like **Hidden from assistants** or **Changes without asking**, and how much it matches, like "2 namespaces · 2 contexts". Choose one to edit it, or **Add rule** for a new one.
+
+<Frame caption="A rule open in its editor, with what's typed suggested as a pattern or a name, and what it matches.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-rule-light-1x.webp" alt="The Database rule, open: all contexts / data, No changes, Secrets hidden, No logs, 1 namespace · 1 context. Its Contexts field is empty: All contexts. Its Namespaces field has data, and mon typed after it, with two suggestions: the pattern mon*, 2 namespaces, and the name monitoring, 2 namespaces. Below, Where it matches, assistants may: Visibility Not set, Changes Never, Secrets Hidden, Env values Not set, Logs Don't read. It matches 1 namespace in 1 context: data, in production. Delete rule and Done at the bottom; on the right, what assistants are told, for production and staging." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistant-rule-dark-1x.webp" alt="The Database rule, open: all contexts / data, No changes, Secrets hidden, No logs, 1 namespace · 1 context. Its Contexts field is empty: All contexts. Its Namespaces field has data, and mon typed after it, with two suggestions: the pattern mon*, 2 namespaces, and the name monitoring, 2 namespaces. Below, Where it matches, assistants may: Visibility Not set, Changes Never, Secrets Hidden, Env values Not set, Logs Don't read. It matches 1 namespace in 1 context: data, in production. Delete rule and Done at the bottom; on the right, what assistants are told, for production and staging." />
+</Frame>
+
+In the editor:
+
+- **Name**, as the rule's card, and refusals, say it.
+- **Contexts** or **Clusters**, and **Namespaces**: type, and Lumovi suggests what you may mean, a pattern of what starts so, names and labels that fit, each with how much it matches, or "none yet". <kbd>↵</kbd> adds the first, <kbd>Esc</kbd> clears what's typed, and <kbd>⌫</kbd> in an empty field takes the last one off. What can't be one says why, like "It has a space." or "A label is key=value, as Kubernetes spells them (team=payments)."
+- **Where it matches, assistants may**: each setting, or **Not set**.
+- **What it matches**: how many namespaces, in how many clusters, a few of them by name, and **Find in these** for the rest.
+- **Delete rule**, and **Done**.
+
+What's loose is said: **Without asking** and **Values** show in the warning's color, and a rule that lets assistants read Secret values says "Assistants read Secret values here, and send them to their model's provider."
+
+### Check a namespace
+
+Find any namespace, and see what an assistant may do there: each setting, and what decided it, **Defaults**, a rule's name, or a rule's name "by your administrator". A hidden namespace shows nothing else, and a read-only cluster's changes read **Never: read-only**. Your own access applies after all of it.
+
+### Assistants know their limits
+
+What `list_clusters` tells assistants as they start, cluster by cluster, as [above](#what-theyre-told-as-they-start). "What a rule hides, they never learn exists."
+
+### Kept as you go
+
+Lumovi keeps what you change a moment after you stop: the tab says **Keeping…**, then **Kept**. When it can't, it says why, with **Try again**: "Not kept: …".
+
+## Where they're kept
+
+In the desktop app, with Lumovi's other settings, in `settings.json`, which only your account can read on macOS and Linux. Upgrading from Lumovi 1.4 or before, each context's **Ask**, **Allow** or **Never** becomes a rule named after the context: **Allow** as **Without asking**, and **Never** as **Never**. **Ask** needs none: it's the default. A context named like a pattern, with a `*`, keeps its **Never**, as a pattern, but not its **Allow**, and one whose name has a space or `=` isn't kept: set it again.
+
+When what's kept can't be read, edited by hand into something that doesn't make sense, say, assistants get nothing until you set your permissions again: no changes, no Secrets, no env values and no logs. The **Permissions** tab says so: "Your AI permissions couldn't be read (Lumovi's settings were edited into something that doesn't make sense): assistants may do nothing until you set them again." Lumovi leaves what it couldn't read in `settings.json` as it was, so this lasts across restarts, until you change a permission.
+
+<Note>
+  **In your cluster:** each person's are kept on the server, the same in every browser they sign in with, and every page of theirs, and their assistants, follow a change at once. The administrator decides where: a ConfigMap the Helm chart makes, a file, or only memory. In memory, the tab says "This server keeps AI permissions in memory: when it restarts, yours are gone, and assistants do what the defaults say until you set them again." See [AI assistants for your team](/server/assistants#where-peoples-rules-are-kept).
+</Note>
+
+Before you allow an assistant on a server, **Allow an AI assistant?** counts what it will be able to do with your permissions, and links to them: **Change what assistants may do**. See [AI assistants on a server](/assistants/server#sign-in-and-allow-it).
+
+<Columns cols={2}>
+  <Card title="Assistant tools" icon="wrench" href="/assistants/tools">
+    What each tool does, and what it's refused.
+  </Card>
+  <Card title="AI assistants for your team" icon="users" href="/server/assistants">
+    For administrators: limits for everyone, and where people's rules are kept.
+  </Card>
+</Columns>
