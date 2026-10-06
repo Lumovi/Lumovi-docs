@@ -7,7 +7,7 @@ icon: "sliders-horizontal"
 Set these in a values file, and install or upgrade with `--values values.yaml`. The chart checks them against its schema, and refuses settings that don't make sense before anything is installed.
 
 <Warning>
-  The schema checks the values below, but mostly not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`. Under `fleet`, `agent`, `nodeShell`, `assistants`, `audit` and `access`, the schema refuses names it doesn't know.
+  The schema checks the values below, but mostly not the names in your file. A misspelt key, like `readonly: true` instead of `readOnly: true`, is ignored without a word, and the setting keeps its default. Check your keys against the names on this page, or in `helm show values`. Under `fleet`, `agent`, `nodeShell`, `assistants`, `audit`, `access`, `proxy` and `extraCA`, the schema refuses names it doesn't know.
 </Warning>
 
 To see the defaults, with a comment on each:
@@ -390,6 +390,38 @@ What Lumovi records, where it keeps and sends it, and who reads everyone's. See 
   The NetworkPolicy's `from`: who may reach Lumovi. Empty, anything may, on Lumovi's port. A `podSelector` on its own matches pods in Lumovi's namespace only: for pods in another namespace, add a `namespaceSelector` to the same entry, as in [A proxy in another namespace](/server/auth/proxy#a-proxy-in-another-namespace).
 </ResponseField>
 
+## A company's network
+
+For Lumovi, and an [agent](/server/fleet/agents), behind a company's proxy. See [Proxies and certificate authorities](/server/network).
+
+<ResponseField name="proxy.https" type="string" default="''">
+  The proxy for `https` addresses, as a URL: `http://proxy.corp.example.com:3128`. Sets `HTTPS_PROXY`. Lumovi's own connections go through it: clusters whose kubeconfig names no `proxy-url`, single sign-on, Helm repositories, the audit webhook, and an agent's to Lumovi. This cluster's API server and services are always reached directly. Without a scheme, it's taken as `http://`. A proxy that wants credentials takes them in the URL: give that with `proxy.secret` instead, as this value goes into the Deployment as it is.
+</ResponseField>
+
+<ResponseField name="proxy.http" type="string" default="''">
+  The proxy for `http` addresses. Sets `HTTP_PROXY`.
+</ResponseField>
+
+<ResponseField name="proxy.secret" type="string" default="''">
+  A Secret in the release's namespace with the proxies' URLs, under `HTTPS_PROXY`, and `HTTP_PROXY` if plain `http` goes through one too, instead of `proxy.https` and `proxy.http`. Without the Secret, or its `HTTPS_PROXY`, the pod doesn't start (`CreateContainerConfigError`). It's for a proxy that wants credentials, which then stay out of the Deployment. Given with `proxy.https` or `proxy.http`, the chart refuses it: `proxy.secret holds the proxies' URLs: give it, or proxy.https and proxy.http, not both.` See [Credentials](/server/network#credentials).
+</ResponseField>
+
+<ResponseField name="proxy.noProxy" type="string" default="''">
+  What's never sent through the proxy, separated by commas: names, with what's under them (`.corp.example.com`), and addresses, each with a port or without. Not ranges (`10.0.0.0/8`). Sets `NO_PROXY`. See [NO_PROXY](/server/network#no_proxy).
+</ResponseField>
+
+<ResponseField name="extraCA.configMap" type="string" default="''">
+  A ConfigMap in the release's namespace with certificate authorities to trust besides the image's and Node's, as PEM, under `extraCA.key`: the one a proxy that inspects HTTPS signs with, say. The chart mounts it at `/etc/lumovi/ca`, and sets `LUMOVI_CA_FILE` to the file. Lumovi doesn't start without it, nor with a file that has no certificate in it.
+</ResponseField>
+
+<ResponseField name="extraCA.secret" type="string" default="''">
+  A Secret instead of a ConfigMap, the same way. With both, the ConfigMap is used.
+</ResponseField>
+
+<ResponseField name="extraCA.key" type="string" default="ca.crt">
+  The key the certificate authorities are under, in the ConfigMap or Secret.
+</ResponseField>
+
 ## The pod
 
 <ResponseField name="image.repository" type="string" default="ghcr.io/lumovi/lumovi">
@@ -397,7 +429,7 @@ What Lumovi records, where it keeps and sends it, and who reads everyone's. See 
 </ResponseField>
 
 <ResponseField name="image.tag" type="string">
-  The image's tag: the chart's `appVersion` unless set. Each chart is released with Lumovi, and its version and `appVersion` are the same, so the chart installs the image of its own version.
+  The image's tag: the chart's `appVersion` unless set. Each chart is released with Lumovi, and its version and `appVersion` are the same, so the chart installs the image of its own version. To pin the image by its digest, give the digest after the tag: `{{version}}@sha256:…`. See [Pin it by digest](/server/hardening#pin-it-by-digest).
 </ResponseField>
 
 <ResponseField name="image.pullPolicy" type="string" default="IfNotPresent">
@@ -413,11 +445,15 @@ What Lumovi records, where it keeps and sends it, and who reads everyone's. See 
 </ResponseField>
 
 <ResponseField name="podSecurityContext" type="object">
-  The pod's security context. By default: non-root, as user and group 65532, with `fsGroup` 65532 too, and the `RuntimeDefault` seccomp profile.
+  The pod's security context. By default: non-root, as user and group 65532, with `fsGroup` 65532 too, and the `RuntimeDefault` seccomp profile. On OpenShift, without `runAsUser`, `runAsGroup` and `fsGroup`, which OpenShift gives: see `openshift`.
 </ResponseField>
 
 <ResponseField name="securityContext" type="object">
   The container's security context. By default: no privilege escalation, a read-only root filesystem, and every capability dropped.
+</ResponseField>
+
+<ResponseField name="openshift" type="string" default="auto">
+  Whether the cluster is OpenShift, whose `restricted-v2` security context constraint gives each pod its user, group and `fsGroup` from the namespace's ranges. There, the chart leaves those three out of `podSecurityContext`, for Lumovi and an agent. `auto` asks whether the cluster has `security.openshift.io/v1`; `true` or `false` says so. Rendering the chart without a cluster, with `helm template`, `auto` finds no OpenShift: set `true`. See [OpenShift](/server/hardening#openshift).
 </ResponseField>
 
 <ResponseField name="extraEnv" type="object[]" default="[]">

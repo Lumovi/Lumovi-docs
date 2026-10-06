@@ -164,27 +164,59 @@ securityContext:
     drop: [ALL]
 ```
 
-The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. It writes to `/tmp`, an `emptyDir`: helm's caches, and for each run of helm a kubeconfig that acts as the person who asked (readable only by Lumovi, and removed after). With `audit.persistence`, it also writes the audit history to its volume, at `/var/lib/lumovi/audit`. Each image is signed with a build provenance attestation; see [Verify the image](/server/install#verify-the-image).
+They meet Kubernetes' `restricted` Pod Security Standard, and on OpenShift, its `restricted-v2` security context constraint, which chooses the user and groups: see [OpenShift](/server/hardening#openshift).
 
-## Hardening checklist
+The image has Node.js, helm and Lumovi, no shell, and runs as a non-root user. It writes to `/tmp`, an `emptyDir`: helm's caches, and for each run of helm a kubeconfig that acts as the person who asked (readable only by Lumovi, and removed after). With `audit.persistence`, it also writes the audit history to its volume, at `/var/lib/lumovi/audit`. Each image is attested, signed and has a bill of materials: see [Check a release](#check-a-release).
 
-<Check>Pick [token](/server/auth/tokens) sign-in, or single sign-on with [tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider), when you can: Lumovi then needs no permissions.</Check>
-<Check>Run Lumovi in its own namespace, which only cluster administrators can exec into or read Secrets in.</Check>
-<Check>Set `auth.usernamePrefix` and `auth.groupsPrefix` when Lumovi impersonates people.</Check>
-<Check>Behind a proxy, turn on `networkPolicy` and name only the proxy in `from`.</Check>
-<Check>Serve it over HTTPS, and set `url` to the `https:` address, so cookies are sent over HTTPS only.</Check>
-<Check>Leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
-<Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
-<Check>Turn AI assistants off (`assistants.enabled: false`) unless your team uses them, or set limits for everyone in `assistants.rules`: hide what they shouldn't see, and keep changes at `ask` or `never` where they matter.</Check>
-<Check>Name admins in `access.admins`, and give people only what they need through Lumovi: a read-only `everyone`, and grants for teams where they work. Put what mustn't change in `access.policy`, like limits on production.</Check>
-<Check>Name your auditors in `audit.auditors`, and keep the audit log where you keep your other logs too: from Lumovi's output, or with `audit.webhook`.</Check>
-<Check>Set `nodeShell.enabled: false` unless people should open shells on nodes through Lumovi. Either way, only those who may create pods where privileged pods are allowed can open one.</Check>
-<Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and run Lumovi where only the administrators of all its clusters can.</Check>
-<Check>In a fleet, give Lumovi agents' `tokenSha256`, not their tokens, and keep each token in a Secret in its own cluster.</Check>
+## Behind a company's proxy
+
+Lumovi's own connections can go through your company's proxy, and trust the certificate authority it signs with: see [Proxies and certificate authorities](/server/network).
+
+- **The proxy sees where Lumovi connects**, and a proxy that inspects HTTPS sees what it sends: people's requests to clusters, with their tokens when they sign in with them. Leave clusters out of inspection, with `NO_PROXY` or the proxy's own rules. Lumovi reaches the cluster it runs in directly, always.
+- **A certificate authority you give it is trusted for everything Lumovi connects to**, as the system's are, except a cluster whose kubeconfig names its own: the cluster's connection trusts only that one, as the cluster Lumovi runs in trusts its service account's.
+- **A proxy's credentials**, in its URL, never appear in what Lumovi says: its log, or its errors. They're in its environment, and in the kubeconfig each run of `helm` gets, as `proxy-url`, in a private temporary folder deleted after the run. With the chart, keep them in a Secret: see [Credentials](/server/network#credentials).
+
+## Hardening
+
+What to set for a production installation, with a values file that has it all and a checklist: see [Harden it for production](/server/hardening).
+
+## Check a release
+
+Every release's installers, image and chart are built by Lumovi's [release workflow](https://github.com/Lumovi/Lumovi/blob/main/.github/workflows/release.yml) on GitHub, from the release's commit on `main`:
+
+- **Attested**: each carries a signed build provenance attestation, which says where and from what it was built.
+- **Signed with cosign**, keyless, by the release workflow's identity, and recorded in Sigstore's public log: as a Sigstore bundle (an OCI referrer), and with the `.sig` tag older admission controllers look for. An admission controller can require it: see [Require the signature](/server/hardening#require-the-signature).
+- **With bills of materials**: the image's JavaScript packages (the page, the server and an agent's) in CycloneDX, attested with it and in the image as `/app/licenses/sbom.cdx.json`; and its system packages in SPDX, made as it's built.
+
+With the [GitHub CLI](https://cli.github.com), and [cosign](https://docs.sigstore.dev/cosign/system_config/installation/):
+
+```bash
+# Built by the release workflow, from main.
+signer=(--repo Lumovi/Lumovi --signer-workflow Lumovi/Lumovi/.github/workflows/release.yml
+  --source-ref refs/heads/main)
+
+# The image and the chart: built there, and signed by the release workflow.
+gh attestation verify oci://ghcr.io/lumovi/lumovi:{{version}} "${signer[@]}"
+gh attestation verify oci://ghcr.io/lumovi/charts/lumovi:{{version}} "${signer[@]}"
+cosign verify ghcr.io/lumovi/lumovi:{{version}} \
+  --certificate-identity https://github.com/Lumovi/Lumovi/.github/workflows/release.yml@refs/heads/main \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+cosign verify ghcr.io/lumovi/charts/lumovi:{{version}} \
+  --certificate-identity https://github.com/Lumovi/Lumovi/.github/workflows/release.yml@refs/heads/main \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+# What the image is made of: its JavaScript's packages (CycloneDX, also in the image as
+# /app/licenses/sbom.cdx.json), and its system's (SPDX, made as it's built).
+gh attestation verify oci://ghcr.io/lumovi/lumovi:{{version}} "${signer[@]}" \
+  --predicate-type https://cyclonedx.org/bom
+docker buildx imagetools inspect ghcr.io/lumovi/lumovi:{{version}} --format '{{ json .SBOM }}'
+```
+
+The desktop app's installers are attested the same way, each with its bill of materials: see [Verify your download](/get-started/desktop#verify-your-download). [SECURITY.md](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md#checking-a-release) has the same commands.
 
 ## Reporting a vulnerability
 
-Please report vulnerabilities privately, through [GitHub security advisories](https://github.com/Lumovi/Lumovi/security/advisories/new), not in a public issue. See [SECURITY.md](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md).
+Please report vulnerabilities privately, by email to [security@lumovi.dev](mailto:security@lumovi.dev) or through [GitHub security advisories](https://github.com/Lumovi/Lumovi/security/advisories/new), not in a public issue. See [SECURITY.md](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md).
 
 <Columns cols={2}>
   <Card title="Privacy and security" icon="lock" href="/reference/privacy-and-security">

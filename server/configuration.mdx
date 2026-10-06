@@ -305,6 +305,26 @@ See [Audit log for your team](/server/audit-log). The Helm chart sets the first 
 
 The numbers must be whole numbers in their range. Anything else stops Lumovi, saying, for example, `LUMOVI_AUDIT_RETENTION_DAYS must be a whole number from 1 to 3,650, not "…".` So do `LUMOVI_AUDIT_WEBHOOK_HEADERS`, `_FORMAT` or `_BUFFER` without `LUMOVI_AUDIT_WEBHOOK_URL`.
 
+## A company's network
+
+The chart sets these from its `proxy` and `extraCA` values: `proxy.secret` sets the proxies from a Secret. See [Proxies and certificate authorities](/server/network).
+
+<ResponseField name="HTTPS_PROXY" type="string">
+  The proxy for `https` addresses, as a URL: `http://proxy.corp.example.com:3128`, with credentials in it if it wants them (`http://user:password@…`). Without a scheme, it's taken as `http://`. `https_proxy` too, when `HTTPS_PROXY` isn't set. One that isn't a URL stops Lumovi: `HTTPS_PROXY isn’t a proxy’s URL: give it as http://host:port (or https://).` Lumovi's own connections go through it: clusters whose kubeconfig names no `proxy-url`, single sign-on, Helm repositories and Artifact Hub, the audit webhook, and an agent's to Lumovi. `localhost`, `127.0.0.1` and `::1` never do, nor, inside a cluster, `KUBERNETES_SERVICE_HOST`, `kubernetes.default.svc`, and names under `.svc` and `.cluster.local`. Lumovi's log says which proxy it uses, without its credentials. `helm` gets it too.
+</ResponseField>
+
+<ResponseField name="HTTP_PROXY" type="string">
+  The proxy for `http` addresses, the same way. `http_proxy` too.
+</ResponseField>
+
+<ResponseField name="NO_PROXY" type="string">
+  What's never sent through the proxy, separated by commas or spaces: `*` for all; names, with what's under them (`corp.example.com`, `.corp.example.com`); addresses (`10.1.2.3`), but not ranges; each with a port (`:8443`) or without. `no_proxy` too. Lumovi adds what it never proxies, so `helm` leaves those out as well.
+</ResponseField>
+
+<ResponseField name="LUMOVI_CA_FILE" type="string">
+  Files of certificate authorities to trust besides Node's and the system's, separated by commas, each with PEM certificates: the one a proxy that inspects HTTPS signs with, say. Lumovi's log says how many it took, and from where. A file that can't be read, has no certificate in it, or one that isn't a certificate, stops Lumovi, saying `The certificate authorities in … can’t be read: …`, `… has no certificates in it (PEM, as -----BEGIN CERTIFICATE-----).`, or `The certificate authorities in … can’t be read: its certificate 2 isn’t one (…).` `helm` trusts them too: Lumovi gives it `SSL_CERT_FILE`, a file with all it trusts, unless `SSL_CERT_FILE` is set already. Clusters trust the certificate authority their kubeconfig names, as with `kubectl`.
+</ResponseField>
+
 ## Large clusters and slow API servers
 
 These work the same as in the desktop app, and the chart has no values for them: set them with `extraEnv`.

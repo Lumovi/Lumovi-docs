@@ -1,0 +1,310 @@
+---
+title: "Harden it for production"
+sidebarTitle: "Hardening"
+description: "What to set for a production installation of Lumovi: sign-in, the network, the service account, who may do what, the audit log, and an image you've checked."
+icon: "shield-plus"
+---
+
+The chart's defaults are safe to try Lumovi with. A production installation, which a team relies on and an auditor asks about, needs a few more settings. This page goes through them, each with why, and puts them together in [one values file](#all-together). For how Lumovi works underneath, what it holds and what it may do, see [Security](/server/security).
+
+## The pod
+
+The chart runs Lumovi locked down already. Keep these as they are:
+
+```yaml Chart defaults
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+```
+
+- **Not root**: the image's user, `65532`, with no shell in the image.
+- **A read-only root filesystem**: Lumovi writes only to `/tmp`, an `emptyDir`, and to the audit log's volume.
+- **No capabilities, and no way to gain privileges**: every Linux capability dropped, and `allowPrivilegeEscalation: false`.
+- **The runtime's default seccomp profile**, which blocks system calls a web server has no use for.
+
+They meet Kubernetes' `restricted` [Pod Security Standard](https://kubernetes.io/docs/concepts/security/pod-security-standards/), so Lumovi's namespace can enforce it:
+
+```bash
+kubectl label namespace lumovi pod-security.kubernetes.io/enforce=restricted
+```
+
+[Shells on nodes](/debug/node-shell) run in privileged pods in another namespace (`kube-system` unless `nodeShell.namespace` says otherwise), as the person who opens one, so this label doesn't affect them. On OpenShift, see [below](#openshift).
+
+## Sign-in
+
+Every way to sign in to Lumovi checks who people are: there's no way to run it open to anyone. What matters is that nothing gets around it.
+
+- **Prefer what needs no permissions.** With [tokens](/server/auth/tokens), or [single sign-on that passes people's tokens on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider), the API server checks each request itself, and Lumovi's service account may do nothing.
+- **With single sign-on** (`auth.mode: oidc`), or **behind an [authenticating proxy](/server/auth/proxy)** (`auth.mode: proxy`), Lumovi acts as people by impersonating them. Set `auth.usernamePrefix` and `auth.groupsPrefix`, so no name or group from your provider is one of the cluster's own by accident.
+- **Behind a proxy, only the proxy may reach Lumovi.** Lumovi trusts its headers completely: whoever reaches Lumovi without it can name themselves anyone. Leave the chart's `ingress` off, keep the Service a `ClusterIP`, and turn on the [network policy](#the-network) with only the proxy in `from`.
+- **Keep sessions short enough**: 12 hours unless `auth.sessionHours` says otherwise.
+
+## The network
+
+```yaml values.yaml
+url: https://lumovi.example.com
+ingress:
+  enabled: true
+  className: nginx
+  hosts: [lumovi.example.com]
+  tls:
+    - secretName: lumovi-tls
+      hosts: [lumovi.example.com]
+networkPolicy:
+  enabled: true
+  from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: ingress-nginx
+```
+
+- **TLS at the ingress.** Lumovi serves plain HTTP on port 8080, inside the cluster. Terminate TLS at the ingress or load balancer, and set `url` to the `https:` address, so Lumovi's cookies are `Secure`. See [Give it an address](/server/expose).
+- **Only what you name reaches it.** `networkPolicy` lets in only what `from` allows: your ingress controller's pods, or the authenticating proxy's. With an empty `from`, it lets anything in on Lumovi's port, so always name them. Your cluster's network plugin must enforce network policies. A fleet's [agents](/server/fleet/agents) come in through the ingress too.
+- **Behind your company's proxy**, give Lumovi the proxy, and the certificate authority it signs with: see [Proxies and certificate authorities](/server/network). A proxy that wants credentials takes them in its URL: put that in a Secret, and name it in `proxy.secret`, so they stay out of the Deployment. Lumovi never says them, in its log or its errors. They reach the kubeconfig each run of `helm` gets, as `kubectl` would have them, in a private temporary folder deleted after the run.
+
+## The service account
+
+What Lumovi's service account may do depends on how people sign in:
+
+| Sign-in | What the chart gives it |
+| --- | --- |
+| Tokens, or single sign-on with tokens passed on | Nothing in the cluster |
+| Single sign-on, or an authenticating proxy | `impersonate` on users and groups, and nothing else |
+
+With [AI assistants](/server/assistants), or [Access](/server/access), it also gets `get` and `patch` on the one ConfigMap that holds each, and no other. In a [fleet](/server/fleet), with `fleet.secrets`, `list` on Secrets in the namespaces you name.
+
+Never give it more, like `cluster-admin`: it doesn't need it, and whoever controls the pod would have it. Whoever can exec into Lumovi's pod, read its token, or change its Deployment can act as anyone it may impersonate. So run it in a namespace of its own, where only cluster administrators can exec into pods, read Secrets, or change workloads and ConfigMaps. To manage its permissions yourself, set `rbac.create: false`: see [Helm values](/server/helm-values#kubernetes-objects).
+
+## Who may do what
+
+Kubernetes RBAC decides what each person may do in the cluster. Lumovi can keep them to less:
+
+- **[Access](/server/access)**: name your admins in `access.admins`, and set in `access.policy` what shouldn't depend on anyone's clicks: a read-only `everyone`, profiles for your teams, and limits for production, like no shells and no Secrets' values there. The server holds to it, and every refusal is in the audit log.
+- **[Read-only](/changes/read-only)**: `readOnly: true` (`LUMOVI_READ_ONLY`) keeps everyone from changing anything through Lumovi, for a dashboard people should only look at.
+- **[AI assistants](/server/assistants)**: turn them off with `assistants.enabled: false` if your team doesn't use them. Otherwise, set limits for everyone in `assistants.rules` (`LUMOVI_ASSISTANT_RULES`): hide system namespaces, and keep changes at `ask` or `never`, and Secrets at `keys` or `hidden`, where they matter.
+- **[Shells on nodes](/debug/node-shell)**: `nodeShell.enabled: false` unless people should open them through Lumovi.
+- **Charts from private addresses**: leave `helm.allowPrivateCharts` off unless your charts are in your own network.
+
+## The audit log
+
+The [audit log](/server/audit-log) records what everyone does through Lumovi. For production:
+
+- **Name your auditors** in `audit.auditors`: they see everyone's events. Everyone else sees their own.
+- **Keep the history on its volume** (`audit.persistence`, on by default), for `audit.retentionDays`.
+- **Send it to your SIEM** as it happens, with `audit.webhook`, its headers (a token, say) in a Secret: `audit.webhook.headersSecret`. Or collect it from Lumovi's output, where every event is a line of JSON.
+- **Keep a copy Lumovi can't reach.** The chain shows a changed, removed or inserted event, but whoever can write the volume could rewrite it all: compare the history's newest hash with your SIEM's. See [What it proves](/audit/verify#what-it-proves-and-what-it-doesn’t).
+
+## The image
+
+Each release's image and chart are built and signed by Lumovi's [release workflow](https://github.com/Lumovi/Lumovi/blob/main/.github/workflows/release.yml) on GitHub, from the release's commit on `main`:
+
+- **Signed with cosign**, keyless, twice: as a Sigstore bundle, and with a `.sig` tag. By the workflow's identity, `https://github.com/Lumovi/Lumovi/.github/workflows/release.yml@refs/heads/main`, from the issuer `https://token.actions.githubusercontent.com`, and recorded in Sigstore's public log.
+- **Attested**: a build provenance attestation for each, which `gh attestation verify` checks.
+- **With bills of materials**: its JavaScript packages in CycloneDX, attested with it, and its system packages in SPDX.
+
+See [Check a release](/server/security#check-a-release) for the commands, and [SECURITY.md](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md#checking-a-release).
+
+### Pin it by digest
+
+A tag can be moved; a digest can't. Find the image's:
+
+```bash
+docker buildx imagetools inspect ghcr.io/lumovi/lumovi:{{version}} | grep '^Digest:'
+```
+
+And give it with the tag, which the chart puts after the image's name:
+
+```yaml values.yaml
+image:
+  tag: "{{version}}@sha256:…"   # the digest above
+```
+
+Kubernetes pulls the digest, and the tag stays as a note of which version it is. Install the chart by its version, after checking it with `cosign verify`, as for the image.
+
+### Require the signature
+
+An admission controller can refuse any Lumovi pod whose image isn't signed by the release workflow. The examples below, for [Kyverno](https://kyverno.io/docs/writing-policies/verify-images/) and [Sigstore's policy controller](https://docs.sigstore.dev/policy-controller/overview/), check the identity and issuer above.
+
+<Warning>
+  `cosign verify` with this identity passes for the image and the chart, both ways, but we haven't run these policies in a cluster yet: try them against a test namespace before you enforce them. The image and the chart are signed twice, alike: as a Sigstore bundle (an OCI referrer, as cosign 3 signs), and with the `.sig` tag older controllers look for, so either kind finds one.
+</Warning>
+
+<Tabs>
+  <Tab title="Kyverno">
+    ```yaml lumovi-signed.yaml
+    apiVersion: kyverno.io/v1
+    kind: ClusterPolicy
+    metadata:
+      name: lumovi-signed
+    spec:
+      webhookTimeoutSeconds: 30
+      rules:
+        - name: signed-by-lumovis-release-workflow
+          match:
+            any:
+              - resources:
+                  kinds: [Pod]
+                  namespaces: [lumovi]
+          verifyImages:
+            - imageReferences: ["ghcr.io/lumovi/lumovi*"]
+              failureAction: Enforce
+              mutateDigest: true
+              attestors:
+                - entries:
+                    - keyless:
+                        subject: https://github.com/Lumovi/Lumovi/.github/workflows/release.yml@refs/heads/main
+                        issuer: https://token.actions.githubusercontent.com
+                        rekor:
+                          url: https://rekor.sigstore.dev
+    ```
+
+    `mutateDigest` pins each pod's image to the digest Kyverno checked.
+  </Tab>
+  <Tab title="Sigstore policy controller">
+    ```yaml lumovi-signed.yaml
+    apiVersion: policy.sigstore.dev/v1beta1
+    kind: ClusterImagePolicy
+    metadata:
+      name: lumovi-signed
+    spec:
+      images:
+        - glob: "ghcr.io/lumovi/lumovi**"
+      authorities:
+        - keyless:
+            url: https://fulcio.sigstore.dev
+            identities:
+              - issuer: https://token.actions.githubusercontent.com
+                subject: https://github.com/Lumovi/Lumovi/.github/workflows/release.yml@refs/heads/main
+          ctlog:
+            url: https://rekor.sigstore.dev
+    ```
+
+    The policy controller checks pods in namespaces labelled for it:
+
+    ```bash
+    kubectl label namespace lumovi policy.sigstore.dev/include=true
+    ```
+  </Tab>
+</Tabs>
+
+A copy of the image in your own registry keeps its digest, and its signature if you copy that too (`cosign copy`): point `imageReferences` or `glob` at your copy instead.
+
+## OpenShift
+
+The chart works under OpenShift's `restricted-v2` security context constraint, which gives each pod a user, a group and an `fsGroup` of its own, from its namespace's ranges.
+
+- **`openshift: auto`**, the default, finds out by asking whether the cluster has `security.openshift.io/v1`. There, it leaves `runAsUser`, `runAsGroup` and `fsGroup` out of `podSecurityContext`, for OpenShift to choose, and keeps the rest. `true` or `false` says so instead.
+- **Rendering the chart away from the cluster**, with `helm template` say, `auto` can't ask: set `openshift: true`, or pass `--api-versions security.openshift.io/v1`.
+- **The image's own folders** are its user's and group `0`'s, as OpenShift runs a pod's user in group `0`. The audit log's volume is the pod's `fsGroup`'s, as OpenShift gives it.
+- **The chart's Ingress** is served by OpenShift's router, as a Route.
+- **The cluster's proxy** isn't passed to Lumovi by itself: see [OpenShift](/server/network#openshift).
+
+## All together
+
+A values file for a team's Lumovi behind single sign-on, with the settings above:
+
+```yaml values.yaml expandable
+url: https://lumovi.example.com
+clusterName: production
+image:
+  tag: "{{version}}@sha256:…"
+
+auth:
+  mode: oidc
+  oidc:
+    issuer: https://login.example.com
+    clientId: lumovi
+    existingSecret: lumovi-oidc
+  usernamePrefix: "oidc:"
+  groupsPrefix: "oidc:"
+  sessionHours: 8
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts: [lumovi.example.com]
+  tls:
+    - secretName: lumovi-tls
+      hosts: [lumovi.example.com]
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+networkPolicy:
+  enabled: true
+  from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress-nginx
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: ingress-nginx
+
+access:
+  admins: [platform-admins]
+  policy:
+    everyone:
+      { changes: read, shells: off, nodeShells: off, logs: on, secrets: keys,
+        helm: off, assistants: ask, audit: own }
+
+assistants:
+  rules:
+    - name: System namespaces
+      namespaces: [kube-*, cert-manager]
+      visibility: hidden
+    - name: Changes ask
+      changes: ask
+      secrets: keys
+
+nodeShell:
+  enabled: false
+
+audit:
+  auditors: [security-team]
+  webhook:
+    url: https://siem.example.com/lumovi
+    headersSecret: lumovi-audit-webhook
+
+# Behind a company's proxy, its URLs (with credentials) in a Secret:
+# proxy:
+#   secret: corp-proxy
+#   noProxy: .corp.example.com
+# extraCA:
+#   configMap: corp-ca
+```
+
+## Checklist
+
+<Check>Keep the chart's pod and container security contexts, and enforce the `restricted` Pod Security Standard on Lumovi's namespace.</Check>
+<Check>Pick [token](/server/auth/tokens) sign-in, or single sign-on with [tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider), when you can: Lumovi then needs no permissions.</Check>
+<Check>Run Lumovi in its own namespace, which only cluster administrators can exec into, read Secrets in, or change workloads and ConfigMaps in.</Check>
+<Check>Set `auth.usernamePrefix` and `auth.groupsPrefix` when Lumovi impersonates people.</Check>
+<Check>Turn on `networkPolicy`, and name only your ingress controller, or the authenticating proxy, in `from`.</Check>
+<Check>Serve it over HTTPS, and set `url` to the `https:` address.</Check>
+<Check>Name admins in `access.admins`, and give people only what they need through Lumovi: a read-only `everyone`, grants for teams where they work, and limits on production in `access.policy`.</Check>
+<Check>Turn AI assistants off (`assistants.enabled: false`) unless your team uses them, or set limits for everyone in `assistants.rules`.</Check>
+<Check>Set `nodeShell.enabled: false` unless people should open shells on nodes through Lumovi, and leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
+<Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
+<Check>Name your auditors in `audit.auditors`, and send the audit log to your SIEM with `audit.webhook`, or from Lumovi's output.</Check>
+<Check>Pin the image by digest, check its signature with `cosign verify`, and require it with an admission controller.</Check>
+<Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and give Lumovi agents' `tokenSha256`, not their tokens.</Check>
+
+<Columns cols={2}>
+  <Card title="Security" icon="shield-check" href="/server/security">
+    What Lumovi holds, what it may do, and how it's contained.
+  </Card>
+  <Card title="Proxies and certificate authorities" icon="globe-lock" href="/server/network">
+    Lumovi behind your company's proxy.
+  </Card>
+</Columns>

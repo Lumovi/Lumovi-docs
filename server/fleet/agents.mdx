@@ -129,7 +129,7 @@ With `mode: agent`, the chart makes no Lumovi in the cluster, only its agent:
 - **A service account**, `lumovi`, with a ClusterRole and a ClusterRoleBinding, `lumovi-impersonate`, that let it impersonate users and groups, and nothing else (unless `rbac.create` is `false`). Its token is mounted in the agent's pod.
 - **Health checks** on port 8081. `/healthz` answers `200 connected` while the agent is connected to Lumovi, and `503 not connected` otherwise, so the pod is ready only while connected. It's alive as long as the port answers.
 
-There's no Service: nothing connects to the agent. It requests `10m` of CPU and `32Mi` of memory, and is limited to `128Mi` (`agent.resources`). The chart's `image`, `extraEnv`, `podSecurityContext`, `securityContext`, `nodeSelector`, `tolerations`, `affinity` and `priorityClassName` apply to it too. See [Helm values](/server/helm-values#an-agent).
+There's no Service: nothing connects to the agent. It requests `10m` of CPU and `32Mi` of memory, and is limited to `128Mi` (`agent.resources`). The chart's `image`, `extraEnv`, `podSecurityContext`, `securityContext`, `openshift`, `proxy` (and `proxy.secret`), `extraCA`, `nodeSelector`, `tolerations`, `affinity` and `priorityClassName` apply to it too. See [Helm values](/server/helm-values#an-agent).
 
 ## Run it another way
 
@@ -174,6 +174,14 @@ containers:
   Where the pod's service account token and CA certificate are.
 </ResponseField>
 
+<ResponseField name="HTTPS_PROXY, HTTP_PROXY, NO_PROXY" type="string">
+  The proxy the agent reaches Lumovi through, if it needs one, as Lumovi reads them: see [Proxies and certificate authorities](/server/network). Its own API server is always reached directly. The chart sets them from `proxy`.
+</ResponseField>
+
+<ResponseField name="LUMOVI_CA_FILE" type="string">
+  Files of certificate authorities to trust besides Node's and the system's, separated by commas: the one a proxy that inspects HTTPS signs with, say. One that can't be read stops the agent, saying which, as does a proxy that isn't a URL. The chart sets it from `extraCA`.
+</ResponseField>
+
 Without one of the required settings (`KUBERNETES_SERVICE_HOST` among them), or without the service account's token, the agent stops at once and says why:
 
 ```text
@@ -199,7 +207,7 @@ When Kubernetes stops it, it closes its connection, and Lumovi's log says `The a
 
 While it's away, Lumovi's log says `The agent of private-eu disconnected`, and the cluster's card says `Its agent isn't connected.` An agent that's connected but can't reach its own API server stays connected, and the cluster's card says **Unreachable**, as for any cluster that doesn't answer.
 
-Other problems reaching Lumovi are in the agent's log, like `Can't reach the hub at https://lumovi.example.com: …`, then `Connecting again in 4 s: it couldn't connect`.
+Other problems reaching Lumovi are in the agent's log, like `Can't reach the hub at https://lumovi.example.com: …`, then `Connecting again in 4 s: it couldn't connect`. Through a proxy, the agent's log says which it uses as it starts, without its credentials. A proxy that refuses the connection is named, with where it was asked to go: `The proxy http://proxy.corp.example.com:3128 needs credentials to lumovi.example.com:443 (407): give them in its URL, as http://user:password@host:port.`, or `didn't open a tunnel` with what it answered.
 
 ## In front of Lumovi
 
