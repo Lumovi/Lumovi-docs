@@ -111,13 +111,15 @@ Lumovi keeps itself up to date. It looks for a new version shortly after it star
 - **Help → Check for Updates…** looks right away, and says what it found: *Lumovi is up to date*, *Downloading Lumovi …*, or *Couldn't check for updates*, with the reason.
 - **Help → Check for Updates Automatically** turns the background checks off.
 
+Your organization's [policy](/desktop/policy) can leave updates to IT, which then deploys new versions itself: Lumovi neither looks for them nor installs them, **Check for Updates…** reads **Updates Are Set by Your Organization**, and both items are disabled.
+
 On Linux, the AppImage replaces itself. A `.deb` or `.rpm` install updates through your package manager, so installing a new version asks for an administrator password.
 
 New versions come from the project's [GitHub releases](https://github.com/Lumovi/Lumovi/releases), over HTTPS. Each download is checked against the checksum the release lists, and on macOS the new version must carry the same Developer ID signature. A copy that can't update itself says so when you check: install new versions of it from the releases page.
 
 ## Verify your download
 
-Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`, and each file has a signed build provenance attestation.
+Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. Each installer has a signed build provenance attestation, which says it was built by Lumovi's release workflow from the release's commit, and an attested bill of materials: `Lumovi-<version>.cdx.json` (CycloneDX), every package the app bundles or ships, and Electron, on the release too.
 
 <CodeGroup>
   ```bash Checksum (macOS, Linux)
@@ -130,8 +132,15 @@ Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`, 
   # Compare with the line for this file in SHA256SUMS.txt
   ```
 
-  ```bash Provenance (GitHub CLI)
-  gh attestation verify Lumovi-{{version}}-mac-arm64.dmg --repo Lumovi/Lumovi
+  ```bash Provenance and bill of materials (GitHub CLI)
+  # Built by the release workflow, from main.
+  signer=(--repo Lumovi/Lumovi --signer-workflow Lumovi/Lumovi/.github/workflows/release.yml
+    --source-ref refs/heads/main)
+
+  # An installer: built there, and what it's made of (the release's Lumovi-<version>.cdx.json).
+  gh attestation verify Lumovi-{{version}}-mac-arm64.dmg "${signer[@]}"
+  gh attestation verify Lumovi-{{version}}-mac-arm64.dmg "${signer[@]}" \
+    --predicate-type https://cyclonedx.org/bom
   ```
 </CodeGroup>
 

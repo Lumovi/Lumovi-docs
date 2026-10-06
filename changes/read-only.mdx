@@ -48,6 +48,12 @@ Set `LUMOVI_READ_ONLY` to `1` (or `true`) in the environment Lumovi starts in. E
 
 To set it for every launch, or on Windows, see [Setting environment variables](/reference/environment-variables#setting-them).
 
+## Set by your organization
+
+Your organization's [policy](/desktop/policy) can make every cluster read-only on its computers, or those whose names match, like `prod-*`. You can't turn it off for those: the switch is disabled, with the caption "Set by your organization", the command palette leaves out the read-only command, and the **Read-only** badge says "Your organization's policy makes production read-only.", without **Allow changes**. You can still make other clusters read-only yourself.
+
+A policy that can't be used makes every cluster read-only until it's put right, and the badge says why: "Lumovi can't use your organization's policy (…), so it changes no cluster until it's put right."
+
 ## What it turns off
 
 It isn't only the buttons. The part of Lumovi that talks to your clusters (the desktop app's main process, or the server when Lumovi runs in your cluster) refuses every change to a read-only cluster, whatever asks for it:
