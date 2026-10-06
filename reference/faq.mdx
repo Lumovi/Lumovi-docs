@@ -61,6 +61,9 @@ icon: "circle-question-mark"
   <Accordion title="Does Lumovi keep a record of what's done?">
     Yes: an [audit log](/audit/overview) of what was done through Lumovi, by whom, from where, and how it went, with the `kubectl` command for each change and how each AI assistant's change was approved. Never Secrets' values or tokens. The desktop app keeps yours on your computer, for 90 days. Lumovi in your cluster keeps one for the team: people see their own events, its auditors see everyone's, and it can send them to your log collector or SIEM. Its events are chained, and Lumovi can [check](/audit/verify) them.
   </Accordion>
+  <Accordion title="Can my team let people do less through Lumovi than their RBAC allows?">
+    Yes, when it runs in your cluster. Its admins say what everyone gets, give teams more where they work, and hold anyone back where it matters, like no shells or Secret values in production. Lumovi's server holds to it, and never lets anyone do more than RBAC. Each person sees theirs in [Your access](/clusters/your-access). See [Access for your team](/server/access).
+  </Accordion>
   <Accordion title="What permissions do I need?">
     Only what you want to do. Lumovi acts with your own credentials and RBAC, so a read-only `view` role is enough to look around. It asks the cluster what you may do before offering an action, and says why when you can't. See [Permissions](/clusters/permissions).
   </Accordion>

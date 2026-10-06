@@ -59,6 +59,7 @@ The [audit log](/audit/overview) records each shell you open and close, how long
 
 | You see | Why | What to do |
 | --- | --- | --- |
+| **You can't open shells here** | On a Lumovi server, your [access](/clusters/your-access) doesn't let you open shells in the namespace. It says why, and who Lumovi's admins are. | **See your access**, or ask an admin. |
 | **Shells are off** | The cluster is [read-only](/changes/read-only) in Lumovi. A shell can change a container. | Allow changes to the cluster, if you mean to. |
 | **No shell access** | Your account can't open shells in the namespace. | Ask for `create` on `pods/exec`. See [Permissions](/clusters/permissions). |
 | _container_ **isn't running** | A shell needs a running container. | Wait for it to start, or check its logs and events. |
@@ -66,6 +67,8 @@ The [audit log](/audit/overview) records each shell you open and close, how long
 ## Debug containers
 
 Distroless and scratch images have no shell, and many slim images have no tools. A debug container fixes both: Lumovi adds a temporary container with the tools you pick to the running pod, and opens a shell in it. The pod's own containers aren't restarted.
+
+On a Lumovi server, a debug container needs your [access](/clusters/your-access) to let you open shells and make changes in the pod's namespace.
 
 <Steps>
   <Step title="Choose Debug…">

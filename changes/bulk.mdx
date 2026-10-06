@@ -70,7 +70,7 @@ You type the action and what it's for, like `delete namespaces`, `delete volume 
 
 - **No undo.** Changes made together can't be undone from their notification. Each one is in the **Activity** log, with its command.
 - **Permissions are checked by the cluster.** Bulk actions don't check your permissions before they start. Objects you can't change fail with the cluster's reason, and the rest go ahead.
-- **Read-only clusters.** In a [read-only](/changes/read-only) cluster, the actions in the selection bar are disabled.
+- **Read-only clusters.** In a [read-only](/changes/read-only) cluster, the actions in the selection bar are disabled. On a server, so are they when your [access](/clusters/your-access) doesn't let you change one of the objects chosen, saying why.
 
 <Columns cols={2}>
   <Card title="Actions by kind" icon="mouse-pointer-click" href="/changes/actions">

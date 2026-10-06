@@ -69,6 +69,10 @@ The desktop app installs from anywhere your computer can reach, your own network
 
 On a [read-only](/changes/read-only) cluster, Lumovi refuses to install anything.
 
+<Note>
+  **In your cluster:** installing needs your [access](/clusters/your-access) to give you **Install, uninstall** and **Make changes** in the namespace. Where it doesn't, the dialog says so as soon as you pick the namespace, and **Review** stays off.
+</Note>
+
 <Columns cols={2}>
   <Card title="Charts on your computer" icon="folder-code" href="/helm/local-charts">
     Install the chart you're working on, checked with helm lint.

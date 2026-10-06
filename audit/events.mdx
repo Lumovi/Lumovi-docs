@@ -100,7 +100,7 @@ What the cluster, or an admission webhook, says about a Secret can quote its val
 | The cluster, or a webhook in it, found it not valid (`invalid`) | "The cluster says it isn't valid." |
 | Anything else | "It failed (timeout).", with what went wrong: `unreachable`, `timeout`, `server`, and so on |
 
-Each followed by "What the cluster said of the Secret isn't kept: it can quote its values." Lumovi's own refusals, by [read-only mode](/changes/read-only), are kept as they're said. An AI assistant's tool call about a Secret that fails says "It failed. What the cluster said of the Secret isn't kept: it can quote its values.": one whose kind has "secret" in it, in any case, like `Secret` or `SealedSecret`, or with a manifest of a Secret. A tool call that's refused is kept as Lumovi said it.
+Each followed by "What the cluster said of the Secret isn't kept: it can quote its values." Lumovi's own refusals, by [read-only mode](/changes/read-only) or [access](/server/access), are kept as they're said. An AI assistant's tool call about a Secret that fails says "It failed. What the cluster said of the Secret isn't kept: it can quote its values.": one whose kind has "secret" in it, in any case, like `Secret` or `SealedSecret`, or with a manifest of a Secret. A tool call that's refused is kept as Lumovi said it.
 
 ## Actions
 
@@ -163,6 +163,7 @@ Sign-ins that don't succeed are recorded too, each, up to 60 a minute. Past that
 | `permissions.changed` | Changed AI permissions | Someone changed [what their assistants may do](/assistants/permissions): their defaults, and their rules' names. |
 | `read-only.changed` | Changed read-only | A cluster was made [read-only](/changes/read-only), or changeable again. |
 | `node-shell.changed` | Changed node shells | Where a cluster's [node shells](/debug/node-shell#settings-for-each-cluster) run, and from what image, changed: "Made node shells in production run alpine:3.22 in kube-system", or "Made node shells in production run as Lumovi's defaults". |
+| `access.changed` | Changed access | On a server: an admin saved changes to [who may do what](/server/access). Its summary is the first change, and how many more: `Added the grant “On-call”, and 2 more`. Changed by hand where it's kept, it's recorded by Lumovi itself, its summary starting `Changed outside Lumovi:`, or, for a change made while Lumovi wasn't running, recorded as it starts: `Changed outside Lumovi, while it wasn’t running: what it was before can’t be known`. |
 | `assistants.changed` | Changed AI assistants | In the desktop app: assistants let connect, or stopped; their port; a new token. |
 
 ### Server (`server`)
@@ -181,7 +182,7 @@ With the `changes` level, a server records everything but the **Access** kind an
 | --- | --- | --- |
 | `success` | Done | It was done. |
 | `failure` | Failed | The cluster, or Lumovi, couldn't do it. |
-| `refused` | Refused | It wasn't allowed: by the cluster's RBAC, read-only mode, an assistant's permissions, or the person who rejected it. |
+| `refused` | Refused | It wasn't allowed: by the cluster's RBAC, read-only mode, someone's [access](/server/access), an assistant's permissions, or the person who rejected it. |
 | `cancelled` | Cancelled | Nobody answered an assistant's change in time, or it was withdrawn: by the assistant, as it was let go, or as assistants were turned off. Its tool call too. A node shell closed before its pod started. |
 
 ## Approvals
@@ -223,6 +224,7 @@ What each action adds in `details`, when it applies:
 | `assistant.ended` | `how` (`signed out`, `let go`, `expired` or `reused`) and `since`, when it was allowed |
 | `assistant.tool` | `tool`, `changing: true` for a tool that changes things, `waiting: true` for a change still waiting for its answer (its own event says what became of it), and what the assistant asked for, by name: never a manifest it applies |
 | `permissions.changed` | `changes`, `secrets`, `env` and `logs` (the defaults), and `rules`: their names |
+| `access.changed` | `changes`: each change, a sentence each, like `Changed the profile “Developer”: Helm: Off → Upgrade, roll back`; and `outside: true` for a change made by hand where it's kept, not through Lumovi |
 | `read-only.changed` | `readOnly` |
 | `node-shell.changed` | `namespace` and `image`, unless set back to Lumovi's defaults |
 | `assistants.changed` | `enabled`, `port` |

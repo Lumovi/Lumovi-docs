@@ -278,6 +278,7 @@ Under it, **Its pod was deleted.**, or why it couldn't be. **Start again** start
 
 | You see | Why | What to do |
 | --- | --- | --- |
+| **You can't open shells on nodes here** | On a Lumovi server, your [access](/clusters/your-access) doesn't give you **Node shells** on this cluster. It says why. | **See your access**, or ask one of Lumovi's admins. |
 | **Shells are off** | The cluster is [read-only](/changes/read-only) in Lumovi: a node shell can change the node. The **Shell** button is disabled too. | Allow changes to the cluster, if you mean to. |
 | **No node shell access** | Your account can't create pods in the node shells' namespace, read them, or open shells in them. | Ask for them, or choose another namespace in **Settings**. See [Permissions](#permissions). |
 | **Node shells need a Linux node** | The node runs Windows. | None: see [Windows nodes](#windows-nodes). |

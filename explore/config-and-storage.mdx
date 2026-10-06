@@ -36,6 +36,7 @@ Secret values stay hidden until you ask for them.
 - **The list** shows each secret's type and how many keys it has. Lumovi drops the values before the list reaches the page.
 - **Data** shows each key with its size, and its value as `••••••••`. Reveal one key with its eye button, or all of them with **Reveal all**. Values are decoded from base64 for you.
 - **Copy** next to a key copies its value without revealing it, for pasting somewhere safe.
+- **On a Lumovi server**, your [access](/clusters/your-access) may show you a namespace's Secrets' keys only: **Data** says "Only the keys", each value reads **Value hidden by your access**, and **YAML** says **Values hidden by your access**. Their values never reach your browser, not even in what a change answers with, and editing a Secret as YAML is off, since that writes it whole. Where your access hides Secrets, you can't open or change them, and lists across every namespace leave them out.
 - **The [audit log](/audit/overview)** records who opened a Secret, with its keys, never its values. Opening one counts, revealed or not: its values reach the page, hidden.
 - **YAML** hides values too, until you choose **Reveal values**. The `kubectl.kubernetes.io/last-applied-configuration` annotation holds a copy of the values, so it's hidden as well. Under **Annotations** in **Overview**, it reads *Hidden: it holds the secret's values*.
 

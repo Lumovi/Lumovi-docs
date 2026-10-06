@@ -37,14 +37,14 @@ Events come in six kinds, which the **Kind** filter offers:
 | **Access** | Shells in containers, and [on nodes](/debug/node-shell): opened, and closed, with how long they ran and how they ended. [Port forwards](/debug/port-forwarding), started and stopped, in the desktop app. Logs read. Secrets read, when their values reach the page or an assistant, or refused. A Helm release's values and manifests read, which can hold what its Secrets do. |
 | **Sign-ins** | On a server: signing in, with a token or single sign-on, and attempts that didn't succeed; signing out; and a session that ended by itself, with why. |
 | **AI assistants** | On a server: each assistant someone allowed, or didn't, and each that was let go. Everywhere: each tool an assistant calls. |
-| **Settings** | A cluster made read-only, or changeable again. Where a cluster's [node shells](/debug/node-shell#settings-for-each-cluster) run, and from what image. [What AI assistants may do](/assistants/permissions), changed. In the desktop app, letting assistants connect, their port, and a new token. |
+| **Settings** | A cluster made read-only, or changeable again. Where a cluster's [node shells](/debug/node-shell#settings-for-each-cluster) run, and from what image. [What AI assistants may do](/assistants/permissions), changed. On a server, [who may do what](/server/access), as its admins change it, or as someone changed it by hand where it's kept. In the desktop app, letting assistants connect, their port, and a new token. |
 | **Server** | Lumovi starting and stopping, and audit events it couldn't keep or send. |
 
-Each change is recorded once it's over, as it went: **Done**, **Failed**, **Refused** or **Cancelled** (see [Outcomes](/audit/events#outcomes)). A change the cluster refuses, or [read-only mode](/changes/read-only) stops, is recorded as **Refused**.
+Each change is recorded once it's over, as it went: **Done**, **Failed**, **Refused** or **Cancelled** (see [Outcomes](/audit/events#outcomes)). A change the cluster refuses, [read-only mode](/changes/read-only) stops, or your [access](/clusters/your-access) doesn't allow, is recorded as **Refused**.
 
 Sign-ins that don't succeed are recorded too, since anyone can try them: each, up to 60 a minute. Past that, they're counted, and one event a minute, and one as the server stops, says how many, and from where: "25 more sign-ins didn't succeed, each not recorded: more than 60 were tried in a minute", with `count`, and in `from`, each address with how many, the most first, 20 at most. They're nobody's own: only auditors see them.
 
-- **Logs** are recorded once for each container, **Secrets** once for each Secret, and **Helm releases' values** once for each release, at most every ten minutes for each page or assistant: pages read them again as they refresh, and that isn't someone reading them again. Opening a Secret counts, since its values reach the page, and so does a dry run of a change to one, which answers with it; a list of Secrets doesn't, since it shows their keys only.
+- **Logs** are recorded once for each container, **Secrets** once for each Secret, and **Helm releases' values** once for each release, at most every ten minutes for each page or assistant: pages read them again as they refresh, and that isn't someone reading them again. Opening a Secret counts, since its values reach the page, and so does a dry run of a change to one, which answers with it; a list of Secrets doesn't, since it shows their keys only. A release whose values your [access](/clusters/your-access) withholds isn't recorded as read.
 - **Your own [terminals](/debug/terminal)** in the desktop app aren't recorded: they run on your computer, outside Lumovi.
 - **Behind an authenticating proxy**, signing in and out happens at the proxy, which keeps its own log.
 
@@ -128,7 +128,7 @@ A JSON Lines export of everything, by someone who sees everyone's, can be [check
 
 In the desktop app, everything in the log is yours: you see all of it, and can check it.
 
-On a server, you see your own events: what you did, and what your assistants did as you. The server's [auditors](/server/audit-log#auditors) see everyone's. The page says which you are: "You see your own: its auditors see everyone's." That holds for everything that reads the log: the list, the Audit tab, an export, and events as they come in.
+On a server, you see your own events: what you did, and what your assistants did as you. The server's [auditors](/server/audit-log#auditors) see everyone's: those it names, and those whose [access](/clusters/your-access) gives them everyone's events. The page says which you are: "You see your own: its auditors see everyone's." That holds for everything that reads the log: the list, the Audit tab, an export, and events as they come in.
 
 Only auditors have the **Who** filter, and **Check integrity**: see [Check it hasn't changed](/audit/verify).
 
