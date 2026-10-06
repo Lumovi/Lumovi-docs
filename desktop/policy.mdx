@@ -1,0 +1,179 @@
+---
+title: "Policy for your organization's computers"
+sidebarTitle: "Policy for your organization"
+description: "Set what the desktop app does on every computer you manage: read-only clusters, AI assistants, updates, and the proxy and certificate authorities to use."
+icon: "building-2"
+---
+
+A company rolling Lumovi out to its people's computers can set what the desktop app does on every one, in a policy only an administrator can write, deployed like any other managed setting: with an MDM, Group Policy, Intune or configuration management. What it sets is locked in the app, which says so. What it leaves out stays each person's to choose.
+
+<Warning>
+  The policy sets what Lumovi does. It isn't a wall against the person using the computer: their kubeconfig's credentials are theirs, and work with `kubectl` too. What they may do in a cluster is Kubernetes RBAC's to say. Use the policy to keep Lumovi from changing what it shouldn't, by mistake or by an AI assistant, and RBAC to keep people from it.
+</Warning>
+
+## Where it goes
+
+The policy is JSON, kept where only an administrator can write it:
+
+| System | Where |
+| --- | --- |
+| macOS | The file `/Library/Application Support/Lumovi/policy.json` |
+| Linux | The file `/etc/lumovi/policy.json` |
+| Windows | The registry, its 64-bit view: `HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Lumovi`, its `Policy` value, a string (`REG_SZ`) holding the JSON |
+
+On macOS and Linux, the file and its folder must be `root`'s, and writable by nobody else: no write permission for the group or others. Where the file is a link, so must the folder of the file it points to. On Windows, only administrators can write under `HKEY_LOCAL_MACHINE\SOFTWARE\Policies`, which is where Group Policy and Intune put policies.
+
+Lumovi reads it as it starts: restart it after a change. Only when nothing is there is there no policy, and nothing locked. Something there that Lumovi can't read is a policy that [can't be used](#when-it-can’t-be-used).
+
+```json policy.json
+{
+  "readOnly": ["prod-*", "billing"],
+  "assistants": true,
+  "assistantRules": [
+    { "name": "System namespaces", "namespaces": ["kube-*"], "visibility": "hidden" },
+    { "name": "Production", "clusters": ["prod-*"], "changes": "never", "secrets": "hidden" }
+  ],
+  "updates": false,
+  "network": {
+    "proxy": "http://proxy.corp.example.com:3128",
+    "noProxy": ".corp.example.com",
+    "caFiles": ["/Library/Application Support/Lumovi/corp-root.pem"]
+  }
+}
+```
+
+Every key is optional. A key Lumovi doesn't know, or one given twice, isn't ignored: it makes the policy one that [can't be used](#when-it-can’t-be-used).
+
+## What it sets
+
+### readOnly
+
+`true` makes every cluster read-only. A list makes those whose kubeconfig context names match read-only: each name whole, with `*` for any characters, like `prod-*`. `false`, or leaving it out, leaves read-only to each person.
+
+What it makes read-only can't be made changeable in Lumovi. The cluster switcher's **Read-only** switch is disabled, with the caption "Set by your organization", the command palette leaves out the read-only command, and the **Read-only** badge says "Your organization's policy makes prod-eu read-only.", without **Allow changes**. People can still make other clusters read-only themselves. See [Read-only mode](/changes/read-only).
+
+A list matches context names, which are each person's to choose in their kubeconfig: it keeps them from changing those clusters through Lumovi by mistake, not someone who renames a context. `true` holds whatever the names.
+
+### assistants
+
+`false` turns [AI assistants](/assistants/overview) off: Lumovi doesn't listen for them, and they can't be turned on. On the **AI assistants** page, the **Connect** tab's switch is disabled, and instead of **Turn on**, it says "Your organization's policy turns AI assistants off on this computer." `true`, or leaving it out, leaves them to each person, off until they turn them on.
+
+### assistantRules
+
+What assistants may do at most, as a list of rules, the same as a server's [`LUMOVI_ASSISTANT_RULES`](/server/assistants#limits-for-everyone): each with a `name`, the `clusters` and `namespaces` it applies to, and what it limits, at least one of `visibility: hidden`, `changes: ask` or `never`, `secrets: keys` or `hidden`, `env: sensitive` or `all`, and `logs: off`.
+
+People see them first on their **Permissions** tab, locked, with **Set by your administrator**, and nothing of theirs loosens them. See [What assistants may do](/assistants/permissions#your-administrator’s-rules). On a computer, clusters have no labels: match them by name or pattern, like `prod-*`.
+
+### updates
+
+`false` leaves updates to you: Lumovi neither looks for new versions nor installs them, and you deploy each one, as you deployed the first. In the **Help** menu, **Check for Updates…** reads **Updates Are Set by Your Organization**, and both it and **Check for Updates Automatically** are disabled. A check asked for anyway says "Your organization updates Lumovi".
+
+`true`, or leaving it out, leaves Lumovi to update itself, as each person sets: see [Staying up to date](/get-started/desktop#staying-up-to-date).
+
+### network
+
+The proxy and certificate authorities Lumovi's own connections use, instead of what each person's shell says:
+
+- **`proxy`**: the proxy's URL, `http://` or `https://`, with credentials in it if it wants them. It's used for `https` and `http` addresses alike, whatever `HTTPS_PROXY` and `HTTP_PROXY` say, and passed on to `helm` and credential plugins. Looking for new versions goes through it too, with its credentials.
+- **`noProxy`**: what's reached directly, as `NO_PROXY`: names, with what's under them (`.corp.example.com`), and addresses, each with a port or without. Not ranges. It replaces the shell's.
+- **`caFiles`**: files of certificate authorities, as PEM, to trust besides the system's: the one a proxy that inspects HTTPS signs with, if it isn't in the system's certificates already. Looking for new versions trusts only the system's.
+
+A cluster with `proxy-url` in its kubeconfig still goes through that one, and `localhost` never goes through a proxy. See [Proxies and certificates](/desktop/network).
+
+A certificate authority file that can't be read doesn't stop Lumovi: it leaves that file out, trusts the others, and says so as it starts, in a notice titled "Lumovi started without something it was given". Put the files where every account can read them.
+
+## Deploy it
+
+<Tabs>
+  <Tab title="macOS" icon="apple">
+    Make the folder, then copy the file into it, both `root`'s and writable by nobody else:
+
+    ```bash
+    sudo install -d -o root -g wheel -m 755 "/Library/Application Support/Lumovi"
+    sudo install -o root -g wheel -m 644 policy.json "/Library/Application Support/Lumovi/policy.json"
+    ```
+
+    With an MDM, deploy the same with a script or a package that installs it there, with that owner and mode.
+  </Tab>
+  <Tab title="Windows" icon="app-window">
+    Set the `Policy` value to the file's JSON, as an administrator:
+
+    ```powershell
+    New-Item -Path HKLM:\SOFTWARE\Policies\Lumovi -Force
+    New-ItemProperty -Path HKLM:\SOFTWARE\Policies\Lumovi -Name Policy -PropertyType String -Value (Get-Content policy.json -Raw -Encoding UTF8) -Force
+    ```
+
+    The JSON can keep its lines, and any characters: `é` as it is, or as JSON's `\u00e9`.
+
+    Lumovi reads the 64-bit registry, with `reg.exe`, or with PowerShell where `reg.exe` can't read the value, or isn't allowed to run (as **Prevent access to registry editing tools** has it). A 32-bit program writes elsewhere, under `WOW6432Node`, where Lumovi doesn't look: with Intune, run the script with **Run script in 64 bit PowerShell Host**.
+
+    Where people may run neither `reg.exe` nor PowerShell (AppLocker, say, with **Prevent access to registry editing tools**), Lumovi can't tell whether there's a policy, so it locks the most, and says so. Let people run `reg.exe`: Lumovi only reads with it. Reading takes a moment as Lumovi starts; where `reg.exe` and PowerShell are slow to answer, the window may wait up to 20 seconds.
+
+
+    With Group Policy, set it with a **Registry** preference item (**Computer Configuration → Preferences → Windows Settings → Registry**). With Intune, with a script or a custom setting that writes the same value.
+  </Tab>
+  <Tab title="Linux" icon="terminal">
+    Make the folder, then copy the file into it, both `root`'s and writable by nobody else:
+
+    ```bash
+    sudo install -d -o root -g root -m 755 /etc/lumovi
+    sudo install -o root -g root -m 644 policy.json /etc/lumovi/policy.json
+    ```
+
+    With Ansible, Puppet or Chef, manage both as `root:root`, the folder `0755` and the file `0644`.
+  </Tab>
+</Tabs>
+
+### Try one out
+
+To try a policy on a computer that has none, point `LUMOVI_POLICY` at a file of your own, and start Lumovi from a terminal:
+
+```bash
+LUMOVI_POLICY=~/policy.json open -a Lumovi
+```
+
+The file needn't be `root`'s. Where IT's policy is set, that one is used, and `LUMOVI_POLICY` is ignored: nobody can put one of their own in its place.
+
+## When it can't be used
+
+A policy Lumovi can't use locks the most it could, until it's put right: every cluster read-only, and AI assistants off. As Lumovi starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge says why too, like:
+
+```text
+Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, network.), so it changes no cluster until it’s put right.
+```
+
+What it can say after `can't be used:`:
+
+| It says | Why |
+| --- | --- |
+| "/etc/lumovi/policy.json must be root's, and writable by nobody else (it's user 501's, mode 664)." | The file, or its folder, isn't an administrator's alone. |
+| "/etc/lumovi/policy.json must be a file." | It's a folder, a pipe or a device. |
+| An error from the system, like `EACCES: permission denied` | Something is there, but Lumovi can't read it. |
+| "it must be text (REG_SZ): the policy's JSON." | On Windows, the `Lumovi` key has no `Policy` value, or one that isn't a string. |
+| "Lumovi can't read it: neither reg.exe nor PowerShell could." | On Windows, the key is there, or might be, but neither could read it: people may run neither, or may not read the key. |
+| "it isn't JSON (at line 3 column 1)." | It isn't JSON: a comma after the last item, say. It says where when it can, and otherwise just "it isn't JSON.", but never what's there, which could be a proxy's credentials. |
+| "a key is given twice: Map keys must be unique at line 1, column 21:" | A key appears twice, and only one would count. |
+| "it must be a JSON object." | It's JSON, but not `{ … }`. |
+| "it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, network." | A key it doesn't know, misspelt maybe. |
+| "readOnly must be true, false, or a list of cluster names (with * for any)." | |
+| "assistants must be true or false.", "updates must be true or false." | |
+| "assistantRules[0] (Production) limits nothing: give it visibility, changes, secrets, env or logs." | A rule that doesn't make sense, said as for a server's [rules](/server/assistants#limits-for-everyone). |
+| "network has proxyUrl: it takes proxy, noProxy, caFiles." | |
+| "network.proxy must be the proxy's http or https URL." | |
+| "network.noProxy must be text, as NO_PROXY is: names and addresses." | |
+| "network.caFiles must be a list of files." | |
+
+## What stays each person's
+
+The policy locks only what it sets, and only while it's there. Lumovi shows what it sets, but doesn't save it over anyone's settings: a person's own choices, like AI assistants on or automatic updates, are back if the policy goes. Everything else, like the theme, the clusters they make read-only themselves, and their own [AI permissions](/assistants/permissions) within the policy's rules, stays theirs.
+
+The policy doesn't reach [terminals](/debug/terminal), which are each person's own shell, with their own `kubectl`.
+
+<Columns cols={2}>
+  <Card title="Proxies and certificates" icon="waypoints" href="/desktop/network">
+    How the desktop app reaches clusters behind a proxy.
+  </Card>
+  <Card title="Read-only mode" icon="lock" href="/changes/read-only">
+    What read-only turns off, for one cluster or every one.
+  </Card>
+</Columns>

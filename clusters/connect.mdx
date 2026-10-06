@@ -39,7 +39,7 @@ If a file can't be read, the start screen says **Your kubeconfig couldn't be rea
 
 Contexts that get their credentials from a plugin (an `exec` entry in the kubeconfig) work as they do in a terminal. Lumovi keeps each context's configuration between requests, so a plugin's cached token is reused instead of asked for again.
 
-On macOS and Linux, apps opened from the Dock or a launcher don't get the `PATH` your shell sets up. So when Lumovi starts, it asks your login shell for its `PATH`, and finds plugins wherever your shell would. If the shell takes longer than five seconds or fails, Lumovi keeps the `PATH` it started with. Windows apps already get the full `PATH`.
+On macOS and Linux, apps opened from the Dock or a launcher don't get the `PATH` your shell sets up. So when Lumovi starts, it asks your login shell for its `PATH`, and finds plugins wherever your shell would. It asks for your proxy too: see [Behind a proxy](#behind-a-proxy). If the shell takes longer than five seconds or fails, Lumovi keeps the `PATH` it started with. Windows apps already get the full `PATH`.
 
 If a plugin isn't found, the cluster shows **Credentials failed**, with the message: *The credential plugin "gke-gcloud-auth-plugin" wasn't found. Install it, or make sure it's on your PATH.*
 
@@ -56,6 +56,20 @@ clusters:
 ```
 
 Without it, the cluster shows **Plain HTTP blocked**.
+
+### Behind a proxy
+
+Lumovi reaches your clusters through the proxy your shell uses, from `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY`, as `kubectl` does. A cluster with a `proxy-url` in your kubeconfig goes through that one instead:
+
+```yaml ~/.kube/config
+clusters:
+  - name: production
+    cluster:
+      server: https://api.prod.example.com:6443
+      proxy-url: http://proxy.corp.example.com:3128
+```
+
+See [Proxies and certificates on your computer](/desktop/network).
 
 ## The start screen
 
@@ -82,7 +96,7 @@ The label says what kind of problem it is. Hover it for the full message. If you
 | --- | --- | --- |
 | **Unreachable** | Can't reach the cluster. | Check that the API server is running and reachable from this machine. A VPN or tunnel may be required. |
 | **Timed out** | The cluster isn't responding. | The API server accepted the connection but didn't answer within 20 seconds. Set `LUMOVI_REQUEST_TIMEOUT_MS` for a slow one. |
-| **Certificate error** | The cluster's certificate couldn't be verified. | The certificate authority in your kubeconfig doesn't match the API server. |
+| **Certificate error** | The cluster's certificate couldn't be verified. | Hover the label for which: not signed by the certificate authority in your kubeconfig, expired, or for another name. Behind a proxy that inspects HTTPS, see [Proxies and certificates](/desktop/network#when-it-doesn’t-connect). |
 | **Plain HTTP blocked** | Plain HTTP isn't allowed. | Set `insecure-skip-tls-verify: true` on the cluster, as above. |
 | **Credentials failed** | Couldn't get credentials. | The credential plugin for this context failed. Make sure it's installed and that you're logged in. |
 | **Unauthorized** | Your credentials were rejected. | The token or certificate may have expired. Sign in again, then retry. |

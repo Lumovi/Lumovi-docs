@@ -1,0 +1,72 @@
+---
+title: "Proxies and certificates on your computer"
+sidebarTitle: "Proxy and certificates"
+description: "The desktop app goes through the proxy your shell uses, and trusts the certificate authorities your computer does, as kubectl and helm would."
+icon: "waypoints"
+---
+
+Behind a company's proxy, the desktop app connects the way `kubectl` and `helm` do in your terminal: through the proxy in `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY`, trusting the certificate authorities your computer trusts. Usually there's nothing to set.
+
+## The proxy
+
+On macOS and Linux, apps opened from the Dock or a launcher don't get what your shell profile sets. So as Lumovi starts, it asks your login shell for its proxy, as it asks for its `PATH`: `HTTPS_PROXY`, `HTTP_PROXY` and `NO_PROXY`, each in upper case or lower case. A variable already set where Lumovi starts, from `launchctl setenv` or a terminal, is kept. On Windows, apps get your account's environment variables: set them as in [Setting environment variables](/reference/environment-variables#setting-them).
+
+Your organization can set the proxy for every Lumovi on its computers instead, in its [policy](/desktop/policy#network): that one is used, whatever your shell says.
+
+`HTTPS_PROXY` is for `https` addresses, and `HTTP_PROXY` for `http` ones (upper case first, when both are set). A proxy without a scheme, like `proxy.corp.example.com:3128`, is taken as `http://`, as curl takes it; one that isn't a URL at all is left out, and Lumovi says so as it starts, in a notice titled "Lumovi started without something it was given". Through it go:
+
+- **Your clusters**, unless the cluster names a proxy of its own, with `proxy-url` in your kubeconfig: that one is used instead, as `kubectl` would. A `proxy-url` can be an `http`, `https` or `socks5` proxy.
+- **Helm**: Artifact Hub, and the repositories whose charts Lumovi lists. The `helm` it runs, and your credential plugins, get the same variables.
+
+Never through it:
+
+- **This computer**: `localhost`, `127.0.0.1` and `::1` (`[::1]`), where your [port forwards](/debug/port-forwarding) and [AI assistants](/assistants/overview) are, whatever `NO_PROXY` says. Other addresses in `127.0.0.0/8` aren't left out unless `NO_PROXY` names them.
+- **What `NO_PROXY` leaves out**, a list separated by commas or spaces, read the same way for everything Lumovi connects to:
+
+| Entry | Leaves out |
+| --- | --- |
+| `*` | Everything: no proxy at all. |
+| `corp.example.com`, `.corp.example.com` or `*.corp.example.com` | That name, and every name under it, whatever its case. |
+| `10.1.2.3`, `fd00::1` | That address, and no other: ranges, like `10.0.0.0/8`, aren't read. |
+| `api.corp.example.com:6443`, `[fd00::1]:6443` | That name or address, on that port only. |
+
+Looking for new versions of Lumovi is different: it goes through the proxy your system's network settings name, as a browser does (a PAC file too), not your shell's. Where your organization's [policy](/desktop/policy#network) names a proxy, it goes through that one, unless the policy's `noProxy` is `*`. It trusts your system's certificates either way, not the policy's `caFiles`.
+
+A proxy that wants credentials takes them in its URL: `http://user:password@proxy.corp.example.com:3128`. Lumovi leaves them out of what it says. The policy's proxy gets its credentials only when it asks for them itself, at its own address and port: never another proxy, or a site, that asks.
+
+## Certificate authorities
+
+A proxy that inspects HTTPS signs what it passes on with a certificate authority of your company's, which IT installs on your computer. Lumovi trusts what your computer trusts, besides the public authorities it comes with:
+
+- **macOS**: the certificates trusted in **Keychain Access**.
+- **Windows**: the certificate store.
+- **Linux**: the system's certificates, like `/etc/ssl/certs`.
+
+Your organization's [policy](/desktop/policy#network) can name more, in files.
+
+A cluster is different: your kubeconfig's `certificate-authority` (or `-data`) is the only one its connection trusts, as with `kubectl`.
+
+`helm` and credential plugins check certificates themselves, most of them against the system's certificates. When the policy names certificate authorities, Lumovi gives them `SSL_CERT_FILE` too, a file with all it trusts, which Go programs like `helm` read on Linux. On macOS and Windows, they read only the system's: install the authority there.
+
+## When it doesn't connect
+
+A cluster that can't be reached shows why on the start screen: hover its label. For a certificate, the label is **Certificate error**, and it says which:
+
+| It says | Why |
+| --- | --- |
+| "Its certificate isn't signed by a certificate authority Lumovi trusts (…). Behind a proxy that inspects HTTPS, its certificate authority must be trusted: …" | The cluster's certificate isn't signed by the authority in your kubeconfig. A proxy that inspects the connection signs it with its own: ask for the cluster to be left uninspected, or put that authority in your kubeconfig. |
+| "Its certificate has expired (…)." | The cluster's certificate, or the proxy's, is past its date. |
+| "Its certificate is for another name (…)." | The address in your kubeconfig isn't one the certificate names. `tls-server-name` on the cluster can name the one it does. |
+
+A proxy that refuses the connection shows as **Unreachable**, saying so: "The proxy needs credentials (407): give them in its URL, as `http://user:password@host:port`.", or "The proxy didn't open a tunnel (it answered 403)." when it won't let the connection through.
+
+Helm says the same of Artifact Hub and chart repositories, after `Couldn't reach` and the address.
+
+<Columns cols={2}>
+  <Card title="Connecting clusters" icon="plug" href="/clusters/connect">
+    Where clusters come from, and what each status means.
+  </Card>
+  <Card title="Policy for your organization" icon="building-2" href="/desktop/policy">
+    The proxy, certificates and more, set by IT for every computer.
+  </Card>
+</Columns>

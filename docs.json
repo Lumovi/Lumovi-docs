@@ -165,6 +165,13 @@
               "audit/verify",
               "audit/events"
             ]
+          },
+          {
+            "group": "Desktop app",
+            "pages": [
+              "desktop/network",
+              "desktop/policy"
+            ]
           }
         ]
       },
