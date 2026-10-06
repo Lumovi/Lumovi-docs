@@ -39,6 +39,7 @@ Each kind gets the tabs that make sense for it:
 | A view's lists | Custom kinds whose view relates other objects to them: a tab for each, like a node pool's **Nodes** or a Kafka cluster's **Topics** |
 | **Map** | Everything but events and namespaces |
 | **Events** | Everything but events |
+| **Audit** | Everything |
 | **YAML** | Everything |
 
 ### Overview
@@ -82,6 +83,10 @@ How the object is connected: above it, what leads to it, like the ingress, servi
 ### Events
 
 The events about this object, newest first. Often the quickest answer to "why won't it start?"
+
+### Audit
+
+Who changed the object through Lumovi, read it, or opened a shell in it, and how it went, from the [audit log](/audit/overview): its 50 latest events, newest first, and new ones as they happen. On a server, you see your own, unless you're one of its auditors. **Open in the audit log** shows them all, as far back as the log keeps. See [An object's Audit tab](/audit/overview#an-objects-audit-tab).
 
 ### YAML
 

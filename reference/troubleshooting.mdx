@@ -257,6 +257,30 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   </Accordion>
 </AccordionGroup>
 
+## The audit log
+
+<AccordionGroup>
+  <Accordion title="I see only my own events" icon="user">
+    On a server, the [audit log](/audit/overview) shows you what you did, and what your assistants did as you. Its auditors see everyone's, and only they have **Who** and **Check integrity**. The page says which you are. The administrator names auditors: see [Auditors](/server/audit-log#auditors).
+  </Accordion>
+  <Accordion title="Check integrity says the log doesn't hold" icon="shield-x">
+    It lists each place an event doesn't follow from the one before it, and why. Two can happen with nothing changed: a line left unfinished as the computer or pod stopped, and an event the history couldn't keep, which an **Audit events lost** event explains. See [Check it hasn't changed](/audit/verify#on-the-page).
+  </Accordion>
+  <Accordion title="Lumovi looked through the most recent events" icon="search">
+    A search that has looked through many events without filling the list stops, so a filter that matches few doesn't keep the page waiting. **Look further back** goes on from there.
+
+    Every line read counts. An auditor reads how many it looked through; anyone else, "Lumovi looked as far back as one search goes." Choosing how far back makes each search shorter.
+  </Accordion>
+  <Accordion title="An export has fewer events than I expected" icon="download">
+    An export holds what the search and filters find, in the time they cover, up to 50,000 events: the most recent, when there are more. Its notification says so. Export a shorter time at once, and the rest after.
+  </Accordion>
+  <Accordion title="Audit events couldn't be kept or sent" icon="triangle-alert">
+    On a server, its auditors see it at the top of the **Audit log** page, and the server's log says so too. See [When events are lost](/server/audit-log#when-events-are-lost).
+
+    What was let go, and why, is in the server's log and in an **Audit events lost** event, every minute and as Lumovi stops.
+  </Accordion>
+</AccordionGroup>
+
 ## Installing
 
 <AccordionGroup>
@@ -282,6 +306,12 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     ```
 
     Lumovi also checks each connection every 30 seconds (`LUMOVI_HEARTBEAT_SECONDS`). Keep that shorter than the idle timeouts of the proxies in between. See [Address and ingress](/server/expose).
+  </Accordion>
+  <Accordion title="Lumovi's pod is Pending" icon="hard-drive">
+    The chart keeps the [audit log](/server/audit-log) on a volume, from the cluster's default storage class. Without a default, the volume's claim waits, and so does the pod. Set `audit.persistence.storageClass`, or `audit.persistence.enabled: false`. See [Where it's kept](/server/audit-log#where-its-kept).
+  </Accordion>
+  <Accordion title="Another Lumovi keeps its audit history there" icon="lock">
+    Two Lumovis were given one audit folder: the second waits for the first to let go, about 40 seconds at most, then doesn't start. Run one, or give each a folder of its own. See [Where it's kept](/server/audit-log#where-its-kept).
   </Accordion>
   <Accordion title="Everyone was signed out" icon="log-out">
     Sessions live in Lumovi's memory, so restarting it, as an upgrade does, signs everyone out, and their [AI assistants](/assistants/server) too. With single sign-on, signing in again is a click. Sessions also end after 12 hours, unless you set it otherwise. See [Upgrading](/server/upgrade).

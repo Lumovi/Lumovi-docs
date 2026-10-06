@@ -64,12 +64,13 @@ See [Config and storage](/explore/config-and-storage) for how Secrets are shown 
 
 ## What it keeps on your computer
 
-The desktop app keeps two kinds of things on your computer, and none of it leaves it:
+The desktop app keeps three kinds of things on your computer, and none of it leaves it:
 
 - **Settings**, in `settings.json`: your theme, the window's size and place, which clusters you made read-only, where each one's usage history comes from, the namespace and image of its [node shells](/debug/node-shell), and whether Lumovi looks for new versions by itself. For [AI assistants](/assistants/overview): whether they may connect, the port and the token, [what they may do](/assistants/permissions), and how Lumovi was last started, for Claude Desktop to start it the same way. On macOS and Linux, only your account can read `settings.json`: Lumovi sets that each time it writes the file.
+- **The [audit log](/audit/overview)**, in the `audit` folder: what was done through Lumovi, a file a day (`audit-2026-10-06.jsonl`), each kept for 90 days. Each event names your computer's account, the kubeconfig user Lumovi used, the cluster, the object and the command: never a Secret's values, what a change set, Helm values, or tokens. On macOS and Linux, only your account can read the folder and its files: Lumovi makes them so as it starts. If the folder can't be used, it keeps the log in memory until it quits, and the **Audit log** page says why.
 - **Conveniences** the page remembers: the namespace you picked per cluster, your recent clusters, the kinds you pinned to the sidebar and the custom resources you opened last, the detail panel's width, the terminal dock's height, the time range metrics charts open with, and which chart on your computer each Helm release was last deployed from.
 
-Both live in Lumovi's folder for app data:
+They live in Lumovi's folder for app data:
 
 | System | Folder |
 | --- | --- |
@@ -81,13 +82,13 @@ Lumovi also reads your own [views](/custom-resources/write-a-view) from `~/.lumo
 
 Each [terminal](/debug/terminal) gets a small kubeconfig, in a folder of its own in the system's temporary folder, named `lumovi-terminal-`, the app's process ID, and six random characters. It holds the context's name, its cluster's and user's names, and the namespace: no addresses, and no credentials. On macOS and Linux, only you can read it. Lumovi deletes it when the terminal's shell ends: when the shell exits, when you close its tab, and when you quit. If Lumovi doesn't get to quit, because it crashed or was killed, it deletes what's left the next time it starts.
 
-The [activity log](/changes/undo-and-activity) of the changes you made lives in memory, and is gone when you quit.
+The [activity log](/changes/undo-and-activity) of the changes you made lives in memory, and is gone when you quit. The audit log is what stays.
 
 Lumovi changes another app's files in one case: **Add to Claude Desktop** adds Lumovi to Claude Desktop's settings, `claude_desktop_config.json`, or updates its entry there, and leaves the rest of the file as it was. It writes the file whole, through a copy it puts in its place, so it's never left half-written. When Claude Desktop then starts Lumovi to talk to it, that Lumovi keeps what it needs in a folder of its own, `lumovi-mcp-stdio`, in the system's temporary folder. See [Connect an assistant](/assistants/overview#connect-an-assistant).
 
 ## In your cluster
 
-When Lumovi runs in a cluster for a team, people sign in, and it acts with their own permissions. That has its own model: how sign-in works, what its service account may do, and how to keep it locked down. See [Security](/server/security). AI assistants sign in to it through Lumovi too, with tokens it keeps in memory: see [AI assistants for your team](/server/assistants#security).
+When Lumovi runs in a cluster for a team, people sign in, and it acts with their own permissions. That has its own model: how sign-in works, what its service account may do, and how to keep it locked down. See [Security](/server/security). It keeps an audit log for the team, on a volume, which its auditors read: see [Audit log for your team](/server/audit-log). AI assistants sign in to it through Lumovi too, with tokens it keeps in memory: see [AI assistants for your team](/server/assistants#security).
 
 A [fleet](/server/fleet)'s Lumovi, for many clusters, also holds credentials for each of them, which should allow nothing but impersonating people, and clusters it can't reach connect to it through their agents. See [the fleet's security](/server/fleet#security).
 

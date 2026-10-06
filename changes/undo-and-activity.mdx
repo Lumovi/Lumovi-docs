@@ -47,15 +47,15 @@ Each entry shows:
 - **Who asked**, for a change an [AI assistant](/assistants/overview) asked for: "via Claude Code", or "rejected, asked by Claude Code" for one you rejected, with the note you wrote.
 - **The kubectl command** that does the same thing, with **Copy command**.
 
-The log covers actions, YAML edits, objects created from YAML, changes to several objects at once, right-sizing, undos and Helm changes. **Clear** empties it.
+The log covers actions, YAML edits, objects created from YAML, changes to several objects at once, right-sizing, undos and Helm changes. **Clear** empties it. At its bottom, **Everything done through Lumovi, kept: the audit log** opens the [audit log](/audit/overview).
 
 <Note>
-  The log lives only as long as the session: it's empty again when you restart Lumovi, or reload the page when it runs in your cluster. For a lasting record of who changed what, use the cluster's audit log.
+  The log lives only as long as the session: it's empty again when you restart Lumovi, or reload the page when it runs in your cluster. For a lasting record of who changed what, through Lumovi, see the [audit log](/audit/overview).
 </Note>
 
 ### Changes AI assistants asked for
 
-A change an [AI assistant](/assistants/overview) asked for gets a line too, once it's over: made after you approved it, or failed, also when it would no longer have done what you saw; made without asking, where your [permissions](/assistants/permissions) allow that; or rejected. Its notification says whose it was: "As Claude Code asked, in demo." Changes nobody approved in time, and ones the assistant withdrew, have only a notification. In the cluster's audit log, they're yours: Lumovi makes them with your credentials. On a [server](/assistants/server), each of your open pages gets the line, and the server's log records it too. The **AI assistants** page's **Activity** tab lists only these. See [Approving changes](/assistants/approvals).
+A change an [AI assistant](/assistants/overview) asked for gets a line too, once it's over: made after you approved it, or failed, also when it would no longer have done what you saw; made without asking, where your [permissions](/assistants/permissions) allow that; or rejected. Its notification says whose it was: "As Claude Code asked, in demo." Changes nobody approved in time, and ones the assistant withdrew, have only a notification. In the cluster's own audit log, they're yours: Lumovi makes them with your credentials. Lumovi's [audit log](/audit/overview#ai-assistants-changes) records them as yours, through the assistant, with your answer: who approved, how long it waited, your note, or that it was made without asking. On a [server](/assistants/server), each of your open pages gets the line, and the server's log records it too. The **AI assistants** page's **Activity** tab lists only these. See [Approving changes](/assistants/approvals).
 
 <Columns cols={2}>
   <Card title="Changing things safely" icon="shield-check" href="/changes/safely">

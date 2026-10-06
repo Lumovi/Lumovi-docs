@@ -135,6 +135,7 @@ Changes made [without asking](#changes-they-ask-for) are made right after their 
 
 - **A notification** says what was done: **Scaled storefront to 5 replicas**, "As Claude Code asked, in demo." There's no **Undo**: ask the assistant, or change it back yourself. If the change wasn't made, or failed, the notification says so, like **Scale Deployment cart to 3 replicas failed**, with the reason, and the assistant is told too.
 - **The Activity log** has a line for it, with "via Claude Code", the command and whether it worked. A change you rejected is there too, as **Rejected**, with "rejected, asked by Claude Code" and your note. Changes that weren't approved in time, or were withdrawn, aren't. See [Undo and activity](/changes/undo-and-activity#the-activity-log).
+- **The [audit log](/audit/overview#ai-assistants-changes)** keeps it: as yours, through the assistant, with your answer, who gave it and how long it waited, and your note. Changes nobody answered in time, or the assistant withdrew, are there too, as **Cancelled**.
 - **Lists and details** refresh, then again a moment later, once the cluster's controllers have acted.
 
 ## Changes they ask for

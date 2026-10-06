@@ -50,13 +50,16 @@ icon: "circle-question-mark"
     No. It reads your kubeconfig and never writes to it. Managing kubeconfig files, like adding contexts or signing in to cloud providers, is deliberately left to the tools made for it.
   </Accordion>
   <Accordion title="Does it collect any data?">
-    No. There's no telemetry and no account. The desktop app talks to your clusters, and to a few other places only when you use what needs them, like update checks and chart search. See [Privacy and security](/reference/privacy-and-security) for the full list.
+    No. There's no telemetry and no account. Its [audit log](/audit/overview) stays on your computer. The desktop app talks to your clusters, and to a few other places only when you use what needs them, like update checks and chart search. See [Privacy and security](/reference/privacy-and-security) for the full list.
   </Accordion>
   <Accordion title="Can I use it without an internet connection?">
     Lumovi needs to reach your clusters, and nothing else. Without the internet, everything works except looking for new versions, searching Artifact Hub, and fetching charts from public repositories.
   </Accordion>
   <Accordion title="Can it change things by accident?">
     It's built not to. Changes are always explicit: an action, a dialog that names the cluster and shows the command, and a confirmation. Destructive dialogs start on **Cancel**, and risky deletes, or anything in a cluster named like production, ask you to type the name first. For a cluster you only want to look at, turn on [read-only mode](/changes/read-only). See [Changing things safely](/changes/safely).
+  </Accordion>
+  <Accordion title="Does Lumovi keep a record of what's done?">
+    Yes: an [audit log](/audit/overview) of what was done through Lumovi, by whom, from where, and how it went, with the `kubectl` command for each change and how each AI assistant's change was approved. Never Secrets' values or tokens. The desktop app keeps yours on your computer, for 90 days. Lumovi in your cluster keeps one for the team: people see their own events, its auditors see everyone's, and it can send them to your log collector or SIEM. Its events are chained, and Lumovi can [check](/audit/verify) them.
   </Accordion>
   <Accordion title="What permissions do I need?">
     Only what you want to do. Lumovi acts with your own credentials and RBAC, so a read-only `view` role is enough to look around. It asks the cluster what you may do before offering an action, and says why when you can't. See [Permissions](/clusters/permissions).

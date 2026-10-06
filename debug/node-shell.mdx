@@ -297,6 +297,8 @@ A read-only cluster turns shells off, on nodes too. The **Shell** tab says **She
   A shell on a node is root on that node, and so is a shell in its pod: it can read the node's files, the kubelet's credentials, and the Secrets and volumes of every pod on the node, and change all of them. Lumovi gives nobody more than their RBAC allows: whoever can open a node shell could create the same pod with `kubectl`. To keep people from it, let them create pods only in namespaces that don't allow privileged pods. See [Security in your cluster](/server/security#shells-on-nodes).
 </Warning>
 
+The [audit log](/audit/overview) records each node shell opened and closed, as root or in a pod, with the pod Lumovi started for it and how long it ran: not what was typed.
+
 <Columns cols={2}>
   <Card title="Shells and debugging" icon="square-terminal" href="/debug/shell">
     A shell in a container, or a debug container with tools.
