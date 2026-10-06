@@ -72,6 +72,10 @@ If a release is managed by [Flux](https://fluxcd.io)'s helm-controller, Lumovi s
 
 Helm 3 and 4 keep each revision of a release in a Secret labeled `owner=helm` (or a ConfigMap, with Helm's `configmap` storage driver). Lumovi reads both. If your account can't list Secrets, the page says so instead of showing an empty list.
 
+<Note>
+  **In your cluster:** a release's values and manifests can hold Secrets, so where your [access](/clusters/your-access) doesn't show you Secrets' values, its **Resources**, **Values**, **Manifest** and **History** say **Its values and manifests are hidden**, and why: your access shows only their keys there, or hides them. The server never sends them.
+</Note>
+
 <Columns cols={2}>
   <Card title="Upgrade and roll back" icon="history" href="/helm/upgrade-and-rollback">
     New values or a new chart, reviewed as a dry run first.

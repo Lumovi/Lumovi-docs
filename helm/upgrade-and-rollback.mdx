@@ -101,6 +101,10 @@ Each command is pointed at the cluster you're looking at with `--kube-context`, 
 
 A cluster you made [read-only](/changes/read-only) can't be changed with Helm either: a release's buttons are disabled with "Changes are turned off for this cluster." The app itself refuses the change, not just its buttons, so **Install chart**, which stays enabled, shows that the cluster is read-only when you choose **Review**.
 
+<Note>
+  **In your cluster:** your [access](/clusters/your-access) decides too. **Upgrade…** and **Roll back…** need **Upgrade, roll back** in the release's namespace, and **Uninstall…** needs **Install, uninstall**, each with **Make changes**. Upgrading also needs Secrets' **Values** there: it starts from the values the release has. Where you may not, the button is disabled, saying why.
+</Note>
+
 <Columns cols={2}>
   <Card title="Charts on your computer" icon="folder-code" href="/helm/local-charts">
     Upgrade from the chart you're working on, checked with helm lint.

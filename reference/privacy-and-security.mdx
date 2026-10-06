@@ -88,7 +88,7 @@ Lumovi changes another app's files in one case: **Add to Claude Desktop** adds L
 
 ## In your cluster
 
-When Lumovi runs in a cluster for a team, people sign in, and it acts with their own permissions. That has its own model: how sign-in works, what its service account may do, and how to keep it locked down. See [Security](/server/security). It keeps an audit log for the team, on a volume, which its auditors read: see [Audit log for your team](/server/audit-log). AI assistants sign in to it through Lumovi too, with tokens it keeps in memory: see [AI assistants for your team](/server/assistants#security).
+When Lumovi runs in a cluster for a team, people sign in, and it acts with their own permissions. That has its own model: how sign-in works, what its service account may do, and how to keep it locked down. See [Security](/server/security). It keeps an audit log for the team, on a volume, which its auditors read: see [Audit log for your team](/server/audit-log). Its admins can let people do less through it than their RBAC allows: see [Access for your team](/server/access). AI assistants sign in to it through Lumovi too, with tokens it keeps in memory: see [AI assistants for your team](/server/assistants#security).
 
 A [fleet](/server/fleet)'s Lumovi, for many clusters, also holds credentials for each of them, which should allow nothing but impersonating people, and clusters it can't reach connect to it through their agents. See [the fleet's security](/server/fleet#security).
 
