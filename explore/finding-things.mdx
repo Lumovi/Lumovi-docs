@@ -24,13 +24,13 @@ Results come in groups:
 | **Go to** | Every view: the overview, Workloads, Metrics and [Right-sizing](/metrics/right-sizing), Helm releases, API resources, the page of each [add-on](/custom-resources/add-ons) the cluster has (marked **Add-on**), and every kind the cluster serves, found by name, kind, short name or API group. Custom resources included. |
 | **Namespace** | **All namespaces**, and every namespace. |
 | **Clusters** | Every cluster in your kubeconfig, and **All clusters**. When Lumovi runs in your cluster, only in a [fleet](/clusters/fleet): every cluster you may see, and **All clusters**, the fleet's page of clusters. |
-| **Help & appearance** | **Create from YAML**, **New terminal** (in the desktop app), **Metrics source…**, **AI assistants…** (in the desktop app), **Keyboard shortcuts**, **Use system theme**, **Use light theme**, **Use dark theme**, and **Make** _cluster_ **read-only** or **Allow changes to** _cluster_. The last one isn't there when `LUMOVI_READ_ONLY` makes every cluster read-only. |
+| **Help & appearance** | **Create from YAML**, **New terminal** (in the desktop app), **Metrics source…**, **AI assistants…**, **Keyboard shortcuts**, **Use system theme**, **Use light theme**, **Use dark theme**, and **Make** _cluster_ **read-only** or **Allow changes to** _cluster_. The last one isn't there when `LUMOVI_READ_ONLY` makes every cluster read-only. |
 
 Move with <kbd>↑</kbd> <kbd>↓</kbd>, press <kbd>↵</kbd> to pick, and <kbd>Esc</kbd> to close.
 
 **New terminal** opens a [terminal](/debug/terminal) in the dock at the bottom of the page: your own shell, with kubectl pointed at the cluster you're in and its namespace. The palette shows its key, <kbd>⌃</kbd><kbd>⇧</kbd><kbd>&#96;</kbd>, which works anywhere in a cluster. Typing `kubectl` or `shell` finds it too.
 
-**AI assistants…** opens the settings for [AI assistants](/assistants/overview): turn them on, connect one, and choose what each cluster lets them change. Typing `mcp`, `claude` or `cursor` finds it too.
+**AI assistants…** opens the settings for [AI assistants](/assistants/overview): in the desktop app, turn them on, connect one, and choose what each cluster lets them change; on a [server](/assistants/server), connect one, see the ones you allowed, and what the administrator lets them change. Typing `mcp`, `claude` or `cursor` finds it too.
 
 <Tip>
   Some views answer to other words too: `prometheus` or `usage history` finds Metrics, `recommendations` or `over-provisioned` finds Right-sizing, `charts` finds Helm releases, and `crds` finds API resources.
@@ -53,7 +53,7 @@ From top to bottom, the sidebar has:
 - **Add-ons**: a page for each of the other tools the cluster runs, like **Argo CD**, **cert-manager** or **Karpenter**.
 - **Custom resources**: the custom kinds you opened last in this cluster (up to five), then **API resources**, with how many custom kinds the cluster serves. Kinds you pinned, and kinds that belong to an add-on, aren't repeated here.
 
-At the bottom are the theme, **AI assistants** in the desktop app (the sparkles, with a green dot while an [assistant](/assistants/overview) is connected), your account when Lumovi runs [in your cluster](/server/overview), a link to Lumovi on GitHub, and the version you're running.
+At the bottom are the theme, **AI assistants** (the sparkles, with a green dot while an [assistant](/assistants/overview) is connected; on a server, unless its administrator turned them off), your account when Lumovi runs [in your cluster](/server/overview), a link to Lumovi on GitHub, and the version you're running.
 
 ReplicaSets and Autoscalers have lists of their own, but no place in the sidebar: find them with <kbd>⌘</kbd><kbd>K</kbd>.
 

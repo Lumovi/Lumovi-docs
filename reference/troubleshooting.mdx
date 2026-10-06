@@ -224,18 +224,34 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     Some changes are refused before you're asked. Only the assistant is told why:
 
     - **… wouldn't work: ….** The cluster refused the dry run: your account can't make the change, the cluster is [read-only](/changes/read-only), or the object isn't valid. The rest of the message is the cluster's.
-    - **Lumovi doesn't let AI assistants change …: its AI assistants settings say "Never".** Choose **Ask** for the cluster under **Changes they ask for**, if you'd rather be asked.
+    - **Lumovi doesn't let AI assistants change …: its AI assistants settings say "Never".** Choose **Ask** for the cluster under **Changes they ask for**, if you'd rather be asked. On a server, its administrator sets it.
 
     Lumovi tells you about the others too:
 
     - **Not approved in time.** Nobody answered within five minutes.
-    - **… withdrew a change.** The assistant gave up on a call that was waiting for the change: it was stopped, or it ended its session, or you turned assistants off. Ask it again.
+    - **… withdrew a change.** The assistant gave up on a call that was waiting for the change: it was stopped, or it ended its session, or you turned assistants off. On a server, also when you disconnected it, or your session ended. Ask it again.
     - **… wasn't made: … changed after it was shown (…).** You approved it, but it would no longer do what the diff showed: the object changed meanwhile, or, for a deletion, it's another object under the same name. Lumovi tells the assistant to ask again, so you see it as it is now.
     - **… failed: ….** You approved it, but the cluster refused it then: the object is gone, say. The rest of the message is the cluster's.
 
     **Still waiting for the person's answer in Lumovi** isn't an error: the call stopped waiting after about 50 seconds, and the change still waits for you. The assistant calls `wait_for_change` to hear how it went. That says **No change with id … is waiting** when the change was answered a while ago, or never asked for.
 
     See [Approving changes](/assistants/approvals).
+  </Accordion>
+  <Accordion title="An assistant can't sign in to your team's Lumovi" icon="log-in">
+    On a [Lumovi server](/assistants/server), an assistant signs in through Lumovi, in your browser. Its first try is answered **Sign in to Lumovi.**: that's how it learns where to sign in, and it opens Lumovi for you to allow it.
+
+    If the page for allowing it says "This request to allow an assistant can't be answered:", the rest says why:
+
+    - **It doesn't say which assistant it is.** or **It goes back somewhere the assistant didn't name.** The request didn't come from the assistant as it registered. Start again from the assistant.
+    - **It's for …, not Lumovi's ….** The assistant was set up with another address. Set it up again with the one the **AI assistants** dialog shows.
+    - **Allow assistants from Lumovi's own page.** Lumovi doesn't recognize the address the page was opened at as its own: the administrator should set `url`.
+    - **This server's administrator has turned AI assistants off.** So does the **AI assistants** dialog.
+
+    An assistant that can't register at all hears **redirect_uris must go back to this computer (http://localhost), to an app (its own scheme), or to a site this server allows (LUMOVI_ASSISTANT_REDIRECT_HOSTS).** It wants to be sent back to a site the server doesn't name. Claude Code, Cursor and VS Code don't: for another assistant, ask the administrator.
+
+    If the assistant can't find where to sign in at all, the server is below a path whose addresses for signing in don't reach Lumovi, or a proxy in front of it asks the assistant to sign in to it. See [AI assistants for your team](/server/assistants#troubleshooting).
+
+    An assistant you allowed has to sign in again when you sign out, your session ends, or Lumovi restarts, and when Lumovi let it go because a token it had used already came back.
   </Accordion>
 </AccordionGroup>
 
@@ -266,7 +282,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     Lumovi also checks each connection every 30 seconds (`LUMOVI_HEARTBEAT_SECONDS`). Keep that shorter than the idle timeouts of the proxies in between. See [Address and ingress](/server/expose).
   </Accordion>
   <Accordion title="Everyone was signed out" icon="log-out">
-    Sessions live in Lumovi's memory, so restarting it, as an upgrade does, signs everyone out. With single sign-on, signing in again is a click. Sessions also end after 12 hours, unless you set it otherwise. See [Upgrading](/server/upgrade).
+    Sessions live in Lumovi's memory, so restarting it, as an upgrade does, signs everyone out, and their [AI assistants](/assistants/server) too. With single sign-on, signing in again is a click. Sessions also end after 12 hours, unless you set it otherwise. See [Upgrading](/server/upgrade).
   </Accordion>
   <Accordion title="The cluster doesn't accept this token" icon="key-round">
     The token is wrong, expired or revoked. Create a new one, for example `kubectl create token NAME --namespace NAMESPACE`. Lumovi asks the cluster who a token belongs to with a SelfSubjectReview, which needs Kubernetes 1.28 or later. See [Tokens](/server/auth/tokens).

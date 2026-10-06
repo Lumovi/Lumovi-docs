@@ -50,7 +50,7 @@ Changes you write yourself are checked by the API server before anything is save
 - **New objects** from **Create from YAML** are all dry-run first. If any of them is refused, none is created. See [Create from YAML](/changes/create).
 - **Helm upgrades and installs** run as `helm … --dry-run=server` first, and show what the manifest would change. See [Upgrade and roll back](/helm/upgrade-and-rollback).
 - **Right-sizing recommendations** are checked as a server-side dry run, so quotas, LimitRanges and webhooks have their say, before **Apply** is enabled. See [Right-sizing](/metrics/right-sizing).
-- **Changes AI assistants ask for**, in the desktop app, are dry-run first, then wait in Lumovi, with their diff and their command, for you to approve. Approved, they're made only if they still do what you saw. See [Approving changes](/assistants/approvals).
+- **Changes AI assistants ask for** are dry-run first, then wait in Lumovi, with their diff and their command, for you to approve. Approved, they're made only if they still do what you saw. See [Approving changes](/assistants/approvals).
 
 ## Changes made meanwhile are caught
 

@@ -96,7 +96,7 @@ A few notes:
 
 ## AI assistants
 
-In the desktop app, [AI assistants](/assistants/overview) use Lumovi with your credentials, like everything else in it. An assistant can read and change only what your account can, and Lumovi gives it nothing of its own.
+[AI assistants](/assistants/overview) use Lumovi with your credentials, like everything else in it: in the desktop app, your kubeconfig's; on a [server](/assistants/server), the ones you signed in with, so Lumovi impersonates you, or passes your own token on, as it does for your pages. An assistant can read and change only what your account can, and Lumovi gives it nothing of its own.
 
 Lumovi doesn't ask the cluster up front for an assistant. It sends each change as a dry run first, which the API server checks against your RBAC like the real change, so one your account can't make fails there, before you're asked. Reading something you may not read fails the same way, and the assistant is told why. Once you approve a change, other than a deletion, it's tried as a dry run again, with the same permissions.
 

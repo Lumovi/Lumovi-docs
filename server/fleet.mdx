@@ -290,6 +290,10 @@ Fleet: Two clusters are called staging: the one from Secret lumovi/staging is le
 
 `LUMOVI_FLEET_KUBECONFIG` comes first, then the cluster Lumovi runs in, the files in `LUMOVI_FLEET_KUBECONFIG_FILE`, Secrets, and agents last.
 
+## AI assistants
+
+People's [AI assistants](/assistants/server) sign in to the fleet's Lumovi, and act as them in every cluster they may see, as Lumovi does for them. Give some clusters a rule of their own for what assistants' changes do, by the clusters' names, like `ask,staging=allow,production=never`. See [AI assistants for your team](/server/assistants#in-a-fleet).
+
 ## Helm
 
 Helm runs on Lumovi's machine, with the helm in Lumovi's image, once for each change. Each run gets a kubeconfig of its own for the cluster it changes, acting as the person who made it there: impersonating them with Lumovi's credentials for that cluster, or with their own token where the cluster takes it. For a cluster behind an agent, Lumovi opens a port on `127.0.0.1` that leads through the agent while helm runs, and closes it after.
