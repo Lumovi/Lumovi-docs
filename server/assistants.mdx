@@ -28,6 +28,23 @@ What people see and do is on [AI assistants on a server](/assistants/server). Th
 
 Off, `mcp`, the OAuth endpoints and the addresses where assistants look for how to sign in answer `404`, with "This server's administrator has turned AI assistants off." The page for allowing an assistant says the same, and so does the **AI assistants** page, while the sidebar has no button for it. `LUMOVI_ASSISTANTS` is `on` or `off`: anything else stops Lumovi, saying `LUMOVI_ASSISTANTS must be on or off, not "maybe".`
 
+<Warning>
+  In Lumovi 1.5, once anyone has saved their AI rules on the **Permissions** tab, turning assistants off with `helm upgrade` deletes the `<release>-assistant-rules` ConfigMap, and everyone's rules with it. Uninstalling keeps it. Before you turn them off, copy the rules:
+
+  ```bash
+  kubectl get configmap <release>-assistant-rules -n <namespace> -o jsonpath='{.data.rules\.json}' > assistant-rules.json
+  ```
+
+  When you turn assistants on again, put them back before anyone saves new ones, and restart Lumovi, which reads them as it starts:
+
+  ```bash
+  kubectl create configmap <release>-assistant-rules -n <namespace> --from-file=rules.json=assistant-rules.json --dry-run=client -o yaml | kubectl apply -f -
+  kubectl rollout restart deployment/<release> -n <namespace>
+  ```
+
+  The next release fixes this.
+</Warning>
+
 ## Limits for everyone
 
 Each person says what their assistants may do, and where, on the **Permissions** tab of their **AI assistants** page: see [What assistants may do](/assistants/permissions). Your rules are limits on that, which nothing of theirs loosens. People see them first on the tab, locked, with **Set by your administrator**, and their assistants are told "this server's administrator says so" when one refuses them.
