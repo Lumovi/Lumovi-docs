@@ -7,6 +7,22 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 6, 2026" description="1.5.0" tags={["Desktop app", "In your cluster"]}>
+  ## What AI assistants may do, and where
+
+  You decide what your AI assistants see, change and read: everywhere, and differently in some clusters and namespaces.
+
+  - **A page of their own.** **AI assistants** opens a page, from the sidebar, the command palette or **View**, in place of its dialog: **Connect**, **Your assistants** (on a server), **Permissions**, and **Activity**, what they changed or asked to. See [AI assistants](/assistants/overview).
+  - **Five settings.** Visibility, Changes (**Without asking**, **Ask you**, **Never**), Secrets (**Values**, **Keys only**, **Hidden**), Env values (**Show**, **Hide sensitive**, **Hide all**) and Logs (**Read**, **Don't read**). By default, changes ask, Secrets show their keys only, and env values that look sensitive are hidden: by a word in their name, like `DB_PASSWORD` or `apiKey`, or a value that carries credentials, like a URL with a password or a token, or a webhook's address. See [What assistants may do](/assistants/permissions).
+  - **Rules for some clusters and namespaces**, by name, pattern (`tenant-*`) or label (`team=payments`), or leaving one out (`!kube-system`). Where they overlap, the strictest wins. A namespace a rule hides isn't there for assistants, and every refusal says which rule decided. A change to a cluster's own objects (nodes, CustomResourceDefinitions, cluster roles, webhooks…) can reach every namespace, so it's decided as the strictest of them all: not made where one is hidden, refused or hides its Secrets.
+  - **Checked as you go.** The tab counts what assistants see, change and read in every namespace, checks any one and says why, and shows what assistants are told as they start. Changes apply at once, to connected assistants too.
+  - **Without asking, carefully.** Deletions, changes that take fields over, and changes that make a workload read a Secret it didn't before still ask you, unless assistants may read Secrets' values there.
+  - **On a server**, each person's are kept on the server, the same in every browser: in a ConfigMap the Helm chart makes, a file under `LUMOVI_DATA_DIR`, or memory. Administrators set limits nobody's own loosen, with `assistants.rules` (`LUMOVI_ASSISTANT_RULES`), matching a cluster of its own by the labels in `clusterLabels` (`LUMOVI_CLUSTER_LABELS`). **Allow an AI assistant?** says what it will be able to do. See [AI assistants for your team](/server/assistants).
+  - **Changed: `assistants.changes` is a limit now.** `ask` and `never` cap what people choose, and `allow` leaves it to them. The chart no longer sets it, so after upgrading, people may let their assistants change things without asking, or read Secrets' values. To keep 1.4's limits, add `{ name: Limits, changes: ask, secrets: keys }` under `assistants.rules`: see [Upgrading](/server/upgrade). In the desktop app, each cluster's Ask, Allow or Never becomes a rule, and works as before.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.5.0)
+</Update>
+
 <Update label="October 6, 2026" description="1.4.0" tags={["In your cluster", "Desktop app"]}>
   ## AI assistants on your team's Lumovi
 
