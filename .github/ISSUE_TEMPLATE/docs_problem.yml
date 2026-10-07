@@ -21,4 +21,4 @@ body:
     attributes:
       label: Lumovi version
       description: If it's about how the app behaves.
-      placeholder: '1.11.0'
+      placeholder: '1.12.0'
