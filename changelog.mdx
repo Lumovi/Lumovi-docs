@@ -7,6 +7,22 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 7, 2026" description="1.11.0" tags={["In your cluster", "Desktop app"]}>
+  ## A cluster's settings are the server's
+
+  On your team's Lumovi, a cluster made read-only is read-only for everyone on the server, and their AI assistants.
+
+  - **Read-only, for everyone.** The cluster switcher says who turned it on, and when, and so does every change it turns off or the server refuses: "production is read-only for everyone on this server: jane@example.com made it so on 2026-10-07."
+  - **Where metrics come from, and where node shells run**, are the server's too, the same for everyone.
+  - **Lumovi's admins change them**, or anyone, where there are none. For everyone else, the switch and the dialogs say "Only Lumovi's admins change what's set for everyone on this server."
+  - **In the audit log:** `read-only.changed`, `metrics-source.changed` and `node-shell.changed`, attempts by those who may not included, as refused.
+  - **Kept across restarts** where the server keeps its state: the chart's `auth.keepSessions`, or `LUMOVI_DATA_DIR`. With more than one replica, a change reaches the others within 10 seconds.
+  - **In the desktop app**, they stay your own, and changing where a cluster's metrics come from is in its audit log too.
+  - See [Read-only mode](/changes/read-only#in-your-cluster).
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.11.0)
+</Update>
+
 <Update label="October 7, 2026" description="1.10.0" tags={["Desktop app", "In your cluster"]}>
   ## A signed Windows installer
 
