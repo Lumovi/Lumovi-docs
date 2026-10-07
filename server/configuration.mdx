@@ -11,7 +11,7 @@ Lumovi reads them when it starts, and checks most of them: one that doesn't make
 
 ## Set by the chart itself
 
-The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-it’s-kept), with `access.admins`, `LUMOVI_ACCESS_CONFIGMAP` to `<release>-access`, the ConfigMap it makes for [access](/server/access#where-it’s-kept), and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
+The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-it’s-kept), with `access.admins`, `LUMOVI_ACCESS_CONFIGMAP` to `<release>-access`, the ConfigMap it makes for [access](/server/access#where-it’s-kept), with `auth.keepSessions`, `LUMOVI_STATE_SECRET` to `<release>-state`, the Secret it makes to keep sessions across restarts, and `LUMOVI_STATE_KEY` from the Secret of the key they're sealed with, and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
 
 The chart puts `extraEnv` after its own variables. When two have the same name, Kubernetes uses the last, so a variable repeated in `extraEnv` wins over the chart's. For the ones above, that breaks Lumovi: it listens on a port nothing sends to, or reads files from a folder the chart doesn't mount. For the others, set the chart's value instead. The chart builds more than the variable on its values, like the permission to impersonate for `auth.mode`, or the probes and the ingress path for `basePath`, while a variable in `extraEnv` changes only Lumovi.
 
@@ -159,6 +159,16 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   How long sessions last, in hours: more than 0, at most 168, a week. Behind a proxy, also how long an [AI assistant](/server/assistants) someone allows acts as them.
 </ResponseField>
 
+<ResponseField name="LUMOVI_STATE_SECRET" type="string">
+  A Secret in the namespace Lumovi runs in, where it keeps sessions, the AI assistants people allowed, and what each person made read-only for themselves, so a restart signs nobody out: see [Across restarts](/server/security#across-restarts). The chart sets it to `<release>-state`, which it makes, with `auth.keepSessions`. Lumovi needs `get` and `patch` on it. Lumovi must run in a cluster for it: outside one, it doesn't start, saying `LUMOVI_STATE_SECRET keeps who’s signed in in the cluster Lumovi runs in, and it isn’t running in one (KUBERNETES_SERVICE_HOST isn’t set).` Nor does it start without `LUMOVI_STATE_KEY`: `LUMOVI_STATE_SECRET needs LUMOVI_STATE_KEY: the key what’s kept is sealed with, from a Secret of its own (the chart makes one).`, or when it can't read the Secret: `Lumovi can’t read Secret lumovi/lumovi-state, where it keeps who’s signed in and the AI assistants they allowed: …`, with why.
+
+  Without it, Lumovi keeps them in `state.json` in `LUMOVI_DATA_DIR`, which only its user can read, sealed with a key in `state.key` beside it, which it makes as it first starts. Without either, in memory, and its log says so, as it starts: `Who’s signed in and the AI assistants they allowed are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`, or outside one, `Set LUMOVI_DATA_DIR to keep them.` A restart then signs everyone out.
+</ResponseField>
+
+<ResponseField name="LUMOVI_STATE_KEY" type="string">
+  The key what's kept across restarts is sealed with: at least 32 random characters. With `LUMOVI_STATE_SECRET`, it's needed, from a Secret of its own: the chart sets it from `<release>-state-key`, which it makes, or from `auth.stateKeySecret`. Keep it apart from the state: whoever has both can act as anyone. Shorter, Lumovi doesn't start: `LUMOVI_STATE_KEY must be at least 32 characters, random ones.` Changed, or lost, what was kept doesn't open, and everyone signs in again. Without it, and without `LUMOVI_STATE_SECRET`, Lumovi keeps its own in `state.key` in `LUMOVI_DATA_DIR`, or makes a new one each start, in memory. See [Across restarts](/server/security#across-restarts).
+</ResponseField>
+
 <ResponseField name="LUMOVI_HEARTBEAT_SECONDS" type="number" default="30">
   How often pages' connections, and a fleet's agents', are checked, in seconds, at most 3600. Keep it shorter than the idle timeout of the proxies in front of Lumovi. An agent takes two of these and a second without a check for a lost connection, and connects again.
 </ResponseField>
@@ -240,7 +250,7 @@ See [AI assistants for your team](/server/assistants).
 </ResponseField>
 
 <ResponseField name="LUMOVI_DATA_DIR" type="string">
-  Without `LUMOVI_ASSISTANT_RULES_CONFIGMAP`, a folder where Lumovi keeps each person's own rules for their assistants, in `assistant-rules.json`, which only its user can read. Without either, it keeps them in memory, and they're gone when it stops. Without `LUMOVI_AUDIT_DIR`, the [audit history](#the-audit-log) is kept in its `audit` folder, and without `LUMOVI_ACCESS_CONFIGMAP`, what [admins set](#access) in `access.json`.
+  Without `LUMOVI_STATE_SECRET`, a folder where Lumovi keeps who's signed in and the AI assistants they allowed, in `state.json`, sealed with a key in `state.key`, so a restart signs nobody out. Without `LUMOVI_ASSISTANT_RULES_CONFIGMAP`, where it keeps each person's own rules for their assistants, in `assistant-rules.json`. Only Lumovi's user can read either. Without either, it keeps them in memory, and they're gone when it stops. Without `LUMOVI_AUDIT_DIR`, the [audit history](#the-audit-log) is kept in its `audit` folder, and without `LUMOVI_ACCESS_CONFIGMAP`, what [admins set](#access) in `access.json`.
 </ResponseField>
 
 <ResponseField name="LUMOVI_ASSISTANT_REDIRECT_HOSTS" type="string">

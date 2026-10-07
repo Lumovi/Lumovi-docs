@@ -9,10 +9,12 @@ Lumovi never gives anyone more than their own permissions: every request reaches
 
 | Sign-in | What Lumovi holds | What its service account may do |
 | --- | --- | --- |
-| [Token](/server/auth/tokens) | Each person's token, in memory, while they're signed in | Nothing |
-| [Single sign-on, tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) | Each person's token and refresh token, in memory | Nothing |
-| [Single sign-on](/server/auth/single-sign-on) | Who people are, in memory | Impersonate any user or group |
-| [Authenticating proxy](/server/auth/proxy) | Nothing: it reads the proxy's headers on every request. For [AI assistants](#ai-assistants), who allowed each one, in memory | Impersonate any user or group |
+| [Token](/server/auth/tokens) | Each person's token, while they're signed in, kept for a restart [sealed](#across-restarts) with a key only their cookie gives | Nothing |
+| [Single sign-on, tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) | Each person's token and refresh token, kept sealed the same way | Nothing |
+| [Single sign-on](/server/auth/single-sign-on) | Who people are | Impersonate any user or group |
+| [Authenticating proxy](/server/auth/proxy) | Nothing: it reads the proxy's headers on every request. For [AI assistants](#ai-assistants), who allowed each one | Impersonate any user or group |
+
+Besides, the chart lets it `get` and `patch` a few objects of its own in its namespace, and no others: the Secret that keeps sessions [across restarts](#across-restarts), and the ConfigMaps of people's AI rules and of [access](#access). The key that Secret is sealed with isn't among them: Kubernetes gives it to Lumovi's pod.
 
 A [fleet](/server/fleet) needs single sign-on or a proxy, and Lumovi also holds a way into each of its clusters: see [A fleet](#a-fleet).
 
@@ -20,7 +22,7 @@ A [fleet](/server/fleet) needs single sign-on or a proxy, and Lumovi also holds 
 
 With single sign-on that doesn't pass people's own tokens on, or behind a proxy, Lumovi's service account may impersonate anyone. Whoever can exec into its pod, or read its service account's token, can then act as anyone in the cluster. Treat Lumovi like any other component with cluster-wide power:
 
-- **Keep it in a namespace of its own**, one only cluster administrators can exec into, read Secrets in, or change workloads in.
+- **Keep it in a namespace of its own**, one only cluster administrators can exec into, read or change Secrets in, or change workloads in.
 - **Use prefixes** (`auth.usernamePrefix` and `auth.groupsPrefix`), so no name or group from a provider or proxy is one of yours by accident.
 - **Behind a proxy, let nothing else reach Lumovi.** It trusts the proxy's headers completely. Turn on `networkPolicy` with the proxy's pods in `from`.
 
@@ -44,7 +46,7 @@ A fleet's Lumovi acts as the people who sign in, in every one of its clusters, a
 - **Give it credentials that may only impersonate**, as members and agents have, rather than administrators'. Lumovi then can't do more in a cluster than the people who sign in.
 - **`groups` hides a cluster, but doesn't protect it.** It decides who sees a cluster in Lumovi. What people may do there is still up to that cluster's RBAC.
 - **Prefixes apply in each cluster**: the server's, or the cluster's own. Set them so no name or group from your provider or proxy is one of any cluster's own by accident.
-- **People's own tokens go only where you say**: to clusters with `forwardToken: true`, when `LUMOVI_OIDC_FORWARD_TOKEN` is set. Lumovi keeps them, and their refresh tokens, in memory.
+- **People's own tokens go only where you say**: to clusters with `forwardToken: true`, when `LUMOVI_OIDC_FORWARD_TOKEN` is set. Lumovi keeps them, and their refresh tokens, in memory, and [sealed](#across-restarts) for a restart.
 - **Reading Secrets**: with `fleet.secrets`, Lumovi's service account may list every Secret in the namespaces you name, not only those that describe clusters.
 
 ### Agents
@@ -59,7 +61,7 @@ A fleet's Lumovi acts as the people who sign in, in every one of its clusters, a
 ## Sessions and cookies
 
 - **The browser holds only a random ID** for its session, 32 bytes, in the `lumovi-session` cookie. The token or the identity it stands for stays in Lumovi.
-- **Sessions live in Lumovi's memory.** Restarting it signs everyone out, and neither a session's ID nor its token is written to disk: the [audit log](#the-audit-log) names a session by a hash of it. For the same reason the chart runs one replica.
+- **Sessions outlive a restart.** Lumovi knows each by its cookie's SHA-256 hash, and keeps it so: see [Across restarts](#across-restarts). The [audit log](#the-audit-log) names a session by a hash of it too. Each replica knows the sessions started on it, so more than one needs sticky sessions.
 - **Sessions last 12 hours** unless `auth.sessionHours` says otherwise, at most a week. People signing out end their session in every tab.
 - **Single sign-on uses the authorization code flow with PKCE.** The state, PKCE verifier and nonce stay in the `lumovi-sign-in` cookie for at most 10 minutes, signed with a key Lumovi makes when it starts, with when it expires. The way back from the provider works once, and only until then: the cookie brought back again, or later, gets "That sign-in took too long, or started in another browser. Try again." A sign-in that's under way when Lumovi restarts has to be tried again. The ID token's signature is checked against the provider's keys: RSA and ECDSA signatures only, so unsigned tokens and shared-secret signatures are refused. Its issuer, audience, expiry and nonce are checked against what Lumovi expects, allowing a minute for clocks that disagree.
 - **Only Lumovi's own pages can sign in with a token, sign out, or connect.** Browsers name the page's origin on those requests and on the WebSocket. Lumovi takes them only when that origin's host is the one in the request's `Host` header, or the origin is `url`'s. A request that names no origin is refused. Behind a proxy that changes the `Host` header, set `url` to the address people open, or signing in and connecting fail.
@@ -74,6 +76,45 @@ Lumovi sets three cookies, all `SameSite=Lax` and limited to the base path:
 
 The first two are `HttpOnly`, so scripts can't read them, and `Secure` when `url` starts with `https:` or the proxy in front sends `X-Forwarded-Proto: https`. The page sets `lumovi-theme` itself, and it holds nothing else.
 
+## Across restarts
+
+A restart, as an upgrade does, signs nobody out. Lumovi keeps what it needs for that, as it happens:
+
+- **Sessions**, each by its cookie's SHA-256 hash, with whose it is, their groups, and when it ends. The cookie itself is its browser's alone.
+- **The AI assistants people allowed**: whose, their names, and when each was last used, and their access and refresh tokens, by their SHA-256 hash. Refresh tokens used already are remembered for a day, so a copy that comes back is still caught.
+- **What each person made read-only for themselves**, so their assistants hold to it before their page opens again.
+- **A person's own token**, with [token](/server/auth/tokens) sign-in, or single sign-on that [passes it on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) (with its refresh token), sealed with a key derived (HKDF) from the session's cookie, and bound to that session. Only the browser has the cookie, so what's kept holds nobody's token. After a restart, a session's token is unsealed when its browser next asks Lumovi anything, and its assistants wait for that: see [After a restart](/server/assistants#after-a-restart).
+
+Each entry is sealed (AES-256-GCM) with the state's key, and filed under an HMAC of what it is, which its seal is bound to. The key is kept apart from what it seals:
+
+| Where it's kept | The state | Its key |
+| --- | --- | --- |
+| With the chart (`auth.keepSessions`) | The Secret `<release>-state`, which Lumovi may only `get` and `patch` | The Secret `<release>-state-key`, which the chart makes once, with 64 random characters, and keeps across upgrades. Or a Secret of yours, `auth.stateKeySecret`. Kubernetes gives it to Lumovi as `LUMOVI_STATE_KEY`: Lumovi's Role doesn't name it. |
+| Without the chart, in a cluster | The Secret `LUMOVI_STATE_SECRET` names | `LUMOVI_STATE_KEY`, which it needs |
+| Without Kubernetes | `state.json` in `LUMOVI_DATA_DIR` | `state.key` beside it, which Lumovi makes as it first starts, only its user's |
+| Neither | Memory | A new one each start |
+
+Lumovi writes the state about 50 ms after something changes, and as it stops. What mustn't come back is kept before it's answered: a sign-out, and an assistant let go or signed out. When that can't be kept, Lumovi says so instead of saying it's done: see [When it can't be kept](#when-it-can’t-be-kept). Uninstalling the chart deletes both Secrets, and signs everyone out. With `auth.keepSessions: false`, nothing is kept but in memory, and a restart signs everyone out.
+
+Not kept: the changes assistants asked for that were waiting for an answer (the assistant asks again), sign-ins under way, and assistants' connections, which they open again by themselves.
+
+- **Reading the state shows nothing**, not even who's signed in: every entry is sealed, and named by an HMAC.
+- **Writing it alone can't make anyone's session.** An entry Lumovi didn't seal with its key doesn't open, nor does one changed, or moved to another's place: Lumovi lets those go as it starts. Writing it can take away what's kept, which signs people out after the next restart. And an earlier copy of it, put back, brings back what ended since, a session signed out or an assistant let go, for whoever still has its cookie or token: so treat a copy of the state as you would the Secret.
+- **The state and its key together are as good as being an admin.** Whoever can write the state, and read its key (the key Secret, or `LUMOVI_STATE_KEY` in Lumovi's pod), can make a session for anyone. Keep Lumovi's namespace admin-only, as for its pod, and watch for controllers there that sync Secrets into it, like External Secrets or a GitOps tool.
+- **Changing the key, or losing it, signs everyone out.** What was sealed with the old one doesn't open, and the log says, as Lumovi starts: `12 of what Lumovi kept doesn’t open with its key (it changed, or they were): they’re let go.`
+- **To make sure a leaked cookie or token can't come back, change the key.** Signing it out, or letting its assistant go, ends it, but an earlier copy of the state, put back, would bring it back. A new key ends everything sealed with the old one, and signs everyone out. With the chart, delete the `<release>-state-key` Secret, and run `helm upgrade`: it makes a new one, and Lumovi restarts with it. With `auth.stateKeySecret`, put a new key in your Secret, and run `helm upgrade`. Where the chart is rendered without the cluster, as Argo CD does, Lumovi doesn't see the new key until it restarts: `kubectl rollout restart --namespace lumovi deployment/lumovi`.
+
+### When it can't be kept
+
+When Lumovi can't write the state, its log says why, once: `Lumovi can’t keep who’s signed in (…): if it restarts now, what changed since is lost.` It tries again every 5 seconds, and says `Lumovi keeps who’s signed in again.` once it can. Meanwhile:
+
+- **Signing out** ends the session on this server, and clears the browser's cookie, but answers `503`. The page goes on to the sign-in screen all the same, and says there: `Lumovi couldn’t keep that you signed out (…): it’s over here, but a restart before it can would bring it back.` The audit log records the sign-out as failed.
+- **Letting an assistant go**, on the **Your assistants** tab, says so: `Claude Code is let go here, but Lumovi couldn’t keep it so (…): a restart before it can would bring it back. Try again shortly.`
+- **An assistant signing out, or one whose used refresh token comes back**, gets `503` with `temporarily_unavailable`: `Lumovi can’t keep what changed: try again shortly.`
+- **New tokens are still given.** They work until a restart.
+
+Past what a Secret holds, a megabyte, the sessions that end soonest are left out, and sign in again after a restart: `What Lumovi keeps would be more than the 1000 kB it may hold: the 40 sessions that end soonest aren’t kept (they sign in again after a restart).` What's being let go is never refused.
+
 ## AI assistants
 
 Unless you turn them off, AI assistants connect at `mcp` below the base path, and sign in through Lumovi with OAuth: a person signs in to Lumovi, and allows each one on Lumovi's own page. See [AI assistants for your team](/server/assistants#security) for the details.
@@ -81,7 +122,7 @@ Unless you turn them off, AI assistants connect at `mcp` below the base path, an
 - **An assistant acts as the person who allowed it**, with their RBAC and never more than their [access](#access), through Lumovi's tools only, until they disconnect it or their session ends. Behind a proxy, as the proxy last named them, for as long as a session would last.
 - **What it may do is its person's to say**, on their **Permissions** tab, within limits you set (`assistants.rules`): which namespaces it sees, whether its changes ask, whether it reads Secrets' values, env values and logs. By default, its changes ask, it sees Secrets' keys only, and env values that look sensitive are hidden. Deletions always ask. `readOnly: true` refuses every change, and so does a cluster its person made read-only. See [What assistants may do](/assistants/permissions).
 - **People's rules are kept in a ConfigMap** in Lumovi's namespace, which Lumovi may only read and update. Whoever may update ConfigMaps there can change anyone's: keep that namespace to administrators. See [Where people's rules are kept](/server/assistants#where-people’s-rules-are-kept).
-- **Its tokens live in Lumovi's memory**, like sessions: access tokens for an hour, refresh tokens once each. A refresh token that comes back later, used already, ends what was allowed. They work only for assistants' requests, not for pages. So the chart runs one replica while assistants are on, and refuses more.
+- **Its tokens are kept like sessions**, by their SHA-256 hash: access tokens for an hour, refresh tokens once each. A refresh token that comes back used already, within a day, ends what was allowed. They work only for assistants' requests, not for pages, and carry no cookie to keep them to one pod: so the chart runs one replica while assistants are on, and refuses more.
 - **Allowing an assistant hands someone's access to it.** Lumovi sends people back only to their own computer, an app, VS Code's site, or sites you name in `assistants.redirectHosts`, so a link to its page made by someone else can't send their access to a site of that person's choosing. The page says where it goes back to, and asks people to allow only what they started.
 
 Turn them off with `assistants.enabled: false` (`LUMOVI_ASSISTANTS=off`) if your team doesn't use them.

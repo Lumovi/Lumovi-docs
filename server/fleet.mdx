@@ -68,7 +68,7 @@ Lumovi doesn't need to run in Kubernetes to show a fleet. It needs to reach each
 | A machine of its own | [Docker](#with-docker), with a kubeconfig in a folder | A kubeconfig, and agents |
 | A platform like Sevalla | [Environment variables only](/server/fleet/sevalla) | A kubeconfig in a variable, and agents |
 
-Run one Lumovi, with one replica. Sessions live in its memory, and each agent connects to one Lumovi. With single sign-on, restarting it, as an upgrade does, signs everyone out. Its agents connect again by themselves.
+Run one Lumovi, with one replica: each replica knows the sessions started on it, and each agent connects to one Lumovi. Restarting it, as an upgrade does, signs nobody out (see [Across restarts](/server/security#across-restarts)), and its agents connect again by themselves.
 
 ## Describe the clusters
 

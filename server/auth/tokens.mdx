@@ -62,12 +62,11 @@ The sign-in page shows people how to make a service account's token, with a butt
 
 - **The token expires, or is revoked.** The next time the cluster refuses it, the session ends, and Lumovi asks for another token: **Your session ended. Sign in again to carry on where you were.**
 - **The session reaches its length.** Sessions last 12 hours unless `auth.sessionHours` says otherwise, at most a week.
-- **Someone signs out**, from the account menu at the bottom of the sidebar. That ends their session in every tab.
-- **Lumovi restarts.** Sessions live in its memory, so an upgrade signs everyone out.
+- **Someone signs out**, from the account menu at the bottom of the sidebar. That ends their session in every tab, and a restart doesn't bring it back.
 
-Closing the browser doesn't end a session: its cookie lasts as long as the session does.
+Closing the browser doesn't end a session: its cookie lasts as long as the session does. Nor does restarting Lumovi, as an upgrade does: people stay signed in. See [Across restarts](/server/security#across-restarts).
 
-Once it's pasted, Lumovi keeps the token in its memory and sends it only to the API server. The browser holds only the session ID, in a cookie scripts can't read.
+Once it's pasted, Lumovi keeps the token in its memory and sends it only to the API server. The browser holds only the session ID, in a cookie scripts can't read. For a restart, Lumovi keeps the token sealed with a key only that cookie gives, and unseals it when the browser next asks for something. Until then, people's [AI assistants](/server/assistants#after-a-restart) wait for them.
 
 ## Give people the access they need
 

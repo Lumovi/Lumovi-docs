@@ -120,7 +120,7 @@ An assistant someone allows acts as that person, as the proxy last named them: e
 
 Behind a proxy, Lumovi impersonates people, so the chart gives its service account permission to impersonate users and groups, cluster-wide. Whoever can reach Lumovi's pod, or read its service account's token, can act as anyone. Keep Lumovi in a namespace only cluster administrators can exec into. See [Security](/server/security).
 
-There are no Lumovi sessions behind a proxy: it reads the headers on every request. Restarting Lumovi doesn't sign anyone out, and how long people stay signed in is up to the proxy. AI assistants are the exception: Lumovi keeps who allowed each one, in memory, and restarting it signs them out.
+There are no Lumovi sessions behind a proxy: it reads the headers on every request. Restarting Lumovi doesn't sign anyone out, and how long people stay signed in is up to the proxy. Lumovi keeps who allowed each AI assistant, and as whom: across a restart too (`auth.keepSessions`), so assistants carry on at once. See [Across restarts](/server/security#across-restarts).
 
 For the same reason, Lumovi's [audit log](/server/audit-log) has no sign-ins or sign-outs behind a proxy: those are the proxy's to log. Everything people do through Lumovi is recorded, as the proxy names them, with the address their requests came from and what `X-Forwarded-For` said.
 

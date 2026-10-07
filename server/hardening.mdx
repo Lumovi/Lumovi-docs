@@ -48,6 +48,26 @@ Every way to sign in to Lumovi checks who people are: there's no way to run it o
 - **Behind a proxy, only the proxy may reach Lumovi.** Lumovi trusts its headers completely: whoever reaches Lumovi without it can name themselves anyone. Leave the chart's `ingress` off, keep the Service a `ClusterIP`, and turn on the [network policy](#the-network) with only the proxy in `from`.
 - **Keep sessions short enough**: 12 hours unless `auth.sessionHours` says otherwise.
 
+### Sessions across restarts
+
+A restart signs nobody out (`auth.keepSessions`, on by default). Lumovi keeps sessions, and the AI assistants people allowed, in a Secret, `<release>-state`, each entry sealed with a key kept apart, in `<release>-state-key`. Reading the state shows nothing, and writing it alone can't make anyone's session. Whoever can both write it and read its key can, though: keep Lumovi's namespace admin-only, and watch for controllers there that sync Secrets, like External Secrets or a GitOps tool. See [Across restarts](/server/security#across-restarts).
+
+- **Rendered with `helm template`**, as Argo CD and some other tools do, the chart can't see the key it made before (`lookup` finds nothing there), so each render would make a new one, and a new key signs everyone out. Make the key yourself, and name it in `auth.stateKeySecret`:
+
+  ```bash
+  kubectl create secret generic lumovi-state-key --namespace lumovi \
+    --from-literal=key="$(openssl rand -base64 48)"
+  ```
+
+  ```yaml values.yaml
+  auth:
+    stateKeySecret: lumovi-state-key
+  ```
+
+  It needs at least 32 random characters, under `key`.
+- **With `rbac.create: false`**, give Lumovi's service account `get` and `patch` on `<release>-state` yourself, or it doesn't start. It needs nothing on the key's Secret.
+- **With `auth.keepSessions: false`**, sessions live in memory, and every restart signs everyone out.
+
 ## The network
 
 ```yaml values.yaml
@@ -83,9 +103,9 @@ What Lumovi's service account may do depends on how people sign in:
 | Tokens, or single sign-on with tokens passed on | Nothing in the cluster |
 | Single sign-on, or an authenticating proxy | `impersonate` on users and groups, and nothing else |
 
-With [AI assistants](/server/assistants), or [Access](/server/access), it also gets `get` and `patch` on the one ConfigMap that holds each, and no other. In a [fleet](/server/fleet), with `fleet.secrets`, `list` on Secrets in the namespaces you name.
+With [AI assistants](/server/assistants), or [Access](/server/access), it also gets `get` and `patch` on the one ConfigMap that holds each, and no other. With `auth.keepSessions`, `get` and `patch` on the Secret that keeps sessions across restarts, and no other Secret: not even the key it's sealed with, which reaches the pod as an environment variable. In a [fleet](/server/fleet), with `fleet.secrets`, `list` on Secrets in the namespaces you name.
 
-Never give it more, like `cluster-admin`: it doesn't need it, and whoever controls the pod would have it. Whoever can exec into Lumovi's pod, read its token, or change its Deployment can act as anyone it may impersonate. So run it in a namespace of its own, where only cluster administrators can exec into pods, read Secrets, or change workloads and ConfigMaps. To manage its permissions yourself, set `rbac.create: false`: see [Helm values](/server/helm-values#kubernetes-objects).
+Never give it more, like `cluster-admin`: it doesn't need it, and whoever controls the pod would have it. Whoever can exec into Lumovi's pod, read its token, or change its Deployment can act as anyone it may impersonate. So run it in a namespace of its own, where only cluster administrators can exec into pods, read or change Secrets, or change workloads and ConfigMaps. To manage its permissions yourself, set `rbac.create: false`: see [Helm values](/server/helm-values#kubernetes-objects).
 
 ## Who may do what
 
@@ -288,7 +308,7 @@ audit:
 
 <Check>Keep the chart's pod and container security contexts, and enforce the `restricted` Pod Security Standard on Lumovi's namespace.</Check>
 <Check>Pick [token](/server/auth/tokens) sign-in, or single sign-on with [tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider), when you can: Lumovi then needs no permissions.</Check>
-<Check>Run Lumovi in its own namespace, which only cluster administrators can exec into, read Secrets in, or change workloads and ConfigMaps in.</Check>
+<Check>Run Lumovi in its own namespace, which only cluster administrators can exec into, read or change Secrets in, or change workloads and ConfigMaps in.</Check>
 <Check>Set `auth.usernamePrefix` and `auth.groupsPrefix` when Lumovi impersonates people.</Check>
 <Check>Turn on `networkPolicy`, and name only your ingress controller, or the authenticating proxy, in `from`.</Check>
 <Check>Serve it over HTTPS, and set `url` to the `https:` address.</Check>

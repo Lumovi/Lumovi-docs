@@ -45,7 +45,7 @@ The desktop app updates itself. In a cluster, Lumovi is upgraded like anything e
 
 ## What people see
 
-Sessions live in Lumovi's memory, so a new pod signs everyone out. Open pages reconnect to the new pod by themselves, and show the sign-in page. With single sign-on, signing in again is a click; with tokens, people paste one again. Behind an [authenticating proxy](/server/auth/proxy), Lumovi keeps no sessions of its own, so nobody notices more than a reconnect.
+A new pod signs nobody out: Lumovi keeps sessions, and the AI assistants people allowed, in a Secret the chart makes (`auth.keepSessions`), which upgrades leave as it is. Open pages reconnect to the new pod by themselves, and carry on. AI assistants open a new connection; those that pass their person's own token on wait until that person opens Lumovi again. See [Across restarts](/server/security#across-restarts). With `auth.keepSessions: false`, a new pod signs everyone out, and open pages show the sign-in page.
 
 The same goes for any change that replaces the pod: changing a setting, or the [views everyone sees](/server/views).
 
@@ -83,7 +83,7 @@ Restart Lumovi so it reads the new secret:
 kubectl rollout restart --namespace lumovi deployment/lumovi
 ```
 
-Like any restart, this signs everyone out. A fleet's list of agents, in the Secret that `fleet.agentsSecret` names, is read the same way, when the pod starts: restart Lumovi after changing it too. Its kubeconfig, in `fleet.kubeconfigSecret`, and the Secrets it reads with `fleet.secrets` are read again by themselves, without a restart.
+Like any restart, this signs nobody out. A fleet's list of agents, in the Secret that `fleet.agentsSecret` names, is read the same way, when the pod starts: restart Lumovi after changing it too. Its kubeconfig, in `fleet.kubeconfigSecret`, and the Secrets it reads with `fleet.secrets` are read again by themselves, without a restart.
 
 ## A fleet
 

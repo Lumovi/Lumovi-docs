@@ -122,7 +122,15 @@ agent.tokenSecret must name a Secret with the agent's token under token
 </ResponseField>
 
 <ResponseField name="auth.sessionHours" type="number" default="12">
-  How long a session lasts, in hours: more than 0, at most 168 (a week). Sessions live in Lumovi's memory, so a restart signs people out sooner.
+  How long a session lasts, in hours: more than 0, at most 168 (a week).
+</ResponseField>
+
+<ResponseField name="auth.keepSessions" type="boolean" default="true">
+  Whether a restart, as an upgrade does, signs nobody out. The chart makes a Secret, `<release>-state`, where Lumovi keeps sessions, the AI assistants people allowed, and what each person made read-only for themselves, each entry sealed, and lets Lumovi `get` and `patch` that Secret alone. It also makes the key they're sealed with, once, in `<release>-state-key`, 64 random characters, and keeps it across upgrades; Kubernetes gives it to Lumovi as `LUMOVI_STATE_KEY`. With `rbac.create: false`, it makes the Secrets but no Role: give Lumovi's service account `get` and `patch` on `<release>-state` yourself, or Lumovi doesn't start. Reading the state shows nothing; whoever can write it and read its key can act as anyone: keep the namespace admin-only. Upgrades leave both as they are; uninstalling deletes them, and signs everyone out. `false`: sessions live in Lumovi's memory, and a restart signs everyone out. See [Across restarts](/server/security#across-restarts).
+</ResponseField>
+
+<ResponseField name="auth.stateKeySecret" type="string" default="''">
+  A Secret of yours, in the release's namespace, with the key sessions are sealed with under `key`: at least 32 random characters. Give it where the chart is rendered with `helm template`, as Argo CD does: there, the chart can't see the key it made before, and would make a new one each time, which signs everyone out. `kubectl create secret generic lumovi-state-key --from-literal=key="$(openssl rand -base64 48)"` makes one. The chart then makes no key of its own. See [Sessions across restarts](/server/hardening#sessions-across-restarts).
 </ResponseField>
 
 ## A fleet
@@ -341,13 +349,14 @@ What Lumovi records, where it keeps and sends it, and who reads everyone's. See 
   - to impersonate users and groups: for one cluster, with `oidc` (unless tokens are passed on) and `proxy`; in a fleet, when it includes this cluster; and always as a member or an agent,
   - in a fleet, to list Secrets where `fleet.secrets` are,
   - with `assistants.enabled`, to `get` and `patch` the ConfigMap where it keeps people's rules for their assistants,
-  - with `access.admins`, to `get` and `patch` the ConfigMap where it keeps what admins set, and no other.
+  - with `access.admins`, to `get` and `patch` the ConfigMap where it keeps what admins set, and no other,
+  - with `auth.keepSessions`, to `get` and `patch` the Secret where it keeps sessions across restarts, and no other Secret.
 
   Otherwise, the chart makes no RBAC objects either way. Set it to `false` to manage those permissions yourself.
 </ResponseField>
 
 <ResponseField name="replicaCount" type="integer" default="1">
-  How many Lumovi pods to run. Sessions live in each pod's memory, and single sign-on has to finish on the pod it started on: more than one needs sticky sessions. Keep a fleet's at one: each agent connects to one pod. With `assistants.enabled`, the chart refuses more than one, saying `AI assistants need a single replica (replicaCount 1): …`: what people allowed, their assistants' tokens, and the changes those ask for live in one pod's memory, and assistants' requests carry no cookies to stick to it. Set `assistants.enabled: false` to run more. With `audit.persistence.enabled`, it refuses more than one too, saying `The audit history on its volume needs a single replica (replicaCount 1): …`. Set `audit.persistence.enabled: false` to run more: each then keeps its events in memory, in a chain of its own.
+  How many Lumovi pods to run. Each pod knows the sessions started on it (they're kept for a restart, not shared as they change), and single sign-on has to finish on the pod it started on: more than one needs sticky sessions. Keep a fleet's at one: each agent connects to one pod. With `assistants.enabled`, the chart refuses more than one, saying `AI assistants need a single replica (replicaCount 1): …`: what people allowed, their assistants' tokens, and the changes those ask for live in one pod's memory, and assistants' requests carry no cookies to stick to it. Set `assistants.enabled: false` to run more. With `audit.persistence.enabled`, it refuses more than one too, saying `The audit history on its volume needs a single replica (replicaCount 1): …`. Set `audit.persistence.enabled: false` to run more: each then keeps its events in memory, in a chain of its own.
 </ResponseField>
 
 <ResponseField name="service.type" type="string" default="ClusterIP">

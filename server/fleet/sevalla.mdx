@@ -59,7 +59,7 @@ A fleet's Lumovi needs no Kubernetes of its own. On a platform that runs contain
     Leave out `LUMOVI_PORT`. Sevalla tells the application which port to listen on in `PORT`, and Lumovi listens on that one. (`LUMOVI_PORT` wins, when it's set.)
   </Step>
   <Step title="Run one instance">
-    Sessions live in Lumovi's memory, and a sign-in has to finish where it started, so keep the application to one instance. If you set a health check, its path is `/healthz`: it answers `200 ok` without signing in.
+    Each instance knows the sessions started on it, and a sign-in has to finish where it started, so keep the application to one instance. If you set a health check, its path is `/healthz`: it answers `200 ok` without signing in.
   </Step>
   <Step title="Deploy, and sign in">
     Lumovi's log says what it shows, starting `Lumovi {{version}} shows a fleet of 3 clusters (prod-eu, prod-us, staging)`. A setting that doesn't make sense stops it, and the log says which and why. Open your address, and sign in.
@@ -68,7 +68,7 @@ A fleet's Lumovi needs no Kubernetes of its own. On a platform that runs contain
 
 ## Change the fleet
 
-Lumovi reads `LUMOVI_FLEET_KUBECONFIG` and `LUMOVI_FLEET_AGENTS` when it starts. To add or remove a cluster, change the variable, and deploy again. Restarting signs everyone out.
+Lumovi reads `LUMOVI_FLEET_KUBECONFIG` and `LUMOVI_FLEET_AGENTS` when it starts. To add or remove a cluster, change the variable, and deploy again. Restarting signs everyone out, unless Lumovi keeps sessions in a folder that outlives the instance: `LUMOVI_DATA_DIR`, on persistent storage, if your platform gives the application some. See [Across restarts](/server/security#across-restarts).
 
 ## Reaching the clusters
 

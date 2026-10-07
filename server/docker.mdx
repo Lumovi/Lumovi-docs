@@ -108,7 +108,18 @@ docker run --rm -p 8080:8080 \
   ghcr.io/lumovi/lumovi:{{version}}
 ```
 
-Sessions live in Lumovi's memory, so restarting the container signs everyone out.
+## Keep people signed in
+
+Without a folder of its own, Lumovi keeps sessions in memory, and restarting the container signs everyone out. Give it a volume, and `LUMOVI_DATA_DIR`, and a restart signs nobody out:
+
+```bash
+docker run --rm -p 8080:8080 \
+  -v "$PWD/kubeconfig:/kubeconfig:ro" -e KUBECONFIG=/kubeconfig \
+  -v lumovi-data:/var/lib/lumovi -e LUMOVI_DATA_DIR=/var/lib/lumovi \
+  ghcr.io/lumovi/lumovi:{{version}}
+```
+
+Lumovi keeps `state.json` there, which only its user can read: who's signed in, and the AI assistants they allowed, each entry sealed with a key it makes beside it, in `state.key`. See [Across restarts](/server/security#across-restarts). In the same folder, it keeps people's AI rules, what [admins set](/server/access), and, without `LUMOVI_AUDIT_DIR`, the audit history, in `audit`. The image's `/var/lib/lumovi` belongs to Lumovi's user, so a new named volume there does too. Whoever can write the folder can make Lumovi act as anyone: keep it Lumovi's alone.
 
 <Columns cols={2}>
   <Card title="Configuration" icon="settings-2" href="/server/configuration">
