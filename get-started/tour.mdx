@@ -14,8 +14,8 @@ This tour follows what you'd do on a day something breaks: see what's wrong, fin
     Below them, CPU and memory show what's in use next to what's requested, limited and allocatable, with a line of recent usage. **Needs attention** lists the pods and workloads in trouble, and **Recent warnings** the events that explain them.
 
     <Frame>
-      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-light-1x.webp" alt="A cluster's overview: nodes, pods and workloads, CPU and memory with their last hour, and what needs attention." />
-      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-dark-1x.webp" alt="A cluster's overview: nodes, pods and workloads, CPU and memory with their last hour, and what needs attention." />
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-light-1x.webp" alt="A cluster's overview: nodes, pods, workloads and warnings, CPU and memory with their last hour, pod health by namespace, and each node's usage." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-dark-1x.webp" alt="A cluster's overview: nodes, pods, workloads and warnings, CPU and memory with their last hour, pod health by namespace, and each node's usage." />
     </Frame>
 
     The namespace menu at the top scopes every list. It starts in your kubeconfig context's namespace, and remembers your choice per cluster. [More about the overview](/explore/overview).
@@ -38,8 +38,8 @@ This tour follows what you'd do on a day something breaks: see what's wrong, fin
     Click a row, or move to it with <kbd>↓</kbd> and press <kbd>↵</kbd>. Its details open next to the list, so you keep your place: the facts that matter for its kind, its pods and why they restart, its events, logs and YAML.
 
     <Frame>
-      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/deployment-light-1x.webp" alt="A deployment that's failing, with its pods and why they're restarting." />
-      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/deployment-dark-1x.webp" alt="A deployment that's failing, with its pods and why they're restarting." />
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/deployment-light-1x.webp" alt="A degraded deployment, with its pods and why they're restarting." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/deployment-dark-1x.webp" alt="A degraded deployment, with its pods and why they're restarting." />
     </Frame>
 
     With the panel open, <kbd>↑</kbd> and <kbd>↓</kbd> open each row in turn, and <kbd>Esc</kbd> closes it. [The detail panel](/explore/details).

@@ -7,8 +7,8 @@ icon: "gauge"
 Live usage comes from the Kubernetes metrics API, the same place `kubectl top` reads from. It's served by [metrics-server](https://github.com/kubernetes-sigs/metrics-server), which most managed clusters run already. Lumovi asks for it every 5 seconds while it's open, and needs nothing else installed.
 
 <Frame caption="The overview's CPU and memory cards: what's in use, against requests, limits and allocatable.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-light-1x.webp" alt="A cluster's overview: nodes, pods and workloads, CPU and memory with their last hour, and what needs attention." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-dark-1x.webp" alt="A cluster's overview: nodes, pods and workloads, CPU and memory with their last hour, and what needs attention." />
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-light-1x.webp" alt="A cluster's overview: nodes, pods, workloads and warnings, CPU and memory with their last hour, pod health by namespace, and each node's usage." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-dark-1x.webp" alt="A cluster's overview: nodes, pods, workloads and warnings, CPU and memory with their last hour, pod health by namespace, and each node's usage." />
 </Frame>
 
 ## Where you see it

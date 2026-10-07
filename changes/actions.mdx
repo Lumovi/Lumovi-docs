@@ -177,9 +177,9 @@ Anything with no button of its own, like a Service, a Secret, or a Job that isn'
 
     Evictions run four at a time, respect PodDisruptionBudgets, and show their progress per pod. A pod whose eviction fails says why, and can be retried. In a cluster named like production, you type the node's name first.
 
-    <Frame caption="A node under memory pressure, with what runs on it and ways to drain it.">
-      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-light-1x.webp" alt="A node under memory pressure in the detail panel, with its pods and the Cordon and Drain actions." />
-      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-dark-1x.webp" alt="A node under memory pressure in the detail panel, with its pods and the Cordon and Drain actions." />
+    <Frame caption="A node under memory pressure, with its capacity, taint and conditions, and a way to cordon it.">
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-light-1x.webp" alt="A node under memory pressure in the detail panel: its details, CPU and memory against capacity, its taint and conditions, and the Cordon and Shell buttons." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-dark-1x.webp" alt="A node under memory pressure in the detail panel: its details, CPU and memory against capacity, its taint and conditions, and the Cordon and Shell buttons." />
     </Frame>
   </Accordion>
 </AccordionGroup>
