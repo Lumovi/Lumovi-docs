@@ -17,6 +17,16 @@ The desktop app reads clusters from the same place `kubectl` does, and keeps you
   <Tab title="macOS" icon="apple">
     For macOS 13 (Ventura) or later, on Apple silicon and Intel. The app is signed and notarized by Apple.
 
+    With [Homebrew](https://brew.sh), name the cask in full:
+
+    ```bash
+    brew install --cask lumovi/tap/lumovi
+    ```
+
+    It installs the same disk image, from [Lumovi's tap](https://github.com/Lumovi/homebrew-tap). Lumovi keeps itself up to date as before, so `brew upgrade` leaves it alone. `brew uninstall --cask --zap lumovi` also removes its settings, its own audit log, caches and logs.
+
+    Or download it yourself:
+
     <Steps>
       <Step title="Download the disk image">
         Pick the one for your Mac:
@@ -113,7 +123,7 @@ Lumovi keeps itself up to date. It looks for a new version shortly after it star
 
 Your organization's [policy](/desktop/policy) can leave updates to IT, which then deploys new versions itself: Lumovi neither looks for them nor installs them, **Check for Updates…** reads **Updates Are Set by Your Organization**, and both items are disabled.
 
-On Linux, the AppImage replaces itself. A `.deb` or `.rpm` install updates through your package manager, so installing a new version asks for an administrator password.
+Installed with Homebrew, Lumovi updates itself the same way. On Linux, the AppImage replaces itself. A `.deb` or `.rpm` install updates through your package manager, so installing a new version asks for an administrator password.
 
 New versions come from the project's [GitHub releases](https://github.com/Lumovi/Lumovi/releases), over HTTPS. Each download is checked against the checksum the release lists, and on macOS the new version must carry the same Developer ID signature. A copy that can't update itself says so when you check: install new versions of it from the releases page.
 
