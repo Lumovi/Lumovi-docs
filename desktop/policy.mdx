@@ -34,6 +34,7 @@ Lumovi reads it as it starts: restart it after a change. Only when nothing is th
     { "name": "Production", "clusters": ["prod-*"], "changes": "never", "secrets": "hidden" }
   ],
   "updates": false,
+  "kubectl": "https://artifacts.corp.example.com/k8s",
   "network": {
     "proxy": "http://proxy.corp.example.com:3128",
     "noProxy": ".corp.example.com",
@@ -69,6 +70,14 @@ People see them first on their **Permissions** tab, locked, with **Set by your a
 `false` leaves updates to you: Lumovi neither looks for new versions nor installs them, and you deploy each one, as you deployed the first. In the **Help** menu, **Check for Updates…** reads **Updates Are Set by Your Organization**, and both it and **Check for Updates Automatically** are disabled. A check asked for anyway says "Your organization updates Lumovi".
 
 `true`, or leaving it out, leaves Lumovi to update itself, as each person sets: see [Staying up to date](/get-started/desktop#staying-up-to-date).
+
+### kubectl
+
+Whether, and from where, [terminals](/debug/terminal#a-kubectl-that-matches-the-cluster) get a kubectl matching their cluster:
+
+- **`false`**: they don't. Terminals use the kubectl installed on the computer, and **View → Match kubectl to Each Cluster** is off and disabled.
+- **A URL**, `http://` or `https://`: a mirror of dl.k8s.io to get it from, laid out the same way (`release/stable-1.34.txt`, `release/v1.34.9/bin/windows/amd64/kubectl.exe` and its `.sha256`), for computers that can't reach dl.k8s.io. Each kubectl is checked against the checksum published beside it, on the mirror. Use an `https` mirror: over `http`, the checksum comes over the same plain connection, so someone on the network could change both. It wins over `LUMOVI_KUBECTL_MIRROR`.
+- **`true`**, or leaving it out: from dl.k8s.io, or the mirror `LUMOVI_KUBECTL_MIRROR` names, unless each person turns it off.
 
 ### network
 
@@ -139,7 +148,7 @@ The file needn't be `root`'s. Where IT's policy is set, that one is used, and `L
 A policy Lumovi can't use locks the most it could, until it's put right: every cluster read-only, and AI assistants off. As Lumovi starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge says why too, like:
 
 ```text
-Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, network.), so it changes no cluster until it’s put right.
+Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, kubectl, network.), so it changes no cluster until it’s put right.
 ```
 
 What it can say after `can't be used:`:
@@ -154,9 +163,10 @@ What it can say after `can't be used:`:
 | "it isn't JSON (at line 3 column 1)." | It isn't JSON: a comma after the last item, say. It says where when it can, and otherwise just "it isn't JSON.", but never what's there, which could be a proxy's credentials. |
 | "a key is given twice: Map keys must be unique at line 1, column 21:" | A key appears twice, and only one would count. |
 | "it must be a JSON object." | It's JSON, but not `{ … }`. |
-| "it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, network." | A key it doesn't know, misspelt maybe. |
+| "it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, network." | A key it doesn't know, misspelt maybe. |
 | "readOnly must be true, false, or a list of cluster names (with * for any)." | |
 | "assistants must be true or false.", "updates must be true or false." | |
+| "kubectl must be true, false, or the http or https URL of a mirror of dl.k8s.io." | |
 | "assistantRules[0] (Production) limits nothing: give it visibility, changes, secrets, env or logs." | A rule that doesn't make sense, said as for a server's [rules](/server/assistants#limits-for-everyone). |
 | "network has proxyUrl: it takes proxy, noProxy, caFiles." | |
 | "network.proxy must be the proxy's http or https URL." | |
@@ -167,7 +177,7 @@ What it can say after `can't be used:`:
 
 The policy locks only what it sets, and only while it's there. Lumovi shows what it sets, but doesn't save it over anyone's settings: a person's own choices, like AI assistants on or automatic updates, are back if the policy goes. Everything else, like the theme, the clusters they make read-only themselves, and their own [AI permissions](/assistants/permissions) within the policy's rules, stays theirs.
 
-The policy doesn't reach [terminals](/debug/terminal), which are each person's own shell, with their own `kubectl`.
+Beyond which kubectl they get, the policy doesn't reach [terminals](/debug/terminal), which are each person's own shell: read-only doesn't apply to what they run there.
 
 <Columns cols={2}>
   <Card title="Proxies and certificates" icon="waypoints" href="/desktop/network">

@@ -46,6 +46,7 @@ It gets the environment Lumovi started with and, on macOS and Linux, the `PATH` 
 | Variable | Set to |
 | --- | --- |
 | `KUBECONFIG` | The terminal's own kubeconfig, then yours. See below. |
+| `PATH` | Yours, with a [kubectl that matches the cluster](#a-kubectl-that-matches-the-cluster) first, and the folder of the [helm Lumovi runs](#helm) last |
 | `TERM` and `COLORTERM` | `xterm-256color` and `truecolor` |
 | `TERM_PROGRAM` | `Lumovi`, with its version in `TERM_PROGRAM_VERSION`, for a prompt or a script that wants to know where it runs |
 | `LANG` | `en_US.UTF-8`, unless Lumovi's environment has a `LANG`: apps opened from the Dock often have none |
@@ -76,10 +77,10 @@ kubectl takes the current context, and each context, from the first file that ha
 - **Your credentials stay in your files.** Credential plugins work as in any terminal, and a token kubectl refreshes is saved with your user, in your files.
 - **The namespace** is the one picked in the namespace menu when the terminal started. With **All namespaces**, it's the context's own, if your kubeconfig sets one. Picking another namespace later doesn't change a running terminal: start a new one.
 
-The terminal's first line says where it points:
+The terminal's first line says where it points, and which kubectl it is:
 
 ```text
-› kubectl points at dev, namespace shop, in this terminal.
+› kubectl points at dev, namespace shop, in this terminal. It’s v1.34.9, to match the cluster.
 ```
 
 Lumovi deletes the terminal's kubeconfig when its shell ends: when the shell exits, when you close its tab, and when you quit. If Lumovi crashed or was killed before it could, it deletes what's left the next time it starts. See [Privacy and security](/reference/privacy-and-security#what-it-keeps-on-your-computer).
@@ -87,6 +88,41 @@ Lumovi deletes the terminal's kubeconfig when its shell ends: when the shell exi
 <Tip>
   If kubectl in a terminal uses another cluster, your shell's startup files probably set `KUBECONFIG`, which replaces the terminal's. Have them add to it instead, so the terminal's own file stays first. `echo $KUBECONFIG` shows what the shell has (`$env:KUBECONFIG` in PowerShell).
 </Tip>
+
+## A kubectl that matches the cluster
+
+kubectl works with clusters one minor version either side of its own, so one kubectl may be too old, or too new, for some of your clusters. Each terminal gets the kubectl for the version the cluster says it runs: the newest patch of that minor version, like v1.34.9 for a cluster that says v1.34.1.
+
+- **From Kubernetes.** Lumovi asks [dl.k8s.io](https://dl.k8s.io) for that minor version's newest patch (`release/stable-1.34.txt`), then downloads it, and checks it against the checksum published beside it. That catches a download that's broken or cut short, not a server that isn't Kubernetes'. It goes through the [proxy and certificate authorities](/desktop/network) Lumovi's other connections use.
+- **Downloaded once.** Each is kept in Lumovi's folder for app data, under `kubectl/v1.34.9`, for the terminals of every cluster on that minor version. As Lumovi starts, it keeps only each minor version's newest patch. It remembers which patch is newest for six hours, and each cluster's version as it last said it: after a cluster's upgrade, the first terminal can still get the kubectl for its old version, and the ones after get the new.
+- **First on the terminal's `PATH`**, even after your startup files have run, as they may put theirs first, the way macOS's `path_helper` does, in zsh, bash, sh, dash, ksh and fish, and in PowerShell, after your profile. Type `kubectl`, and it's this one. Other shells, like csh, tcsh or nushell, start with it first, but their own startup files can put another kubectl ahead of it.
+
+While it downloads, the terminal says so: `› Getting kubectl v1.34.9, to match the cluster…`.
+
+### When it can't have one
+
+A terminal is often opened because something's wrong, so it doesn't wait long. It waits 3 seconds for the cluster to say its version, unless an earlier terminal already learned it, and 10 seconds for the kubectl. Past that, or when Lumovi can't get one, the terminal starts with the kubectl on your `PATH`, and its first line says why:
+
+```text
+› kubectl points at dev in this terminal. It’s the one on your PATH: Lumovi couldn’t ask the cluster its version (it didn’t answer within 3 seconds).
+```
+
+| It says | Why |
+| --- | --- |
+| "Lumovi couldn't ask the cluster its version (it didn't answer within 3 seconds)" | The cluster didn't answer in time: its VPN is off, say. |
+| "kubectl v1.34.9 is still downloading, for the terminals opened once it's done" | The download takes longer than 10 seconds. It carries on: the terminals you open after it's done have it. |
+| "dl.k8s.io didn't answer within 10 seconds" | Lumovi couldn't learn the newest patch in time. |
+| "Lumovi couldn't get kubectl 1.34 to match the cluster (dl.k8s.io answered 503)" | It couldn't be had, and none of that minor version is kept. The reason in brackets can also be the connection's, or "what was downloaded isn't what dl.k8s.io published". |
+
+When dl.k8s.io can't be reached, offline say, the newest kubectl of that minor version Lumovi kept does. What failed isn't tried again for 10 minutes, so the terminals you open meanwhile don't wait for it to fail again.
+
+### Turn it off
+
+Choose **View → Match kubectl to Each Cluster**, on by default, to turn it off: terminals opened from then on use the kubectl on your `PATH`, and say nothing of it. Your organization's [policy](/desktop/policy#kubectl) can turn it off for you (`"kubectl": false`), and the item is then off and disabled, or name a mirror of dl.k8s.io to get kubectl from. Without a policy, `LUMOVI_KUBECTL_MIRROR` names one: see [Environment variables](/reference/environment-variables).
+
+### helm
+
+The desktop app ships with helm, which its [Helm](/helm/releases) actions run. Its folder is last on each terminal's `PATH`, so `helm` runs yours where you have one, and Lumovi's where you don't. With `LUMOVI_HELM` set to a full path, that helm's folder is.
 
 ## Read-only clusters
 
