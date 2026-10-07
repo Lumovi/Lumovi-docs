@@ -7,6 +7,28 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 7, 2026" description="1.8.0" tags={["In your cluster", "Desktop app"]}>
+  ## A restart signs nobody out
+
+  Upgrading, or restarting, your team's Lumovi keeps everyone signed in, and the AI assistants they allowed connected.
+
+  - **What's kept:** sessions, the AI assistants people allowed with their tokens, and what each person made read-only for their assistants.
+  - **Where it's kept:**
+    - With the chart, in a Secret it makes, `<release>-state`, which Lumovi may only `get` and `patch` (`auth.keepSessions`, on by default).
+    - Without the chart, in that Secret (`LUMOVI_STATE_SECRET`), or under `LUMOVI_DATA_DIR`.
+  - **Sealed, with a key kept apart.** Each entry is sealed (AES-256-GCM), and filed under an HMAC of what it is. The key is in a Secret of its own: the chart makes `<release>-state-key` and keeps it, or you give `auth.stateKeySecret` where the chart is rendered with `helm template`, as with Argo CD. Without Kubernetes, the key is in `state.key`, beside `state.json`. Reading the state shows nothing, not even who's signed in, and writing it can't make, change or move an entry that opens.
+  - **No credential in it either.** Cookies and assistants' tokens are kept by their hash. A token a session passes on to the cluster (its person's own, with a token, or with single sign-on that forwards theirs) is sealed again, with a key only its cookie gives. It's unsealed when its browser comes back, and renewed from then on.
+  - **Sign-outs stay signed out.** A sign-out, and an assistant let go or signed out, is kept before Lumovi says it's done. When that can't be kept, Lumovi says so.
+  - **Assistants after a restart.** Until its person opens Lumovi again, an assistant whose session passes their own token on says Lumovi restarted, and to open it. It carries on once they do. Assistants behind a proxy, or whose sessions pass no token on, carry on at once.
+  - See [Across restarts](/server/security#across-restarts).
+
+  ## The desktop app with Homebrew
+
+  - **`brew install --cask lumovi/tap/lumovi`**, from Lumovi's own tap, which follows each release once GitHub attests that the release workflow built its installers. Lumovi keeps updating itself. See [Install](/get-started/desktop#install).
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.8.0)
+</Update>
+
 <Update label="October 7, 2026" description="1.7.0" tags={["Desktop app", "In your cluster"]}>
   ## Behind a company's proxy
 
