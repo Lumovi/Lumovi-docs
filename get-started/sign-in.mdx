@@ -79,7 +79,7 @@ Your access comes from the roles bound to that name and those groups. With singl
     Every page has its own address: a pod, a filtered list, a Helm release. Copy it from the address bar and send it. Whoever opens it signs in, and sees it if their account may. In a fleet, the address names the cluster, and the page of every cluster keeps what you picked on it too.
   </Accordion>
   <Accordion title="Sessions end" icon="timer">
-    A session lasts 12 hours unless your team changed that. It also ends when Lumovi restarts, after an upgrade say. You come back to the sign-in page, and land where you were. Behind a company login, Lumovi keeps no session of its own: the proxy decides when you sign in again.
+    A session lasts 12 hours unless your team changed that. When Lumovi restarts, after an upgrade say, you stay signed in: the page reconnects. When a session ends, you come back to the sign-in page, and land where you were. Behind a company login, Lumovi keeps no session of its own: the proxy decides when you sign in again.
   </Accordion>
   <Accordion title="If the connection drops" icon="wifi-off">
     A banner says **Reconnecting to Lumovi…**, and the page keeps what it showed. It picks up again as soon as the server answers. If it goes on, the server may be down, or a proxy in front of it may not pass WebSockets.

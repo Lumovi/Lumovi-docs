@@ -280,7 +280,10 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 
     If the assistant can't find where to sign in at all, the server is below a path whose addresses for signing in don't reach Lumovi, or a proxy in front of it asks the assistant to sign in to it. See [AI assistants for your team](/server/assistants#troubleshooting).
 
-    An assistant you allowed has to sign in again when you sign out, your session ends, or Lumovi restarts, and when Lumovi let it go because a token it had used already came back.
+    An assistant you allowed has to sign in again when you sign out, or your session ends, and when Lumovi let it go because a token it had used already came back. A restart lets go of none.
+  </Accordion>
+  <Accordion title="An assistant says Lumovi restarted" icon="rotate-ccw">
+    `Lumovi restarted since alice@example.com last used it: open Lumovi in your browser, and Claude Code picks up where it left off.` You sign in with a token, or your team's single sign-on passes your own token on, and Lumovi keeps it sealed with a key only your browser has. Open Lumovi, and the assistant carries on. See [When Lumovi restarts](/assistants/server#when-lumovi-restarts).
   </Accordion>
 </AccordionGroup>
 
@@ -365,7 +368,24 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     `LUMOVI_ACCESS` (the chart's `access.policy`), or what admins set and Lumovi kept, doesn't make sense, and the log says where: `LUMOVI_ACCESS: grants[0].who[0] names a group there isn’t: “nobody”.` Lumovi stops rather than let anyone do more. See [Access for your team](/server/access#troubleshooting).
   </Accordion>
   <Accordion title="Everyone was signed out" icon="log-out">
-    Sessions live in Lumovi's memory, so restarting it, as an upgrade does, signs everyone out, and their [AI assistants](/assistants/server) too. With single sign-on, signing in again is a click. Sessions also end after 12 hours, unless you set it otherwise. See [Upgrading](/server/upgrade).
+    A restart, as an upgrade does, signs nobody out, unless Lumovi had nowhere to keep sessions, couldn't, or can't open what it kept:
+
+    - **`auth.keepSessions: false`**, or without the chart, neither `LUMOVI_STATE_SECRET` nor `LUMOVI_DATA_DIR`. The log says, as Lumovi starts: `Who’s signed in and the AI assistants they allowed are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`
+    - **The key changed, or was lost**: `12 of what Lumovi kept doesn’t open with its key (it changed, or they were): they’re let go.` With Argo CD, or anything else that renders the chart with `helm template`, each render makes a new key: give your own, in `auth.stateKeySecret`. See [Sessions across restarts](/server/hardening#sessions-across-restarts).
+    - **Writing it failed**, before the restart: `Lumovi can’t keep who’s signed in (…): if it restarts now, what changed since is lost.`, then `Lumovi keeps who’s signed in again.` once it can.
+    - **It didn't all fit** in a megabyte: `What Lumovi keeps would be more than the 1000 kB it may hold: the 40 sessions that end soonest aren’t kept (they sign in again after a restart).`
+    - **What's kept can't be read**, edited by hand, say: `What Secret lumovi/lumovi-state kept can’t be read (…): everyone signs in again.`, with why in the brackets
+    - **Lumovi was uninstalled**, which deletes the Secret and its key.
+    - **More than one replica**, without sticky sessions: each knows the sessions started on it.
+
+    Sessions also end after 12 hours, unless you set it otherwise. See [Across restarts](/server/security#across-restarts).
+  </Accordion>
+  <Accordion title="Lumovi doesn't start: its sessions' Secret or key" icon="key-round">
+    - `Lumovi can’t read Secret lumovi/lumovi-state, where it keeps who’s signed in and the AI assistants they allowed: …`. The Secret isn't there, or Lumovi may not `get` it: with `rbac.create: false`, give its service account `get` and `patch` on `<release>-state`.
+    - `LUMOVI_STATE_SECRET needs LUMOVI_STATE_KEY: the key what’s kept is sealed with, from a Secret of its own (the chart makes one).` Without the chart, set both.
+    - `LUMOVI_STATE_KEY must be at least 32 characters, random ones.` The key in `auth.stateKeySecret`'s Secret is too short: make one with `openssl rand -base64 48`.
+
+    Kubernetes doesn't start the pod at all when the key's Secret, or its `key`, isn't there (`CreateContainerConfigError`). See [`LUMOVI_STATE_SECRET`](/server/configuration#sign-in).
   </Accordion>
   <Accordion title="The cluster doesn't accept this token" icon="key-round">
     The token is wrong, expired or revoked. Create a new one, for example `kubectl create token NAME --namespace NAMESPACE`. Lumovi asks the cluster who a token belongs to with a SelfSubjectReview, which needs Kubernetes 1.28 or later. See [Tokens](/server/auth/tokens).

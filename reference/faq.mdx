@@ -88,6 +88,9 @@ icon: "circle-question-mark"
 
     A fleet runs in a cluster with the Helm chart, or without Kubernetes, with Docker or on a platform like [Sevalla](/server/fleet/sevalla). For clusters it can't reach, an [agent](/server/fleet/agents) in each one dials out to it. See [Clusters in a fleet](/clusters/fleet) for using one.
   </Accordion>
+  <Accordion title="Does upgrading Lumovi in our cluster sign everyone out?">
+    No. A restart, as an upgrade does, signs nobody out, and lets go of none of the AI assistants people allowed: Lumovi keeps them in a Secret of its own, each entry sealed with a key kept apart, and no cookie or token in it that works as it is. Open pages reconnect by themselves. See [Across restarts](/server/security#across-restarts).
+  </Accordion>
   <Accordion title="Does it handle big clusters?">
     Yes. Lists load in chunks of 500 and are paginated and virtualized, so thousands of pods stay smooth. They stop at 5,000 objects by default, with a note saying so; a label selector narrows a list on the server. Busy lists refresh less often.
   </Accordion>

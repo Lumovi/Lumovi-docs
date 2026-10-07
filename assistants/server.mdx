@@ -78,12 +78,22 @@ If something is wrong with the request, the page says so instead, and asks you t
 
 An assistant you allow acts as you, with your RBAC on each cluster, until:
 
-- **You disconnect it**, on the page's **Your assistants** tab.
-- **Your session ends**: you sign out of Lumovi, it's been 12 hours (or what your team set), or Lumovi restarts.
+- **You disconnect it**, on the page's **Your assistants** tab. A restart doesn't bring it back.
+- **Your session ends**: you sign out of Lumovi, or it's been 12 hours (or what your team set).
 - **The assistant signs out** of Lumovi itself.
 - **Lumovi lets it go**, when a token it renewed its access with comes back later, used already, as it would if someone else had a copy.
 
 It renews its access every hour by itself, without asking you. Once it can no longer act as you, it has to sign in again, as the first time.
+
+### When Lumovi restarts
+
+A restart, as an upgrade does, lets go of none of your assistants. Each opens a new connection to Lumovi, which most do by themselves. If you sign in with a token, or your team's single sign-on passes your own token on, Lumovi can't act as you again until your browser's back. Until you open Lumovi, your assistant is told so:
+
+```text
+Lumovi restarted since alice@example.com last used it: open Lumovi in your browser, and Claude Code picks up where it left off.
+```
+
+Open Lumovi, and it carries on. A change it asked for that was waiting for your answer is gone: it asks again. See [After a restart](/server/assistants#after-a-restart).
 
 <Note>
   **Behind a company login**, Lumovi has no session of its own. An assistant you allow acts as you for as long as a session would last, 12 hours unless your team changed that, from when you allowed it. Each time you open a Lumovi page, it takes on what the company login says about you there, like your groups. Signing out of the company login doesn't end it: disconnect it in Lumovi.
