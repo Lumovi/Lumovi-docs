@@ -121,7 +121,7 @@ Under **Connect an assistant**, a tab for each assistant says how. What you copy
     | macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
     | Windows | `%APPDATA%\Claude\claude_desktop_config.json` |
 
-    Claude Desktop doesn't connect over HTTP. It starts Lumovi as a program it talks to over stdin and stdout. On macOS, that's Lumovi's app with `--mcp-stdio=` and Lumovi's settings folder. On Windows, where the app itself can't read stdin, it's `Lumovi.exe` running as Node (`ELECTRON_RUN_AS_NODE`) on a small bridge that comes with Lumovi. Started either way, Lumovi opens no window: it passes Claude Desktop's messages on to the Lumovi you have open. It reads the port and the token from Lumovi's settings each time, so a new port or token needs no setting up again.
+    Claude Desktop doesn't connect over HTTP. It starts Lumovi as a program it talks to over stdin and stdout. On macOS, that's Lumovi's app with `--mcp-stdio=` and Lumovi's settings folder. On Windows, where the app itself can't read stdin, it's `Lumovi.exe` running as Node (`ELECTRON_RUN_AS_NODE`) on a small bridge that comes with Lumovi. Started either way, Lumovi opens no window: it passes Claude Desktop's messages on to the Lumovi you have open. It reads the port and the token from Lumovi's settings each time, so a new port or token needs no setting up again. Before each message, it makes sure it's Lumovi that listens on that port, with a challenge only Lumovi can answer, and only then sends the token: see [Security](#security).
 
     The entry it adds looks like this, with your own paths. To write it by hand, copy it as Lumovi would: on Windows, the `env` line is needed.
 
@@ -180,7 +180,7 @@ Under **Connect an assistant**, a tab for each assistant says how. What you copy
     - **Address**: `http://127.0.0.1:47830/mcp`
     - **Header**: `Authorization: Bearer <token>`
 
-    Lumovi speaks MCP's Streamable HTTP transport there.
+    Lumovi speaks MCP's Streamable HTTP transport there. Keep `127.0.0.1`, as Lumovi writes it, not `localhost`: see [Security](#security).
   </Tab>
 </Tabs>
 
@@ -202,9 +202,10 @@ Lumovi says what that does: "Assistants connected with the token now disconnect:
 
 Lumovi lets assistants in only from this computer, and only with its token:
 
-- **Only on this computer.** Lumovi listens on `127.0.0.1`, which other computers can't reach.
+- **Only on this computer.** Lumovi listens on `127.0.0.1`, which other computers can't reach, and writes its address that way. Assistants that connect over HTTP send the token to that address with no challenge, so keep `127.0.0.1` where you set one up by hand: `localhost` can lead to `::1` first, where another program could be listening, and be given the token.
 - **Only with the token.** Every request has to carry it, as `Authorization: Bearer <token>`. It's 43 random characters, made the first time you turn assistants on, and Lumovi compares it in constant time. A request without it gets "Lumovi needs its token: set this assistant up again from Lumovi."
 - **Not from web pages.** A browser marks the requests a page makes with an `Origin` header, and Lumovi refuses them: "Web pages may not connect to Lumovi." A page that points a name of its own at your computer (DNS rebinding) sends that name as the `Host`, and is refused too: "Only this computer may connect." Only requests addressed to `127.0.0.1` or `localhost`, at Lumovi's port, get in.
+- **Claude Desktop's bridge checks it's Lumovi first.** Before every request, it sends a random challenge (`Lumovi-Challenge`), and Lumovi answers with the challenge's HMAC-SHA256, keyed with its token (`Lumovi-Proof`). Only Lumovi can make that, and it tells nothing of the token. Without the right answer, the bridge sends no token, starts no Lumovi, and Claude Desktop is told: "What listens on Lumovi's port (47830) can't show it's Lumovi, so Lumovi's token isn't sent to it: open Lumovi, and set this assistant up again."
 - **Small messages.** A message is at most 4 MB. A larger one gets "That's more than Lumovi takes: 4 MB at most." Only `/mcp` answers.
 - **Kept where only you can read it.** The token is in Lumovi's `settings.json`, with what assistants may do. On macOS and Linux, Lumovi keeps that file readable by your account only. See [Privacy and security](/reference/privacy-and-security#what-it-keeps-on-your-computer).
 
