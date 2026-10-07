@@ -59,7 +59,7 @@ Without `list` on services, choose the server yourself in **Metrics source**. Se
 
 Lumovi reads releases from the Secrets (or ConfigMaps) Helm keeps them in, so looking at them needs `list` on `secrets` in their namespaces (or on `configmaps`, for releases kept there), and no `helm`. The built-in `view` ClusterRole doesn't include Secrets, so it isn't enough to see releases.
 
-Changing a release runs your own `helm` with your credentials, so you need whatever Helm needs to change the release's objects. See [Helm releases](/helm/releases).
+Changing a release runs `helm` with your credentials, so you need whatever Helm needs to change the release's objects. See [Helm releases](/helm/releases).
 
 ## Making changes
 

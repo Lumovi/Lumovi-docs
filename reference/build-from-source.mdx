@@ -32,7 +32,7 @@ To package the app, you also need:
     npm run dist
     ```
 
-    The installers for your platform land in `release/`, for x64 and arm64: a `.dmg` and `.zip` on macOS, one `.exe` on Windows, and an AppImage, `.deb` and `.rpm` on Linux. `npm run package` builds an unpacked app there instead, which is quicker.
+    It downloads helm 4.3.0 from get.helm.sh for each installer, checked against the SHA-256 pinned in `scripts/helm.ts`, for the app to ship with. The installers for your platform land in `release/`, for x64 and arm64: a `.dmg` and `.zip` on macOS, one `.exe` on Windows, and an AppImage, `.deb` and `.rpm` on Linux. `npm run package` builds an unpacked app there instead, which is quicker.
 
     On Linux, node-pty is built for the computer it's installed on, so build only for that computer's architecture: `npm run dist -- --x64`, or `npm run dist -- --arm64` on an ARM one. An installer for the other architecture would carry a node-pty that can't run there. Lumovi's own releases build each on a machine of that architecture.
   </Step>
@@ -53,7 +53,7 @@ npm run dev:server  # Lumovi served, as in a cluster, against the demo clusters
 npm run dev:server -- --fleet  # a fleet of the demo clusters, signed in to as Alice
 ```
 
-`dev` and `dev:mock` reload as you change the code. The demo clusters are the ones the tests use: a busy one with every kind of problem, an empty one without metrics, one with 2,500 pods, and contexts that fail in every way a real one can.
+`dev` and `dev:mock` reload as you change the code. They run the `helm` on your login shell's `PATH` for Helm actions, as there's no helm shipped with them: install [Helm](https://helm.sh), or set `LUMOVI_HELM`, to try those. The demo clusters are the ones the tests use: a busy one with every kind of problem, an empty one without metrics, one with 2,500 pods, and contexts that fail in every way a real one can.
 
 `dev:server` builds Lumovi and serves it at `http://127.0.0.1:8080`, and prints the demo tokens to sign in with. With `-- --fleet`, it serves a [fleet](/server/fleet) of the demo clusters instead, and one that never answers, with a mock single sign-on: sign in, and you're Alice, a developer.
 

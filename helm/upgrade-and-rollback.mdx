@@ -5,7 +5,7 @@ description: "Change a release's values or chart, reviewed as a server-side dry 
 icon: "history"
 ---
 
-Changes to Helm releases go through your own `helm`, so hooks, three-way merges and Helm's own record of revisions work as they always do. Lumovi prepares the command, shows it to you, and shows what it would change before anything does.
+Changes to Helm releases go through `helm` itself, so hooks, three-way merges and Helm's own record of revisions work as they always do. Lumovi prepares the command, shows it to you, and shows what it would change before anything does.
 
 Open a release in **Helm releases** (<kbd>G</kbd> then <kbd>H</kbd>), and use **Upgrade…**, **Roll back…** or **Uninstall…** (the trash button) at the top of its panel.
 
@@ -87,9 +87,9 @@ If Flux's helm-controller manages a release, every dialog warns that Flux puts b
 
 ## Which helm runs
 
-The desktop app runs the `helm` on your login shell's `PATH`, so it's the same one your terminal uses. To use another, set `LUMOVI_HELM` to its path before starting Lumovi.
+The desktop app ships with helm 4.3.0, the same as Lumovi's image, and runs that one: you need no helm of your own. To use another, set `LUMOVI_HELM` to its path before starting Lumovi. Run from source, with `npm run dev`, it has none, and runs the `helm` on your login shell's `PATH`.
 
-If Lumovi can't run it, a release's **Upgrade…**, **Roll back…** and **Uninstall…** are disabled, and say why: "Lumovi uses helm for this, and couldn't run helm. Install Helm, or set LUMOVI_HELM to where it is." **Install chart** says the same when you choose **Review**, with Helm's address: "Install Helm (https://helm.sh), or set LUMOVI_HELM to where it is."
+If Lumovi can't run it, a release's **Upgrade…**, **Roll back…** and **Uninstall…** are disabled, and say why, with the helm it tried: "Lumovi uses helm for this, and couldn't run /opt/helm/bin/helm. Install Helm, or set LUMOVI_HELM to where it is." **Install chart** says the same when you choose **Review**, with Helm's address: "Install Helm (https://helm.sh), or set LUMOVI_HELM to where it is." Each [terminal](/debug/terminal#helm) has the helm Lumovi runs last on its `PATH`.
 
 Each command is pointed at the cluster you're looking at with `--kube-context`, uses your kubeconfig's credentials, and may run for up to 10 minutes (for charts with slow hooks).
 

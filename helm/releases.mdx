@@ -6,7 +6,7 @@ icon: "package"
 
 **Helm releases** lists every release in the cluster, or in the namespace you picked. Open it from the sidebar, or press <kbd>G</kbd> then <kbd>H</kbd>.
 
-Lumovi reads releases from where Helm itself keeps them, so looking needs no `helm` on your computer and no access beyond reading Secrets. Changing a release goes through your own `helm`: see [Upgrade and roll back](/helm/upgrade-and-rollback).
+Lumovi reads releases from where Helm itself keeps them, so looking needs no `helm` on your computer and no access beyond reading Secrets. Changing a release runs `helm`, which the desktop app ships with: see [Upgrade and roll back](/helm/upgrade-and-rollback).
 
 <Frame caption="Every release, its chart, version and status.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/helm-releases-light-1x.webp" alt="Every Helm release, its chart, version and status." />
@@ -68,7 +68,7 @@ If a release is managed by [Flux](https://fluxcd.io)'s helm-controller, Lumovi s
 | To | Your account needs |
 | --- | --- |
 | See releases | `list` on Secrets (and ConfigMaps), in the namespace or cluster-wide |
-| Change them | Whatever the chart's objects need, since your own `helm` makes the change with your credentials |
+| Change them | Whatever the chart's objects need, since `helm` makes the change with your credentials |
 
 Helm 3 and 4 keep each revision of a release in a Secret labeled `owner=helm` (or a ConfigMap, with Helm's `configmap` storage driver). Lumovi reads both. If your account can't list Secrets, the page says so instead of showing an empty list.
 
