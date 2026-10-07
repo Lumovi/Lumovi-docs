@@ -144,6 +144,17 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 
     **kubectl uses another cluster.** Your shell's startup files probably set `KUBECONFIG`, which replaces the terminal's own. Have them add to it instead, so the terminal's file stays first. See [Terminals](/debug/terminal#kubectl-points-at-the-cluster).
   </Accordion>
+  <Accordion title="A terminal says it uses the kubectl on your PATH" icon="terminal">
+    Lumovi couldn't give the terminal a [kubectl that matches its cluster](/debug/terminal#a-kubectl-that-matches-the-cluster), and its first line says why, after "It's the one on your PATH:":
+
+    - **Lumovi couldn't ask the cluster its version (it didn't answer within 3 seconds).** The cluster isn't reachable now: connect its VPN, say, and open another terminal.
+    - **kubectl v1.34.9 is still downloading, for the terminals opened once it's done.** Open another terminal once it's done.
+    - **dl.k8s.io didn't answer within 10 seconds**, or **Lumovi couldn't get kubectl 1.34 to match the cluster (…)**: dl.k8s.io can't be reached from this computer, and Lumovi kept none of that version. Behind a company's proxy, see [Proxies and certificates](/desktop/network). Lumovi tries again 10 minutes later. Your organization can name a mirror in its [policy](/desktop/policy#kubectl).
+
+    A terminal with no such line at all has **View → Match kubectl to Each Cluster** turned off, by you or your organization.
+
+    Just after a cluster's upgrade, the first terminal you open can still get the kubectl for its old version: Lumovi remembers each cluster's version as it last said it, and asks again for the next. Open another terminal.
+  </Accordion>
   <Accordion title="A port can't be forwarded" icon="unplug">
     **Port … on this computer can't be used (EADDRINUSE).** Something else on your computer listens on that port. Pick another local port. See [Port forwarding](/debug/port-forwarding).
   </Accordion>
@@ -197,7 +208,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 
 <AccordionGroup>
   <Accordion title="Lumovi couldn't run helm" icon="package">
-    Looking at releases needs nothing, but changing them runs your own `helm`. Install [Helm](https://helm.sh), or set [`LUMOVI_HELM`](/reference/environment-variables) to where it is. On macOS and Linux, `helm` must be on your login shell's `PATH`.
+    Lumovi ships with helm, so this happens only when `LUMOVI_HELM` names a helm that isn't there, or can't run, or when you run it from source (`npm run dev`) without `helm` on your login shell's `PATH`. Set [`LUMOVI_HELM`](/reference/environment-variables) to a helm that runs, or unset it to use the one Lumovi ships with.
   </Accordion>
   <Accordion title="Helm couldn't do it" icon="circle-alert">
     The error shown is what `helm` said. A failed upgrade is often a chart or values problem, which the [dry run](/helm/upgrade-and-rollback) usually catches first.

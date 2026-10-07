@@ -31,6 +31,10 @@ Lumovi reads them once, when it starts. Restart it after changing one.
   The proxy Lumovi goes through for `https` and `http` addresses, and what it reaches directly, as `kubectl` and `helm` read them, in upper case or lower case. A proxy without a scheme is taken as `http://`; one that isn't a URL is left out, and Lumovi says so as it starts, in a notice. On macOS and Linux, Lumovi takes them from your login shell, when they aren't set where it starts. Your clusters, Helm repositories and Artifact Hub go through it; `localhost`, `127.0.0.1` and `::1` never do. Your organization's [policy](/desktop/policy) can set the proxy instead. See [Proxies and certificates](/desktop/network).
 </ResponseField>
 
+<ResponseField name="LUMOVI_KUBECTL_MIRROR" type="URL" default="https://dl.k8s.io">
+  Where terminals' [matching kubectl](/debug/terminal#a-kubectl-that-matches-the-cluster) comes from: a mirror of dl.k8s.io, laid out as it is (`release/stable-1.34.txt`, `release/v1.34.9/bin/darwin/arm64/kubectl` and its `.sha256`). Use an `https` one: over `http`, the checksum comes over the same plain connection as the kubectl, so someone on the network could change both. Your organization's [policy](/desktop/policy#kubectl) names one instead, when it does.
+</ResponseField>
+
 <ResponseField name="LUMOVI_POLICY" type="path">
   A [policy](/desktop/policy) file to try out, where your computer has none. Where IT has set one, in the system's file or, on Windows, the registry, that one is used, and this is ignored.
 </ResponseField>
@@ -47,8 +51,8 @@ Lumovi reads them once, when it starts. Restart it after changing one.
   Where your own [views](/custom-resources/write-a-view) and [add-ons](/custom-resources/add-ons) are. Every `.yaml` and `.yml` file directly in it is read, up to 200 files of at most 256 KB each. Folders inside it aren't.
 </ResponseField>
 
-<ResponseField name="LUMOVI_HELM" type="path" default="helm">
-  The `helm` to run when you change a Helm release. Without it, Lumovi runs the `helm` on your login shell's `PATH`. See [Helm releases](/helm/releases).
+<ResponseField name="LUMOVI_HELM" type="path" default="the helm Lumovi ships with">
+  Another `helm` to run when you change a Helm release. Without it, Lumovi runs the helm it ships with: helm 4.3.0, the same as its image's. Run from source, with `npm run dev`, it has none, and runs the `helm` on your login shell's `PATH`. See [Which helm runs](/helm/upgrade-and-rollback#which-helm-runs).
 </ResponseField>
 
 <ResponseField name="LUMOVI_ARTIFACT_HUB_URL" type="URL" default="https://artifacthub.io">

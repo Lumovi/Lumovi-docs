@@ -28,7 +28,7 @@ icon: "circle-question-mark"
     Plenty of teams use both. See [Install the desktop app](/get-started/desktop) and [Run it in your cluster](/get-started/in-your-cluster).
   </Accordion>
   <Accordion title="Do I need kubectl?">
-    No. Lumovi talks to the API server itself. It still shows the equivalent `kubectl` command for every change, so you can learn it, copy it or script it. [Helm](https://helm.sh) is needed only to change Helm releases; looking at them needs nothing.
+    No. Lumovi talks to the API server itself. It still shows the equivalent `kubectl` command for every change, so you can learn it, copy it or script it, and each [terminal](/debug/terminal#a-kubectl-that-matches-the-cluster) gets a kubectl that matches its cluster. Nor do you need [Helm](https://helm.sh): the desktop app ships with the helm it runs.
   </Accordion>
   <Accordion title="Which Kubernetes versions does it support?">
     Kubernetes 1.25 or later. From 1.27, Lumovi also explains fields from the cluster's own OpenAPI schema. When it runs in your cluster, signing in with a token needs 1.28 or later.

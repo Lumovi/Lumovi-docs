@@ -23,6 +23,7 @@ The desktop app talks to:
 - **[Artifact Hub](https://artifacthub.io)**, only when you search it for a chart to install.
 - **The chart repositories and registries you choose**, when you upgrade or install a Helm release from one.
 - **GitHub**, to look for new versions of Lumovi. **Help → Check for Updates Automatically** turns that off.
+- **[dl.k8s.io](https://dl.k8s.io)**, Kubernetes' own downloads, when you open a [terminal](/debug/terminal#a-kubectl-that-matches-the-cluster), for a kubectl that matches its cluster. It asks which patch of the cluster's minor version is newest, like 1.34, and downloads that kubectl for your system and architecture, once, with the checksum published beside it. So dl.k8s.io learns your address, the minor versions of the clusters you open terminals for, your system and architecture, and when you open them: no cluster's name or address. It goes through the same [proxy and certificate authorities](/desktop/network) as Lumovi's other connections. It's on by default: **View → Match kubectl to Each Cluster** turns it off, as can your organization's [policy](/desktop/policy#kubectl), which can also name a mirror instead.
 
 Behind a company's proxy, it reaches them through the proxy your shell uses, and trusts the certificate authorities your computer does: see [Proxies and certificates](/desktop/network).
 
@@ -70,10 +71,11 @@ See [Config and storage](/explore/config-and-storage) for how Secrets are shown 
 
 ## What it keeps on your computer
 
-The desktop app keeps three kinds of things on your computer, and none of it leaves it:
+The desktop app keeps four kinds of things on your computer, and none of it leaves it:
 
-- **Settings**, in `settings.json`: your theme, the window's size and place, which clusters you made read-only, where each one's usage history comes from, the namespace and image of its [node shells](/debug/node-shell), and whether Lumovi looks for new versions by itself. For [AI assistants](/assistants/overview): whether they may connect, the port and the token, [what they may do](/assistants/permissions), and how Lumovi was last started, for Claude Desktop to start it the same way. On macOS and Linux, only your account can read `settings.json`: Lumovi sets that each time it writes the file.
+- **Settings**, in `settings.json`: your theme, the window's size and place, which clusters you made read-only, where each one's usage history comes from, the namespace and image of its [node shells](/debug/node-shell), and whether Lumovi looks for new versions by itself, and whether terminals get a kubectl to match their cluster. For [AI assistants](/assistants/overview): whether they may connect, the port and the token, [what they may do](/assistants/permissions), and how Lumovi was last started, for Claude Desktop to start it the same way. On macOS and Linux, only your account can read `settings.json`: Lumovi sets that each time it writes the file.
 - **The [audit log](/audit/overview)**, in the `audit` folder: what was done through Lumovi, a file a day (`audit-2026-10-06.jsonl`), each kept for 90 days. Each event names your computer's account, the kubeconfig user Lumovi used, the cluster, the object and the command: never a Secret's values, what a change set, Helm values, or tokens. On macOS and Linux, only your account can read the folder and its files: Lumovi makes them so as it starts. If the folder can't be used, it keeps the log in memory until it quits, and the **Audit log** page says why.
+- **kubectl**, in the `kubectl` folder: each one Lumovi downloaded for [terminals](/debug/terminal#a-kubectl-that-matches-the-cluster), in a folder named for its version, like `kubectl/v1.34.9`. As Lumovi starts, it keeps only the newest patch of each minor version.
 - **Conveniences** the page remembers: the namespace you picked per cluster, your recent clusters, the kinds you pinned to the sidebar and the custom resources you opened last, the detail panel's width, the terminal dock's height, the time range metrics charts open with, and which chart on your computer each Helm release was last deployed from.
 
 They live in Lumovi's folder for app data:

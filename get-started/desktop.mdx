@@ -129,7 +129,7 @@ New versions come from the project's [GitHub releases](https://github.com/Lumovi
 
 ## Verify your download
 
-Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. Each installer has a signed build provenance attestation, which says it was built by Lumovi's release workflow from the release's commit, and an attested bill of materials: `Lumovi-<version>.cdx.json` (CycloneDX), every package the app bundles or ships, and Electron, on the release too.
+Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. Each installer has a signed build provenance attestation, which says it was built by Lumovi's release workflow from the release's commit, and an attested bill of materials: `Lumovi-<version>.cdx.json` (CycloneDX), every package the app bundles or ships, Electron, and the helm it ships with (4.3.0), on the release too.
 
 <CodeGroup>
   ```bash Checksum (macOS, Linux)
@@ -163,8 +163,7 @@ Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. 
   <div><span className="lumovi-label">Kubernetes</span><span className="lumovi-value">1.25 or later</span></div>
 </div>
 
-- **kubectl** isn't needed. Lumovi talks to the API server itself.
-- **[Helm](https://helm.sh)** is needed only to change Helm releases. Looking at them needs nothing.
+- **Neither kubectl nor [Helm](https://helm.sh) is needed.** Lumovi talks to the API server itself, and ships with the helm its Helm actions run. Each [terminal](/debug/terminal#a-kubectl-that-matches-the-cluster) gets a kubectl that matches its cluster.
 - **Kubernetes 1.27 or later** lets Lumovi explain fields from the cluster's own OpenAPI schema. Older clusters work, without the explanations.
 
 Want to build it yourself? See [Build from source](/reference/build-from-source).
