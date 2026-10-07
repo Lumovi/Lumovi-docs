@@ -32,11 +32,6 @@ A node's status is one of:
 
 ## Open a node
 
-<Frame caption="A node under memory pressure, with its capacity, taint and conditions, and a way to cordon it.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-light-1x.webp" alt="A node under memory pressure: its details, CPU and memory against capacity, its taint and conditions, and a Cordon button." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-dark-1x.webp" alt="A node under memory pressure: its details, CPU and memory against capacity, its taint and conditions, and a Cordon button." />
-</Frame>
-
 **Overview** has:
 
 - **Details**: its internal IP, OS image, kernel, container runtime, kubelet version, architecture, pod CIDR, and whether it's **Schedulable**.
@@ -64,6 +59,11 @@ A drain, like `kubectl drain --ignore-daemonsets`, leaves DaemonSet pods and sta
 - **Evict pods without a controller**, for pods that nothing will recreate (`--force`).
 
 **Drain** stays disabled until the options the node's pods need are ticked. Evictions respect PodDisruptionBudgets, and the dialog shows each pod's progress, with **Retry** for any a budget refused. In a cluster named like production, you type the node's name first.
+
+<Frame caption="Draining a node under memory pressure: the pods it evicts, those that stay, and what has to be allowed first.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-light-1x.webp" alt="The Drain worker-2? dialog, on production: the node is cordoned, then its pods are evicted, PodDisruptionBudgets respected. Delete local data and Evict pods without a controller are unticked, and 2 pods need one of them before the node can be drained: 8 pods to evict, 4 staying, kube-proxy among them as a DaemonSet pod." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-dark-1x.webp" alt="The Drain worker-2? dialog, on production: the node is cordoned, then its pods are evicted, PodDisruptionBudgets respected. Delete local data and Evict pods without a controller are unticked, and 2 pods need one of them before the node can be drained: 8 pods to evict, 4 staying, kube-proxy among them as a DaemonSet pod." />
+</Frame>
 
 Pick several nodes with <kbd>X</kbd> to cordon or uncordon them together. More in [Actions by kind](/changes/actions).
 

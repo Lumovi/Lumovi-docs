@@ -177,9 +177,9 @@ Anything with no button of its own, like a Service, a Secret, or a Job that isn'
 
     Evictions run four at a time, respect PodDisruptionBudgets, and show their progress per pod. A pod whose eviction fails says why, and can be retried. In a cluster named like production, you type the node's name first.
 
-    <Frame caption="A node under memory pressure, with its capacity, taint and conditions, and a way to cordon it.">
-      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-light-1x.webp" alt="A node under memory pressure in the detail panel: its details, CPU and memory against capacity, its taint and conditions, and the Cordon and Shell buttons." />
-      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-dark-1x.webp" alt="A node under memory pressure in the detail panel: its details, CPU and memory against capacity, its taint and conditions, and the Cordon and Shell buttons." />
+    <Frame caption="Draining a node under memory pressure: the pods it evicts, those that stay, and what has to be allowed first.">
+      <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-light-1x.webp" alt="The Drain worker-2? dialog, on production: the node is cordoned, then its pods are evicted, PodDisruptionBudgets respected. Delete local data and Evict pods without a controller are unticked, and 2 pods need one of them before the node can be drained: 8 pods to evict, 4 staying, kube-proxy among them as a DaemonSet pod." />
+      <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-dark-1x.webp" alt="The Drain worker-2? dialog, on production: the node is cordoned, then its pods are evicted, PodDisruptionBudgets respected. Delete local data and Evict pods without a controller are unticked, and 2 pods need one of them before the node can be drained: 8 pods to evict, 4 staying, kube-proxy among them as a DaemonSet pod." />
     </Frame>
   </Accordion>
 </AccordionGroup>

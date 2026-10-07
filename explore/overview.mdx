@@ -49,6 +49,11 @@ Every node with its status and roles, and meters for its CPU and memory use (or 
 
 The pods and workloads (Deployments, StatefulSets and DaemonSets) that aren't healthy, most urgent first. It shows six, with **Show all** for the rest. Click one to open it. When nothing's wrong, it says *Everything looks healthy.*
 
+<Frame caption="What needs attention, the worst first, and the latest warnings beside it.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-attention-light-1x.webp" alt="Further down a cluster's overview: Needs attention, six of 12, the worst first (an Unavailable deployment, two pods in Error, two in CrashLoopBackOff, one in ImagePullBackOff), with Show all 12. Recent warnings beside it, and Top CPU and Top memory below." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/overview-attention-dark-1x.webp" alt="Further down a cluster's overview: Needs attention, six of 12, the worst first (an Unavailable deployment, two pods in Error, two in CrashLoopBackOff, one in ImagePullBackOff), with Show all 12. Recent warnings beside it, and Top CPU and Top memory below." />
+</Frame>
+
 ## Recent warnings
 
 The six latest warning events, with their reason and message. Click one to open the object it's about. When there are none: *No warnings. Nice.*
