@@ -140,7 +140,7 @@ The server's administrator decides:
 
 Within those, what your assistants may do is yours to say, on the [Permissions](/assistants/permissions) tab. Your permissions are kept on the server, the same in every browser you sign in with.
 
-Read-only for yourself reaches your assistants too. In a cluster you made [read-only](/changes/read-only), **Check a namespace** shows **Never: read-only**, `list_clusters` tells your assistants it's `read-only`, and a change one asks for there is refused: "… is read-only in Lumovi. Allow changes to it to continue." Lumovi keeps it as your latest page says, so a page in a browser where it isn't read-only allows changes there again.
+Read-only reaches your assistants too. In a cluster made [read-only](/changes/read-only#in-your-cluster) on the server, which is read-only for everyone, **Check a namespace** shows **Never: read-only**, `list_clusters` tells your assistants it's `read-only`, and a change one asks for there is refused, saying who made it so: "production is read-only for everyone on this server: jane@example.com made it so on 2026-10-07."
 
 <Columns cols={2}>
   <Card title="Approving changes" icon="check-check" href="/assistants/approvals">

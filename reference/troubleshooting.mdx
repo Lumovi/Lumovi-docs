@@ -103,7 +103,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     Lumovi asks the cluster what you're allowed to do before offering an action, and says why it can't:
 
     - **Your account can't … in ….** Your RBAC doesn't allow it. See [Permissions](/clusters/permissions).
-    - **Changes are turned off for this cluster.** You, `LUMOVI_READ_ONLY`, or your organization's [policy](/desktop/policy) made it read-only. See [Read-only mode](/changes/read-only).
+    - **Changes are turned off for this cluster.** You, `LUMOVI_READ_ONLY`, or your organization's [policy](/desktop/policy) made it read-only. On a server, it's read-only for everyone, and says who made it so: "Changes are turned off for this cluster: jane@example.com made it read-only for everyone." Ask them, or Lumovi's admins. See [Read-only mode](/changes/read-only).
   </Accordion>
   <Accordion title="Lumovi started without something it was given" icon="triangle-alert">
     As the desktop app started, it couldn't use something it was given, and says what, and why:
@@ -113,6 +113,9 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     - **A proxy that isn't a URL**, in `HTTPS_PROXY` or `HTTP_PROXY`: `HTTPS_PROXY isn’t a proxy’s URL: give it as http://host:port (or https://).` Lumovi connects without it. Check your shell's profile, or the [environment variable](/reference/environment-variables).
 
     See [Proxies and certificates](/desktop/network).
+  </Accordion>
+  <Accordion title="Only Lumovi's admins change it" icon="lock">
+    On a server, a cluster's read-only switch, where its metrics come from, and where its node shells run are the same for everyone on it, and only [Lumovi's admins](/server/access) change them: "Only Lumovi's admins change what's set for everyone on this server." Ask one of them. A server without admins lets anyone signed in change them. See [Read-only mode](/changes/read-only#in-your-cluster).
   </Accordion>
   <Accordion title="Every cluster is read-only, and AI assistants are off" icon="building-2">
     Your organization's [policy](/desktop/policy) can't be used, so Lumovi locks the most it could until it's put right. As it starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge next to an object's actions says why: "Lumovi can't use your organization's policy (…), so it changes no cluster until it's put right." Send that to your IT: the policy isn't an administrator's alone, isn't JSON, has a key Lumovi doesn't know, or, on Windows, couldn't be read from the registry (where people may run neither `reg.exe` nor PowerShell, let them run `reg.exe`). See [When it can't be used](/desktop/policy#when-it-can’t-be-used).
@@ -133,7 +136,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     - **… didn't start the node shell's pod in … seconds.** The node's kubelet may not be running, or the image takes long to pull.
     - **… has no shell of its own.** Talos and Bottlerocket nodes have none. Choose **Shell in the pod**.
     - **… has no nsenter.** A shell on the node itself needs the image's `nsenter`. Choose an image that has it, like `alpine`, in **Settings**, or a shell in the pod.
-    - **No node shell access.** Your account can't create pods, read them, or open shells in them, in the node shells' namespace. Ask for them, or choose another namespace in **Settings**.
+    - **No node shell access.** Your account can't create pods, read them, or open shells in them, in the node shells' namespace. Ask for them, or choose another namespace in **Settings** (on a server, Lumovi's admins do, for everyone).
     - **Node shells need a Linux node.** Windows nodes can't have one.
     - **Node shells are off.** The Lumovi server you use turned them off.
 

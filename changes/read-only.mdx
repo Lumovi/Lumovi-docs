@@ -27,6 +27,8 @@ A read-only cluster has a lock next to its name. Next to an object's actions, a 
 
 Lumovi remembers which clusters you made read-only, by their kubeconfig context name. The [audit log](/audit/overview) records each time you make one read-only, or changeable again, and each change read-only refused.
 
+In the desktop app, it's yours alone. On your team's Lumovi, it's the server's, for everyone: see [In your cluster](#in-your-cluster).
+
 ## For every cluster
 
 Set `LUMOVI_READ_ONLY` to `1` (or `true`) in the environment Lumovi starts in. Every cluster is read-only, and it can't be turned off from the app: the switch is disabled, with the caption "Set by LUMOVI_READ_ONLY", and the command palette leaves out its read-only command. That makes it a good fit for shared machines, demos and screen shares.
@@ -60,6 +62,8 @@ It isn't only the buttons. The part of Lumovi that talks to your clusters (the d
 
 > production is read-only in Lumovi. Allow changes to it to continue.
 
+On a server, it says who made it read-only, and when: see [In your cluster](#in-your-cluster).
+
 | | In a read-only cluster |
 | --- | --- |
 | Actions: scale, restart, drain, delete, labels… | Off |
@@ -75,7 +79,7 @@ It isn't only the buttons. The part of Lumovi that talks to your clusters (the d
 | Lists, details, logs, metrics, YAML, Helm releases | On |
 | [Terminals](/debug/terminal) on your computer | Not covered: they're your own shell |
 
-Actions that are off stay visible, disabled, with "Changes are turned off for this cluster." One button stays enabled: **Install chart** on Helm releases. Its dialog opens, and when you choose **Review**, it shows the refusal above instead of a dry run.
+Actions that are off stay visible, disabled, with "Changes are turned off for this cluster." (on a server, with who made it so). One button stays enabled: **Install chart** on Helm releases. Its dialog opens, and when you choose **Review**, it shows the refusal above instead of a dry run.
 
 A shell's tab, in a pod or on a node, says **Shells are off** instead of opening one.
 
@@ -87,10 +91,22 @@ The read-only switch doesn't apply to the desktop app's [terminals](/debug/termi
 
 ## In your cluster
 
-When Lumovi runs in your cluster as a shared dashboard, read-only works at two levels:
+When Lumovi runs in your cluster, or as a fleet, read-only is the server's, the same for everyone on it, and their [AI assistants](/assistants/server):
 
-- **For everyone.** Set `readOnly: true` in the Helm chart's values (`LUMOVI_READ_ONLY=true` when you run the image another way). Nobody changes anything through Lumovi, whatever their RBAC allows, and neither do their [AI assistants](/assistants/server). The switch shows "For everyone, on this server". See [Helm values](/server/helm-values).
-- **For yourself.** Anyone can make the cluster read-only for themselves from the cluster switcher or the command palette. It's kept in their browser, and the server enforces it for them, and for their [AI assistants](/assistants/server), as their latest page says: a page from a browser where the cluster isn't read-only allows changes there again.
+- **For one cluster.** The cluster switcher's **Read-only** reads "Lumovi won't change production for anyone on this server". Turned on, it says who did, and when: "Turned on by jane@example.com, Oct 7, 2026, 2:20 PM". It's on for everyone, and stays on until it's turned off, by anyone who may.
+- **Who may.** [Lumovi's admins](/server/access) (`access.admins`, `LUMOVI_ADMINS`), or, where it has none, anyone signed in. For everyone else, the switch is disabled, with "Only Lumovi's admins change it", and the **Read-only** badge says "Only Lumovi's admins change what's set for everyone on this server." instead of **Allow changes**. The command palette still offers **Make** _cluster_ **read-only**; for them, it says **Couldn't change it**, with the same reason.
+- **For every cluster.** Set `readOnly: true` in the Helm chart's values (`LUMOVI_READ_ONLY=true` when you run the image another way). Nobody changes anything through Lumovi, whatever their RBAC allows, and neither do their [AI assistants](/assistants/server). The switch shows "For everyone, on this server", and nobody can turn it off on the page. See [Helm values](/server/helm-values).
+
+A cluster made read-only says who made it so, wherever changes are off:
+
+- **The Read-only badge**: "Changes are off for production", then "jane@example.com made it read-only for everyone on this server on Oct 7, 2026, 2:20 PM. Lumovi won't change anything in it for anyone until it's allowed again.", with **Allow changes** for those who may.
+- **Actions and dialogs**: "Changes are turned off for this cluster: jane@example.com made it read-only for everyone."
+- **Shells**: "jane@example.com made production read-only for everyone on this server, and a shell can change a container." (on a node, "…and a node shell can change the node.")
+- **What the server refuses**, a change, a Helm action, a shell, or an AI assistant's change: "production is read-only for everyone on this server: jane@example.com made it so on 2026-10-07."
+
+Each switch on or off is in the [audit log](/audit/overview), as `read-only.changed`: "Made production read-only for everyone on this server", or "Made production changeable for everyone on this server". So is each attempt by someone who may not, as refused.
+
+It's kept where the server keeps what a restart mustn't lose: the Secret the chart makes (`auth.keepSessions`, on by default), or `LUMOVI_DATA_DIR`. Without either, it's in memory: a restart turns it off, and each replica has its own. Kept, with more than one replica, a change reaches the others within 10 seconds, and open pages show it as soon as their server has it. See [Across restarts](/server/security#across-restarts).
 
 <Note>
   Read-only mode is a guard rail in Lumovi, not a permission. To keep someone from changing a cluster at all, give their account read-only RBAC, like the built-in `view` ClusterRole. See [Permissions](/clusters/permissions).

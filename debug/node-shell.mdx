@@ -158,7 +158,7 @@ Choose **Settings** at the top of the **Shell** tab. The **Node shells** dialog 
 
 **Save** keeps them for this cluster, once the namespace is a namespace's name and the image has no spaces. The next shell uses them; one that's open keeps going. Once you've set your own, **Use the defaults: kube-system, alpine:3.22** goes back to the defaults.
 
-The desktop app keeps these settings with its others, by kubeconfig context. In a browser, Lumovi in your cluster keeps them in that browser, for each cluster: another browser, or another person, has its own.
+The desktop app keeps these settings with its others, by kubeconfig context. On your team's Lumovi, they're the server's, for each cluster, the same for everyone on it: the dialog says where the pod is created "and what it runs, the same for everyone on this server.", and only [Lumovi's admins](/server/access) can save them (or anyone, where there are none). For everyone else, **Save** stays off, and the dialog says "Only Lumovi's admins change what's set for everyone on this server." Each change is in the audit log, as `node-shell.changed`.
 
 ### The equivalent command
 
@@ -171,7 +171,7 @@ kubectl debug node/worker-1 -it --image alpine:3.22 --profile sysadmin -n kube-s
 In the pod, the command ends in `-- sh -l`. Unlike Lumovi, `kubectl debug node` leaves its pod behind when the shell ends: delete it yourself.
 
 <Note>
-  **In your cluster:** the administrator sets the namespace and image everyone starts with, with the chart's `nodeShell.namespace` and `nodeShell.image` (`LUMOVI_NODE_SHELL_NAMESPACE` and `LUMOVI_NODE_SHELL_IMAGE`), and can turn node shells off for everyone with `nodeShell.enabled: false` (`LUMOVI_NODE_SHELL=off`). In a fleet, these are every cluster's. Each person can still choose another namespace and image for themselves, kept in their browser, and **Use the defaults** goes back to the server's. The pod is created, and the shell opened, as the person signed in, with their RBAC: not as Lumovi's service account. When Lumovi itself stops, after an upgrade say, it waits up to 10 seconds for open node shells' pods to be deleted. See [Helm values](/server/helm-values) and [Security](/server/security#shells-on-nodes).
+  **In your cluster:** the administrator sets the namespace and image everyone starts with, with the chart's `nodeShell.namespace` and `nodeShell.image` (`LUMOVI_NODE_SHELL_NAMESPACE` and `LUMOVI_NODE_SHELL_IMAGE`), and can turn node shells off for everyone with `nodeShell.enabled: false` (`LUMOVI_NODE_SHELL=off`). In a fleet, these are every cluster's. For a cluster, Lumovi's admins (or anyone, where there are none) can set another namespace and image, for everyone, and **Use the defaults** goes back to the server's. The pod is created, and the shell opened, as the person signed in, with their RBAC: not as Lumovi's service account. When Lumovi itself stops, after an upgrade say, it waits up to 10 seconds for open node shells' pods to be deleted. See [Helm values](/server/helm-values) and [Security](/server/security#shells-on-nodes).
 </Note>
 
 ## What it needs
@@ -290,7 +290,7 @@ Windows nodes can't have a node shell: their containers can't share a node's nam
 
 ### Read-only clusters
 
-A read-only cluster turns shells off, on nodes too. The **Shell** tab says **Shells are off**, as the cluster is read-only in Lumovi and a node shell can change the node. It isn't only the tab: the part of Lumovi that talks to the cluster refuses to start one. See [Read-only mode](/changes/read-only).
+A read-only cluster turns shells off, on nodes too. The **Shell** tab says **Shells are off**, as the cluster is read-only in Lumovi and a node shell can change the node. On a server, it says who made it so: "jane@example.com made production read-only for everyone on this server, and a node shell can change the node." It isn't only the tab: the part of Lumovi that talks to the cluster refuses to start one. See [Read-only mode](/changes/read-only).
 
 ## Security
 

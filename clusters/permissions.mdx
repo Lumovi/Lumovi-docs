@@ -20,7 +20,7 @@ Before it offers a change, Lumovi asks the cluster whether you're allowed to mak
 - If the cluster can't say, the action stays available and the API server has the final word.
 - Answers are kept for five minutes.
 
-A cluster you made [read-only](/changes/read-only) disables every change regardless, with *Changes are turned off for this cluster.* On a server, what your [access](/clusters/your-access) doesn't allow is disabled too, saying why: *Your access doesn't let you make changes in shop: none of your grants gives it here.*
+A cluster made [read-only](/changes/read-only) disables every change regardless, with *Changes are turned off for this cluster.* (on a server, with who made it read-only for everyone). On a server, what your [access](/clusters/your-access) doesn't allow is disabled too, saying why: *Your access doesn't let you make changes in shop: none of your grants gives it here.*
 
 ## Looking around
 
@@ -53,7 +53,7 @@ Charts over time come from a Prometheus-compatible server, reached through the A
 | Read history from it | `get` on `services/proxy` in the server's namespace |
 | See [right-sizing](/metrics/right-sizing) recommendations | The two above, and `list` on Deployments, StatefulSets, DaemonSets, pods and HorizontalPodAutoscalers where you look. `list` on nodes, and on VerticalPodAutoscalers when the cluster serves them, helps but isn't needed: see [Without nodes or VerticalPodAutoscalers](/metrics/right-sizing#without-nodes-or-verticalpodautoscalers). |
 
-Without `list` on services, choose the server yourself in **Metrics source**. See [Usage history](/metrics/usage-history).
+Without `list` on services, choose the service in **Metrics source** (on a server, Lumovi's admins do, for everyone). See [Usage history](/metrics/usage-history).
 
 ## Helm releases
 

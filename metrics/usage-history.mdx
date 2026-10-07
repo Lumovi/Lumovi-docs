@@ -75,10 +75,10 @@ Open **Metrics source** from the chip on any chart, or from the command palette 
   </Tab>
 </Tabs>
 
-The choice is kept per cluster.
+The choice is kept per cluster. The [audit log](/audit/overview) records each change, as `metrics-source.changed`.
 
 <Note>
-  **In your cluster:** the administrator sets the default for everyone with the chart's `metrics.source` (`auto`, `off`, or a service like `monitoring/prometheus-operated:9090`). Each person can still choose another; it's kept in their browser. See [Helm values](/server/helm-values).
+  **In your cluster:** the administrator sets the default for everyone with the chart's `metrics.source` (`auto`, `off`, or a service like `monitoring/prometheus-operated:9090`). A cluster's source can be changed for everyone, by [Lumovi's admins](/server/access), or by anyone where there are none: the dialog says "The same for everyone on this server." For everyone else, it can't be saved, and says "Only Lumovi's admins change what's set for everyone on this server." See [Helm values](/server/helm-values).
 </Note>
 
 ## The Metrics page
