@@ -129,7 +129,7 @@ New versions come from the project's [GitHub releases](https://github.com/Lumovi
 
 ## Verify your download
 
-Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. Each installer has a signed build provenance attestation, which says it was built by Lumovi's release workflow from the release's commit, and an attested bill of materials: `Lumovi-<version>.cdx.json` (CycloneDX), every package the app bundles or ships, Electron, and the helm it ships with (4.3.0), on the release too.
+Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. Each installer has a signed build provenance attestation, which says it was built by Lumovi's release workflow from the release's commit, and an attested bill of materials: `Lumovi-<version>.cdx.json` (CycloneDX), every package the app bundles or ships, Electron, and the helm it ships with (4.3.0), with the Go modules that helm is built from and the Go it's built with, on the release too. A scanner like [grype](https://github.com/anchore/grype) reads it, and finds known vulnerabilities in any of them.
 
 <CodeGroup>
   ```bash Checksum (macOS, Linux)
@@ -152,10 +152,14 @@ Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. 
   signer=(--repo Lumovi/Lumovi --signer-workflow Lumovi/Lumovi/.github/workflows/release.yml
     --source-ref refs/heads/main)
 
-  # An installer: built there, and what it's made of (the release's Lumovi-<version>.cdx.json).
+  # An installer: built there, and what it's made of (the release's Lumovi-<version>.cdx.json,
+  # with the helm it ships and the Go modules that helm is built from).
   gh attestation verify Lumovi-{{version}}-mac-arm64.dmg "${signer[@]}"
   gh attestation verify Lumovi-{{version}}-mac-arm64.dmg "${signer[@]}" \
     --predicate-type https://cyclonedx.org/bom
+
+  # Known vulnerabilities in what an installer is made of, helm's Go modules included.
+  grype sbom:Lumovi-{{version}}.cdx.json
   ```
 </CodeGroup>
 

@@ -23,7 +23,7 @@ The desktop app talks to:
 - **[Artifact Hub](https://artifacthub.io)**, only when you search it for a chart to install.
 - **The chart repositories and registries you choose**, when you upgrade or install a Helm release from one.
 - **GitHub**, to look for new versions of Lumovi. **Help → Check for Updates Automatically** turns that off.
-- **[dl.k8s.io](https://dl.k8s.io)**, Kubernetes' own downloads, when you open a [terminal](/debug/terminal#a-kubectl-that-matches-the-cluster), for a kubectl that matches its cluster. It asks which patch of the cluster's minor version is newest, like 1.34, and downloads that kubectl for your system and architecture, once, with the checksum published beside it. So dl.k8s.io learns your address, the minor versions of the clusters you open terminals for, your system and architecture, and when you open them: no cluster's name or address. It goes through the same [proxy and certificate authorities](/desktop/network) as Lumovi's other connections. It's on by default: **View → Match kubectl to Each Cluster** turns it off, as can your organization's [policy](/desktop/policy#kubectl), which can also name a mirror, over `https`, instead.
+- **[dl.k8s.io](https://dl.k8s.io)**, Kubernetes' own downloads, when you open a [terminal](/debug/terminal#a-kubectl-that-matches-the-cluster), for a kubectl that matches its cluster. It asks which patch of the cluster's minor version is newest, like 1.34, and downloads that kubectl for your system and architecture, once, with the checksum, signature and certificate published beside it, from dl.k8s.io too: checking the signature asks no one else. So dl.k8s.io learns your address, the minor versions of the clusters you open terminals for, your system and architecture, and when you open them: no cluster's name or address. It goes through the same [proxy and certificate authorities](/desktop/network) as Lumovi's other connections. It's on by default: **View → Match kubectl to Each Cluster** turns it off, as can your organization's [policy](/desktop/policy#kubectl), which can also name a mirror, over `https`, instead.
 
 Behind a company's proxy, it reaches them through the proxy your shell uses, and trusts the certificate authorities your computer does: see [Proxies and certificates](/desktop/network).
 
@@ -53,7 +53,24 @@ A [terminal](/debug/terminal) gets a kubeconfig of its own that names the cluste
 - **AI assistants connect only from this computer**, and only once you turn them on: on `127.0.0.1`, with Lumovi's token. Requests from web pages are refused, and so are requests addressed to any name but `127.0.0.1` or `localhost`, and messages over 4 MB. Each change they ask for goes through the same operations as yours, and waits for you. See [AI assistants](/assistants/overview#security).
 - **Updates are verified.** New versions come from the project's GitHub releases over HTTPS. Each download is checked against the SHA-512 checksum the release lists, and the new version must be signed as this one is: on macOS with the same Developer ID, and on Windows by Open Source Developer Péter Kóta.
 
-The source is [on GitHub](https://github.com/Lumovi/Lumovi), so you can check any of this. Every release's installers come with checksums, signed build provenance, and an attested bill of materials: see [Verify your download](/get-started/desktop#verify-your-download).
+The source is [on GitHub](https://github.com/Lumovi/Lumovi), so you can check any of this. Every release's installers come with checksums, signed build provenance, and an attested bill of materials, which lists the helm the app ships with and the Go modules it's built from: see [Verify your download](/get-started/desktop#verify-your-download).
+
+### What's checked, and what isn't
+
+A [terminal's kubectl](/debug/terminal#a-kubectl-that-matches-the-cluster) is checked against Kubernetes' own signature, on your computer. Kubernetes signs each kubectl in its release, with a certificate Sigstore's certificate authority, Fulcio, gives it for those few minutes. Lumovi ships Sigstore's public trust root, and checks against it:
+
+- **When the certificate was issued**, by the timestamp a certificate transparency log Sigstore runs signed for it, and that the certificate was valid then.
+- **That it's from Sigstore's certificate authority**, through its chain to Fulcio's root.
+- **That it's Kubernetes' release's**: issued to Kubernetes' release account, signed in with Google, exactly.
+- **That it's for signing code**, as Fulcio's certificates are.
+- **That its key signed these very bytes.**
+
+What isn't checked:
+
+- **When it was signed.** Only Sigstore's transparency log, Rekor, knows that, and asking it would be one more place that learns what you download. So a signature made later, with that certificate's key, would pass: the key is the release's own, for those minutes.
+- **Kubernetes' own release process.** A signature says Kubernetes' release made the kubectl, not that nothing went wrong there.
+
+Nothing is asked of anyone else for it: the signature and certificate come from where the kubectl does, and the trust root ships with Lumovi, refreshed in its releases. When Sigstore changes its certificate authority or its logs, kubectl signed after that change can't be checked until a release of Lumovi ships the new trust root: until then, terminals use your kubectl, or the newest one kept, and say why.
 
 ## On your organization's computers
 

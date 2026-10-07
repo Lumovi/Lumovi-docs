@@ -227,7 +227,7 @@ Every release's installers, image and chart are built by Lumovi's [release workf
 
 - **Attested**: each carries a signed build provenance attestation, which says where and from what it was built.
 - **Signed with cosign**, keyless, by the release workflow's identity, and recorded in Sigstore's public log: as a Sigstore bundle (an OCI referrer), and with the `.sig` tag older admission controllers look for. An admission controller can require it: see [Require the signature](/server/hardening#require-the-signature).
-- **With bills of materials**: the image's JavaScript packages (the page, the server and an agent's) in CycloneDX, attested with it and in the image as `/app/licenses/sbom.cdx.json`; and its system packages in SPDX, made as it's built.
+- **With bills of materials**: the image's JavaScript packages (the page, the server and an agent's) in CycloneDX, attested with it and in the image as `/app/licenses/sbom.cdx.json`; and its system packages in SPDX, made as it's built, helm's Go modules among them.
 
 With the [GitHub CLI](https://cli.github.com), and [cosign](https://docs.sigstore.dev/cosign/system_config/installation/):
 
@@ -247,13 +247,14 @@ cosign verify ghcr.io/lumovi/charts/lumovi:{{version}} \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 
 # What the image is made of: its JavaScript's packages (CycloneDX, also in the image as
-# /app/licenses/sbom.cdx.json), and its system's (SPDX, made as it's built).
+# /app/licenses/sbom.cdx.json), and its system's (SPDX, made as it's built, helm's Go modules
+# among them).
 gh attestation verify oci://ghcr.io/lumovi/lumovi:{{version}} "${signer[@]}" \
   --predicate-type https://cyclonedx.org/bom
 docker buildx imagetools inspect ghcr.io/lumovi/lumovi:{{version}} --format '{{ json .SBOM }}'
 ```
 
-The desktop app's installers are attested the same way, each with its bill of materials: see [Verify your download](/get-started/desktop#verify-your-download). [SECURITY.md](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md#checking-a-release) has the same commands.
+The desktop app's installers are attested the same way, each with its bill of materials, which lists the helm the app ships and the Go modules it's built from: see [Verify your download](/get-started/desktop#verify-your-download). [SECURITY.md](https://github.com/Lumovi/Lumovi/blob/main/SECURITY.md#checking-a-release) has the same commands.
 
 ## Reporting a vulnerability
 

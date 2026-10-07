@@ -93,12 +93,20 @@ Lumovi deletes the terminal's kubeconfig when its shell ends: when the shell exi
 
 kubectl works with clusters one minor version either side of its own, so one kubectl may be too old, or too new, for some of your clusters. Each terminal gets the kubectl for the version the cluster says it runs: the newest patch of that minor version, like v1.34.9 for a cluster that says v1.34.1. None older than 1.25, Lumovi's oldest: an older kubectl lacks years of fixes, and a cluster doesn't get to choose one for you.
 
-- **From Kubernetes.** Lumovi asks [dl.k8s.io](https://dl.k8s.io) for that minor version's newest patch (`release/stable-1.34.txt`), then downloads it, and checks it against the checksum published beside it. That catches a download that's broken or cut short, not a server that isn't Kubernetes'. It goes through the [proxy and certificate authorities](/desktop/network) Lumovi's other connections use.
-- **Downloaded once.** Each is kept in Lumovi's folder for app data, under `kubectl/v1.34.9`, for the terminals of every cluster on that minor version. As Lumovi starts, it keeps only each minor version's newest patch, and removes what a crash left half-downloaded. It remembers which patch is newest for six hours.
+- **From Kubernetes, signed by Kubernetes.** Lumovi asks [dl.k8s.io](https://dl.k8s.io) for that minor version's newest patch (`release/stable-1.34.txt`), then downloads it, with the checksum, the signature and the certificate published beside it. It checks the download against the checksum, and against Kubernetes' own signature: that Kubernetes' release signed these very bytes, with a certificate from Sigstore. That's checked on your computer, asking no one else: see [What's checked, and what isn't](/reference/privacy-and-security#what’s-checked-and-what-isn’t). From dl.k8s.io, a kubectl without Kubernetes' signature, or with one that doesn't hold, isn't used. It goes through the [proxy and certificate authorities](/desktop/network) Lumovi's other connections use.
+- **Downloaded once.** Each is kept in Lumovi's folder for app data, under `kubectl/v1.34.9`, for the terminals of every cluster on that minor version. As Lumovi starts, it keeps only each minor version's newest patch, and removes what a crash left half-downloaded, and any kubectl kept before Lumovi checked signatures: that one is downloaded again, and checked, the next time a terminal needs it. It remembers which patch is newest for six hours.
 - **Each cluster's version, remembered.** Lumovi keeps the minor version each cluster last said it runs, by its context's name, in `kubectl/clusters.json`, across restarts. So a cluster that can't be reached gets the kubectl kept for it, at once. After a cluster's upgrade, the first terminal can still get the kubectl for its old version, and the ones after get the new.
 - **First on the terminal's `PATH`**, even after your startup files have run, as they may put theirs first, the way macOS's `path_helper` does, in zsh, bash, sh, dash, ksh and fish, and in PowerShell, after your profile. Type `kubectl`, and it's this one. Other shells, like csh, tcsh or nushell, start with it first, but their own startup files can put another kubectl ahead of it.
 
 While it downloads, the terminal says so: `› Getting kubectl v1.34.9, to match the cluster…`.
+
+From a [mirror](#turn-it-off) that keeps no signatures, only the checksum the mirror publishes is checked, and each terminal that uses that kubectl says so, after which one it is:
+
+```text
+› kubectl points at dev in this terminal. It’s v1.34.9, to match the cluster. artifacts.corp.example.com has no Kubernetes signature for it, so Lumovi checked it against its SHA-256 only.
+```
+
+A mirror that keeps them has its kubectl checked against Kubernetes' signature, as dl.k8s.io's is.
 
 ### When it can't have one
 
@@ -115,9 +123,13 @@ A terminal is often opened because something's wrong, so it doesn't wait long. I
 | "Lumovi gets kubectl only over HTTPS, and http://mirror.corp.example.com/ isn't (LUMOVI_KUBECTL_MIRROR)" | `LUMOVI_KUBECTL_MIRROR` names a mirror over plain `http`, or isn't a URL. The mirror is shown without a user and password, cut to 60 characters, or as "what it says" when it isn't a URL. |
 | "kubectl v1.34.9 is still downloading, for the terminals opened once it's done" | The download takes longer than 10 seconds. It carries on: the terminals you open after it's done have it. |
 | "dl.k8s.io didn't answer within 10 seconds" | Lumovi couldn't learn the newest patch in time. |
-| "Lumovi couldn't get kubectl 1.34 to match the cluster (dl.k8s.io answered 503)" | It couldn't be had, and none of that minor version is kept. The reason in brackets can also be the connection's, or "what was downloaded isn't what dl.k8s.io published". |
+| "Lumovi couldn't get kubectl 1.34 to match the cluster (dl.k8s.io answered 503)" | It couldn't be had, and none of that minor version is kept. The reason in brackets can also be the connection's, or one of those below. |
+| "… (what was downloaded isn't what dl.k8s.io published)" | The download doesn't match its checksum: broken, or cut short. |
+| "… (dl.k8s.io's kubectl v1.34.9 isn't Kubernetes' own: its signature isn't for what was downloaded)" | Its signature doesn't hold. After "isn't Kubernetes' own:", it says why: "its signature isn't for what was downloaded", "it's signed by …, not Kubernetes' release", "its signer signed in with …, not as Kubernetes' release does", "its certificate isn't from Sigstore's certificate authority", "its certificate wasn't logged", "its certificate wasn't logged where Sigstore logs them", "its certificate wasn't valid when it was logged", "its certificate isn't for signing code", "its certificate isn't one", "its certificate couldn't be read (…)", or "its certificate's key isn't one". |
+| "… (dl.k8s.io published no signature for kubectl v1.34.9)" | dl.k8s.io had no signature for it, where every kubectl Lumovi gets is signed. |
+| "… (dl.k8s.io published kubectl v1.34.9's signature without its certificate)", or "…certificate without its signature" | Half of a signature: from dl.k8s.io or a mirror, it isn't used. |
 
-When dl.k8s.io can't be reached, offline say, the newest kubectl of that minor version Lumovi kept does. What failed isn't tried again for 10 minutes, so the terminals you open meanwhile don't wait for it to fail again.
+When the newest can't be had, offline say, or because it isn't signed, the newest kubectl of that minor version Lumovi kept does. What failed isn't tried again for 10 minutes, so the terminals you open meanwhile don't wait for it to fail again.
 
 ### Turn it off
 

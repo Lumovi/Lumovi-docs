@@ -156,7 +156,9 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     - **kubectl v1.34.9 is still downloading, for the terminals opened once it's done.** Open another terminal once it's done.
     - **dl.k8s.io didn't answer within 10 seconds**, or **Lumovi couldn't get kubectl 1.34 to match the cluster (…)**: dl.k8s.io can't be reached from this computer, and Lumovi kept none of that version. Behind a company's proxy, see [Proxies and certificates](/desktop/network). Lumovi tries again 10 minutes later. Your organization can name a mirror in its [policy](/desktop/policy#kubectl).
 
-    A terminal with no such line at all has **View → Match kubectl to Each Cluster** turned off, by you or your organization.
+    - **Lumovi couldn't get kubectl 1.34 to match the cluster (dl.k8s.io's kubectl v1.34.9 isn't Kubernetes' own: …)**, or **(… published no signature for kubectl v1.34.9)**: the download isn't signed by Kubernetes' release, or its signature doesn't hold, so it isn't used. A proxy that changes what it passes on can do that. If it's a mirror's, check what it keeps. See [A kubectl that matches the cluster](/debug/terminal#a-kubectl-that-matches-the-cluster).
+
+    A terminal with no such line at all has **View → Match kubectl to Each Cluster** turned off, by you or your organization. One that says **… has no Kubernetes signature for it, so Lumovi checked it against its SHA-256 only.** got its kubectl from a mirror that keeps no signatures.
 
     Just after a cluster's upgrade, the first terminal you open can still get the kubectl for its old version: Lumovi remembers each cluster's version as it last said it, and asks again for the next. Open another terminal.
   </Accordion>
