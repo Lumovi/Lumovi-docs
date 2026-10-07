@@ -98,7 +98,7 @@ It's the same app every way. Pick the one that fits, or use more than one.
 <div className="lumovi-facts">
   <div><span className="lumovi-label">Kubernetes</span><span className="lumovi-value">1.25 or later</span></div>
   <div><span className="lumovi-label">kubectl</span><span className="lumovi-value">Not needed</span></div>
-  <div><span className="lumovi-label">Helm</span><span className="lumovi-value">Only to change releases</span></div>
+  <div><span className="lumovi-label">Helm</span><span className="lumovi-value">Not needed</span></div>
   <div><span className="lumovi-label">Desktop</span><span className="lumovi-value">macOS 13+, Windows 10+, 64-bit Linux</span></div>
 </div>
 
@@ -106,7 +106,7 @@ Live usage needs [metrics-server](https://github.com/kubernetes-sigs/metrics-ser
 
 ## Free and open source
 
-Lumovi is free under the Apache 2.0 license, with no telemetry and no accounts. It talks to your clusters, and otherwise only to GitHub to look for new versions (which you can turn off), to Artifact Hub when you search it for charts, and to the chart repositories and registries you install or upgrade from. See [Privacy and security](/reference/privacy-and-security).
+Lumovi is free under the Apache 2.0 license, with no telemetry and no accounts. It talks to your clusters, and otherwise only to GitHub to look for new versions (which you can turn off), to dl.k8s.io, or your mirror, for the kubectl each terminal gets (which you can turn off too), to Artifact Hub when you search it for charts, and to the chart repositories and registries you install or upgrade from. See [Privacy and security](/reference/privacy-and-security).
 
 <Columns cols={2}>
   <Card title="Star it on GitHub" icon="star" href="https://github.com/Lumovi/Lumovi" horizontal>
