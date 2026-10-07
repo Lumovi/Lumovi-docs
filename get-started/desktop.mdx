@@ -51,7 +51,7 @@ The desktop app reads clusters from the same place `kubectl` does, and keeps you
     </Note>
   </Tab>
   <Tab title="Windows" icon="app-window">
-    For Windows 10 or later. One installer covers x64 and arm64.
+    For Windows 10 or later. One installer covers x64 and arm64. It's signed by **Open Source Developer Péter Kóta**, with a Certum code-signing certificate, and so is everything it installs.
 
     <Steps>
       <Step title="Download the installer">
@@ -61,7 +61,7 @@ The desktop app reads clusters from the same place `kubectl` does, and keeps you
         Open the installer, and follow its steps. It asks whether to install Lumovi only for you or for anyone who uses the computer; installing it for everyone needs an administrator. You can choose the folder Lumovi goes in, and it adds a shortcut to your desktop.
 
         <Warning>
-          The Windows installer isn't code-signed yet, so Windows may say it protected your PC. Choose **More info**, then **Run anyway**. You can check the file first: see [Verify your download](#verify-your-download).
+          The certificate is new, so until enough people have installed Lumovi, Windows may still say it protected your PC. Choose **More info**, check that the publisher is **Open Source Developer Péter Kóta**, then **Run anyway**. You can check the file first: see [Verify your download](#verify-your-download).
         </Warning>
       </Step>
     </Steps>
@@ -125,7 +125,7 @@ Your organization's [policy](/desktop/policy) can leave updates to IT, which the
 
 Installed with Homebrew, Lumovi updates itself the same way. On Linux, the AppImage replaces itself. A `.deb` or `.rpm` install updates through your package manager, so installing a new version asks for an administrator password.
 
-New versions come from the project's [GitHub releases](https://github.com/Lumovi/Lumovi/releases), over HTTPS. Each download is checked against the checksum the release lists, and on macOS the new version must carry the same Developer ID signature. A copy that can't update itself says so when you check: install new versions of it from the releases page.
+New versions come from the project's [GitHub releases](https://github.com/Lumovi/Lumovi/releases), over HTTPS. Each download is checked against the checksum the release lists, and the new version must be signed as this one is: on macOS with the same Developer ID, and on Windows by Open Source Developer Péter Kóta. A copy that can't update itself says so when you check: install new versions of it from the releases page.
 
 ## Verify your download
 
@@ -140,6 +140,11 @@ Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. 
   ```powershell Checksum (Windows)
   Get-FileHash .\Lumovi-{{version}}-win.exe -Algorithm SHA256
   # Compare with the line for this file in SHA256SUMS.txt
+  ```
+
+  ```powershell Signature (Windows)
+  Get-AuthenticodeSignature .\Lumovi-{{version}}-win.exe | Format-List Status, SignerCertificate
+  # Status: Valid, and the signer: Open Source Developer Péter Kóta
   ```
 
   ```bash Provenance and bill of materials (GitHub CLI)

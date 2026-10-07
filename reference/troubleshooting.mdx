@@ -329,7 +329,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 
 <AccordionGroup>
   <Accordion title="Windows says it protected your PC" icon="app-window">
-    The Windows installer isn't code-signed yet. Choose **More info**, then **Run anyway**. You can [check the download](/get-started/desktop#verify-your-download) against the release's checksums first.
+    The installer is signed, by Open Source Developer Péter Kóta, but its certificate is new, and Windows warns about a publisher until enough people have installed what it signs. Choose **More info**, check that the publisher is Open Source Developer Péter Kóta, then **Run anyway**. You can [check the download](/get-started/desktop#verify-your-download), its checksum and signature, first.
   </Accordion>
   <Accordion title="The AppImage doesn't start" icon="terminal">
     Make the file executable first: `chmod +x Lumovi-*.AppImage`. Then run it from a terminal to see any error it prints.
