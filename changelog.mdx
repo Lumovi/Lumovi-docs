@@ -7,6 +7,22 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 7, 2026" description="1.9.1" tags={["Desktop app"]}>
+  ## Security fixes
+
+  What an AI assistant's bridge, a cluster or a kubectl mirror can do is narrower.
+
+  ### Fixed
+
+  - **Claude Desktop's bridge proves it's talking to Lumovi** before it sends Lumovi's token. While Lumovi wasn't running, another program on the computer could listen on its port and be given the token. Now, before every request, the bridge sends a challenge that only what holds the token can answer, a keyed hash of it, and it doesn't start Lumovi over something else. See [Security](/assistants/overview#security).
+  - **What a cluster says can't write over a terminal's first line.** Lumovi's own lines leave out control characters and the marks that reorder text, and cut short what they quote from a cluster or a mirror.
+  - **No kubectl older than 1.25**, Lumovi's oldest. A cluster can't choose how old a kubectl a terminal gets: older clusters' terminals use yours, saying why.
+  - **kubectl mirrors over HTTPS only**, or on this computer: over plain http, the checksum comes from the same place, and both could be changed on the way. That goes for an organization's policy and for `LUMOVI_KUBECTL_MIRROR`. An empty `LUMOVI_KUBECTL_MIRROR` is as good as none.
+  - **Each cluster's version is remembered across restarts**, so a terminal for a cluster that can't be reached as Lumovi starts gets the kubectl kept for it. A download a crash cut short is cleaned up as Lumovi starts.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.9.1)
+</Update>
+
 <Update label="October 7, 2026" description="1.9.0" tags={["Desktop app"]}>
   ## Tools of its own
 
