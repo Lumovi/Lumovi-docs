@@ -112,7 +112,7 @@ Never give it more, like `cluster-admin`: it doesn't need it, and whoever contro
 Kubernetes RBAC decides what each person may do in the cluster. Lumovi can keep them to less:
 
 - **[Access](/server/access)**: name your admins in `access.admins`, and set in `access.policy` what shouldn't depend on anyone's clicks: a read-only `everyone`, profiles for your teams, and limits for production, like no shells and no Secrets' values there. The server holds to it, and every refusal is in the audit log.
-- **[Read-only](/changes/read-only)**: `readOnly: true` (`LUMOVI_READ_ONLY`) keeps everyone from changing anything through Lumovi, for a dashboard people should only look at.
+- **[Read-only](/changes/read-only#in-your-cluster)**: `readOnly: true` (`LUMOVI_READ_ONLY`) keeps everyone from changing anything through Lumovi, for a dashboard people should only look at. Without it, a cluster made read-only on the page is read-only for everyone on the server, and so are where its metrics come from and where its node shells run: name admins in `access.admins`, so only they change these. With none, anyone signed in can.
 - **[AI assistants](/server/assistants)**: turn them off with `assistants.enabled: false` if your team doesn't use them. Otherwise, set limits for everyone in `assistants.rules` (`LUMOVI_ASSISTANT_RULES`): hide system namespaces, and keep changes at `ask` or `never`, and Secrets at `keys` or `hidden`, where they matter.
 - **[Shells on nodes](/debug/node-shell)**: `nodeShell.enabled: false` unless people should open them through Lumovi.
 - **Charts from private addresses**: leave `helm.allowPrivateCharts` off unless your charts are in your own network.
@@ -312,7 +312,7 @@ audit:
 <Check>Set `auth.usernamePrefix` and `auth.groupsPrefix` when Lumovi impersonates people.</Check>
 <Check>Turn on `networkPolicy`, and name only your ingress controller, or the authenticating proxy, in `from`.</Check>
 <Check>Serve it over HTTPS, and set `url` to the `https:` address.</Check>
-<Check>Name admins in `access.admins`, and give people only what they need through Lumovi: a read-only `everyone`, grants for teams where they work, and limits on production in `access.policy`.</Check>
+<Check>Name admins in `access.admins`, and give people only what they need through Lumovi: a read-only `everyone`, grants for teams where they work, and limits on production in `access.policy`. Only admins then change clusters' read-only, metrics source and node-shell settings, which are everyone's.</Check>
 <Check>Turn AI assistants off (`assistants.enabled: false`) unless your team uses them, or set limits for everyone in `assistants.rules`.</Check>
 <Check>Set `nodeShell.enabled: false` unless people should open shells on nodes through Lumovi, and leave `helm.allowPrivateCharts` off unless your charts are in your own network.</Check>
 <Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>

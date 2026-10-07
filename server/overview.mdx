@@ -72,8 +72,8 @@ A [fleet](/server/fleet) signs people in with single sign-on or a proxy, never w
   <Accordion title="Charts come from repositories, registries or URLs" icon="package">
     Never from files on anyone's computer. Lumovi fetches charts only from public addresses unless `helm.allowPrivateCharts` allows private ones, such as a ChartMuseum or Harbor in your network. Otherwise anyone signed in could make it reach services inside the cluster's network. See [Security](/server/security#charts-and-private-networks).
   </Accordion>
-  <Accordion title="Preferences belong to each browser" icon="globe">
-    The theme, whether the cluster is read-only for you, and where your usage history comes from are kept in your browser. Each person can make Lumovi read-only for themselves, and for their AI assistants; `readOnly: true` makes it read-only for everyone.
+  <Accordion title="Clusters' settings belong to the server" icon="globe">
+    Whether a cluster is read-only, where its usage history comes from, and where its node shells run are the server's, the same for everyone on it and their AI assistants. [Lumovi's admins](/server/access) change them, or anyone, where there are none. `readOnly: true` makes every cluster read-only. Each browser keeps only its theme, and the namespace you picked. See [Read-only mode](/changes/read-only#in-your-cluster).
   </Accordion>
   <Accordion title="AI assistants sign in through Lumovi" icon="sparkles">
     AI assistants and agents, any MCP client, connect to Lumovi's address over HTTP, at `mcp`, and sign in through it in the browser, with OAuth: people allow each one, and it acts as them. The changes they ask for wait on their own pages. Each person says [what theirs may do](/assistants/permissions), and where, within limits the administrator sets. See [AI assistants on a server](/assistants/server), and [AI assistants for your team](/server/assistants) to turn them off or set limits.

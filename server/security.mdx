@@ -82,7 +82,7 @@ A restart, as an upgrade does, signs nobody out. Lumovi keeps what it needs for 
 
 - **Sessions**, each by its cookie's SHA-256 hash, with whose it is, their groups, and when it ends. The cookie itself is its browser's alone.
 - **The AI assistants people allowed**: whose, their names, and when each was last used, and their access and refresh tokens, by their SHA-256 hash. Refresh tokens used already are remembered for a day, so a copy that comes back is still caught.
-- **What each person made read-only for themselves**, so their assistants hold to it before their page opens again.
+- **Each cluster's settings**: whether it's [read-only](/changes/read-only#in-your-cluster), who made it so and when, where its metrics come from, and where its node shells run.
 - **A person's own token**, with [token](/server/auth/tokens) sign-in, or single sign-on that [passes it on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) (with its refresh token), sealed with a key derived (HKDF) from the session's cookie, and bound to that session. Only the browser has the cookie, so what's kept holds nobody's token. After a restart, a session's token is unsealed when its browser next asks Lumovi anything, and its assistants wait for that: see [After a restart](/server/assistants#after-a-restart).
 
 Each entry is sealed (AES-256-GCM) with the state's key, and filed under an HMAC of what it is, which its seal is bound to. The key is kept apart from what it seals:
@@ -99,7 +99,7 @@ Lumovi writes the state about 50 ms after something changes, and as it stops. Wh
 Not kept: the changes assistants asked for that were waiting for an answer (the assistant asks again), sign-ins under way, and assistants' connections, which they open again by themselves.
 
 - **Reading the state shows nothing**, not even who's signed in: every entry is sealed, and named by an HMAC.
-- **Writing it alone can't make anyone's session.** An entry Lumovi didn't seal with its key doesn't open, nor does one changed, or moved to another's place: Lumovi lets those go as it starts. Writing it can take away what's kept, which signs people out after the next restart. And an earlier copy of it, put back, brings back what ended since, a session signed out or an assistant let go, for whoever still has its cookie or token: so treat a copy of the state as you would the Secret.
+- **Writing it alone can't make anyone's session.** An entry Lumovi didn't seal with its key doesn't open, nor does one changed, or moved to another's place: Lumovi lets those go as it starts. Writing it can take away what's kept: that signs people out after the next restart, and turns a cluster's read-only off within 10 seconds, as Lumovi reads its clusters' settings again. And an earlier copy of it, put back, brings back what ended since, a session signed out or an assistant let go, for whoever still has its cookie or token, or a cluster's settings as they were: so treat a copy of the state as you would the Secret.
 - **The state and its key together are as good as being an admin.** Whoever can write the state, and read its key (the key Secret, or `LUMOVI_STATE_KEY` in Lumovi's pod), can make a session for anyone. Keep Lumovi's namespace admin-only, as for its pod, and watch for controllers there that sync Secrets into it, like External Secrets or a GitOps tool.
 - **Changing the key, or losing it, signs everyone out.** What was sealed with the old one doesn't open, and the log says, as Lumovi starts: `12 of what Lumovi kept doesn’t open with its key (it changed, or they were): they’re let go.`
 - **To make sure a leaked cookie or token can't come back, change the key.** Signing it out, or letting its assistant go, ends it, but an earlier copy of the state, put back, would bring it back. A new key ends everything sealed with the old one, and signs everyone out. With the chart, delete the `<release>-state-key` Secret, and run `helm upgrade`: it makes a new one, and Lumovi restarts with it. With `auth.stateKeySecret`, put a new key in your Secret, and run `helm upgrade`. Where the chart is rendered without the cluster, as Argo CD does, Lumovi doesn't see the new key until it restarts: `kubectl rollout restart --namespace lumovi deployment/lumovi`.
@@ -164,7 +164,7 @@ A [shell on a node](/debug/node-shell) runs in a privileged pod Lumovi starts on
 
 - **People's own RBAC decides.** Lumovi creates the pod, and opens the shell, as whoever is signed in, like everything else it does. They need `create` and `get` on `pods`, and `create` on `pods/exec`, in the node shells' namespace (`kube-system` unless `nodeShell.namespace` says otherwise), and `delete` on `pods` for the pod to be deleted afterwards.
 - **So does the namespace's Pod Security.** It must allow privileged pods. Anyone who can create pods in a namespace that does can be root on any node with `kubectl` alone, without Lumovi.
-- **Each person can choose another namespace and image** for themselves, in their browser. Their RBAC and that namespace's Pod Security apply there just the same.
+- **The namespace and image can be changed for a cluster**, for everyone on the server, by [Lumovi's admins](/server/access) (or by anyone, where there are none). Each change is in the audit log, as `node-shell.changed`. The RBAC of whoever opens a shell, and that namespace's Pod Security, apply there just the same.
 - **The pod has no service account token**, and Lumovi deletes it when the shell ends. One it can't delete, because the person may not delete pods there, say, stops within 12 hours, its `activeDeadlineSeconds`.
 
 To turn node shells off for everyone, set `nodeShell.enabled: false` (`LUMOVI_NODE_SHELL=off`): Lumovi's server then refuses to start one, whatever people's RBAC allows. `readOnly: true` turns them off too, with every other change. To keep people from being root on nodes at all, with or without Lumovi, let them create pods only in namespaces whose Pod Security doesn't allow privileged pods.
@@ -172,9 +172,9 @@ To turn node shells off for everyone, set `nodeShell.enabled: false` (`LUMOVI_NO
 ## Read-only
 
 - `readOnly: true` keeps everyone from changing anything through Lumovi, whatever their permissions.
-- Each person can also make Lumovi read-only for themselves, in their own browser.
+- A cluster can also be made read-only on the page, for everyone on the server and their AI assistants, by [Lumovi's admins](/server/access), or by anyone where there are none. It says who made it so, and when, and the audit log records each switch, and each attempt by someone who may not, as refused.
 
-Lumovi's server enforces it, not only the page: it refuses changes, shells (on nodes too), Helm changes and AI assistants' changes while it's on. See [Read-only mode](/changes/read-only). Read-only that people set for themselves applies to their pages, and to their AI assistants.
+Lumovi's server enforces it, not only the page: it refuses changes, shells (on nodes too), Helm changes and AI assistants' changes while it's on. See [Read-only mode](/changes/read-only#in-your-cluster).
 
 ## Access
 

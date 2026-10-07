@@ -79,7 +79,7 @@ The AI rule “Production” matches clusters by the label env, which this serve
 
 With the chart, `helm install` refuses keys and values its schema doesn't take first. In `assistants.rules`, it takes only what limits: `visibility: hidden`, `changes: ask` or `never`, `secrets: keys` or `hidden`, `env: sensitive` or `all`, and `logs: off`.
 
-Whatever your rules and theirs say, each person's RBAC applies, and `readOnly: true` (`LUMOVI_READ_ONLY`) keeps assistants from changing anything, as it keeps everyone. So does read-only that people set for themselves: a cluster someone made read-only in their browser is read-only for their assistants too, as their latest Lumovi page says.
+Whatever your rules and theirs say, each person's RBAC applies, and `readOnly: true` (`LUMOVI_READ_ONLY`) keeps assistants from changing anything, as it keeps everyone. So does a cluster made [read-only](/changes/read-only#in-your-cluster) on the server, which is read-only for everyone, and their assistants.
 
 ## What their changes do
 
@@ -145,9 +145,9 @@ A file says the same, by its path. `LUMOVI_ASSISTANT_RULES_CONFIGMAP` needs Lumo
 
 ## After a restart
 
-A restart, as an upgrade does, lets go of no assistant. Lumovi keeps who allowed which, their tokens by their SHA-256 hash, and what each person made read-only for themselves, with the sessions, in the Secret `auth.keepSessions` makes: see [Across restarts](/server/security#across-restarts).
+A restart, as an upgrade does, lets go of no assistant. Lumovi keeps who allowed which, and their tokens by their SHA-256 hash, with the sessions, and the clusters made read-only, in the Secret `auth.keepSessions` makes: see [Across restarts](/server/security#across-restarts).
 
-- **Behind an [authenticating proxy](/server/auth/proxy)**, or with [single sign-on](/server/auth/single-sign-on) that impersonates people, assistants carry on at once, with their tokens as they were, and the clusters their person made read-only stay so for them.
+- **Behind an [authenticating proxy](/server/auth/proxy)**, or with [single sign-on](/server/auth/single-sign-on) that impersonates people, assistants carry on at once, with their tokens as they were, and the clusters made read-only stay so.
 - **With [tokens](/server/auth/tokens)**, or single sign-on that [passes people's own tokens on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider), Lumovi can't act as someone until their browser's back: their token is sealed with a key only its cookie gives. Until they open Lumovi, their assistants get `503`, with `Retry-After: 30`, and the JSON-RPC error `Lumovi restarted since alice@example.com last used it: open Lumovi in your browser, and Claude Code picks up where it left off.` Once they do, their assistants carry on.
 
 Either way, an assistant's connection to Lumovi (its MCP session) is new: one that sends its old one gets `404`, `That session has ended: start a new one.`, and most assistants open another by themselves. Not kept:

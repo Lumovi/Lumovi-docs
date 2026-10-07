@@ -128,7 +128,7 @@ agent.tokenSecret must name a Secret with the agent's token under token
 </ResponseField>
 
 <ResponseField name="auth.keepSessions" type="boolean" default="true">
-  Whether a restart, as an upgrade does, signs nobody out. The chart makes a Secret, `<release>-state`, where Lumovi keeps sessions, the AI assistants people allowed, and what each person made read-only for themselves, each entry sealed, and lets Lumovi `get` and `patch` that Secret alone. It also makes the key they're sealed with, once, in `<release>-state-key`, 64 random characters, and keeps it across upgrades; Kubernetes gives it to Lumovi as `LUMOVI_STATE_KEY`. With `rbac.create: false`, it makes the Secrets but no Role: give Lumovi's service account `get` and `patch` on `<release>-state` yourself, or Lumovi doesn't start. Reading the state shows nothing; whoever can write it and read its key can act as anyone: keep the namespace admin-only. Upgrades leave both as they are; uninstalling deletes them, and signs everyone out. `false`: sessions live in Lumovi's memory, and a restart signs everyone out. See [Across restarts](/server/security#across-restarts).
+  Whether a restart, as an upgrade does, signs nobody out. The chart makes a Secret, `<release>-state`, where Lumovi keeps sessions, the AI assistants people allowed, and each cluster's settings (read-only, metrics source, node shells), each entry sealed, and lets Lumovi `get` and `patch` that Secret alone. It also makes the key they're sealed with, once, in `<release>-state-key`, 64 random characters, and keeps it across upgrades; Kubernetes gives it to Lumovi as `LUMOVI_STATE_KEY`. With `rbac.create: false`, it makes the Secrets but no Role: give Lumovi's service account `get` and `patch` on `<release>-state` yourself, or Lumovi doesn't start. Reading the state shows nothing; whoever can write it and read its key can act as anyone: keep the namespace admin-only. Upgrades leave both as they are; uninstalling deletes them, and signs everyone out. `false`: sessions live in Lumovi's memory, and a restart signs everyone out. See [Across restarts](/server/security#across-restarts).
 </ResponseField>
 
 <ResponseField name="auth.stateKeySecret" type="string" default="''">
@@ -182,7 +182,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 ## What people can do
 
 <ResponseField name="readOnly" type="boolean" default="false">
-  When `true`, nobody changes anything through Lumovi, whatever their RBAC allows, in any cluster of a fleet, and neither do their AI assistants. Each person can also make a cluster read-only for themselves. See [Read-only mode](/changes/read-only).
+  When `true`, nobody changes anything through Lumovi, whatever their RBAC allows, in any cluster of a fleet, and neither do their AI assistants. Without it, a cluster can be made read-only on the page, for everyone, by Lumovi's admins (or anyone, where there are none). See [Read-only mode](/changes/read-only#in-your-cluster).
 </ResponseField>
 
 <ResponseField name="assistants.enabled" type="boolean" default="true">
@@ -220,7 +220,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 </ResponseField>
 
 <ResponseField name="metrics.source" type="string" default="auto">
-  Where usage history comes from, unless people choose another source in their browser:
+  Where usage history comes from, unless another source is set for a cluster, for everyone, on the page:
 
   - `auto`: Lumovi looks for Prometheus or VictoriaMetrics among the cluster's services.
   - `off`: no usage history.
@@ -234,11 +234,11 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 </ResponseField>
 
 <ResponseField name="nodeShell.namespace" type="string" default="kube-system">
-  Where node shells' pods are created, unless people choose another namespace in their browser. Its Pod Security must allow privileged pods. A namespace's name: lowercase letters, digits and `-`, starting and ending with a letter or digit, at most 63 characters. In a fleet, it's every cluster's.
+  Where node shells' pods are created, unless another namespace is set for a cluster, for everyone, on the page. Its Pod Security must allow privileged pods. A namespace's name: lowercase letters, digits and `-`, starting and ending with a letter or digit, at most 63 characters. In a fleet, it's every cluster's.
 </ResponseField>
 
 <ResponseField name="nodeShell.image" type="string" default="alpine:3.22">
-  The image node shells' pods run, unless people choose another in their browser. It needs `sh`, and `nsenter` for shells on the node itself. Where nodes can't pull from Docker Hub, use a copy in your own registry. No spaces, and at most 255 characters. In a fleet, it's every cluster's.
+  The image node shells' pods run, unless another is set for a cluster, for everyone, on the page. It needs `sh`, and `nsenter` for shells on the node itself. Where nodes can't pull from Docker Hub, use a copy in your own registry. No spaces, and at most 255 characters. In a fleet, it's every cluster's.
 </ResponseField>
 
 <ResponseField name="helm.allowPrivateCharts" type="boolean" default="false">

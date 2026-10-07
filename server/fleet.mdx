@@ -261,8 +261,8 @@ Until a cluster answers, its card says <span className="lumovi-status progressin
 
 Opening a card opens the cluster, with the same pages as a Lumovi of its own. The cluster's name at the top of the sidebar switches to another cluster, and **All clusters** there leads back to the fleet, as it does on the banner of a cluster that stops answering. The command palette has both too.
 
-- **Read-only**: each person can make a cluster read-only for themselves, in their browser. `readOnly: true` (`LUMOVI_READ_ONLY`) makes every cluster read-only for everyone.
-- **Usage history** comes from `metrics.source` (`LUMOVI_METRICS_SOURCE`) in every cluster, unless people choose another source for one. In a fleet, leave it `auto`, so Lumovi looks in each cluster, unless they all have the same service.
+- **Read-only**: a cluster made [read-only](/changes/read-only#in-your-cluster) on the page is read-only for everyone, made so by Lumovi's admins (or anyone, where there are none). `readOnly: true` (`LUMOVI_READ_ONLY`) makes every cluster read-only for everyone.
+- **Usage history** comes from `metrics.source` (`LUMOVI_METRICS_SOURCE`) in every cluster, unless another source is set for one, for everyone, by Lumovi's admins (or anyone, where there are none). In a fleet, leave it `auto`, so Lumovi looks in each cluster, unless they all have the same service.
 - **Views and add-ons** everyone sees are the server's, for every cluster: see [Views for everyone](/server/views).
 
 ## When a cluster can't be used

@@ -160,7 +160,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_STATE_SECRET" type="string">
-  A Secret in the namespace Lumovi runs in, where it keeps sessions, the AI assistants people allowed, and what each person made read-only for themselves, so a restart signs nobody out: see [Across restarts](/server/security#across-restarts). The chart sets it to `<release>-state`, which it makes, with `auth.keepSessions`. Lumovi needs `get` and `patch` on it. Lumovi must run in a cluster for it: outside one, it doesn't start, saying `LUMOVI_STATE_SECRET keeps who’s signed in in the cluster Lumovi runs in, and it isn’t running in one (KUBERNETES_SERVICE_HOST isn’t set).` Nor does it start without `LUMOVI_STATE_KEY`: `LUMOVI_STATE_SECRET needs LUMOVI_STATE_KEY: the key what’s kept is sealed with, from a Secret of its own (the chart makes one).`, or when it can't read the Secret: `Lumovi can’t read Secret lumovi/lumovi-state, where it keeps who’s signed in and the AI assistants they allowed: …`, with why.
+  A Secret in the namespace Lumovi runs in, where it keeps sessions, the AI assistants people allowed, and each cluster's settings (read-only, metrics source, node shells), so a restart signs nobody out: see [Across restarts](/server/security#across-restarts). The chart sets it to `<release>-state`, which it makes, with `auth.keepSessions`. Lumovi needs `get` and `patch` on it. Lumovi must run in a cluster for it: outside one, it doesn't start, saying `LUMOVI_STATE_SECRET keeps who’s signed in in the cluster Lumovi runs in, and it isn’t running in one (KUBERNETES_SERVICE_HOST isn’t set).` Nor does it start without `LUMOVI_STATE_KEY`: `LUMOVI_STATE_SECRET needs LUMOVI_STATE_KEY: the key what’s kept is sealed with, from a Secret of its own (the chart makes one).`, or when it can't read the Secret: `Lumovi can’t read Secret lumovi/lumovi-state, where it keeps who’s signed in and the AI assistants they allowed: …`, with why.
 
   Without it, Lumovi keeps them in `state.json` in `LUMOVI_DATA_DIR`, which only its user can read, sealed with a key in `state.key` beside it, which it makes as it first starts. Without either, in memory, and its log says so, as it starts: `Who’s signed in and the AI assistants they allowed are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`, or outside one, `Set LUMOVI_DATA_DIR to keep them.` A restart then signs everyone out.
 </ResponseField>
@@ -176,11 +176,11 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 ## What people can do
 
 <ResponseField name="LUMOVI_READ_ONLY" type="boolean" default="false">
-  `true` or `1`: nobody changes anything through Lumovi, in any cluster of a fleet, AI assistants included. Anything else leaves changes on.
+  `true` or `1`: nobody changes anything through Lumovi, in any cluster of a fleet, AI assistants included, and the cluster switcher says "For everyone, on this server". Anything else leaves changes on, and a cluster can be made read-only on the page, for everyone, by Lumovi's admins (or anyone, where there are none): see [Read-only mode](/changes/read-only#in-your-cluster).
 </ResponseField>
 
 <ResponseField name="LUMOVI_METRICS_SOURCE" type="string" default="auto">
-  Where usage history comes from unless people choose: `auto`, `off`, or `namespace/service:port`, with a path after it for vmselect (`vm/vmselect:8481/select/0/prometheus`). In a fleet, it's every cluster's.
+  Where usage history comes from, unless another source is set for a cluster, for everyone, on the page: `auto`, `off`, or `namespace/service:port`, with a path after it for vmselect (`vm/vmselect:8481/select/0/prometheus`). In a fleet, it's every cluster's.
 </ResponseField>
 
 <ResponseField name="LUMOVI_NODE_SHELL" type="string" default="on">
@@ -188,11 +188,11 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_NODE_SHELL_NAMESPACE" type="string" default="kube-system">
-  Where node shells' pods are created unless people choose another namespace: a namespace's name, whose Pod Security must allow privileged pods. In a fleet, it's every cluster's.
+  Where node shells' pods are created, unless another namespace is set for a cluster, for everyone, on the page: a namespace's name, whose Pod Security must allow privileged pods. In a fleet, it's every cluster's.
 </ResponseField>
 
 <ResponseField name="LUMOVI_NODE_SHELL_IMAGE" type="string" default="alpine:3.22">
-  The image node shells' pods run unless people choose another: one with `sh`, and `nsenter` for shells on the node itself. No spaces, and at most 255 characters. In a fleet, it's every cluster's.
+  The image node shells' pods run, unless another is set for a cluster, for everyone, on the page: one with `sh`, and `nsenter` for shells on the node itself. No spaces, and at most 255 characters. In a fleet, it's every cluster's.
 
   A namespace that isn't a namespace's name, or an image with spaces, stops Lumovi, saying `LUMOVI_NODE_SHELL_NAMESPACE must be a namespace's name and LUMOVI_NODE_SHELL_IMAGE an image, not "…" and "…".`
 </ResponseField>
