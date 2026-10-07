@@ -151,6 +151,23 @@ Under **Connect an assistant**, a tab says how for a few assistants, step by ste
 
     Claude Desktop isn't made for Linux, and there the tab says so: connect other assistants as **Other** shows.
   </Tab>
+  <Tab title="Codex" icon="terminal">
+    Add this to `~/.codex/config.toml`. **Copy Codex's settings** copies it, with the whole token:
+
+    ```toml ~/.codex/config.toml
+    [mcp_servers.lumovi]
+    url = "http://127.0.0.1:47830/mcp"
+    http_headers = { Authorization = "Bearer <token>" }
+    ```
+
+    Codex connects to Lumovi as each of its sessions starts.
+
+    Or keep the token out of the file: put it in an environment variable, `LUMOVI_TOKEN` here, set wherever you run Codex, and add Lumovi with:
+
+    ```bash
+    codex mcp add lumovi --url http://127.0.0.1:47830/mcp --bearer-token-env-var LUMOVI_TOKEN
+    ```
+  </Tab>
   <Tab title="Cursor" icon="mouse-pointer-2">
     Choose **Add to Cursor**. Cursor opens, and asks you to add Lumovi.
 
