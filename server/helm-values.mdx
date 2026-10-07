@@ -186,7 +186,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 </ResponseField>
 
 <ResponseField name="assistants.enabled" type="boolean" default="true">
-  Whether AI assistants (Claude Code, Cursor, VS Code and other MCP clients) may sign in through Lumovi and connect, at `mcp` below the base path, to act as whoever allows them. Below a base path, the chart's ingress also routes the two addresses at the origin's root where they look for how to sign in. With it on, the chart makes a ConfigMap, `<release>-assistant-rules`, where Lumovi keeps each person's own rules, and which uninstalling keeps. See [AI assistants for your team](/server/assistants).
+  Whether AI assistants (MCP clients) may sign in through Lumovi and connect, at `mcp` below the base path, to act as whoever allows them. Below a base path, the chart's ingress also routes the two addresses at the origin's root where they look for how to sign in. With it on, the chart makes a ConfigMap, `<release>-assistant-rules`, where Lumovi keeps each person's own rules, and which uninstalling keeps. See [AI assistants for your team](/server/assistants).
 </ResponseField>
 
 <ResponseField name="assistants.rules" type="object[]" default="[]">
@@ -216,7 +216,7 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 </ResponseField>
 
 <ResponseField name="assistants.redirectHosts" type="string[]" default="[]">
-  Sites, by host name, that an assistant may send people back to over `https` once they allow it, like `[assistant.example.com]`. Their own computer, apps, and VS Code's `vscode.dev` need none: Claude Code, Cursor and VS Code work without it. See [Where assistants go back to](/server/assistants#where-assistants-go-back-to).
+  Sites, by host name, that an assistant may send people back to over `https` once they allow it, like `[assistant.example.com]`. Their own computer, apps, and VS Code's `vscode.dev` need none: an assistant that runs on the person's computer, or opens an app, works without it. See [Where assistants go back to](/server/assistants#where-assistants-go-back-to).
 </ResponseField>
 
 <ResponseField name="metrics.source" type="string" default="auto">

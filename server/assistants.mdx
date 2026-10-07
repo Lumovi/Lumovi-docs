@@ -5,7 +5,7 @@ description: "Let your team's AI assistants use Lumovi as them, signed in throug
 icon: "users"
 ---
 
-Lumovi's server is an MCP server too, at its address with `/mcp` after it: `https://lumovi.example.com/mcp`. Claude Code, Cursor, VS Code and other MCP clients that speak HTTP and OAuth connect there, with the same [tools](/assistants/tools) as the desktop app's. Each signs in through Lumovi, as MCP has clients do: Lumovi opens in the person's browser, they sign in as they always do, and allow the assistant. From then on, it acts as them, with their RBAC on each cluster, a [fleet's](/server/fleet) too, and as their [permissions](/assistants/permissions) say, within limits you may set. The changes it asks for wait on that person's own Lumovi pages for their answer.
+Lumovi's server is an MCP server too, at its address with `/mcp` after it: `https://lumovi.example.com/mcp`. Any MCP client, an AI assistant or agent, connects there over HTTP, with the same [tools](/assistants/tools) as the desktop app's. Each signs in through Lumovi, as MCP has clients do: Lumovi opens in the person's browser, they sign in as they always do, and allow the assistant. From then on, it acts as them, with their RBAC on each cluster, a [fleet's](/server/fleet) too, and as their [permissions](/assistants/permissions) say, within limits you may set. The changes it asks for wait on that person's own Lumovi pages for their answer.
 
 What people see and do is on [AI assistants on a server](/assistants/server). This page is for whoever runs Lumovi.
 
@@ -161,12 +161,12 @@ When each assistant last used Lumovi is kept at most every ten minutes, so **You
 
 Once someone allows an assistant, their browser goes back to it with a code the assistant swaps for its tokens. So Lumovi sends people back only where an assistant can be theirs:
 
-- **Their own computer**: `http` or `https` on `localhost`, `127.0.0.1` or `[::1]`, where Claude Code and other assistants listen while they sign in.
-- **An app**, by its own scheme, like `cursor:`. Not `javascript:`, `data:`, `file:`, `blob:`, `about:`, `vbscript:`, `ws:` or `wss:`.
+- **Their own computer**: `http` or `https` on `localhost`, `127.0.0.1` or `[::1]`, where an assistant on that computer listens while it signs in.
+- **An app**, by its own scheme, like `my-assistant:`. Not `javascript:`, `data:`, `file:`, `blob:`, `about:`, `vbscript:`, `ws:` or `wss:`.
 - **VS Code's redirector**, `https://vscode.dev` and `https://insiders.vscode.dev`, which passes the code on to VS Code on their computer.
 - **Sites you name**, over `https` only.
 
-Claude Code, Cursor and VS Code need nothing more. An assistant that runs on a site of its own, rather than on people's computers, needs its host named:
+An assistant that runs on people's computers, or opens an app, needs nothing more. One that runs on a site of its own needs its host named:
 
 <CodeGroup>
   ```yaml values.yaml

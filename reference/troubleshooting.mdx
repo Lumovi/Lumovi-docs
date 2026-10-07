@@ -232,7 +232,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 
 <AccordionGroup>
   <Accordion title="Lumovi can't use its port" icon="unplug">
-    **Lumovi can't use port 47830 (listen EADDRINUSE: …): choose another one.** Another program on your computer listens on that port. Type another one, from 1024 to 65535, in **Port**, on the **Connect** tab of the **AI assistants** page, and choose **Use**. Then set up Claude Code, Cursor, VS Code and the others again: the address they have names the old port. Claude Desktop finds the new one by itself. See [The port](/assistants/overview#the-port).
+    **Lumovi can't use port 47830 (listen EADDRINUSE: …): choose another one.** Another program on your computer listens on that port. Type another one, from 1024 to 65535, in **Port**, on the **Connect** tab of the **AI assistants** page, and choose **Use**. Then set up again each assistant that connects over HTTP: the address it has names the old port. Claude Desktop, through Lumovi's bridge, finds the new one by itself. See [The port](/assistants/overview#the-port).
   </Accordion>
   <Accordion title="An assistant can't connect, or is turned away" icon="plug-zap">
     The assistant usually shows what Lumovi answered:
@@ -290,7 +290,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     - **Allow assistants from Lumovi's own page.** Lumovi doesn't recognize the address the page was opened at as its own: the administrator should set `url`.
     - **This server's administrator has turned AI assistants off.** So does the **AI assistants** page.
 
-    An assistant that can't register at all hears **redirect_uris must go back to this computer (http://localhost), to an app (its own scheme), or to a site this server allows (LUMOVI_ASSISTANT_REDIRECT_HOSTS).** It wants to be sent back to a site the server doesn't name. Claude Code, Cursor and VS Code don't: for another assistant, ask the administrator.
+    An assistant that can't register at all hears **redirect_uris must go back to this computer (http://localhost), to an app (its own scheme), or to a site this server allows (LUMOVI_ASSISTANT_REDIRECT_HOSTS).** It wants to be sent back to a site the server doesn't name. Assistants that run on your computer, or open an app, don't: for one on a site of its own, ask the administrator.
 
     If the assistant can't find where to sign in at all, the server is below a path whose addresses for signing in don't reach Lumovi, or a proxy in front of it asks the assistant to sign in to it. See [AI assistants for your team](/server/assistants#troubleshooting).
 

@@ -76,7 +76,7 @@ A [fleet](/server/fleet) signs people in with single sign-on or a proxy, never w
     The theme, whether the cluster is read-only for you, and where your usage history comes from are kept in your browser. Each person can make Lumovi read-only for themselves, and for their AI assistants; `readOnly: true` makes it read-only for everyone.
   </Accordion>
   <Accordion title="AI assistants sign in through Lumovi" icon="sparkles">
-    Claude Code, Cursor, VS Code and other assistants connect to Lumovi's address, at `mcp`, and sign in through it in the browser: people allow each one, and it acts as them. The changes they ask for wait on their own pages. Each person says [what theirs may do](/assistants/permissions), and where, within limits the administrator sets. See [AI assistants on a server](/assistants/server), and [AI assistants for your team](/server/assistants) to turn them off or set limits.
+    AI assistants and agents, any MCP client, connect to Lumovi's address over HTTP, at `mcp`, and sign in through it in the browser, with OAuth: people allow each one, and it acts as them. The changes they ask for wait on their own pages. Each person says [what theirs may do](/assistants/permissions), and where, within limits the administrator sets. See [AI assistants on a server](/assistants/server), and [AI assistants for your team](/server/assistants) to turn them off or set limits.
   </Accordion>
   <Accordion title="Admins decide who may do what" icon="shield">
     Within what RBAC allows, its admins can let people do less through Lumovi, team by team: read-only for everyone, say, with shells and Secrets' values only where a team works. Each person sees what they may in **Your access**. See [Access for your team](/server/access).

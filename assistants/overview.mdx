@@ -1,11 +1,11 @@
 ---
 title: "AI assistants"
 sidebarTitle: "AI assistants"
-description: "Let Claude Code, Claude Desktop, Cursor, VS Code and other assistants read your clusters through Lumovi, on your desktop or your team's server, and ask you before they change anything."
+description: "Lumovi is an MCP server: any AI agent that speaks MCP can read your clusters through it, on your desktop or your team's server, and ask you before it changes anything."
 icon: "sparkles"
 ---
 
-AI assistants like Claude Code, Claude Desktop, Cursor and VS Code can use Lumovi to look at your clusters: list what's there, read objects, events and logs, and find what's wrong, with Lumovi's own reasons. When an assistant wants to change something, it asks. Lumovi shows you the change, with the diff it makes, the assistant's reason and the `kubectl` command that does the same, and makes it only if you approve.
+Lumovi is an MCP server, so any AI assistant or agent that speaks MCP (any MCP client) can use it to look at your clusters: list what's there, read objects, events and logs, and find what's wrong, with Lumovi's own reasons. When an assistant wants to change something, it asks. Lumovi shows you the change, with the diff it makes, the assistant's reason and the `kubectl` command that does the same, and makes it only if you approve.
 
 <Frame caption="The AI assistants page in the desktop app: where assistants connect, how to connect each one, and which are connected.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/assistants-light-1x.webp" alt="The AI assistants page in the desktop app, for a kubeconfig of 4 contexts, on its Connect tab: On this computer, switched on, listening at http://127.0.0.1:47830/mcp on port 47830; the Claude Code tab with its claude mcp add command and the token cut short; Claude Code under Connected now; and New token…. Permissions and Activity are the page's other tabs." />
@@ -20,7 +20,7 @@ Assistants use the desktop app on your computer, or your team's Lumovi [in a clu
 | --- | --- | --- |
 | Where they connect | `http://127.0.0.1:47830/mcp`, on your computer only | The server's address, like `https://lumovi.example.com/mcp` |
 | How they sign in | With a token of Lumovi's, copied into their settings | In your browser, through Lumovi: you sign in, and allow each one |
-| Which assistants | Claude Code, Claude Desktop, Cursor, VS Code and others | Claude Code, Cursor, VS Code and others that sign in with OAuth |
+| Which assistants | Any MCP client: over HTTP, with Lumovi's token, or one Lumovi starts for it over stdio | Any MCP client that connects over HTTP and signs in with OAuth |
 | As whom | You, with your kubeconfig | You, signed in as on your pages |
 | On or off | Off until you turn it on | On unless the administrator turned it off |
 | What they may do, and where | [Your permissions](/assistants/permissions) | Your permissions, within the administrator's limits |
@@ -91,11 +91,11 @@ If another program already uses the port, the tab says so, in red, and shows no 
 
 > Lumovi can't use port 47830 (listen EADDRINUSE: …): choose another one.
 
-Changing the port lets every assistant go and withdraws every change still waiting. Assistants you set up with the old port need setting up again. Claude Desktop doesn't: it finds the port by itself.
+Changing the port lets every assistant go and withdraws every change still waiting. Assistants you set up with the old port need setting up again. One that starts Lumovi through its bridge, as Claude Desktop does, doesn't: it finds the port by itself.
 
 ## Connect an assistant
 
-Under **Connect an assistant**, a tab for each assistant says how. What you copy has the token in it: the tab shows only its first four characters, then `…`, and the copy buttons copy all of it. The assistant keeps the token in its own settings.
+Under **Connect an assistant**, a tab says how for a few assistants, step by step, and **Other** for any other MCP client. What you copy has the token in it: the tab shows only its first four characters, then `…`, and the copy buttons copy all of it. The assistant keeps the token in its own settings.
 
 <Tabs>
   <Tab title="Claude Code" icon="square-terminal">
@@ -175,7 +175,7 @@ Under **Connect an assistant**, a tab for each assistant says how. What you copy
     Choose **Add to VS Code**. VS Code opens, asks you to confirm, then shows Lumovi among its MCP servers.
   </Tab>
   <Tab title="Other" icon="plug">
-    Assistants that connect to MCP servers over HTTP use Lumovi's address, and send its token in a header. **Copy address** and **Copy header** copy them:
+    Any other MCP client, or AI agent, that can connect to an MCP server over HTTP uses Lumovi's address, and sends its token in a header. **Copy address** and **Copy header** copy them:
 
     - **Address**: `http://127.0.0.1:47830/mcp`
     - **Header**: `Authorization: Bearer <token>`
@@ -186,7 +186,7 @@ Under **Connect an assistant**, a tab for each assistant says how. What you copy
 
 ## Connected now
 
-**Connected now** lists the assistants connected at the moment, by name: **Claude Code**, **Claude** (Claude Desktop), **Cursor**, **VS Code**, **Windsurf** and **Codex**, and others by the name they give. Two of the same, like Claude Code in two terminals, show as **Claude Code ×2**. Until one connects, it says "None yet: assistants show here once they connect."
+**Connected now** lists the assistants connected at the moment, each by the name it gives as it connects, or a shorter one Lumovi knows it by (Claude Desktop's is **Claude**). Two of the same show once, with how many, like **Claude Code ×2**. Until one connects, it says "None yet: assistants show here once they connect."
 
 The sidebar's button says so too: its green dot, and **AI assistants (2 connected)** when you point at it.
 
@@ -196,7 +196,7 @@ An assistant leaves the list when it disconnects. One that hasn't asked anything
 
 Assistants send Lumovi's token to connect. If a copy of it got out, make a new one: choose **New token…** at the bottom of the **Connect** tab, then **Make a new token**. **Cancel** keeps the one you have.
 
-Lumovi says what that does: "Assistants connected with the token now disconnect: set them up again (Claude Desktop picks the new one up itself)." Every connected assistant is let go, every change still waiting is withdrawn, and the old token stops working. Set up Claude Code, Cursor, VS Code and the others again, from the **Connect** tab. Claude Desktop reads the new token by itself.
+Lumovi says what that does: "Assistants connected with the token now disconnect: set them up again (Claude Desktop picks the new one up itself)." Every connected assistant is let go, every change still waiting is withdrawn, and the old token stops working. Set up again each assistant you gave the token to, from the **Connect** tab. Claude Desktop, through Lumovi's bridge, reads the new token by itself.
 
 ## Security
 
@@ -205,11 +205,11 @@ Lumovi lets assistants in only from this computer, and only with its token:
 - **Only on this computer.** Lumovi listens on `127.0.0.1`, which other computers can't reach, and writes its address that way. Assistants that connect over HTTP send the token to that address with no challenge, so keep `127.0.0.1` where you set one up by hand: `localhost` can lead to `::1` first, where another program could be listening, and be given the token.
 - **Only with the token.** Every request has to carry it, as `Authorization: Bearer <token>`. It's 43 random characters, made the first time you turn assistants on, and Lumovi compares it in constant time. A request without it gets "Lumovi needs its token: set this assistant up again from Lumovi."
 - **Not from web pages.** A browser marks the requests a page makes with an `Origin` header, and Lumovi refuses them: "Web pages may not connect to Lumovi." A page that points a name of its own at your computer (DNS rebinding) sends that name as the `Host`, and is refused too: "Only this computer may connect." Only requests addressed to `127.0.0.1` or `localhost`, at Lumovi's port, get in.
-- **Claude Desktop's bridge checks it's Lumovi first.** Before every request, it sends a random challenge (`Lumovi-Challenge`), and Lumovi answers with the challenge's HMAC-SHA256, keyed with its token (`Lumovi-Proof`). Only Lumovi can make that, and it tells nothing of the token. Without the right answer, the bridge sends no token, starts no Lumovi, and Claude Desktop is told: "What listens on Lumovi's port (47830) can't show it's Lumovi, so Lumovi's token isn't sent to it: open Lumovi, and set this assistant up again."
+- **The stdio bridge checks it's Lumovi first.** An assistant that starts Lumovi as a program, as Claude Desktop does, talks to it through a bridge. Before every request, it sends a random challenge (`Lumovi-Challenge`), and Lumovi answers with the challenge's HMAC-SHA256, keyed with its token (`Lumovi-Proof`). Only Lumovi can make that, and it tells nothing of the token. Without the right answer, the bridge sends no token, starts no Lumovi, and the assistant is told: "What listens on Lumovi's port (47830) can't show it's Lumovi, so Lumovi's token isn't sent to it: open Lumovi, and set this assistant up again."
 - **Small messages.** A message is at most 4 MB. A larger one gets "That's more than Lumovi takes: 4 MB at most." Only `/mcp` answers.
 - **Kept where only you can read it.** The token is in Lumovi's `settings.json`, with what assistants may do. On macOS and Linux, Lumovi keeps that file readable by your account only. See [Privacy and security](/reference/privacy-and-security#what-it-keeps-on-your-computer).
 
-Any program on your computer that has the token can use Lumovi as an assistant would: read your clusters, and ask for changes. The commands and settings you copy have it in them, the one for Claude Code in your shell's history too. Make a new token if one got out.
+Any program on your computer that has the token can use Lumovi as an assistant would: read your clusters, and ask for changes. The commands and settings you copy have it in them, and a command you ran in your shell's history too. Make a new token if one got out.
 
 Lumovi itself calls no AI service, and sends what it gives an assistant to that assistant only. The assistant handles it as it handles everything else you show it, which for most means sending it to their AI provider. Your [permissions](/assistants/permissions) say what Lumovi hides from them: by default, Secrets' values and env values that look sensitive. A ConfigMap's data, or what a container logs, they read unless you hide its namespace, or its logs. See [What's hidden](/assistants/tools#what’s-hidden).
 

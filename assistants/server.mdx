@@ -1,23 +1,21 @@
 ---
 title: "AI assistants on a server"
 sidebarTitle: "On a server"
-description: "Connect Claude Code, Cursor, VS Code or another assistant to your team's Lumovi: it signs in through Lumovi, acts as you, and asks you before it changes anything."
+description: "Connect any MCP client to your team's Lumovi: it signs in through Lumovi, acts as you, and asks you before it changes anything."
 icon: "server"
 ---
 
-Your team's Lumovi, [in a cluster](/server/overview) or as a [fleet](/clusters/fleet), takes AI assistants too. Claude Code, Cursor, VS Code and other assistants that speak MCP connect to its address, and sign in through Lumovi in your browser: there's no token to copy. Then they act as you. They read the clusters you can see (in a fleet, every one you may see), with what you may do in each and what your [permissions](/assistants/permissions) let them, and the changes they ask for wait on your own Lumovi pages for your answer.
+Your team's Lumovi, [in a cluster](/server/overview) or as a [fleet](/clusters/fleet), takes AI assistants too. Any AI assistant or agent that speaks MCP over HTTP connects to its address, and signs in through Lumovi in your browser, with OAuth: there's no token to copy. Then they act as you. They read the clusters you can see (in a fleet, every one you may see), with what you may do in each and what your [permissions](/assistants/permissions) let them, and the changes they ask for wait on your own Lumovi pages for your answer.
 
 They have the same [tools](/assistants/tools) as in the desktop app, and their changes show in the same [approval dialog](/assistants/approvals). What differs is how they connect, how they sign in, and that your permissions are kept on the server, within limits the administrator may set. Running the server? See [AI assistants for your team](/server/assistants).
 
 ## Connect an assistant
 
-Open the **AI assistants** page: the sparkles at the bottom of the sidebar, next to the theme (at the top right of a fleet's page of clusters), or **AI assistants…** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux). It says:
-
-> Claude Code, Cursor, VS Code and other assistants act as you through Lumovi. They never get more than your own access, and your permissions narrow it further.
+Open the **AI assistants** page: the sparkles at the bottom of the sidebar, next to the theme (at the top right of a fleet's page of clusters), or **AI assistants…** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux). It says that assistants act as you through Lumovi, and never get more than your own access, which your permissions narrow further.
 
 Its tabs are **Connect**, **Your assistants**, [Permissions](/assistants/permissions) and **Activity**: what assistants changed, or asked to, since Lumovi opened. **Back** takes you back where you were.
 
-On the **Connect** tab, under **Connect an assistant**, a tab for each:
+On the **Connect** tab, under **Connect an assistant**, a tab says how for a few assistants, step by step, and **Other** for any other MCP client:
 
 <Tabs>
   <Tab title="Claude Code" icon="square-terminal">
@@ -36,7 +34,7 @@ On the **Connect** tab, under **Connect an assistant**, a tab for each:
     Choose **Add to VS Code**. VS Code asks you to confirm, then opens Lumovi in your browser to sign in.
   </Tab>
   <Tab title="Other" icon="plug">
-    Assistants that connect to MCP servers over HTTP use the address the tab shows, with **Copy address**: the server's own, with `/mcp` after it, like `https://lumovi.example.com/mcp`. They sign in with OAuth, as MCP has them do: Lumovi opens in your browser, and asks you to allow them.
+    Any other MCP client, or AI agent, that connects to MCP servers over HTTP uses the address the tab shows, with **Copy address**: the server's own, with `/mcp` after it, like `https://lumovi.example.com/mcp`. They sign in with OAuth, as MCP has them do: Lumovi opens in your browser, and asks you to allow them.
   </Tab>
 </Tabs>
 
@@ -61,7 +59,7 @@ When the assistant connects for the first time, it opens Lumovi in your browser:
 
     Changes without asking, and Secrets' values, show in the warning's color when there are any. A cluster whose namespaces you can't list isn't counted, and the page says so. **Change what assistants may do** opens your [permissions](/assistants/permissions) in another tab: change them before you allow it, if you like.
 
-    Below that, where it goes back to: an address on your computer, like `127.0.0.1:33418`, an app, like `cursor`, or a site, like `vscode.dev`, which passes it on to VS Code. Lumovi sends you back only to your computer, an app, VS Code's site, or sites your team allowed. "Allow it only if you started this from Claude Code."
+    Below that, where it goes back to: an address on your computer, like `127.0.0.1:33418`, an app, by its own scheme, or a site, like `vscode.dev`, which passes it on to VS Code. Lumovi sends you back only to your computer, an app, VS Code's site, or sites your team allowed. "Allow it only if you started this from Claude Code."
   </Step>
   <Step title="Allow or deny it">
     **Allow** sends the browser back to the assistant, which can then use Lumovi as you. **Deny** sends it back too, without access.
