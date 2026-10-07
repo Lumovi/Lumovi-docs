@@ -91,17 +91,18 @@ Lumovi deletes the terminal's kubeconfig when its shell ends: when the shell exi
 
 ## A kubectl that matches the cluster
 
-kubectl works with clusters one minor version either side of its own, so one kubectl may be too old, or too new, for some of your clusters. Each terminal gets the kubectl for the version the cluster says it runs: the newest patch of that minor version, like v1.34.9 for a cluster that says v1.34.1.
+kubectl works with clusters one minor version either side of its own, so one kubectl may be too old, or too new, for some of your clusters. Each terminal gets the kubectl for the version the cluster says it runs: the newest patch of that minor version, like v1.34.9 for a cluster that says v1.34.1. None older than 1.25, Lumovi's oldest: an older kubectl lacks years of fixes, and a cluster doesn't get to choose one for you.
 
 - **From Kubernetes.** Lumovi asks [dl.k8s.io](https://dl.k8s.io) for that minor version's newest patch (`release/stable-1.34.txt`), then downloads it, and checks it against the checksum published beside it. That catches a download that's broken or cut short, not a server that isn't Kubernetes'. It goes through the [proxy and certificate authorities](/desktop/network) Lumovi's other connections use.
-- **Downloaded once.** Each is kept in Lumovi's folder for app data, under `kubectl/v1.34.9`, for the terminals of every cluster on that minor version. As Lumovi starts, it keeps only each minor version's newest patch. It remembers which patch is newest for six hours, and each cluster's version as it last said it: after a cluster's upgrade, the first terminal can still get the kubectl for its old version, and the ones after get the new.
+- **Downloaded once.** Each is kept in Lumovi's folder for app data, under `kubectl/v1.34.9`, for the terminals of every cluster on that minor version. As Lumovi starts, it keeps only each minor version's newest patch, and removes what a crash left half-downloaded. It remembers which patch is newest for six hours.
+- **Each cluster's version, remembered.** Lumovi keeps the minor version each cluster last said it runs, by its context's name, in `kubectl/clusters.json`, across restarts. So a cluster that can't be reached gets the kubectl kept for it, at once. After a cluster's upgrade, the first terminal can still get the kubectl for its old version, and the ones after get the new.
 - **First on the terminal's `PATH`**, even after your startup files have run, as they may put theirs first, the way macOS's `path_helper` does, in zsh, bash, sh, dash, ksh and fish, and in PowerShell, after your profile. Type `kubectl`, and it's this one. Other shells, like csh, tcsh or nushell, start with it first, but their own startup files can put another kubectl ahead of it.
 
 While it downloads, the terminal says so: `› Getting kubectl v1.34.9, to match the cluster…`.
 
 ### When it can't have one
 
-A terminal is often opened because something's wrong, so it doesn't wait long. It waits 3 seconds for the cluster to say its version, unless an earlier terminal already learned it, and 10 seconds for the kubectl. Past that, or when Lumovi can't get one, the terminal starts with the kubectl on your `PATH`, and its first line says why:
+A terminal is often opened because something's wrong, so it doesn't wait long. It waits 3 seconds for the cluster to say its version, the first time Lumovi asks it, and 10 seconds for the kubectl. Past that, or when Lumovi can't get one, the terminal starts with the kubectl on your `PATH`, and its first line says why:
 
 ```text
 › kubectl points at dev in this terminal. It’s the one on your PATH: Lumovi couldn’t ask the cluster its version (it didn’t answer within 3 seconds).
@@ -109,7 +110,9 @@ A terminal is often opened because something's wrong, so it doesn't wait long. I
 
 | It says | Why |
 | --- | --- |
-| "Lumovi couldn't ask the cluster its version (it didn't answer within 3 seconds)" | The cluster didn't answer in time: its VPN is off, say. |
+| "Lumovi couldn't ask the cluster its version (it didn't answer within 3 seconds)" | The cluster didn't answer in time, the first time Lumovi asked it: its VPN is off, say. |
+| "the cluster says it's Kubernetes 1.13, and Lumovi gets kubectl for 1.25 or later" | The cluster runs a version older than any kubectl Lumovi gets. |
+| "Lumovi gets kubectl only over HTTPS, and http://mirror.corp.example.com isn't (LUMOVI_KUBECTL_MIRROR)" | `LUMOVI_KUBECTL_MIRROR` names a mirror over plain `http`, or isn't a URL. |
 | "kubectl v1.34.9 is still downloading, for the terminals opened once it's done" | The download takes longer than 10 seconds. It carries on: the terminals you open after it's done have it. |
 | "dl.k8s.io didn't answer within 10 seconds" | Lumovi couldn't learn the newest patch in time. |
 | "Lumovi couldn't get kubectl 1.34 to match the cluster (dl.k8s.io answered 503)" | It couldn't be had, and none of that minor version is kept. The reason in brackets can also be the connection's, or "what was downloaded isn't what dl.k8s.io published". |
@@ -118,7 +121,9 @@ When dl.k8s.io can't be reached, offline say, the newest kubectl of that minor v
 
 ### Turn it off
 
-Choose **View → Match kubectl to Each Cluster**, on by default, to turn it off: terminals opened from then on use the kubectl on your `PATH`, and say nothing of it. Your organization's [policy](/desktop/policy#kubectl) can turn it off for you (`"kubectl": false`), and the item is then off and disabled, or name a mirror of dl.k8s.io to get kubectl from. Without a policy, `LUMOVI_KUBECTL_MIRROR` names one: see [Environment variables](/reference/environment-variables).
+Choose **View → Match kubectl to Each Cluster**, on by default, to turn it off: terminals opened from then on use the kubectl on your `PATH`, and say nothing of it. Your organization's [policy](/desktop/policy#kubectl) can turn it off for you (`"kubectl": false`), and the item is then off and disabled, or name a mirror of dl.k8s.io to get kubectl from. Without a policy, `LUMOVI_KUBECTL_MIRROR` names one: see [Environment variables](/reference/environment-variables). A mirror is used over `https` only, or on this computer.
+
+What Lumovi writes on a terminal's first line can quote a cluster or a mirror: it leaves out control characters and the marks that reorder text, which a terminal would act on, and cuts what it quotes short, so nothing can write over its own words.
 
 ### helm
 
