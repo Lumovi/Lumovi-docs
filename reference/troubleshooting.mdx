@@ -147,7 +147,9 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   <Accordion title="A terminal says it uses the kubectl on your PATH" icon="terminal">
     Lumovi couldn't give the terminal a [kubectl that matches its cluster](/debug/terminal#a-kubectl-that-matches-the-cluster), and its first line says why, after "It's the one on your PATH:":
 
-    - **Lumovi couldn't ask the cluster its version (it didn't answer within 3 seconds).** The cluster isn't reachable now: connect its VPN, say, and open another terminal.
+    - **Lumovi couldn't ask the cluster its version (it didn't answer within 3 seconds).** The cluster isn't reachable now, and Lumovi has never learned its version: connect its VPN, say, and open another terminal.
+    - **the cluster says it's Kubernetes 1.13, and Lumovi gets kubectl for 1.25 or later.** Lumovi gets no kubectl older than 1.25. Use a kubectl of your own that suits that cluster.
+    - **Lumovi gets kubectl only over HTTPS, and … isn't (LUMOVI_KUBECTL_MIRROR).** `LUMOVI_KUBECTL_MIRROR` names a mirror over plain `http`, or isn't a URL. Give an `https` one, or unset it.
     - **kubectl v1.34.9 is still downloading, for the terminals opened once it's done.** Open another terminal once it's done.
     - **dl.k8s.io didn't answer within 10 seconds**, or **Lumovi couldn't get kubectl 1.34 to match the cluster (…)**: dl.k8s.io can't be reached from this computer, and Lumovi kept none of that version. Behind a company's proxy, see [Proxies and certificates](/desktop/network). Lumovi tries again 10 minutes later. Your organization can name a mirror in its [policy](/desktop/policy#kubectl).
 
@@ -235,7 +237,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   <Accordion title="An assistant can't connect, or is turned away" icon="plug-zap">
     The assistant usually shows what Lumovi answered:
 
-    - **Lumovi needs its token: set this assistant up again from Lumovi.** It sent no token, or an old one, after **New token…**, say. Set it up again from the **AI assistants** page. See [Connect an assistant](/assistants/overview#connect-an-assistant).
+    - **Lumovi needs its token: set this assistant up again from Lumovi.** It sent no token, or an old one, after **New token…**, say. Claude Desktop is told something else: see **Claude Desktop doesn't use Lumovi**, below. Set it up again from the **AI assistants** page. See [Connect an assistant](/assistants/overview#connect-an-assistant).
     - **That session has ended: start a new one.** Lumovi was restarted, turned off and on, or let the assistant go after six hours without a word from it. Most assistants start a new session by themselves. If yours doesn't, reconnect it, or restart it.
     - **Web pages may not connect to Lumovi.** The request came with an `Origin` header, as a browser's requests do. Tools that run in a browser can't connect.
     - **Only this computer may connect.** The request was addressed to a name other than `127.0.0.1` or `localhost`. Use the address the dialog shows.
@@ -254,6 +256,7 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     - **AI assistants are turned off in Lumovi: open Lumovi, and turn them on in its AI assistants settings.**
     - **Lumovi didn't start: open it, and check that AI assistants are on.** Lumovi wasn't running, and didn't listen within 30 seconds of being started. Open it yourself.
     - **Lumovi isn't answering: open it, and try again.**
+    - **What listens on Lumovi's port (47830) can't show it's Lumovi, so Lumovi's token isn't sent to it: open Lumovi, and set this assistant up again.** Another program listens on Lumovi's port while Lumovi isn't running, or the token in Lumovi's settings isn't the one Lumovi uses. Lumovi's token isn't sent there, and Lumovi isn't started over it. Open Lumovi, and if it can't use its port, choose another; then choose **Add to Claude Desktop** again.
     - **Lumovi isn't running: open it, and try again.** Lumovi isn't open, and can't be started for Claude Desktop yet: Lumovi notes how to start it each time you open it. Open it yourself.
     - **Lumovi's settings name no port it listens on: open Lumovi, and choose AI assistants' port again.** The port in Lumovi's settings isn't one Lumovi could listen on, so Claude Desktop's messages, and the token with them, aren't sent anywhere. Choose the port again on the **AI assistants** page.
 
