@@ -7,6 +7,20 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 7, 2026" description="1.9.0" tags={["Desktop app"]}>
+  ## Tools of its own
+
+  The desktop app brings what its Helm actions and terminals need.
+
+  - **A kubectl that matches the cluster, in each terminal.** The kubectl for the version the cluster says it runs: the newest patch of that minor version, as kubectl works a minor version either side of its cluster. It's downloaded from dl.k8s.io once, checked against the checksum published beside it, and kept for every cluster on that version. It's first on the terminal's `PATH`, even after your startup files (zsh, bash, sh, dash, ksh, fish and PowerShell), and the terminal's first line says which: "It's v1.34.9, to match the cluster."
+    - **A terminal never waits long for it.** A cluster that doesn't say its version within 3 seconds, or a kubectl still downloading after 10, and the terminal starts with yours, saying why; the terminals opened after get it. Offline, the newest one kept does.
+    - **View → Match kubectl to Each Cluster** turns it off. An organization's [policy](/desktop/policy#kubectl) can too (`"kubectl": false`), or name a mirror of dl.k8s.io to get it from, as can `LUMOVI_KUBECTL_MIRROR`.
+    - See [A kubectl that matches the cluster](/debug/terminal#a-kubectl-that-matches-the-cluster).
+  - **helm, shipped with the app**, and listed in its bill of materials. Helm 4.3.0, the same as the image's, runs its Helm actions: installing, upgrading, rolling back and uninstalling releases need no helm of your own. `LUMOVI_HELM` still names another. Terminals have it last on their `PATH`, for when you have none. See [Which helm runs](/helm/upgrade-and-rollback#which-helm-runs).
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.9.0)
+</Update>
+
 <Update label="October 7, 2026" description="1.8.0" tags={["In your cluster", "Desktop app"]}>
   ## A restart signs nobody out
 
