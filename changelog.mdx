@@ -7,6 +7,19 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 8, 2026" description="1.14.0" tags={["In your cluster"]}>
+  ## Proxy sign-in and fleet agents, safe by default
+
+  - **Behind an authenticating proxy**, only the proxy's pods reach Lumovi. With `auth.mode: proxy`, the chart's NetworkPolicy is always on, and the chart won't install without `networkPolicy.from` naming the proxy's pods: whoever else could reach Lumovi could say they're anyone. It needs a network plugin that enforces NetworkPolicies. See [Authenticating proxy](/server/auth/proxy).
+  - **An agent's cluster is trusted by its certificate authority.** A fleet trusts only the one `caSha256` names for an agent in `LUMOVI_FLEET_AGENTS`, or else the one the agent first sends, kept and recorded in the audit log (`agent.pinned`). Lumovi's log names each agent without `caSha256` as it starts, and the chart's notes say so too. Another certificate authority is refused (`agent.refused`), and the cluster's card says **Agent not trusted**. See [Its cluster's certificate authority](/server/fleet/agents#its-cluster’s-certificate-authority).
+  - **Admins trust an agent by its SHA-256, from its cluster**, or anyone signed in where Lumovi has no admins. **Agents to check**, on the fleet's page, lists one refused, with **Trust it…**, and one trusted as it first connected, with **Check it…**, showing only the start of each hash it sends. Either takes the SHA-256 of the cluster's certificate authority, as `openssl x509 -noout -fingerprint -sha256` prints it, and Lumovi trusts the agent only if that's what it sends (`agent.trusted`). See [Trusting it, by its SHA-256](/server/fleet/agents#trusting-it-by-its-sha-256).
+  - **`caSha256` takes openssl's line as it is**, `sha256 Fingerprint=AB:CD:…`, or just the hash.
+  - **An agent is ready only once Lumovi trusts its cluster.** Until then, its `/healthz` answers `503`, `connected, not yet trusted`, or `connected, but refused:` and why.
+  - **Agents connect over https.** The chart refuses an `http` `agent.hubUrl`, and an agent an `http` `LUMOVI_HUB_URL`, but on the same machine: its token and its cluster's would cross the network as they are.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.14.0)
+</Update>
+
 <Update label="October 8, 2026" description="1.13.0" tags={["Desktop app"]}>
   ## A terminal's kubectl, checked against Kubernetes' signature
 
