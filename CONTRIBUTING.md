@@ -53,7 +53,7 @@ in your pull request, so the website's links can follow.
 - **Write like the app.** Plain, calm, short sentences, in the second person. No hype. Explain
   what happens and why, not only which button to press.
 - **It's Lumovi:** one word, capital L. Not LUMOVI, LumoVi or Lumovi App (environment
-  variables like `LUMOVI_READ_ONLY` aside). It's a Kubernetes dashboard you run on your desktop
+  variables like `LUMOVI_READ_ONLY` aside). It's a calm, fast Kubernetes dashboard, on your desktop
   or in your cluster.
 - **Be exact.** Every label, default, limit and behavior should match Lumovi. When in
   doubt, check its [source](https://github.com/Lumovi/Lumovi/tree/main/src), or try it

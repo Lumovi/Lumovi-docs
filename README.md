@@ -7,8 +7,8 @@
 **The documentation for [Lumovi](https://github.com/Lumovi/Lumovi), at
 [docs.lumovi.dev](https://docs.lumovi.dev).**
 
-Installing it, using it, running it for your team, and every setting: the source of the docs
-for the calm, fast Kubernetes dashboard, on your desktop, in your cluster, or as a fleet.
+A calm, fast Kubernetes dashboard, on your desktop or in your cluster: this is the source of its
+docs, from installing it and using it to running it for your team, and every setting.
 
 [![CI](https://github.com/Lumovi/Lumovi-docs/actions/workflows/ci.yml/badge.svg)](https://github.com/Lumovi/Lumovi-docs/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-docs.lumovi.dev-2675d3)](https://docs.lumovi.dev)

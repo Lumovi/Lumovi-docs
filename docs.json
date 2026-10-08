@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "aspen",
   "name": "Lumovi",
-  "description": "Lumovi is a calm, fast Kubernetes dashboard. Run it on your desktop against every cluster in your kubeconfig, in your cluster for your whole team to sign in to, or as one fleet for many clusters.",
+  "description": "A calm, fast Kubernetes dashboard, on your desktop or in your cluster.",
   "variables": {
     "version": "1.15.0"
   },
