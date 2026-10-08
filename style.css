@@ -16,16 +16,15 @@
   --lumovi-surface-3: #efefef;
   --lumovi-text-1: #0a0a0a;
   --lumovi-text-2: #525252;
-  --lumovi-text-3: #737373;
-  --lumovi-good: #0ca30c;
-  --lumovi-warn: #fab219;
-  --lumovi-serious: #ec835a;
+  --lumovi-text-3: #6b6b6b;
+  --lumovi-good: #009e00;
+  --lumovi-warn: #bd7800;
   --lumovi-critical: #d03b3b;
-  --lumovi-neutral: #898781;
-  --lumovi-progress: #2675d3;
-  --lumovi-good-text: #1a7f37;
+  --lumovi-neutral: #737373;
+  --lumovi-good-text: #00732b;
   --lumovi-warn-text: #8a5a00;
   --lumovi-critical-text: #b42318;
+  --lumovi-neutral-text: #525252;
   --lumovi-shadow-window: 0 0 0 1px rgb(0 0 0 / 0.06), 0 24px 60px -24px rgb(0 0 0 / 0.28);
   --lumovi-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
@@ -41,10 +40,11 @@
   --lumovi-text-1: #ededed;
   --lumovi-text-2: #a3a3a3;
   --lumovi-text-3: #8f8f8f;
-  --lumovi-progress: #3987e5;
+  --lumovi-warn: #fab219;
   --lumovi-good-text: #3fb950;
   --lumovi-warn-text: #e3a008;
-  --lumovi-critical-text: #f85149;
+  --lumovi-critical-text: #fc554c;
+  --lumovi-neutral-text: #a3a3a3;
   --lumovi-shadow-window: 0 0 0 1px rgb(255 255 255 / 0.07), 0 40px 100px -30px rgb(0 0 0 / 0.9),
     0 30px 80px -40px rgb(255 255 255 / 0.08);
 }
@@ -168,8 +168,27 @@ kbd {
 .lumovi-status.healthy::before { background: var(--lumovi-good); }
 .lumovi-status.warning::before { background: var(--lumovi-warn); }
 .lumovi-status.critical::before { background: var(--lumovi-critical); }
-.lumovi-status.progressing::before { background: var(--lumovi-progress); }
+.lumovi-status.progressing::before {
+  background: var(--lumovi-neutral);
+  animation: lumovi-pulse 2s ease-in-out infinite;
+}
 .lumovi-status.neutral::before { background: var(--lumovi-neutral); }
+
+/* Still going: the mark breathes, unless motion is reduced. */
+@keyframes lumovi-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lumovi-status.progressing::before {
+    animation: none;
+  }
+}
 
 /* A row of facts under a heading: Platform · Requirement. */
 .lumovi-facts {
