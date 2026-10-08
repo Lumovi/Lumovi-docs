@@ -228,6 +228,7 @@ Every release's installers, image and chart are built by Lumovi's [release workf
 
 - **Attested**: each carries a signed build provenance attestation, which says where and from what it was built.
 - **Signed with cosign**, keyless, by the release workflow's identity, and recorded in Sigstore's public log: as a Sigstore bundle (an OCI referrer), and with the `.sig` tag older admission controllers look for. An admission controller can require it: see [Require the signature](/server/hardening#require-the-signature).
+- **Released immutably**: once a release is published on GitHub, its installers and its tag can't be changed or replaced, and `gh release verify-asset` checks that a file is the one it was published with. The image and the chart on ghcr.io aren't part of the GitHub release: check them by their attestations and signatures, below.
 - **With bills of materials**: the image's JavaScript packages (the page, the server and an agent's) in CycloneDX, attested with it and in the image as `/app/licenses/sbom.cdx.json`; and its system packages in SPDX, made as it's built, helm's Go modules among them.
 
 With the [GitHub CLI](https://cli.github.com), and [cosign](https://docs.sigstore.dev/cosign/system_config/installation/):

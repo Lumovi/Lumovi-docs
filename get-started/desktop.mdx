@@ -131,6 +131,8 @@ New versions come from the project's [GitHub releases](https://github.com/Lumovi
 
 Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. Each installer has a signed build provenance attestation, which says it was built by Lumovi's release workflow from the release's commit, and an attested bill of materials: `Lumovi-<version>.cdx.json` (CycloneDX), every package the app bundles or ships, Electron, and the helm it ships with (4.3.0), with the Go modules that helm is built from and the Go it's built with, on the release too. A scanner like [grype](https://github.com/anchore/grype) reads it, and finds known vulnerabilities in any of them.
 
+Releases are immutable: once one is published, GitHub keeps its files and its tag from being changed or replaced, and attests what it was published with, so `gh release verify-asset` checks that a download is the one the release has.
+
 <CodeGroup>
   ```bash Checksum (macOS, Linux)
   # In the folder with the installer and SHA256SUMS.txt
@@ -160,6 +162,12 @@ Every release lists the SHA-256 checksum of each installer in `SHA256SUMS.txt`. 
 
   # Known vulnerabilities in what an installer is made of, helm's Go modules included.
   grype sbom:Lumovi-{{version}}.cdx.json
+  ```
+
+  ```bash Release (GitHub CLI)
+  # The release, immutable: its files and its tag as they were published.
+  gh release verify v{{version}} --repo Lumovi/Lumovi
+  gh release verify-asset v{{version}} Lumovi-{{version}}-mac-arm64.dmg --repo Lumovi/Lumovi
   ```
 </CodeGroup>
 

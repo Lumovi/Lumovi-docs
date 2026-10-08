@@ -7,6 +7,18 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 8, 2026" description="1.15.0" tags={["Desktop app"]}>
+  ## A terminal's kubectl: signatures your organization can require
+
+  - **A mirror's kubectl, only with Kubernetes' signature.** Your organization's policy can require it, `"kubectlSignatures": "required"`, as dl.k8s.io's always is. A kubectl the mirror keeps no `.sig` and `.cert` for isn't used: the terminal uses yours, or one kept and signed, and says "artifacts.corp.example.com published no signature for kubectl v1.34.9, and your organization's policy requires one". A kubectl taken from the mirror unsigned before isn't used while the policy requires signatures, and a policy that can't be used gets no kubectl at all, so terminals use the one installed. See [kubectlSignatures](/desktop/policy#kubectlsignatures).
+  - **A refused kubectl may have been changed, or Lumovi may need an update.** A terminal says a kubectl "couldn't be verified as Kubernetes' own, and may have been changed", and why. Where it isn't signed as this Lumovi knows Kubernetes signs, or under Sigstore's authority and logs as it knows them, it says which of them may have changed instead, and that Lumovi then needs an update. See [When it can't have one](/debug/terminal#when-it-can’t-have-one).
+  - **Kept kubectls, checked before each use.** Lumovi notes each kubectl's SHA-256 beside it as it checks it, and uses a kept one only while it still matches. It keeps the newest signed one of each minor version too, for a policy that requires signatures.
+  - **Sigstore's trust root, through TUF.** The trust root Lumovi checks signatures against is taken through Sigstore's TUF repository, checked against its signed metadata. Each week, Lumovi's repository takes it again, and proposes the new one for a release when Sigstore changes it, and checks that Kubernetes' instructions still name the signer Lumovi checks for. See [What's checked, and what isn't](/reference/privacy-and-security#what’s-checked-and-what-isn’t).
+  - **Releases, immutable.** Once a release is published, GitHub keeps its files and its tag from being changed or replaced, and `gh release verify-asset` checks that a download is the one it was published with. See [Verify your download](/get-started/desktop#verify-your-download).
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.15.0)
+</Update>
+
 <Update label="October 8, 2026" description="1.14.0" tags={["In your cluster"]}>
   ## Proxy sign-in and fleet agents, safe by default
 
