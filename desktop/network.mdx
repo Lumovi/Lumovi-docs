@@ -18,6 +18,7 @@ Your organization can set the proxy for every Lumovi on its computers instead, i
 - **Your clusters**, unless the cluster names a proxy of its own, with `proxy-url` in your kubeconfig: that one is used instead, as `kubectl` would. A `proxy-url` can be an `http`, `https` or `socks5` proxy.
 - **Helm**: Artifact Hub, and the repositories whose charts Lumovi lists. The `helm` it runs, and your credential plugins, get the same variables.
 - **Terminals' [matching kubectl](/debug/terminal#a-kubectl-that-matches-the-cluster)**, from dl.k8s.io or your organization's mirror, trusting the same certificate authorities.
+- **The sidebar's [sponsor card](/reference/privacy-and-security#the-sponsor-card)**, from `raw.githubusercontent.com`, trusting them too. When it can't be reached, the card is the one read last, or Lumovi's own.
 
 Never through it:
 

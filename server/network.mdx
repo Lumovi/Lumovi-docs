@@ -65,6 +65,7 @@ Without the chart, set the variables yourself: see [Configuration](/server/confi
 - **Helm**: the repositories whose charts Lumovi lists, and Artifact Hub. The `helm` Lumovi runs, which fetches the charts themselves, gets the same variables, and the cluster's proxy as `proxy-url` in the kubeconfig it's given.
 - **The [audit log's webhook](/server/audit-log#to-a-webhook)**.
 - **An [agent](/server/fleet/agents)'s connection to Lumovi**, its WebSocket through the proxy's tunnel (`CONNECT`).
+- **The sidebar's [sponsor card](/reference/privacy-and-security#the-sponsor-card)**, from `raw.githubusercontent.com`, as Lumovi starts and every hour.
 
 Some are never sent through it:
 
@@ -131,6 +132,7 @@ Where they show:
 - **Helm**: where a repository's charts, or Artifact Hub's, are listed, after `Couldn't reach` and the address. What `helm` fetches itself fails as `helm` says it.
 - **The audit webhook**: on the **Audit log** page, for auditors, after "It can't be reached:". See [When events are lost](/server/audit-log#when-events-are-lost).
 - **A cluster**: on its card, and its error screen.
+- **The sponsor card**: nowhere. The sidebar shows Lumovi's own card instead.
 - **An agent's connection to Lumovi**: in the agent's log, after `Can't reach the hub at` and the address, naming the proxy and where it was asked to go: "The proxy `http://proxy.corp.example.com:3128` needs credentials to lumovi.example.com:443 (407): give them in its URL, as `http://user:password@host:port`." A certificate it doesn't trust is said as Node says it, like `self-signed certificate in certificate chain`.
 
 ## OpenShift

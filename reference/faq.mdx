@@ -50,10 +50,10 @@ icon: "circle-question-mark"
     No. It reads your kubeconfig and never writes to it. Managing kubeconfig files, like adding contexts or signing in to cloud providers, is deliberately left to the tools made for it.
   </Accordion>
   <Accordion title="Does it collect any data?">
-    No. There's no telemetry and no account. Its [audit log](/audit/overview) stays on your computer. The desktop app talks to your clusters, and to a few other places only when you use what needs them, like update checks and chart search. See [Privacy and security](/reference/privacy-and-security) for the full list.
+    No. There's no telemetry and no account. Its [audit log](/audit/overview) stays on your computer. The desktop app talks to your clusters, to a few other places only when you use what needs them, like update checks and chart search, and to GitHub for the sidebar's sponsor card, sending nothing but the request. See [Privacy and security](/reference/privacy-and-security) for the full list.
   </Accordion>
   <Accordion title="Can I use it without an internet connection?">
-    Lumovi needs to reach your clusters, and nothing else. Without the internet, everything works except looking for new versions, searching Artifact Hub, and fetching charts from public repositories.
+    Lumovi needs to reach your clusters, and nothing else. Without the internet, everything works except looking for new versions, searching Artifact Hub, and fetching charts from public repositories, and the sidebar's sponsor card is Lumovi's own.
   </Accordion>
   <Accordion title="On our team's Lumovi, who decides a cluster is read-only?">
     The server: a cluster made [read-only](/changes/read-only#in-your-cluster) on the page is read-only for everyone on it, and their AI assistants, and says who made it so, and when. Lumovi's admins turn it on and off, or anyone, where there are none, and the audit log records each switch. `readOnly: true` makes every cluster read-only.
@@ -132,6 +132,12 @@ icon: "circle-question-mark"
     - **Contribute.** Pull requests are welcome; for anything bigger than a small fix, open an issue first. See [Build from source](/reference/build-from-source).
     - **Sponsor** its development on [GitHub Sponsors](https://github.com/sponsors/kotapeter). The desktop app has a link in **Help → Sponsor Lumovi…** too.
     - **Star it** on [GitHub](https://github.com/Lumovi/Lumovi), so others find it.
+  </Accordion>
+  <Accordion title="What's the sponsor card in the sidebar?">
+    One card above the sidebar's footer, in the desktop app, in the web UI Lumovi serves from a cluster, and in a fleet's hub: Lumovi's own, "Help keep Lumovi free.", or a sponsor's, with their picture, one line and a link, which opens in your browser.
+
+    - **Nothing is tracked.** Lumovi reads the card from GitHub, as it starts and every hour, and sends nothing but the request: no ID, no cookie, nothing about you or your clusters. It counts no views and no clicks. There's no switch to turn it off. Without a way to GitHub, it's Lumovi's own card. See [The sponsor card](/reference/privacy-and-security#the-sponsor-card).
+    - **Sponsoring.** Lumovi has one sponsor at a time, on [GitHub Sponsors](https://github.com/sponsors/Lumovi). A sponsor's card is a change to `sponsor.json` in the public [Lumovi/main-sponsor](https://github.com/Lumovi/main-sponsor) repository, by pull request, which merges once its check passes. Its README says what a card may be: the picture, the words and the link. It shows everywhere within the hour, with no release.
   </Accordion>
   <Accordion title="Where do I report a security problem?">
     Privately, please, by email to [security@lumovi.dev](mailto:security@lumovi.dev), or through a [GitHub security advisory](https://github.com/Lumovi/Lumovi/security/advisories/new). See [Reporting a vulnerability](/reference/privacy-and-security#reporting-a-vulnerability).
