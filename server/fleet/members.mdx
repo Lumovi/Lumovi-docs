@@ -90,6 +90,29 @@ This is for clusters whose API server Lumovi can reach. For a cluster in a netwo
   Whoever has the token can act as anyone in the cluster. Keep the fleet's kubeconfig only where its administrators can read it. Deleting the `lumovi-token` Secret revokes the token, and so does uninstalling the release.
 </Warning>
 
+## From the Fleet page
+
+Where the server allows it (the chart's `fleet.addFromPage`, off unless you set it), Lumovi's admins add a cluster on the Fleet page, with the credentials the chart made, or any that may impersonate: **Add cluster**, then **Paste a kubeconfig…** or **Use a token…** (a server's address, a token and its CA). It needs Lumovi to have admins, and to keep its state across restarts.
+
+**Check it** checks, in order:
+
+- **It reads**: a kubeconfig of one context, with its cluster and user.
+- **What it signs in with is in it**: no credential plugin (an `exec` user, or an auth provider), since Lumovi's server runs no programs, and no files on someone's computer. Use the `-data` fields, or a token.
+- **Its server is `https`, checked against its certificate authority**: never `insecure-skip-tls-verify`.
+- **The server answers, and the credentials work**, and they may impersonate users and groups, so Lumovi acts as whoever signs in, as with the chart's.
+
+Two things are pointed out, but not refused: a cluster reached through a proxy (its `proxy-url`, shown by its host), and credentials that may do anything there, not only act as each person. A service account that may only impersonate, as the chart makes, is safer.
+
+The check reaches the address it's given over `https`, from inside the network Lumovi runs in, and shows what the server answers: only admins can ask it to.
+
+Then give it a **Name**, **Labels** and **Groups**, who sees it besides admins. Lumovi keeps it as a Secret of its own, `lumovi-cluster-<name>`, labelled `lumovi.dev/cluster`, in a namespace kept for them, `fleet.addNamespace`: `<release namespace>-clusters` unless set, like `lumovi-clusters`. The chart makes it (unless `fleet.createAddNamespace` is `false`), and keeps it when the release is uninstalled, with the clusters in it: delete it to let them go. To install Lumovi again under another release name, and keep them, see `fleet.createAddNamespace` in [Helm values](/server/helm-values#a-fleet). Lumovi reads there only the Secrets it made, by their UID, as it reads any [such Secret](/server/fleet/discovery#lumovi’s-own): someone else's there isn't a cluster, unless `fleet.secrets` and `fleet.secretNamespaces` name that namespace. It never replaces a Secret it didn't make, and if it can't record one it just made, it deletes it again. Each one added is in the [audit log](/audit/events), as `cluster.added`.
+
+A cluster added this way has **Remove from the fleet…** in its [settings](/server/fleet#settings-on-the-fleet-page). Lumovi deletes the Secret it made, that one only: if it was made again since, by someone else, it's left as it is.
+
+<Warning>
+  With `fleet.addFromPage` on, Lumovi may list, create and delete Secrets in that namespace, and nowhere else: never in its own. The clusters' credentials it keeps there are as strong as what they may do in each cluster: see [A fleet](/server/security#a-fleet). Whoever controls Lumovi, or may read that namespace's Secrets, controls them too. Give each cluster credentials that may only impersonate, as the chart's do, and keep that namespace, like Lumovi's own, to the administrators of every one of its clusters.
+</Warning>
+
 ## Without the chart
 
 The same objects, for `kubectl apply`:

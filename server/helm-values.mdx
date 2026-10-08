@@ -155,6 +155,20 @@ Lumovi shows a fleet when `fleet.kubeconfigSecret`, `fleet.secrets` or `fleet.ag
   A Secret in Lumovi's namespace with the agents that may connect under the key `agents.yaml`: a list of `{ name, tokenSha256, caSha256, labels, groups, forwardToken }`. `caSha256`, the SHA-256 of each agent's cluster's certificate authority (or a list of them, while it's rotated), is the only one Lumovi trusts from that agent; without it, the one the agent first sends, which the chart's notes warn of. Lumovi reads it when its pod starts, and the pod doesn't start without it: restart Lumovi after changing it. See [Private clusters](/server/fleet/agents#the-agents-lumovi-knows).
 </ResponseField>
 
+<ResponseField name="fleet.addFromPage" type="boolean" default="false">
+  Whether Lumovi's admins may add clusters on the Fleet page by pasting a kubeconfig or a token. Each is kept as a Secret, labelled `lumovi.dev/cluster`, in `fleet.addNamespace`, so the chart lets Lumovi's service account list, create and delete Secrets in that namespace, and nowhere else. Off, the hub keeps no credentials given on the page. See [From the Fleet page](/server/fleet/members#from-the-fleet-page).
+</ResponseField>
+
+<ResponseField name="fleet.addNamespace" type="string" default="<release namespace>-clusters">
+  Where the clusters added on the Fleet page are kept, as Secrets: a namespace of their own, never the release's (the chart refuses it). Lumovi reads there only the Secrets it made, unless `fleet.secrets` and `fleet.secretNamespaces` name it.
+</ResponseField>
+
+<ResponseField name="fleet.createAddNamespace" type="boolean" default="true">
+  Whether the chart makes `fleet.addNamespace`. It's kept when the release is uninstalled, with the clusters in it: delete it to let them go. `false`: it must exist, and the chart only adds its Role there.
+
+  Installed again under the same release name, the chart takes the kept namespace back as it was. Under another name, Helm refuses it, as it's still the old release's: set `false`, with `fleet.addNamespace` naming it, to keep its clusters, or delete it first, and them with it.
+</ResponseField>
+
 <ResponseField name="fleet.includeThisCluster" type="boolean" default="true">
   Whether the cluster Lumovi runs in is one of the fleet's, called `clusterName`. Its service account may then impersonate users and groups here, and does, for everyone who signs in.
 </ResponseField>

@@ -48,6 +48,7 @@ A fleet's Lumovi acts as the people who sign in, in every one of its clusters, a
 - **Prefixes apply in each cluster**: the server's, or the cluster's own. Set them so no name or group from your provider or proxy is one of any cluster's own by accident.
 - **People's own tokens go only where you say**: to clusters with `forwardToken: true`, when `LUMOVI_OIDC_FORWARD_TOKEN` is set. Lumovi keeps them, and their refresh tokens, in memory, and [sealed](#across-restarts) for a restart.
 - **Reading Secrets**: with `fleet.secrets`, Lumovi's service account may list every Secret in the namespaces you name, not only those that describe clusters.
+- **Writing Secrets**, with `fleet.addFromPage` only: admins add clusters on the Fleet page, kept as Secrets in a namespace of their own (`fleet.addNamespace`), and Lumovi's service account may list, create and delete Secrets there alone, never in its own namespace. It deletes only the Secrets it made, by their UID, and reads there only those. Keep that namespace to the administrators of every cluster: whoever reads its Secrets has the clusters' credentials. Off, Lumovi writes no Secrets. See [From the Fleet page](/server/fleet/members#from-the-fleet-page).
 
 ### Agents
 
