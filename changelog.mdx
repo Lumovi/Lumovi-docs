@@ -7,6 +7,20 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 8, 2026" description="1.13.0" tags={["Desktop app"]}>
+  ## A terminal's kubectl, checked against Kubernetes' signature
+
+  - **Signed by Kubernetes.** The kubectl a terminal downloads is checked against Kubernetes' own signature, not only the SHA-256 published beside it. From dl.k8s.io, a kubectl without Kubernetes' signature, or with one that doesn't hold, isn't used: the terminal says why, and uses yours, or the newest one kept. A kubectl kept by an earlier Lumovi is downloaded again, and checked.
+  - **Checked on your computer**, against Sigstore's trust root as Lumovi ships it: no new connection, and nobody else learns what you download. See [What's checked, and what isn't](/reference/privacy-and-security#what’s-checked-and-what-isn’t).
+  - **Mirrors.** A mirror that keeps Kubernetes' `.sig` and `.cert` has its kubectl checked against them too. One that keeps none is checked against its SHA-256 only, and each terminal says so: "artifacts.corp.example.com has no Kubernetes signature for it, so Lumovi checked it against its SHA-256 only."
+
+  ## A fuller bill of materials
+
+  - **helm's Go modules.** The desktop app's bill of materials (`Lumovi-<version>.cdx.json`) lists the Go modules the helm it ships is built from, and the Go it's built with, so a scanner such as grype sees a vulnerability in any of them. See [Verify your download](/get-started/desktop#verify-your-download).
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.13.0)
+</Update>
+
 <Update label="October 8, 2026" description="1.12.0" tags={["Desktop app", "In your cluster"]}>
   ## Any AI assistant, and Codex
 
