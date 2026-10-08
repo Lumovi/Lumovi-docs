@@ -7,6 +7,8 @@ icon: "radio-tower"
 
 When a cluster's API server is in a network Lumovi can't reach (a private network, behind NAT, in a data center of your own), run Lumovi's agent in it. The agent dials Lumovi over HTTPS, and Lumovi reaches the API server through that connection. Nothing in the cluster listens for Lumovi, and no firewall has to let anything in.
 
+Lumovi's admins [connect one from the Fleet page](#connect-one-from-the-fleet-page), with one command. Or [set it up](#set-it-up) yourself, in Lumovi's settings.
+
 ## How it works
 
 ```mermaid
@@ -22,7 +24,58 @@ flowchart LR
 - **Lumovi acts as whoever signed in**, impersonating them with the service account's token, so the cluster applies their RBAC, as with any [member](/server/fleet/members).
 - **Kubernetes rotates the token**, and the agent reads it again every minute. When it changed, the agent sends Lumovi the new one.
 
+## Connect one from the Fleet page
+
+Lumovi's [admins](/server/access) connect a private cluster from the Fleet page: **Add cluster**, then **Connect with an agent…**. Nobody pastes the cluster's credentials into Lumovi, and nothing changes in Lumovi's settings. It needs Lumovi to have admins, and to keep its state across restarts (`auth.keepSessions`, or `LUMOVI_DATA_DIR`): otherwise the page says why it can't.
+
+<Steps>
+  <Step title="Name it">
+    Its **Name**, which the fleet calls it, and its agent joins as; its **Labels**; and its **Groups**, who sees it besides admins (with none, everyone signed in). A name the fleet has already is refused.
+  </Step>
+  <Step title="Run the command, in the cluster">
+    The page shows the cluster's join token, once, and a command to run where you reach the cluster, with your own access to it:
+
+    ```bash
+    { read -rs LUMOVI_JOIN_TOKEN && printf %s "$LUMOVI_JOIN_TOKEN"; } |
+      helm install lumovi oci://ghcr.io/lumovi/charts/lumovi \
+      --version {{version}} \
+      --namespace lumovi --create-namespace \
+      --set mode=agent --set clusterName=edge-ap-south \
+      --set agent.hubUrl=https://lumovi.example.com \
+      --set-file agent.joinToken=/dev/stdin; unset LUMOVI_JOIN_TOKEN
+    ```
+
+    It's for bash or zsh. It waits for the token: paste it, and press <kbd>↵</kbd>. The token isn't shown, nor kept in your shell's history or after the command, and Helm reads it from its input, not its command line. It's one command, so the shell reads it all before it asks: pasting it can't answer its own question.
+
+    The token works once, for an hour. Lost it, or past its hour? **Create a new command**: the one before stops working. Until its agent connects, the cluster waits on the Fleet page as a card, with **Cancel it**.
+  </Step>
+  <Step title="Wait for it">
+    The page says **Waiting for edge-ap-south to connect…**, with the time left. The agent dials Lumovi with its join token, and Lumovi gives it a token of its own for it, which the agent keeps in a Secret the chart makes for it, in its cluster (`lumovi-agent`, with this command). The agent may change that Secret alone. From then on, it connects with its own token: the join token, as the page showed it, and as Helm keeps it in its history, no longer works for anything.
+  </Step>
+  <Step title="Check its certificate authority">
+    Once it's connected, the page asks you to check the certificate authority it sent: run the command it shows, with your own access to the cluster, not through Lumovi, and paste what it prints. See [Trusting it, by its SHA-256](#trusting-it-by-its-sha-256).
+  </Step>
+</Steps>
+
+<Warning>
+  The first agent to use the join token is the cluster Lumovi trusts, with the certificate authority it sends. So only Lumovi's admins see the cluster until one of them checks its certificate authority: an agent that had the token before yours could stand in for the cluster, and nobody else would use it. Keep the token to whoever installs the agent.
+</Warning>
+
+Making a command, cancelling one, the agent joining, and a token tried after it stopped working, are each in the [audit log](/audit/events).
+
+### Remove it
+
+A cluster connected from the page has **Remove from the fleet…** in its [settings](/server/fleet#settings-on-the-fleet-page): type its name to confirm. People stop seeing it, and its agent's token stops working: its connection closes at once, and on Lumovi's other replicas within 10 seconds. What was trusted of its certificate authority goes too. The agent keeps running in its cluster until you uninstall it there:
+
+```bash
+helm uninstall lumovi --namespace lumovi
+```
+
+An agent's token doesn't expire. To give it a new one, remove the cluster, and connect it again.
+
 ## Set it up
+
+To list an agent in Lumovi's settings yourself:
 
 <Steps>
   <Step title="Make a token for the agent">

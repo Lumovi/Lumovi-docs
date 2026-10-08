@@ -172,7 +172,11 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
 </ResponseField>
 
 <ResponseField name="agent.tokenSecret" type="string">
-  A Secret in the release's namespace with the agent's token under the key `token`. Required, and the agent doesn't start until it's there.
+  A Secret in the release's namespace with the agent's token under the key `token`, for an agent in Lumovi's list. The agent doesn't start until it's there. Unset, the chart makes a Secret, `<fullname>-agent`, that the agent keeps the token Lumovi gives it in, for its `agent.joinToken`, and a Role that lets it change that Secret alone (unless `rbac.create` is `false`: grant it `patch` on it yourself).
+</ResponseField>
+
+<ResponseField name="agent.joinToken" type="string">
+  For a cluster [connected from the Fleet page](/server/fleet/agents#connect-one-from-the-fleet-page): its join token, given from a file or its input (`--set-file agent.joinToken=/dev/stdin`), never on the command line. The agent exchanges it for a token of its own, and it no longer works.
 </ResponseField>
 
 <ResponseField name="agent.resources" type="object">
