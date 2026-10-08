@@ -25,7 +25,7 @@ Some lists name the chips in their own words:
 | --- | --- |
 | **Pods** | **Running** (Healthy), **Starting** (In progress), **Completed** (Inactive) |
 | **Events** | **Normal** (Inactive) |
-| **Jobs** | **Complete** (Healthy), **Running** (In progress) |
+| **Jobs** | **Complete** (Healthy) |
 | **CronJobs** | **Scheduled** (Healthy), **Suspended** (Inactive) |
 | **ReplicaSets** | **Ready** (Healthy), **Degraded** (Warning), **Unavailable** (Failing), **Scaled to zero** (Inactive) |
 | **Namespaces** | **Active** (Healthy), **Terminating** (Warning) |
@@ -69,7 +69,7 @@ Deployments, StatefulSets, DaemonSets and ReplicaSets compare ready pods with th
 
 | Kind | Statuses |
 | --- | --- |
-| Job | <span className="lumovi-status critical">Failed</span>, <span className="lumovi-status healthy">Complete</span>, or <span className="lumovi-status progressing">Running</span> |
+| Job | <span className="lumovi-status critical">Failed</span>, <span className="lumovi-status healthy">Complete</span>, or <span className="lumovi-status progressing">In progress</span> |
 | CronJob | <span className="lumovi-status healthy">Scheduled</span>, or <span className="lumovi-status neutral">Suspended</span> |
 | HorizontalPodAutoscaler | <span className="lumovi-status healthy">Scaling</span>, <span className="lumovi-status warning">At limit</span> (its `ScalingLimited` condition is `True`: it would go past its range), or <span className="lumovi-status warning">Not scaling</span> (its `ScalingActive` condition is `False`, often because it can't read its metrics) |
 
