@@ -36,17 +36,17 @@ a place in `docs.json`:
 
 ```mdx
 ---
-title: 'Port forwarding'
-description: 'Forward a port on your computer to a pod or a service, and open it in your browser.'
-icon: 'plug-zap'
+title: "Port forwarding"
+description: "Forward a port on your computer to a pod or a service, and open it in your browser."
+icon: "plug-zap"
 ---
 ```
 
 **Keep pages where they are.** [lumovi.dev](https://lumovi.dev) links to pages by
 their path and shows their titles, and links to a few headings (_Verify your download_,
 _Verify the image_, _Thousands of pods_). Renaming one breaks those links. When a page has to
-move, add a [redirect](https://mintlify.com/docs/create/redirects) in `docs.json`, and update
-the [website](https://github.com/Lumovi/Lumovi-website)'s list of pages it links to.
+move, add a [redirect](https://mintlify.com/docs/create/redirects) in `docs.json`, and say so
+in your pull request, so the website's links can follow.
 
 ## Writing
 
