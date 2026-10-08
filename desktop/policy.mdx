@@ -35,6 +35,7 @@ Lumovi reads it as it starts: restart it after a change. Only when nothing is th
   ],
   "updates": false,
   "kubectl": "https://artifacts.corp.example.com/k8s",
+  "kubectlSignatures": "required",
   "network": {
     "proxy": "http://proxy.corp.example.com:3128",
     "noProxy": ".corp.example.com",
@@ -76,8 +77,18 @@ People see them first on their **Permissions** tab, locked, with **Set by your a
 Whether, and from where, [terminals](/debug/terminal#a-kubectl-that-matches-the-cluster) get a kubectl matching their cluster:
 
 - **`false`**: they don't. Terminals use the kubectl installed on the computer, and **View → Match kubectl to Each Cluster** is off and disabled.
-- **An `https` URL**: a mirror of dl.k8s.io to get it from, laid out the same way (`release/stable-1.34.txt`, `release/v1.34.9/bin/windows/amd64/kubectl.exe`, and beside it its `.sha256`, and, if the mirror keeps them, Kubernetes' `.sig` and `.cert`), for computers that can't reach dl.k8s.io. Each kubectl is checked against the checksum published beside it, on the mirror. Where the mirror keeps Kubernetes' signature too, it's checked against that, and one that doesn't hold isn't used. Where it keeps none, the checksum is all there is, and each terminal says so: "artifacts.corp.example.com has no Kubernetes signature for it, so Lumovi checked it against its SHA-256 only." Mirror the `.sig` and `.cert` files too, so it's checked as dl.k8s.io's is. Plain `http` is taken only on this computer (`localhost`, `127.0.0.1` or `[::1]`): elsewhere, the checksum would come over the same plain connection, and both could be changed on the way. It wins over `LUMOVI_KUBECTL_MIRROR`.
+- **An `https` URL**: a mirror of dl.k8s.io to get it from, laid out the same way (`release/stable-1.34.txt`, `release/v1.34.9/bin/windows/amd64/kubectl.exe`, and beside it its `.sha256`, and, if the mirror keeps them, Kubernetes' `.sig` and `.cert`), for computers that can't reach dl.k8s.io. Each kubectl is checked against the checksum published beside it, on the mirror. Where the mirror keeps Kubernetes' signature too, it's checked against that, and one that doesn't hold isn't used. Where it keeps none, the checksum is all there is, and each terminal says so: "artifacts.corp.example.com has no Kubernetes signature for it, so Lumovi checked it against its SHA-256 only." Mirror the `.sig` and `.cert` files too, so it's checked as dl.k8s.io's is, and require them with [`kubectlSignatures`](#kubectlsignatures). Plain `http` is taken only on this computer (`localhost`, `127.0.0.1` or `[::1]`): elsewhere, the checksum would come over the same plain connection, and both could be changed on the way. It wins over `LUMOVI_KUBECTL_MIRROR`.
 - **`true`**, or leaving it out: from dl.k8s.io, or the mirror `LUMOVI_KUBECTL_MIRROR` names, unless each person turns it off.
+
+### kubectlSignatures
+
+`"required"` uses a mirror's kubectl only with Kubernetes' signature, as dl.k8s.io's always is: the mirror [`kubectl`](#kubectl) names, or `LUMOVI_KUBECTL_MIRROR`. A kubectl the mirror keeps no `.sig` and `.cert` for isn't used: the terminal uses the newest one of that minor version kept and checked against Kubernetes' signature, or else the kubectl on the computer, and its first line then says why:
+
+```text
+› kubectl points at dev in this terminal. It’s the one on your PATH: Lumovi couldn’t get kubectl 1.34 to match the cluster (artifacts.corp.example.com published no signature for kubectl v1.34.9, and your organization’s policy requires one).
+```
+
+A kubectl taken from a mirror without a signature, checked against its SHA-256 only, isn't used while the policy requires signatures. It stays kept, and is used again if the key goes. Leaving the key out leaves it to the mirror: where it keeps no signature, the checksum is all there is, and each terminal says so. Anything but `"required"` makes the policy one that [can't be used](#when-it-can’t-be-used), which gets no kubectl at all.
 
 ### network
 
@@ -145,10 +156,10 @@ The file needn't be `root`'s. Where IT's policy is set, that one is used, and `L
 
 ## When it can't be used
 
-A policy Lumovi can't use locks the most it could, until it's put right: every cluster read-only, and AI assistants off. As Lumovi starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge says why too, like:
+A policy Lumovi can't use locks the most it could, until it's put right: every cluster read-only, AI assistants off, and no kubectl got to match a cluster: terminals use the one installed, and **View → Match kubectl to Each Cluster** is off, and locked. As Lumovi starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge says why too, like:
 
 ```text
-Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, kubectl, network.), so it changes no cluster until it’s put right.
+Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, network.), so it changes no cluster until it’s put right.
 ```
 
 What it can say after `can't be used:`:
@@ -163,10 +174,11 @@ What it can say after `can't be used:`:
 | “it isn't JSON (at line 3 column 1).” | It isn't JSON: a comma after the last item, say. It says where when it can, and otherwise just "it isn't JSON.", but never what's there, which could be a proxy's credentials. |
 | “a key is given twice: Map keys must be unique at line 1, column 21:” | A key appears twice, and only one would count. |
 | “it must be a JSON object.” | It's JSON, but not `{ … }`. |
-| “it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, network.” | A key it doesn't know, misspelt maybe. |
+| “it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, network.” | A key it doesn't know, misspelt maybe. |
 | “readOnly must be true, false, or a list of cluster names (with * for any).” | |
 | “assistants must be true or false.”, "updates must be true or false." | |
 | “kubectl must be true, false, or the https URL of a mirror of dl.k8s.io, or an http one on this computer (over plain http elsewhere, what it downloads could be changed on the way).” | A mirror over plain `http`, elsewhere than on this computer, or what isn't a URL. |
+| “kubectlSignatures must be "required": a mirror's kubectl is then used only with Kubernetes' signature, as dl.k8s.io's always is.” | `false`, `"optional"` or anything else: leave the key out instead. |
 | “assistantRules[0] (Production) limits nothing: give it visibility, changes, secrets, env or logs.” | A rule that doesn't make sense, said as for a server's [rules](/server/assistants#limits-for-everyone). |
 | “network has proxyUrl: it takes proxy, noProxy, caFiles.” | |
 | “network.proxy must be the proxy's http or https URL.” | |
@@ -177,7 +189,7 @@ What it can say after `can't be used:`:
 
 The policy locks only what it sets, and only while it's there. Lumovi shows what it sets, but doesn't save it over anyone's settings: a person's own choices, like AI assistants on or automatic updates, are back if the policy goes. Everything else, like the theme, the clusters they make read-only themselves, and their own [AI permissions](/assistants/permissions) within the policy's rules, stays theirs.
 
-Beyond which kubectl they get, the policy doesn't reach [terminals](/debug/terminal), which are each person's own shell: read-only doesn't apply to what they run there.
+Beyond which kubectl they get, and how it's checked, the policy doesn't reach [terminals](/debug/terminal), which are each person's own shell: read-only doesn't apply to what they run there.
 
 <Columns cols={2}>
   <Card title="Proxies and certificates" icon="waypoints" href="/desktop/network">
