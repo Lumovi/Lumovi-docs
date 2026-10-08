@@ -44,7 +44,7 @@ A fleet's Lumovi acts as the people who sign in, in every one of its clusters, a
 
 - **Whoever controls Lumovi controls every cluster.** Anyone who can exec into its pod, read its kubeconfig, its Secrets or its settings, or change them, can act as anyone in all of them. Run it where only the administrators of every one of its clusters can, as you would the most trusted of them.
 - **Give it credentials that may only impersonate**, as members and agents have, rather than administrators'. Lumovi then can't do more in a cluster than the people who sign in.
-- **`groups` hides a cluster, but doesn't protect it.** It decides who sees a cluster in Lumovi. What people may do there is still up to that cluster's RBAC.
+- **`groups` hides a cluster, but doesn't protect it.** It decides who sees a cluster in Lumovi, besides Lumovi's admins, who see every cluster, and whose AI assistants can act there. What people may do there is still up to that cluster's RBAC. For a private cluster behind an agent, where Lumovi is the only way in, that means every one of Lumovi's admins can reach its API server: see [Admins see every cluster](/server/fleet#admins-see-every-cluster).
 - **Prefixes apply in each cluster**: the server's, or the cluster's own. Set them so no name or group from your provider or proxy is one of any cluster's own by accident.
 - **People's own tokens go only where you say**: to clusters with `forwardToken: true`, when `LUMOVI_OIDC_FORWARD_TOKEN` is set. Lumovi keeps them, and their refresh tokens, in memory, and [sealed](#across-restarts) for a restart.
 - **Reading Secrets**: with `fleet.secrets`, Lumovi's service account may list every Secret in the namespaces you name, not only those that describe clusters.

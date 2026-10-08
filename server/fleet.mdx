@@ -137,7 +137,7 @@ Each context can have Lumovi's settings for its cluster, in an extension called 
 </ResponseField>
 
 <ResponseField name="groups" type="string[]">
-  Only people in one of these groups see the cluster, in the fleet page or anywhere else in Lumovi: groups as your provider or proxy names them, without prefixes. Without it, everyone signed in does, and an empty list hides it from everyone. It decides what Lumovi shows, not what people may do: RBAC still decides that.
+  Only people in one of these groups see the cluster, in the fleet page or anywhere else in Lumovi: groups as your provider or proxy names them, without prefixes. Without it, everyone signed in does, and an empty list hides it from everyone but admins. Lumovi's [admins](/server/access) see every cluster, whatever its groups: see [Admins see every cluster](#admins-see-every-cluster). It decides what Lumovi shows, not what people may do: RBAC still decides that.
 </ResponseField>
 
 <ResponseField name="forwardToken" type="boolean" default="false">
@@ -170,7 +170,7 @@ contexts:
 
 A context whose extension isn't like this is shown as **Misconfigured**, saying why, like `Its lumovi.dev extension: forwardToken must be true or false.` The other clusters work.
 
-Only a kubeconfig's contexts have this extension, including those in [Lumovi's own Secrets](/server/fleet/discovery). Secrets give clusters labels, groups and `forwardToken` in annotations, and [agents](/server/fleet/agents) in Lumovi's list of them. Clusters from Cluster API's and Argo CD's Secrets, agents' clusters and the cluster Lumovi runs in all take the server's prefixes.
+Only a kubeconfig's contexts have this extension, including those in [Lumovi's own Secrets](/server/fleet/discovery). Secrets give clusters labels, groups and `forwardToken` in annotations, and [agents](/server/fleet/agents) in Lumovi's list of them. Labels and groups a cluster's source leaves unset can be set on the [Fleet page](#settings-on-the-fleet-page). Clusters from Cluster API's and Argo CD's Secrets, agents' clusters and the cluster Lumovi runs in all take the server's prefixes.
 
 ### The cluster it runs in
 
@@ -264,6 +264,26 @@ Opening a card opens the cluster, with the same pages as a Lumovi of its own. Th
 - **Read-only**: a cluster made [read-only](/changes/read-only#in-your-cluster) on the page is read-only for everyone, made so by Lumovi's admins (or anyone, where there are none). `readOnly: true` (`LUMOVI_READ_ONLY`) makes every cluster read-only for everyone.
 - **Usage history** comes from `metrics.source` (`LUMOVI_METRICS_SOURCE`) in every cluster, unless another source is set for one, for everyone, by Lumovi's admins (or anyone, where there are none). In a fleet, leave it `auto`, so Lumovi looks in each cluster, unless they all have the same service.
 - **Views and add-ons** everyone sees are the server's, for every cluster: see [Views for everyone](/server/views).
+
+### Settings on the Fleet page
+
+Lumovi's [admins](/server/access) name, label and share each cluster from the Fleet page: its card's **⋯**, then **Settings…**. Where Lumovi has no admins, nobody can.
+
+| Setting | What it sets |
+| --- | --- |
+| **Name** | The name it's shown by: on its card, in the cluster switcher and the command palette. Its own name stays, in its address and its context. It can't be another cluster's name, or the name another is shown by, whatever the case. If a cluster by that name joins the fleet later, this one shows its own name again until that one goes. |
+| **Labels** | Its labels, like `env=production`, to filter and group by, and for [AI assistants' rules](/server/assistants#in-a-fleet) to match. |
+| **Groups** | Who sees it, besides admins. Clearing every group shares it with everyone signed in again: only a source's empty `groups` list hides a cluster from everyone but admins. A change applies at once. |
+
+What a cluster's source sets stays its source's: a Secret's `lumovi.dev/labels` and `lumovi.dev/groups` annotations, Argo CD's labels on its Secret, a context's `lumovi.dev` extension, `LUMOVI_CLUSTER_LABELS`, or an agent's `labels` and `groups` in `LUMOVI_FLEET_AGENTS`. Its field is locked, and says where to change it, like "Set by its Secret, prod-eu, in lumovi.dev/groups. Change it there." Lumovi refuses anything else, whatever asks. **Comes from**, under the fields, says which source that is.
+
+What the page sets is Lumovi's own, kept with what a restart mustn't lose, sealed, as its read-only switches are: never in a Secret or a kubeconfig, as Lumovi writes neither. It's for that cluster, from where it comes: its kubeconfig and context, its Secret (by its UID, so a Secret made again is another), or its agent. A cluster that comes by the same name from elsewhere gets none of it, and Lumovi lets it go, recorded. One that's gone a while keeps it, for when it comes back from the same place. An older copy put back where it's kept is put back as Lumovi last set it, and recorded, as for a cluster's [other settings](/changes/read-only#in-your-cluster). Each change is in the [audit log](/audit/events#settings), with who saw the cluster before and after.
+
+### Admins see every cluster
+
+Lumovi's admins see every cluster on the Fleet page, whatever its groups, and open it as anyone opens the clusters they see: in it, they may do what its RBAC lets them, as themselves, and so may the [AI assistants](/server/assistants#in-a-fleet) they allow. A cluster's groups decide who sees it besides them.
+
+For a [private cluster](/server/fleet/agents), Lumovi is the only way in: nothing in it listens, and its agent relays only Lumovi's requests. So its groups decide who else can reach its API server at all, and every one of Lumovi's admins can. Grant RBAC there knowing that, as Kubernetes' `system:authenticated` group, which everyone who signs in has, would let them in too.
 
 ## When a cluster can't be used
 

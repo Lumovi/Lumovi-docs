@@ -115,10 +115,12 @@ Any of these Secrets can carry Lumovi's settings for its clusters as annotations
 | Annotation | What it sets |
 | --- | --- |
 | `lumovi.dev/labels` | Labels, like `env=production,region=eu-west`. They're added to the cluster's own, and win over one with the same key. |
-| `lumovi.dev/groups` | Only people in these groups see the cluster, separated by commas, like `sre, developers`: groups as your provider or proxy names them, without prefixes. |
+| `lumovi.dev/groups` | Only people in these groups see the cluster, besides Lumovi's admins, separated by commas, like `sre, developers`: groups as your provider or proxy names them, without prefixes. Empty, only admins see it. |
 | `lumovi.dev/forward-token` | `true`: requests carry each person's own token, instead of impersonating them. Anything else: Lumovi impersonates them. |
 
 A Secret whose `lumovi.dev/labels` isn't like this is shown under its own name, as **Misconfigured**, saying why, like `lumovi.dev/labels must be labels like env=production,region=eu, not "staging".`
+
+What these annotations set, and Argo CD's labels, stay the Secret's: the [Fleet page](/server/fleet#settings-on-the-fleet-page) shows them locked, and sets only what they leave unset.
 
 There are no annotations for prefixes. A cluster in Lumovi's own Secret can have its own in its kubeconfig's extension; Cluster API's and Argo CD's take the server's.
 

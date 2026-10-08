@@ -119,11 +119,11 @@ flowchart LR
 </ResponseField>
 
 <ResponseField name="labels" type="object">
-  The cluster's labels, like `{ env: production }`.
+  The cluster's labels, like `{ env: production }`. Unset, Lumovi's admins may label it on the [Fleet page](/server/fleet#settings-on-the-fleet-page).
 </ResponseField>
 
 <ResponseField name="groups" type="string[]">
-  Only people in one of these groups see the cluster: groups as your provider or proxy names them, without prefixes. Everyone signed in does, without it, and an empty list hides it from everyone.
+  Only people in one of these groups see the cluster, besides Lumovi's admins, who see every cluster: groups as your provider or proxy names them, without prefixes. Everyone signed in does, without it, and an empty list hides it from everyone but admins. Unset, admins may set who sees it on the [Fleet page](/server/fleet#settings-on-the-fleet-page). Lumovi is the only way into a private cluster, so every admin can reach it: see [Admins see every cluster](/server/fleet#admins-see-every-cluster).
 </ResponseField>
 
 <ResponseField name="caSha256" type="string | string[]">

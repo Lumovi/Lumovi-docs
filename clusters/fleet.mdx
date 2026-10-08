@@ -24,11 +24,11 @@ The heading says how many clusters you may see, and how many need attention. Whi
 
 Lumovi asks each cluster as you, so each card shows what your account there may see. It asks again every 30 seconds while the page is open, so the figures keep up, and clusters your team adds or removes come and go without a reload.
 
-If no cluster is shared with you, the page says **No clusters for you here**. Ask whoever runs Lumovi to add one, or to share one with your groups.
+If no cluster is shared with you, the page says **No clusters for you here**. Ask whoever runs Lumovi to add one, or to share one with your groups. Lumovi's admins see every cluster.
 
 ### A cluster's card
 
-Each card starts with the cluster's name and status, and on the right, its Kubernetes version and how long it took to answer. Below them are its labels, like `env=production` and `region=eu-west`, which your team gives each cluster. Then come the same figures as the tiles on its [overview](/explore/overview):
+Each card starts with the cluster's name, or the name your admins gave it, and its status, and on the right, its Kubernetes version and how long it took to answer. Below them are its labels, like `env=production` and `region=eu-west`, which your team gives each cluster. Then come the same figures as the tiles on its [overview](/explore/overview):
 
 | Figure | What it counts |
 | --- | --- |
@@ -39,6 +39,8 @@ Each card starts with the cluster's name and status, and on the right, its Kuber
 | **CPU** and **Memory** | What's in use, as a share of what the nodes can allocate. **No metrics** when the cluster has no [metrics-server](/metrics/live-usage), and **No access** when your account can't read its nodes or their usage. |
 
 The figures are for the whole cluster. One your account may not list shows **—** and **No access**: hover it for the cluster's answer. So if you may only list pods in a few namespaces, **Pods running** says **No access**, and the cluster is judged by what you may see.
+
+For Lumovi's admins, a card's **⋯** has **Open**, **Settings…**, its name, labels and who sees it (see [Settings on the Fleet page](/server/fleet#settings-on-the-fleet-page)), and **Copy its name**.
 
 A cluster that didn't answer has no figures. Its card says why instead, like `connect ECONNREFUSED 10.0.4.12:6443`. What each reason means, and what to do, is further down this page.
 
