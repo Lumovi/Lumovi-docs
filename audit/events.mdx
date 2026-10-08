@@ -93,12 +93,12 @@ What the cluster, or an admission webhook, says about a Secret can quote its val
 
 | What happened | `error` |
 | --- | --- |
-| It isn't there (`not-found`) | "It isn't there." |
-| The cluster's RBAC refused it (`forbidden`) | "The cluster doesn't let them." |
-| The cluster didn't take their credentials (`unauthorized`) | "The cluster doesn't know who they are." |
-| It changed since it was read (`conflict`) | "It changed since it was read." |
-| The cluster, or a webhook in it, found it not valid (`invalid`) | "The cluster says it isn't valid." |
-| Anything else | "It failed (timeout).", with what went wrong: `unreachable`, `timeout`, `server`, and so on |
+| It isn't there (`not-found`) | “It isn't there.” |
+| The cluster's RBAC refused it (`forbidden`) | “The cluster doesn't let them.” |
+| The cluster didn't take their credentials (`unauthorized`) | “The cluster doesn't know who they are.” |
+| It changed since it was read (`conflict`) | “It changed since it was read.” |
+| The cluster, or a webhook in it, found it not valid (`invalid`) | “The cluster says it isn't valid.” |
+| Anything else | “It failed (timeout).”, with what went wrong: `unreachable`, `timeout`, `server`, and so on |
 
 Each followed by "What the cluster said of the Secret isn't kept: it can quote its values." Lumovi's own refusals, by [read-only mode](/changes/read-only) or [access](/server/access), are kept as they're said. An AI assistant's tool call about a Secret that fails says "It failed. What the cluster said of the Secret isn't kept: it can quote its values.": one whose kind has "secret" in it, in any case, like `Secret` or `SealedSecret`, or with a manifest of a Secret. A tool call that's refused is kept as Lumovi said it.
 

@@ -149,9 +149,9 @@ Why events were let go, as it's said:
 
 | Said | When |
 | --- | --- |
-| "It answered 422." | The webhook refused them, as they are (`400`, `413` or `422`). |
-| "More than 10,000 events (or 64 MiB of them) were waiting to be sent: the oldest were let go." | The webhook took none for long enough that what waited filled the buffer. |
-| "Lumovi stopped before they could be sent." | They were still waiting as Lumovi stopped. |
+| “It answered 422.” | The webhook refused them, as they are (`400`, `413` or `422`). |
+| “More than 10,000 events (or 64 MiB of them) were waiting to be sent: the oldest were let go.” | The webhook took none for long enough that what waited filled the buffer. |
+| “Lumovi stopped before they could be sent.” | They were still waiting as Lumovi stopped. |
 
 And what's wrong while it's tried again: "It answered 503.", or "It can't be reached:" and why, "it didn't answer within 10 seconds", "the connection failed (ECONNREFUSED)" or "the request failed": never what was sent.
 

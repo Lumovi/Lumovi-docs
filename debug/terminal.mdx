@@ -118,16 +118,16 @@ A terminal is often opened because something's wrong, so it doesn't wait long. I
 
 | It says | Why |
 | --- | --- |
-| "Lumovi couldn't ask the cluster its version (it didn't answer within 3 seconds)" | The cluster didn't answer in time, the first time Lumovi asked it: its VPN is off, say. |
-| "the cluster says it's Kubernetes 1.13, and Lumovi gets kubectl for 1.25 or later" | The cluster runs a version older than any kubectl Lumovi gets. |
-| "Lumovi gets kubectl only over HTTPS, and http://mirror.corp.example.com/ isn't (LUMOVI_KUBECTL_MIRROR)" | `LUMOVI_KUBECTL_MIRROR` names a mirror over plain `http`, or isn't a URL. The mirror is shown without a user and password, cut to 60 characters, or as "what it says" when it isn't a URL. |
-| "kubectl v1.34.9 is still downloading, for the terminals opened once it's done" | The download takes longer than 10 seconds. It carries on: the terminals you open after it's done have it. |
-| "dl.k8s.io didn't answer within 10 seconds" | Lumovi couldn't learn the newest patch in time. |
-| "Lumovi couldn't get kubectl 1.34 to match the cluster (dl.k8s.io answered 503)" | It couldn't be had, and none of that minor version is kept. The reason in brackets can also be the connection's, or one of those below. |
-| "… (what was downloaded isn't what dl.k8s.io published)" | The download doesn't match its checksum: broken, or cut short. |
-| "… (dl.k8s.io's kubectl v1.34.9 isn't Kubernetes' own: its signature isn't for what was downloaded)" | Its signature doesn't hold. After "isn't Kubernetes' own:", it says why: "its signature isn't for what was downloaded", "it's signed by …, not Kubernetes' release", "its signer signed in with …, not as Kubernetes' release does", "its certificate isn't from Sigstore's certificate authority", "its certificate wasn't logged", "its certificate wasn't logged where Sigstore logs them", "its certificate wasn't valid when it was logged", "its certificate isn't for signing code", "its certificate isn't one", "its certificate couldn't be read (…)", or "its certificate's key isn't one". |
-| "… (dl.k8s.io published no signature for kubectl v1.34.9)" | dl.k8s.io had no signature for it, where every kubectl Lumovi gets is signed. |
-| "… (dl.k8s.io published kubectl v1.34.9's signature without its certificate)", or "…certificate without its signature" | Half of a signature: from dl.k8s.io or a mirror, it isn't used. |
+| “Lumovi couldn't ask the cluster its version (it didn't answer within 3 seconds)” | The cluster didn't answer in time, the first time Lumovi asked it: its VPN is off, say. |
+| “the cluster says it's Kubernetes 1.13, and Lumovi gets kubectl for 1.25 or later” | The cluster runs a version older than any kubectl Lumovi gets. |
+| “Lumovi gets kubectl only over HTTPS, and http://mirror.corp.example.com/ isn't (LUMOVI_KUBECTL_MIRROR)” | `LUMOVI_KUBECTL_MIRROR` names a mirror over plain `http`, or isn't a URL. The mirror is shown without a user and password, cut to 60 characters, or as "what it says" when it isn't a URL. |
+| “kubectl v1.34.9 is still downloading, for the terminals opened once it's done” | The download takes longer than 10 seconds. It carries on: the terminals you open after it's done have it. |
+| “dl.k8s.io didn't answer within 10 seconds” | Lumovi couldn't learn the newest patch in time. |
+| “Lumovi couldn't get kubectl 1.34 to match the cluster (dl.k8s.io answered 503)” | It couldn't be had, and none of that minor version is kept. The reason in brackets can also be the connection's, or one of those below. |
+| “… (what was downloaded isn't what dl.k8s.io published)” | The download doesn't match its checksum: broken, or cut short. |
+| “… (dl.k8s.io's kubectl v1.34.9 isn't Kubernetes' own: its signature isn't for what was downloaded)” | Its signature doesn't hold. After "isn't Kubernetes' own:", it says why: "its signature isn't for what was downloaded", "it's signed by …, not Kubernetes' release", "its signer signed in with …, not as Kubernetes' release does", "its certificate isn't from Sigstore's certificate authority", "its certificate wasn't logged", "its certificate wasn't logged where Sigstore logs them", "its certificate wasn't valid when it was logged", "its certificate isn't for signing code", "its certificate isn't one", "its certificate couldn't be read (…)", or "its certificate's key isn't one". |
+| “… (dl.k8s.io published no signature for kubectl v1.34.9)” | dl.k8s.io had no signature for it, where every kubectl Lumovi gets is signed. |
+| “… (dl.k8s.io published kubectl v1.34.9's signature without its certificate)”, or "…certificate without its signature" | Half of a signature: from dl.k8s.io or a mirror, it isn't used. |
 
 When the newest can't be had, offline say, or because it isn't signed, the newest kubectl of that minor version Lumovi kept does. What failed isn't tried again for 10 minutes, so the terminals you open meanwhile don't wait for it to fail again.
 

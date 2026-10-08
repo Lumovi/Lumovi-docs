@@ -49,13 +49,13 @@ When some don't, it says "The log doesn't hold in 3 places.", and "Of the 30 eve
 
 | It says | What happened |
 | --- | --- |
-| "Its hash isn't what its contents give: it was changed after it was recorded." | The event was edited. |
-| "Event 9 is missing." or "Events 9–11 are missing." | Events were taken out, or moved later. Or the history couldn't keep them: see below. |
-| "It's number 9, after number 10: one was repeated, or moved." | An event is there twice, or was moved earlier. |
-| "It doesn't follow from the event before it: one of them was changed, or replaced." | An event was edited and its hash worked out again, or replaced by another. |
-| "A new chain starts here, after event 30: Lumovi started again without the events before it (they were removed, or couldn't be read)." | An event #1, after others: the history lost what came before, and Lumovi started a chain afresh. Or another chain's start was put in. |
-| "It's from another chain than the events before it: two of Lumovi's servers kept their events here at once, or one was put in." | A chain not seen before, past its #1. One server keeps a folder at a time, so this is one put in. |
-| "Line 12 of audit-2026-10-06.jsonl can't be read as an audit event." | A line in the history isn't an event. |
+| “Its hash isn't what its contents give: it was changed after it was recorded.” | The event was edited. |
+| “Event 9 is missing.” or "Events 9–11 are missing." | Events were taken out, or moved later. Or the history couldn't keep them: see below. |
+| “It's number 9, after number 10: one was repeated, or moved.” | An event is there twice, or was moved earlier. |
+| “It doesn't follow from the event before it: one of them was changed, or replaced.” | An event was edited and its hash worked out again, or replaced by another. |
+| “A new chain starts here, after event 30: Lumovi started again without the events before it (they were removed, or couldn't be read).” | An event #1, after others: the history lost what came before, and Lumovi started a chain afresh. Or another chain's start was put in. |
+| “It's from another chain than the events before it: two of Lumovi's servers kept their events here at once, or one was put in.” | A chain not seen before, past its #1. One server keeps a folder at a time, so this is one put in. |
+| “Line 12 of audit-2026-10-06.jsonl can't be read as an audit event.” | A line in the history isn't an event. |
 
 Each chain is checked against its own last event: events of another chain put in among this one's are one place it doesn't hold, and this chain's events after them still follow from its own.
 

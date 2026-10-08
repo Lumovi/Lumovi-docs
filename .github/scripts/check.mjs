@@ -79,6 +79,15 @@ for (const page of files) {
     if (!variables.has(name)) problem(page, `{{${name}}} isn't a variable in docs.json`)
   }
   if (text.includes('<!--')) problem(page, 'HTML comments break MDX: use {/* … */}')
+
+  // A table cell that opens with a straight quote shows it backwards (”like this“): write “…”.
+  let fenced = false
+  for (const [i, line] of text.split('\n').entries()) {
+    if (/^\s*```/.test(line)) fenced = !fenced
+    if (!fenced && /^\s*\|/.test(line) && /\|\s*"/.test(line)) {
+      problem(page, `line ${i + 1}: a table cell opens with a straight quote, shown backwards: write “…”`)
+    }
+  }
 }
 
 if (problems.length) {

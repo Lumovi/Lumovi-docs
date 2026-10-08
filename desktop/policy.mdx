@@ -155,23 +155,23 @@ What it can say after `can't be used:`:
 
 | It says | Why |
 | --- | --- |
-| "/etc/lumovi/policy.json must be root's, and writable by nobody else (it's user 501's, mode 664)." | The file, or its folder, isn't an administrator's alone. |
-| "/etc/lumovi/policy.json must be a file." | It's a folder, a pipe or a device. |
+| “/etc/lumovi/policy.json must be root's, and writable by nobody else (it's user 501's, mode 664).” | The file, or its folder, isn't an administrator's alone. |
+| “/etc/lumovi/policy.json must be a file.” | It's a folder, a pipe or a device. |
 | An error from the system, like `EACCES: permission denied` | Something is there, but Lumovi can't read it. |
-| "it must be text (REG_SZ): the policy's JSON." | On Windows, the `Lumovi` key has no `Policy` value, or one that isn't a string. |
-| "Lumovi can't read it: neither reg.exe nor PowerShell could." | On Windows, the key is there, or might be, but neither could read it: people may run neither, or may not read the key. |
-| "it isn't JSON (at line 3 column 1)." | It isn't JSON: a comma after the last item, say. It says where when it can, and otherwise just "it isn't JSON.", but never what's there, which could be a proxy's credentials. |
-| "a key is given twice: Map keys must be unique at line 1, column 21:" | A key appears twice, and only one would count. |
-| "it must be a JSON object." | It's JSON, but not `{ … }`. |
-| "it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, network." | A key it doesn't know, misspelt maybe. |
-| "readOnly must be true, false, or a list of cluster names (with * for any)." | |
-| "assistants must be true or false.", "updates must be true or false." | |
-| "kubectl must be true, false, or the https URL of a mirror of dl.k8s.io, or an http one on this computer (over plain http elsewhere, what it downloads could be changed on the way)." | A mirror over plain `http`, elsewhere than on this computer, or what isn't a URL. |
-| "assistantRules[0] (Production) limits nothing: give it visibility, changes, secrets, env or logs." | A rule that doesn't make sense, said as for a server's [rules](/server/assistants#limits-for-everyone). |
-| "network has proxyUrl: it takes proxy, noProxy, caFiles." | |
-| "network.proxy must be the proxy's http or https URL." | |
-| "network.noProxy must be text, as NO_PROXY is: names and addresses." | |
-| "network.caFiles must be a list of files." | |
+| “it must be text (REG_SZ): the policy's JSON.” | On Windows, the `Lumovi` key has no `Policy` value, or one that isn't a string. |
+| “Lumovi can't read it: neither reg.exe nor PowerShell could.” | On Windows, the key is there, or might be, but neither could read it: people may run neither, or may not read the key. |
+| “it isn't JSON (at line 3 column 1).” | It isn't JSON: a comma after the last item, say. It says where when it can, and otherwise just "it isn't JSON.", but never what's there, which could be a proxy's credentials. |
+| “a key is given twice: Map keys must be unique at line 1, column 21:” | A key appears twice, and only one would count. |
+| “it must be a JSON object.” | It's JSON, but not `{ … }`. |
+| “it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, network.” | A key it doesn't know, misspelt maybe. |
+| “readOnly must be true, false, or a list of cluster names (with * for any).” | |
+| “assistants must be true or false.”, "updates must be true or false." | |
+| “kubectl must be true, false, or the https URL of a mirror of dl.k8s.io, or an http one on this computer (over plain http elsewhere, what it downloads could be changed on the way).” | A mirror over plain `http`, elsewhere than on this computer, or what isn't a URL. |
+| “assistantRules[0] (Production) limits nothing: give it visibility, changes, secrets, env or logs.” | A rule that doesn't make sense, said as for a server's [rules](/server/assistants#limits-for-everyone). |
+| “network has proxyUrl: it takes proxy, noProxy, caFiles.” | |
+| “network.proxy must be the proxy's http or https URL.” | |
+| “network.noProxy must be text, as NO_PROXY is: names and addresses.” | |
+| “network.caFiles must be a list of files.” | |
 
 ## What stays each person's
 

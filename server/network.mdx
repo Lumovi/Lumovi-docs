@@ -119,11 +119,11 @@ Lumovi says why a certificate wasn't taken, and what usually makes it so:
 
 | It says | Why |
 | --- | --- |
-| "Its certificate isn't signed by a certificate authority Lumovi trusts (…). Behind a proxy that inspects HTTPS, its certificate authority must be trusted: in the system's certificates, or LUMOVI_CA_FILE on a server; for a cluster, its kubeconfig's certificate-authority must be the one that signed it." | The proxy signs what it passes on with an authority Lumovi doesn't have, or the server's certificate is self-signed. Give Lumovi the authority, with `extraCA` or `LUMOVI_CA_FILE`. |
-| "Its certificate has expired (…)." | The server's certificate, or the proxy's, is past its date. |
-| "Its certificate is for another name (…)." | The address isn't one the certificate names: a proxy that answers for the server, or the wrong address. |
-| "The proxy needs credentials (407): give them in its URL, as `http://user:password@host:port`." | The proxy wants to know who's asking. See [Credentials](#credentials). |
-| "The proxy didn't open a tunnel (it answered 403)." | The proxy refused the address: ask for it to be allowed, or leave it out with `NO_PROXY`. |
+| “Its certificate isn't signed by a certificate authority Lumovi trusts (…). Behind a proxy that inspects HTTPS, its certificate authority must be trusted: in the system's certificates, or LUMOVI_CA_FILE on a server; for a cluster, its kubeconfig's certificate-authority must be the one that signed it.” | The proxy signs what it passes on with an authority Lumovi doesn't have, or the server's certificate is self-signed. Give Lumovi the authority, with `extraCA` or `LUMOVI_CA_FILE`. |
+| “Its certificate has expired (…).” | The server's certificate, or the proxy's, is past its date. |
+| “Its certificate is for another name (…).” | The address isn't one the certificate names: a proxy that answers for the server, or the wrong address. |
+| “The proxy needs credentials (407): give them in its URL, as `http://user:password@host:port`.” | The proxy wants to know who's asking. See [Credentials](#credentials). |
+| “The proxy didn't open a tunnel (it answered 403).” | The proxy refused the address: ask for it to be allowed, or leave it out with `NO_PROXY`. |
 
 Where they show:
 

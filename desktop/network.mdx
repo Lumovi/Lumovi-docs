@@ -55,9 +55,9 @@ A cluster that can't be reached shows why on the start screen: hover its label. 
 
 | It says | Why |
 | --- | --- |
-| "Its certificate isn't signed by a certificate authority Lumovi trusts (…). Behind a proxy that inspects HTTPS, its certificate authority must be trusted: …" | The cluster's certificate isn't signed by the authority in your kubeconfig. A proxy that inspects the connection signs it with its own: ask for the cluster to be left uninspected, or put that authority in your kubeconfig. |
-| "Its certificate has expired (…)." | The cluster's certificate, or the proxy's, is past its date. |
-| "Its certificate is for another name (…)." | The address in your kubeconfig isn't one the certificate names. `tls-server-name` on the cluster can name the one it does. |
+| “Its certificate isn't signed by a certificate authority Lumovi trusts (…). Behind a proxy that inspects HTTPS, its certificate authority must be trusted: …” | The cluster's certificate isn't signed by the authority in your kubeconfig. A proxy that inspects the connection signs it with its own: ask for the cluster to be left uninspected, or put that authority in your kubeconfig. |
+| “Its certificate has expired (…).” | The cluster's certificate, or the proxy's, is past its date. |
+| “Its certificate is for another name (…).” | The address in your kubeconfig isn't one the certificate names. `tls-server-name` on the cluster can name the one it does. |
 
 A proxy that refuses the connection shows as **Unreachable**, saying so: "The proxy needs credentials (407): give them in its URL, as `http://user:password@host:port`.", or "The proxy didn't open a tunnel (it answered 403)." when it won't let the connection through.
 
