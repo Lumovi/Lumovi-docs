@@ -7,6 +7,32 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 9, 2026" description="1.17.0" tags={["Desktop app", "In your cluster"]}>
+  ## The clusters page
+
+  - **Every cluster, a tile**, on the page the desktop app opens on: in its color, with its status on its corner, its name and where it is, and its version and response time, or what went wrong. The ones you opened last come first, then Lumovi's groups (or a label's values, or none). Search finds a cluster by its name, context, server or labels. Its actions are on its **⋯**, on right-click, or on <kbd>.</kbd>: its settings, the line for kubectl, its file in Finder, hiding it, or removing one added in Lumovi. See [The start screen](/clusters/connect#the-start-screen).
+  - **The kubeconfig files it reads, chosen in it**, from the page's footer: one in place of `KUBECONFIG`'s (or `~/.kube/config`), or more after them. Each says where it's from and how many clusters it has, or that it's gone or can't be read, and the others still load. Lumovi never writes them, and its terminals get the same files. Your organization's policy can keep it to `KUBECONFIG`'s or `~/.kube/config`: `"kubeconfigFiles": "locked"`. See [Choose your kubeconfig files](/clusters/connect#choose-your-kubeconfig-files) and [kubeconfigFiles](/desktop/policy#kubeconfigfiles).
+  - **A cluster added from a pasted kubeconfig**, or a file. Lumovi checks that it reads, that its server answers and that its credentials work, then keeps it in its own folder, where only you can read it, never in your kubeconfig. See [Add a cluster](/clusters/connect#add-a-cluster).
+  - **Nothing runs, or is sent, until you allow it.** A credential that runs a program on your computer, or sends a file to the server, is shown exactly as it would run. So is sending credentials to a server Lumovi can't verify, or unencrypted over `http://`. See [Credentials that run a program, send a file, or go unverified](/clusters/connect#credentials-that-run-a-program-send-a-file-or-go-unverified).
+  - **Edited, or removed.** An added cluster's connection can be changed while its secrets stay in Lumovi, shown as `(kept by Lumovi)`; sent somewhere else, they're asked about again. **Copy for kubectl** gives the line that has kubectl use it, in any terminal. See [Change or remove it](/clusters/connect#change-or-remove-it).
+  - **Each cluster's settings**, kept in Lumovi (<kbd>⌘</kbd><kbd>I</kbd>): its name, color, group and labels, the namespace it opens in, and whether it's production, read-only or hidden. Production, set by hand, wins over Lumovi's guess from its name, for its badge and for the names typed to delete and drain. Its name shows in the switcher, the command palette and the window's title. See [Cluster settings](/clusters/connect#cluster-settings).
+
+  ## Statuses that look as the brand's
+
+  - **One word, one look.** Statuses look as they do on the website and in these docs: in progress is neutral, not blue, its dot pulsing and its icon turning once every 3 seconds (both still when you ask for less motion). Every status's mark reaches 3:1 contrast and its words 4.5:1, on each surface, in light and dark, and the orange of "serious" is gone, YAML's numbers and booleans included. A job still running says **In progress**: Running is a pod's, and healthy. See [Health and status](/explore/health).
+  - **Blue is for what you can act on.** Links and text buttons use the stronger blue, which reads at 4.5:1 on every surface. Access's notes of what's to know, and a live terminal's tab, are neutral.
+  - **Dark mode's primary buttons** are the same blue as in light, with white on it at 4.6:1, and a primary or danger button turns deeper when hovered, not lighter.
+
+  ## Fixed
+
+  - A link that sorts a list by a column that doesn't sort (`?sort=ready`), or one the list doesn't have, shows the list in its usual order instead of failing.
+  - **Copy kubectl describe** and **Copy kubectl logs** name the cluster (`--context`), and a custom kind's API group, so they run against the right one wherever they're pasted.
+  - The Workloads page cuts a long image at its start, so its tag shows.
+  - Lists' headers show whole at the default window size, with room for the sort arrow, and a table no longer runs a few pixels past its edge.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.17.0)
+</Update>
+
 <Update label="October 8, 2026" description="1.16.0" tags={["Desktop app", "In your cluster"]}>
   ## Read-only, not undone quietly, and a sponsor card
 
