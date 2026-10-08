@@ -7,6 +7,23 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 8, 2026" description="1.16.0" tags={["Desktop app", "In your cluster"]}>
+  ## Read-only, not undone quietly, and a sponsor card
+
+  - **Changed outside Lumovi, it fails closed.** A cluster's settings deleted, or an older copy put back, where the server keeps them are found within 10 seconds, and Lumovi keeps each setting as whichever copy set it last: read-only if either has it, and its metrics source and node shells as it last set them. Each setting carries the count of the write that last set it, so a running server tells its own changes from those made by hand, whichever replica finds them. A change made while no replica runs is taken as found. See [Changed outside Lumovi](/changes/read-only#changed-outside-lumovi).
+  - **Recorded, and shown.** It's in the audit log, by Lumovi itself, with `outside: true`: "Changed outside Lumovi: production's read-only was turned off, as its setting was deleted where Lumovi keeps it, and Lumovi made it read-only again". Lumovi's admins see it on the cluster's pages, on every replica, until read-only is set again: **Keep it read-only** or **Allow changes**, each recorded as theirs. Made read-only by an older copy, Lumovi names nobody: the switch says "Turned on outside Lumovi", and what the server refuses "it was made so outside Lumovi".
+  - **A key change lets go of the old key's entries** within 15 minutes of the rollout's last replica on the old key stopping: what an old key, a leaked one say, opens doesn't outlive it in the state. What isn't even shaped like Lumovi's goes at once.
+  - **One replica, without kept state.** The chart refuses more than one replica without `auth.keepSessions`: each would keep who's signed in, and what's set for everyone, in its own memory. A server keeping its state in memory says, as it starts, to run a single replica.
+  - **Read-only, offered to those who may.** The command palette offers to make a cluster read-only, or allow changes, only to Lumovi's admins, or anyone where it has none. What the server refuses says who made a cluster read-only: "production is read-only for everyone on this server: jane@example.com made it so." The switch says when, in your time.
+  - **One card, above the sidebar's footer**, in the desktop app, the web UI Lumovi serves from a cluster, and a fleet's hub: Lumovi's own, "Help keep Lumovi free.", which leads to [GitHub Sponsors](https://github.com/sponsors/Lumovi), a sponsor's, with their picture, one line and a link, or none. It opens in your browser, and shows the link's domain as you point at it.
+  - **Read from GitHub, sending nothing but the request.** Lumovi reads `sponsor.json` in [Lumovi/main-sponsor](https://github.com/Lumovi/main-sponsor), and the pictures it names, from `raw.githubusercontent.com`: the desktop app 3 seconds after it starts, a server as it starts, then every hour. No cookies, no IDs, nothing about you or your clusters, and nothing counted. It can't be turned off. See [The sponsor card](/reference/privacy-and-security#the-sponsor-card).
+  - **Checked before it's shown.** Only plain words, an `https` link, and pictures that are PNG, GIF or WebP by what they are, at 408 × 136, small enough, and played once, shown from Lumovi's own copy. What doesn't pass shows Lumovi's own card, with no error and no wait. Offline, the card stays what Lumovi read last: an egress policy that leaves GitHub out costs only the sponsor's card.
+  - **A dialog's error is always in view**, just above its buttons, in a tall one too, like a drain's list of pods or a chart's values: the button no longer seems to do nothing. In Create from YAML, what each object came to is brought into view.
+  - **A chart's reference lines** (requests, limits, allocatable, and what right-sizing recommends) are labelled where their labels sit clear of the plotted lines, and of each other.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.16.0)
+</Update>
+
 <Update label="October 8, 2026" description="1.15.0" tags={["Desktop app"]}>
   ## A terminal's kubectl: signatures your organization can require
 
