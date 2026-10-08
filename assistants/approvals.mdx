@@ -50,13 +50,13 @@ The keys on this page are written for macOS. On Windows and Linux, use <kbd>Ctrl
 From top to bottom, the dialog shows:
 
 - **Who asks, and what.** "Claude Code asks", and the change, like **Scale Deployment storefront to 5 replicas**, **Restart Deployment cart**, **Create ConfigMap feature-flags** or **Delete Pod checkout-7d9f8-x2k4q**. Its icon says what kind of change it is. A delete's is red.
-- **Where.** The object's kind, its namespace and the cluster: `Deployment · shop · demo`. When the cluster's name looks like production, a **PRODUCTION** badge sits next to it, as in Lumovi's other dialogs. See [Changing things safely](/changes/safely#hard-to-do-by-accident).
+- **Where.** The object's kind, its namespace and the cluster: `Deployment · shop · demo`. In a [production](/changes/safely#hard-to-do-by-accident) cluster, a **PRODUCTION** badge sits next to it, as in Lumovi's other dialogs. See [Changing things safely](/changes/safely#hard-to-do-by-accident).
 - **Why.** The assistant's reason, in its own words.
 - **What it changes.** The diff between the object as it is and as the dry run says it would be, with how many lines it adds and removes, like `+1 −1 lines`. Above it, "The cluster accepts it", or "Creates it: the cluster accepts it" for a new object, or "Deletes it, and what it owns". The diff leaves out the object's status and the fields the API server keeps for itself, like `resourceVersion` and `managedFields`. A Secret's values show as `(hidden by Lumovi)`, as they do for the assistant.
 - **Whose fields it takes over.** When a manifest sets fields something else manages, a warning says so, with the API server's words for whose and which: "It takes fields over from what manages them (Helm, Argo CD, an autoscaler…), which may change them back: Apply failed with 1 conflict: conflict with "helm" using v1: .data.LOG_LEVEL". Helm, Argo CD or an autoscaler may well put them back the next time they act.
 - **The manifest.** For a manifest to apply, **The manifest Claude Code gave**, folded: the manifest as the assistant wrote it.
 - **Equivalent command.** The `kubectl` command that makes the same change, with **Copy command** when you point at it.
-- **The name, for some deletions.** Where Lumovi's own **Delete** asks you to type the name, so does this: for a Namespace, Node, PersistentVolume, PersistentVolumeClaim, StorageClass or CustomResourceDefinition, and for any deletion in a cluster whose name looks like production. It says "Type _name_ to approve", with a field for it.
+- **The name, for some deletions.** Where Lumovi's own **Delete** asks you to type the name, so does this: for a Namespace, Node, PersistentVolume, PersistentVolumeClaim, StorageClass or CustomResourceDefinition, and for any deletion in a production cluster. It says "Type _name_ to approve", with a field for it.
 - **The time left.** "Waits 4:59 more", counting down. It changes color in the last minute.
 
 The dialog opens with nothing focused, so a stray <kbd>↵</kbd> doesn't answer it.

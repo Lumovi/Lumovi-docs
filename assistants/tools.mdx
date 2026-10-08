@@ -232,7 +232,7 @@ Deletes an object, as `kubectl delete` does. What it owns goes too, in the backg
 
 - **It always asks**, even where the cluster allows assistants' changes. The approval dialog's button reads **Approve deletion**.
 - **The cluster's own objects only where every namespace may change.** Deleting a node, a CustomResourceDefinition or a cluster role can reach every namespace, so it's refused unless no namespace of the cluster is hidden, **Never**, or hides its Secrets: "CustomResourceDefinition rollouts.argoproj.io is demo's own: a change to it can reach every namespace, and assistants may not change all of them: the person's AI permissions say so ("System"). Nothing was changed."
-- **The name, where Lumovi's own Delete asks for it**: for a Namespace, Node, PersistentVolume, PersistentVolumeClaim, StorageClass or CustomResourceDefinition, and for any deletion in a cluster whose name looks like production. You type it before you can approve.
+- **The name, where Lumovi's own Delete asks for it**: for a Namespace, Node, PersistentVolume, PersistentVolumeClaim, StorageClass or CustomResourceDefinition, and for any deletion in a [production](/changes/safely#hard-to-do-by-accident) cluster. You type it before you can approve.
 - **Only the object you saw.** The deletion names the object's uid, so one deleted and made again under the same name meanwhile isn't deleted.
 
 <ResponseField name="cluster" type="string" required />

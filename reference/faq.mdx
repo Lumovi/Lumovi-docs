@@ -47,7 +47,7 @@ icon: "circle-question-mark"
 
 <AccordionGroup>
   <Accordion title="Does Lumovi change my kubeconfig?">
-    No. It reads your kubeconfig and never writes to it. Managing kubeconfig files, like adding contexts or signing in to cloud providers, is deliberately left to the tools made for it.
+    No. It reads your kubeconfig and never writes to it. A cluster you [add in Lumovi](/clusters/connect#add-a-cluster) goes in a file of its own, in Lumovi's folder, and each cluster's [settings](/clusters/connect#cluster-settings), like its name and color, are kept in Lumovi's settings. Signing in to cloud providers is left to the tools made for it.
   </Accordion>
   <Accordion title="Does it collect any data?">
     No. There's no telemetry and no account. Its [audit log](/audit/overview) stays on your computer. The desktop app talks to your clusters, to a few other places only when you use what needs them, like update checks and chart search, and to GitHub for the sidebar's sponsor card, sending nothing but the request. See [Privacy and security](/reference/privacy-and-security) for the full list.
@@ -82,7 +82,7 @@ icon: "circle-question-mark"
 
 <AccordionGroup>
   <Accordion title="Can I work with several clusters?">
-    Yes. The desktop app lists every context in your kubeconfig on its start screen, with whether each one answers. Switch between them from the cluster menu at the top of the sidebar, or with <kbd>⌘</kbd><kbd>K</kbd>. Each cluster remembers its own namespace, read-only setting and usage history source.
+    Yes. The desktop app lists every context in your kubeconfig on its start screen, and the clusters you added in Lumovi, with whether each one answers. Switch between them from the cluster menu at the top of the sidebar, or with <kbd>⌘</kbd><kbd>K</kbd>. Each cluster remembers its own namespace, read-only setting and usage history source.
 
     Lumovi [in your cluster](/server/overview) shows the one cluster it runs in, unless you set it up as a [fleet](/server/fleet). There, a cluster's read-only setting and usage history source are the server's, the same for everyone.
   </Accordion>

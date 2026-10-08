@@ -99,11 +99,13 @@ The desktop app reads clusters from the same place `kubectl` does, and keeps you
 Lumovi starts on a list of every cluster in your kubeconfig, each with a status: its Kubernetes version and how fast it answered, or why it can't be reached.
 
 <Frame caption="The start screen: every context in your kubeconfig, checked as it opens.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-light-1x.webp" alt="The Lumovi start screen, listing four clusters: three with their versions and response times, and one marked Unreachable." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-dark-1x.webp" alt="The Lumovi start screen, listing four clusters: three with their versions and response times, and one marked Unreachable." />
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-light-1x.webp" alt="The Lumovi start screen: four clusters, each with its name, server and user, and its version and response time; edge is marked Unreachable." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-dark-1x.webp" alt="The Lumovi start screen: four clusters, each with its name, server and user, and its version and response time; edge is marked Unreachable." />
 </Frame>
 
 Pick one with the mouse, or with <kbd>↑</kbd> <kbd>↓</kbd> and <kbd>↵</kbd>. The overview opens, and you're in.
+
+Your kubeconfig somewhere else, or none yet? **Choose a kubeconfig…** reads the file you use with kubectl, and **Add a cluster** takes one you paste, without changing your files. See [Connect your clusters](/clusters/connect#choose-your-kubeconfig-files).
 
 <Columns cols={2}>
   <Card title="Take the tour" icon="map" href="/get-started/tour">

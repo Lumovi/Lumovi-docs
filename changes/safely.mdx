@@ -71,12 +71,12 @@ A YAML edit is saved against the version you started from. If someone changed th
 
     For several objects at once, you type what's being done instead, like `delete namespaces`. See [Several at once](/changes/bulk).
 
-    Approving an [AI assistant](/assistants/approvals)'s deletion asks for the name too: for these kinds, and for any deletion in a cluster named like production.
+    Approving an [AI assistant](/assistants/approvals)'s deletion asks for the name too: for these kinds, and for any deletion in a production cluster.
   </Accordion>
   <Accordion title="Production clusters get an extra check" icon="shield-check">
-    When a context's name looks like production, every dialog shows a **PRODUCTION** badge next to the cluster's name, and every delete and drain asks you to type the name first, whatever the kind.
+    In a production cluster, every dialog shows a **PRODUCTION** badge next to the cluster's name, and every delete and drain asks you to type the name first, whatever the kind.
 
-    A name looks like production when it contains `prod`, `production`, `prd` or `live` as a word of its own. These match: `prod`, `eu-prod-1`, `live_cluster`, `gke_acme_us-central1_production`. These don't: `product-demo`, `delivery`.
+    On the desktop, you say whether a cluster is production in its [settings](/clusters/connect#cluster-settings). Until you do, and on a server, Lumovi guesses from its context's name: it looks like production when it contains `prod`, `production`, `prd` or `live` as a word of its own. These match: `prod`, `eu-prod-1`, `live_cluster`, `gke_acme_us-central1_production`. These don't: `product-demo`, `delivery`.
   </Accordion>
   <Accordion title="Dialogs say what can't be taken back" icon="eye">
     Each delete explains its consequence. Deleting a pod says whether its controller replaces it. Deleting a volume claim warns that the data may go too, depending on the reclaim policy. Deleting a node explains that its pods keep running until its kubelet registers it again.

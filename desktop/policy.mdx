@@ -93,7 +93,7 @@ A kubectl taken from a mirror without a signature, checked against its SHA-256 o
 
 ### kubeconfigFiles
 
-`"locked"` keeps Lumovi to the kubeconfig the computer has: the files in `KUBECONFIG`, or `~/.kube/config`. People can't [choose other files, or add any](/clusters/connect) in Lumovi, or [add clusters](/clusters/connect#add-a-cluster), and [terminals](/debug/terminal#kubectl-points-at-the-cluster) get the same ones. Lumovi says why: "Your organization's policy (/etc/lumovi/policy.json) keeps Lumovi to KUBECONFIG's kubeconfig, or ~/.kube/config."
+`"locked"` keeps Lumovi to the kubeconfig the computer has: the files in `KUBECONFIG`, or `~/.kube/config`. People can't [choose other files, or add any](/clusters/connect#choose-your-kubeconfig-files) in Lumovi, or [add clusters](/clusters/connect#add-a-cluster), and [terminals](/debug/terminal#kubectl-points-at-the-cluster) get the same ones. On the start screen, **Add cluster** gives way to a **Managed** badge: "Your organization's policy keeps Lumovi to the kubeconfig in KUBECONFIG or ~/.kube/config, so it can't add files or clusters.", with the policy's file. The kubeconfig files are listed as they are, and nothing in the list can be changed.
 
 Files someone chose or added before the policy came, and clusters they added, are kept, but not read: they're back if the key goes. Leaving it out leaves the files to each person. Anything but `"locked"` makes the policy one that [can't be used](#when-it-can’t-be-used), which locks them too.
 

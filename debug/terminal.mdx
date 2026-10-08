@@ -53,7 +53,7 @@ It gets the environment Lumovi started with and, on macOS and Linux, the `PATH` 
 
 ## kubectl points at the cluster
 
-When a terminal starts, Lumovi writes a small kubeconfig for it, and puts it first in the terminal's `KUBECONFIG`, before your own files: the ones Lumovi reads, so kubectl there sees the same clusters. Those are the files [chosen in Lumovi](/clusters/connect), or else the ones in `KUBECONFIG` when Lumovi started (as full paths, so a relative one still works), or `~/.kube/config`, then any added in Lumovi. It names the context, with its cluster, user and namespace, and holds nothing else:
+When a terminal starts, Lumovi writes a small kubeconfig for it, and puts it first in the terminal's `KUBECONFIG`, before your own files: the ones Lumovi reads, so kubectl there sees the same clusters. Those are the files [chosen in Lumovi](/clusters/connect#choose-your-kubeconfig-files), or else the ones in `KUBECONFIG` when Lumovi started (as full paths, so a relative one still works), or `~/.kube/config`, then any added in Lumovi. It names the context, with its cluster, user and namespace, and holds nothing else:
 
 ```json
 {

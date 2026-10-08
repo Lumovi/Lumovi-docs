@@ -16,7 +16,7 @@ Lumovi reads them once, when it starts. Restart it after changing one.
 ## Variables
 
 <ResponseField name="KUBECONFIG" type="path list" default="~/.kube/config">
-  Where your clusters come from, as for `kubectl`. List several files separated by `:` (`;` on Windows), and Lumovi merges them the way `kubectl` does: the first file to define a name wins, and so does the first `current-context`. Files that are missing or empty are skipped, and relative paths in a file are read from that file's folder. See [Connecting clusters](/clusters/connect). Each [terminal](/debug/terminal) gets these files too, after a kubeconfig of its own.
+  Where your clusters come from, as for `kubectl`. List several files separated by `:` (`;` on Windows), and Lumovi merges them the way `kubectl` does: the first file to define a name wins, and so does the first `current-context`. Files that are missing or empty are skipped, and relative paths in a file are read from that file's folder. See [Connecting clusters](/clusters/connect). Each [terminal](/debug/terminal) gets these files too, after a kubeconfig of its own. Files [chosen in Lumovi](/clusters/connect#choose-your-kubeconfig-files) take their place, and files added there come after them.
 </ResponseField>
 
 <ResponseField name="SHELL" type="path">

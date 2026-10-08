@@ -24,6 +24,8 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
 | **Unauthorized** | Your credentials were rejected |
 | **Forbidden** | Access denied |
 
+On the start screen, **Credentials failed** and **Unauthorized** both read **Couldn't sign in**: hover it for which.
+
 <AccordionGroup>
   <Accordion title="Unreachable: Can't reach the cluster" icon="wifi-off">
     Lumovi couldn't open a connection to the API server.
@@ -75,14 +77,15 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   <Accordion title="Forbidden: Access denied" icon="ban">
     Your account isn't allowed to read this. If you only have access to some namespaces, pick one from the namespace menu. If your account can't list namespaces, type the name of one you can use. See [Namespaces](/clusters/namespaces) and [Permissions](/clusters/permissions).
   </Accordion>
-  <Accordion title="Your kubeconfig couldn't be read, or no clusters found" icon="file-x">
-    - **Your kubeconfig couldn't be read.** A file has a syntax error. Lumovi names the file and the first line of the problem. Fix the file, then choose **Reload**.
-    - **No clusters found.** Lumovi found no contexts. Set `KUBECONFIG`, or create `~/.kube/config`, then reload. See [Connecting clusters](/clusters/connect).
+  <Accordion title="Your kubeconfig couldn't be read, or no clusters yet" icon="file-x">
+    - **Your kubeconfig couldn't be read.** A file has a syntax error. Lumovi names the file and the first line of the problem. Fix the file, then choose **Reload**, or **Choose a kubeconfig…** to read another. When other files can be read, they still load, and a notice above the list names the one that couldn't.
+    - **No clusters yet.** Lumovi found no contexts. **Choose a kubeconfig…** reads the file you use with kubectl, and **Add a cluster** takes one you paste. See [Connect your clusters](/clusters/connect#choose-your-kubeconfig-files).
+    - **The kubeconfig you chose is gone.** A file you chose in Lumovi was moved or deleted. Choose it again where it is now, or go **Back to KUBECONFIG and ~/.kube/config**.
   </Accordion>
   <Accordion title="Clusters are missing, though kubectl sees them" icon="eye-off">
-    `kubectl` in your terminal uses the `KUBECONFIG` your shell profile exports. Lumovi opened from the Dock, Spotlight or a launcher doesn't see that variable (it takes only `PATH` and the proxy from your shell), so it reads `~/.kube/config`. **Loaded from**, at the bottom of the start screen, shows which files it read.
+    `kubectl` in your terminal uses the `KUBECONFIG` your shell profile exports. Lumovi opened from the Dock, Spotlight or a launcher doesn't see that variable (it takes only `PATH` and the proxy from your shell), so it reads `~/.kube/config`. The kubeconfig files button, at the bottom of the start screen, shows which files it read.
 
-    Start Lumovi from your terminal, or set `KUBECONFIG` where apps see it. See [Setting environment variables](/reference/environment-variables#setting-them).
+    [Choose your files in Lumovi](/clusters/connect#choose-your-kubeconfig-files), which keeps them, start Lumovi from your terminal, or set `KUBECONFIG` where apps see it. See [Setting environment variables](/reference/environment-variables#setting-them).
   </Accordion>
 </AccordionGroup>
 

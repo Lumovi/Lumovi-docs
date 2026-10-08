@@ -18,6 +18,8 @@ Lumovi finds your kubeconfig the same way `kubectl` does:
 - The files listed in the `KUBECONFIG` environment variable, separated by `:` (`;` on Windows).
 - Otherwise, `~/.kube/config`.
 
+Or [choose the files](#choose-your-kubeconfig-files) in Lumovi, which keeps them. Clusters you [add in Lumovi](#add-a-cluster) come after the rest, each in a file of its own.
+
 Several files are merged with kubectl's rules:
 
 - Files that are missing or empty are skipped.
@@ -25,17 +27,37 @@ Several files are merged with kubectl's rules:
 - The current context is the first one any file sets.
 - Relative paths in a file (to a certificate, say) are read from that file's folder.
 
-Clusters you [add in Lumovi](#add-a-cluster) come after your files, each in a file of its own.
+Unlike kubectl, Lumovi still reads the other files when one can't be read: a notice above the list says so, like "~/.kube/staging.yaml couldn't be read, so its clusters aren't here.", with **Show in Finder**.
 
 <Warning>
-  A `KUBECONFIG` you export in your shell's startup file (`~/.zshrc`, `~/.bashrc`) reaches Lumovi only when you start it from that shell. Opened from the Dock, Spotlight or a launcher, it doesn't see the variable, and reads `~/.kube/config`. **Loaded from**, at the bottom of the start screen, shows which files were read. To always use your files, see [Setting environment variables](/reference/environment-variables#setting-them).
+  A `KUBECONFIG` you export in your shell's startup file (`~/.zshrc`, `~/.bashrc`) reaches Lumovi only when you start it from that shell. Opened from the Dock, Spotlight or a launcher, it doesn't see the variable, and reads `~/.kube/config`. The kubeconfig files button, at the bottom of the start screen, shows which files were read. To always use your files, [choose them in Lumovi](#choose-your-kubeconfig-files), or see [Setting environment variables](/reference/environment-variables#setting-them).
 </Warning>
 
-If a file can't be read, the start screen says **Your kubeconfig couldn't be read**, with the file and the reason. If no file defines a context, it says **No clusters found**. Fix the file, then choose **Reload**. The kubeconfig is read again each time you reload, so you don't need to restart the app after changing it.
+When there's nothing to show, the start screen says why, with **Choose a kubeconfig…**:
+
+- **Your kubeconfig couldn't be read**: the file, and the reason, in the parser's words. Fix it and choose **Reload**, or choose another file.
+- **No clusters yet**: no file has a context. Choose the file you use with kubectl, or **Add a cluster**.
+- **The kubeconfig you chose is gone**: a file you chose in Lumovi was moved or deleted. Choose another, or go **Back to KUBECONFIG and ~/.kube/config**.
+
+The kubeconfig is read again each time you choose **Reload**, so you don't need to restart the app after changing it.
 
 <Tip>
   Lumovi never writes your kubeconfig files. [Add a cluster](#add-a-cluster) in Lumovi, or add contexts with your cloud's CLI or `kubectl config`, then choose **Reload** on the start screen.
 </Tip>
+
+### Choose your kubeconfig files
+
+The button at the bottom of the start screen names the first file Lumovi reads, and counts the others. It opens **Kubeconfig files**: every file Lumovi reads, merged as kubectl does, each with where it's from (**The default**, **From KUBECONFIG**, **Chosen in Lumovi**, **Added in Lumovi**, or **Clusters added in Lumovi** for Lumovi's own folder) and how many clusters it has, or why it has none.
+
+- **Choose a kubeconfig…** reads only the files you pick, in place of `KUBECONFIG`'s or `~/.kube/config`.
+- **Add another file…** reads one more, after the rest.
+- **Back to KUBECONFIG and ~/.kube/config** undoes both.
+
+Lumovi keeps your choice. Files you chose are read whatever `KUBECONFIG` says; files you added come after `KUBECONFIG`'s, whatever it is when Lumovi starts. [Terminals](/debug/terminal#kubectl-points-at-the-cluster) get the same files.
+
+Each file has **Show in Finder** (**Show in Explorer** on Windows), and one you chose or added in Lumovi has **Remove**: "Lumovi reads these files and never writes to them. Removing one only stops Lumovi reading it." `KUBECONFIG`'s own files can't be removed here: change `KUBECONFIG`. A file you chose or added that's been moved or deleted says "Missing: it was moved or deleted", with **Choose it again…**.
+
+Your organization's [policy](/desktop/policy#kubeconfigfiles) can keep Lumovi to `KUBECONFIG`'s files and `~/.kube/config`. The list then says "Your organization's policy keeps Lumovi to these files.", and nothing in it can be changed.
 
 ### Credential plugins
 
@@ -75,20 +97,38 @@ See [Proxies and certificates on your computer](/desktop/network).
 
 ## The start screen
 
-Lumovi opens on a list of your clusters, and checks each one as the list appears.
+Lumovi opens on a list of your clusters, "Choose a cluster to explore.", and checks each one as the list appears.
 
-<Frame caption="Every context in the kubeconfig, with its status.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-light-1x.webp" alt="The start screen listing four clusters: three with their versions and response times, and one marked Unreachable." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-dark-1x.webp" alt="The start screen listing four clusters: three with their versions and response times, and one marked Unreachable." />
+<Frame caption="Every cluster, with its status.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-light-1x.webp" alt="The start screen: four clusters, each with its name, server and user, and its version and response time; edge is marked Unreachable." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-dark-1x.webp" alt="The start screen: four clusters, each with its name, server and user, and its version and response time; edge is marked Unreachable." />
 </Frame>
 
 Each row shows:
 
-- A status dot, and the context's name. Your kubeconfig's current context has a **current** badge.
-- The API server's host and the user, like `api.example.com · admin`.
-- **Checking…** while Lumovi asks the cluster for its version, then the version and how long it took to answer (`v1.34.1 · 18 ms`), or what went wrong.
+- **A tile** in the cluster's color, with its letters, and its status on the tile's corner, pulsing while Lumovi asks the cluster for its version.
+- **Its name**, with a **Production** badge if it's [production](#cluster-settings), a lock if it's [read-only](/changes/read-only), and **current** for your kubeconfig's current context.
+- Under it, the API server's host and the user, like `api.example.com · admin`, or the context's name if you gave the cluster a [name of its own](#cluster-settings).
+- **Its version and how long it took to answer** (`v1.34.1 · 18 ms`), or what went wrong.
 
-The clusters you opened last (up to five) are under **Recent**, and the rest under **All clusters**. Until you've opened one, there's a single list, **Clusters**. Type to search, move with <kbd>↑</kbd> <kbd>↓</kbd>, and press <kbd>↵</kbd> to open one. Below the list, **Loaded from** shows which kubeconfig files were read.
+The clusters you opened last, up to three, come first, under **Recent**. Then each is in the [group](#cluster-settings) you put it in, with **Other clusters** last. **Group by** groups them by a label's values instead, like `env=production`, or not at all, and Lumovi remembers which.
+
+Type to search, by name, context, server or label: `env=production` finds the clusters with that label, and each row shows the label it matched. Move with <kbd>↑</kbd> <kbd>↓</kbd>, and press <kbd>↵</kbd> to open one.
+
+A cluster you hide is left out, and the list's footer counts the hidden ones: choose **2 hidden** to show them, dimmed.
+
+### A cluster's actions
+
+Its **⋯**, a right-click, or <kbd>.</kbd> on the selected row opens its actions:
+
+- **Open**.
+- **Settings…** (<kbd>⌘</kbd><kbd>I</kbd>): see [Cluster settings](#cluster-settings).
+- **Copy for kubectl**, for a cluster you added in Lumovi: see [Use it with kubectl](#use-it-with-kubectl).
+- **Show in Finder**: the file it's read from.
+- **Hide**, or **Show**.
+- **Remove from Lumovi** (<kbd>⌘</kbd><kbd>⌫</kbd>), for a cluster you added in Lumovi: see [Change or remove it](#change-or-remove-it).
+
+<kbd>⌘</kbd><kbd>N</kbd> [adds a cluster](#add-a-cluster). On Windows and Linux, use <kbd>Ctrl</kbd> instead of <kbd>⌘</kbd>.
 
 ### When a cluster can't be reached
 
@@ -107,7 +147,7 @@ The label says what kind of problem it is. Hover it for the full message. If you
 | **Server error** | The API server returned an error. | This is usually temporary. Retry in a moment. |
 | **Misconfigured** | The context can't be used as it is. Opened, its error screen says **Invalid request**. | Hover the label for the reason, like *Context "dev" points at cluster "dev-eu", which isn't defined*. Fix the context in your kubeconfig, then choose **Reload**. |
 
-Expired credentials show up as **Unauthorized**, or as **Credentials failed** when the plugin that gets them fails. Signing in again with your cloud's CLI usually fixes both.
+Expired credentials show up as **Unauthorized**, or as **Credentials failed** when the plugin that gets them fails. On the start screen, both read **Couldn't sign in**: hover it for which. Signing in again with your cloud's CLI usually fixes both.
 
 <Frame caption="A cluster that doesn't answer, and what to try.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/unreachable-light-1x.webp" alt="A cluster that can't be reached, with an explanation of what to check and a Try again button." />
@@ -116,7 +156,7 @@ Expired credentials show up as **Unauthorized**, or as **Credentials failed** wh
 
 ## Add a cluster
 
-To add a cluster you have a kubeconfig for, without changing your own files, choose **Add cluster** above the list (<kbd>⌘</kbd><kbd>N</kbd>). Paste the kubeconfig, or one context from it with its cluster and user, or drop the file on the dialog. **Check it** then checks three things, one after another, and says what it found:
+To add a cluster you have a kubeconfig for, without changing your own files, choose **Add cluster** above the list (<kbd>⌘</kbd><kbd>N</kbd>). Paste the kubeconfig, or one context from it with its cluster and user. Or, under **A file**, drop the file or choose it: Lumovi copies what it needs, so the file can move or go. **Check it** then checks three things for each of its contexts, one after another, and says what it found:
 
 1. **It reads as a kubeconfig**, with at least one context, and the cluster and user each context names.
 2. **The server answers.** Lumovi asks it for its version, without any credentials, and shows the version and how long it took. A server that refuses whoever asks has answered too.
@@ -150,9 +190,11 @@ What it keeps is only what you added: each context, under its name, with its clu
 - **A file named relative to the kubeconfig**, like `certificate-authority: ca.crt`: in Lumovi's folder, it wouldn't be found. Give its full path, or the certificate itself, in the `-data` field.
 - **A file that isn't there, isn't a file, or is over 1 MB**, for a certificate, a key or a token: "It names /dev/zero, which isn't a file."
 
+Done, it says "_payments-us_ is ready". Give it a name, a color and a group, as in its [settings](#cluster-settings), and copy the line that uses it with kubectl. **Open** opens it.
+
 ### Use it with kubectl
 
-**Copy for kubectl** gives the line that has kubectl read the cluster, in any terminal:
+**Copy for kubectl**, in its actions and its settings, gives the line that has kubectl read the cluster, in any terminal:
 
 ```bash
 export KUBECONFIG="$HOME/Library/Application Support/Lumovi/clusters/payments-us.yaml"
@@ -162,7 +204,7 @@ On Windows, it's PowerShell's: `$env:KUBECONFIG = "$HOME\AppData\Roaming\Lumovi\
 
 ### Change or remove it
 
-A cluster you added has, in its settings, **Edit connection…**, the add dialog again with its kubeconfig, checked as it was when you added it, and **Remove from Lumovi**, which deletes its file (<kbd>⌘</kbd><kbd>⌫</kbd> on the list). A cluster from your own kubeconfig can't be changed or removed here: change your file.
+A cluster you added has, in its settings, **Edit connection…**: the add dialog again with its kubeconfig, checked as it was when you added it. **Remove from Lumovi**, there or in its actions (<kbd>⌘</kbd><kbd>⌫</kbd>), deletes its file from Lumovi's folder, and with it any cluster added with it, from the same kubeconfig. Your own kubeconfig files aren't touched. A cluster from your own kubeconfig can't be changed or removed here: change your file.
 
 Its kubeconfig comes back with each secret (a token, a password, a client key, an auth provider's tokens, the values of its program's environment, and a proxy's password) as `(kept by Lumovi)`, so they stay off your screen. Leave one as it is, and Lumovi keeps it, and checks the cluster with it; paste a new one in its place to change it. What it runs or sends, agreed to before, isn't asked again, unless you change it. A secret written into a program's arguments, like `--oidc-client-secret=…`, is shown as it's written.
 
@@ -170,9 +212,28 @@ If you change where it connects (its server, its proxy, how its certificate is c
 
 Your organization's [policy](/desktop/policy#kubeconfigfiles) can keep Lumovi to the kubeconfig it manages: then you can't add clusters, and those you added aren't read until it's gone.
 
+## Cluster settings
+
+Each cluster has settings of Lumovi's own, kept in its settings and never in your kubeconfig: **Settings…** in its actions, or <kbd>⌘</kbd><kbd>I</kbd> on the start screen. They apply when you choose **Save**.
+
+| Setting | What it does |
+| --- | --- |
+| **Name** | What Lumovi calls it: in the list, the cluster switcher, the command palette and the window's title. Its context's name, unless you set one. |
+| **Color** | Its tile's color: one of eight, or none. |
+| **Group** | The group it's in on the start screen. |
+| **Labels** | Labels like `env=production`, to search and group by. |
+| **Namespace** | The namespace it opens in. Setting it forgets the one you last picked there. |
+| **Production** | Deleting and draining ask you to type its name, and its rows say **Production**. Until you set it, Lumovi guesses from the context's name: see [Production clusters get an extra check](/changes/safely#hard-to-do-by-accident). Once you set it, it stays as you set it, until **Let Lumovi guess from its name**. |
+| **Read-only** | Lumovi changes nothing in it. See [Read-only mode](/changes/read-only). |
+| **Hidden** | Left out of the list. Show hidden clusters from its footer. |
+
+**Connection** says where the cluster comes from. One from your kubeconfig can't be changed here: "Lumovi never changes it: to change how it connects, edit the file.", with **Show in Finder**. One you [added in Lumovi](#add-a-cluster) shows its server and how it signs in, with **Edit connection…**, **Copy for kubectl** and **Remove from Lumovi**.
+
+Settings are kept by the context's name: a context you rename in your kubeconfig starts without them.
+
 ## Switching clusters
 
-The cluster switcher at the top of the sidebar shows the cluster you're in, its Kubernetes version (or **Unavailable** when it doesn't answer), and a lock if it's [read-only](/changes/read-only). Open it to:
+The cluster switcher at the top of the sidebar shows the cluster you're in, by its [name in Lumovi](#cluster-settings), its Kubernetes version (or **Unavailable** when it doesn't answer), and a lock if it's [read-only](/changes/read-only). Open it to:
 
 - Switch to another cluster: type to filter, and pick one.
 - Go back to **All clusters**, the start screen.
