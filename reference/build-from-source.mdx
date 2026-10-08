@@ -129,7 +129,7 @@ npm run dev:server -- --fleet  # a fleet of the demo clusters, signed in to as A
 A few ideas hold it together:
 
 - **One page, two hosts.** The interface talks to its host through one typed API: over IPC in the desktop app, over a WebSocket when served. Both answer from the same handlers. What only one can do, like port forwards and terminals on the desktop or sessions on the server, is an optional part of that API, which the page shows only when it's there.
-- **Credentials never reach the page.** It runs sandboxed, with context isolation, no Node.js access and a strict Content Security Policy. Every IPC call is checked for its sender and validated in the main process, the only place that talks to clusters. See [Privacy and security](/reference/privacy-and-security).
+- **Credentials stay in the main process**, the only place that talks to clusters. The page runs sandboxed, with context isolation, no Node.js access and a strict Content Security Policy, and every IPC call is checked for its sender and validated there. The page sees a kubeconfig only while you paste one to add a cluster, and it can open a terminal, your own shell: it isn't a wall between your files and itself. See [Your credentials](/reference/privacy-and-security#your-credentials).
 - **Plain REST.** Authentication comes from [`@kubernetes/client-node`](https://github.com/kubernetes-client/javascript), and requests are plain REST calls with gzip, so any API path, metrics and logs included, works the same way.
 - **Status colors are for health.** They always come with an icon and a label, and charts use a palette checked for color blindness in both themes.
 

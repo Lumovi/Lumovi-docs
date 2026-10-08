@@ -18,7 +18,7 @@ Lumovi has no telemetry and no accounts. It doesn't send anything about you or y
 
 The desktop app talks to:
 
-- **The clusters in your kubeconfig**, with the credentials in it.
+- **The clusters in your kubeconfig**, and those you [add in Lumovi](/clusters/connect#add-a-cluster), with their credentials. Checking a cluster you're adding asks its server for its version, with no credentials, before anything else.
 - **The Prometheus or VictoriaMetrics you use for [usage history](/metrics/usage-history)**, reached through the cluster's API server with your own credentials. Nothing is port-forwarded or exposed for it.
 - **[Artifact Hub](https://artifacthub.io)**, only when you search it for a chart to install.
 - **The chart repositories and registries you choose**, when you upgrade or install a Helm release from one.
@@ -49,9 +49,13 @@ The desktop app keeps what it read last in `sponsor/kept.json`, in its [folder f
 
 ## Your credentials
 
-Kubeconfig credentials stay in the app's main process: tokens, client keys and the output of credential plugins. The page you see never has them, and neither do [AI assistants](/assistants/overview). Every request to a cluster is made by the main process, after it checks what the page, or an assistant, asked for.
+Kubeconfig credentials stay in the app's main process: tokens, client keys and the output of credential plugins. Every request to a cluster is made by the main process, after it checks what the page, or an assistant, asked for. [AI assistants](/assistants/overview) never have them.
 
-Lumovi reads your kubeconfig and never changes it. Managing kubeconfig files, like adding contexts or signing in to a cloud provider, is left to the tools made for it.
+The page you see doesn't hold them either, but for a kubeconfig you paste or import to [add a cluster](/clusters/connect#add-a-cluster), while you add it: editing one later, it shows `(kept by Lumovi)` in their place. That keeps them off your screen, and out of a screen share. Before a cluster's credentials run a program, send a file, go to a server that isn't verified, or go somewhere you moved it, the page asks you, and the main process waits for your answer. That protects you from a kubeconfig that does more than it says.
+
+Neither is a wall against the page itself. The page can open a [terminal](/debug/terminal), which is your own shell, so a page that had been compromised could read your files and run what you can, as any program running as you could. What keeps the page from being compromised is how it's built: see below.
+
+Lumovi reads your kubeconfig and never changes it, or any other file it reads. A cluster you add in Lumovi is kept in a file of its own, in Lumovi's folder. Signing in to a cloud provider is left to the tools made for it.
 
 A [terminal](/debug/terminal) gets a kubeconfig of its own that names the cluster and namespace, and no credentials: kubectl there finds those in your files, as in any terminal.
 
@@ -108,6 +112,7 @@ See [Config and storage](/explore/config-and-storage) for how Secrets are shown 
 The desktop app keeps five kinds of things on your computer, and none of it leaves it:
 
 - **Settings**, in `settings.json`: your theme, the window's size and place, the kubeconfig files you chose or added for it to read (where they are, not what's in them), which clusters you made read-only, where each one's usage history comes from, the namespace and image of its [node shells](/debug/node-shell), and whether Lumovi looks for new versions by itself, and whether terminals get a kubectl to match their cluster. For [AI assistants](/assistants/overview): whether they may connect, the port and the token, [what they may do](/assistants/permissions), and how Lumovi was last started, for the stdio bridge to start it the same way. On macOS and Linux, only your account can read `settings.json`: Lumovi sets that each time it writes the file.
+- **Clusters you [added](/clusters/connect#add-a-cluster)**, in the `clusters` folder: each a kubeconfig of its own, with its credentials, named after the cluster, like `payments-us.yaml`. On macOS and Linux, only your account can read the folder and its files.
 - **The [audit log](/audit/overview)**, in the `audit` folder: what was done through Lumovi, a file a day (`audit-2026-10-06.jsonl`), each kept for 90 days. Each event names your computer's account, the kubeconfig user Lumovi used, the cluster, the object and the command: never a Secret's values, what a change set, Helm values, or tokens. On macOS and Linux, only your account can read the folder and its files: Lumovi makes them so as it starts. If the folder can't be used, it keeps the log in memory until it quits, and the **Audit log** page says why.
 - **kubectl**, in the `kubectl` folder: each one Lumovi downloaded for [terminals](/debug/terminal#a-kubectl-that-matches-the-cluster), in a folder named for its version, like `kubectl/v1.34.9`. As Lumovi starts, it keeps only the newest patch of each minor version, and the newest signed one where that came from a mirror without a signature. Beside each, a file, `signed` or `unsigned`, says how it was checked, where it came from, and the kubectl's SHA-256. Beside them, `clusters.json` remembers each cluster's minor version, by its context's name, like `"prod": "1.34"`, so a cluster that can't be reached still gets its kubectl.
 - **Conveniences** the page remembers: the namespace you picked per cluster, your recent clusters, the kinds you pinned to the sidebar and the custom resources you opened last, the detail panel's width, the terminal dock's height, the time range metrics charts open with, and which chart on your computer each Helm release was last deployed from.

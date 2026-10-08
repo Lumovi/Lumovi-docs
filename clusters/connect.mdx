@@ -5,7 +5,7 @@ description: "Lumovi reads clusters from your kubeconfig, the way kubectl does, 
 icon: "plug"
 ---
 
-There's nothing to add or import. The desktop app shows every context in your kubeconfig, with the credentials it already has: client certificates, tokens, and credential plugins like `gke-gcloud-auth-plugin`, `aws eks get-token` and `kubelogin`.
+The desktop app shows every context in your kubeconfig, with the credentials it already has: client certificates, tokens, and credential plugins like `gke-gcloud-auth-plugin`, `aws eks get-token` and `kubelogin`. To add a cluster someone gave you a kubeconfig for, paste it in Lumovi: see [Add a cluster](#add-a-cluster).
 
 <Note>
   **In your cluster:** Lumovi served from a cluster shows that one cluster, or a [fleet](/clusters/fleet) of clusters your team chose, and each person signs in with their own identity. There's no kubeconfig to read. A fleet opens on a page of its clusters, instead of the start screen. See [Run it in your cluster](/server/overview).
@@ -25,6 +25,8 @@ Several files are merged with kubectl's rules:
 - The current context is the first one any file sets.
 - Relative paths in a file (to a certificate, say) are read from that file's folder.
 
+Clusters you [add in Lumovi](#add-a-cluster) come after your files, each in a file of its own.
+
 <Warning>
   A `KUBECONFIG` you export in your shell's startup file (`~/.zshrc`, `~/.bashrc`) reaches Lumovi only when you start it from that shell. Opened from the Dock, Spotlight or a launcher, it doesn't see the variable, and reads `~/.kube/config`. **Loaded from**, at the bottom of the start screen, shows which files were read. To always use your files, see [Setting environment variables](/reference/environment-variables#setting-them).
 </Warning>
@@ -32,7 +34,7 @@ Several files are merged with kubectl's rules:
 If a file can't be read, the start screen says **Your kubeconfig couldn't be read**, with the file and the reason. If no file defines a context, it says **No clusters found**. Fix the file, then choose **Reload**. The kubeconfig is read again each time you reload, so you don't need to restart the app after changing it.
 
 <Tip>
-  Lumovi doesn't manage kubeconfig files. Add contexts with your cloud's CLI or `kubectl config`, then choose **Reload** on the start screen.
+  Lumovi never writes your kubeconfig files. [Add a cluster](#add-a-cluster) in Lumovi, or add contexts with your cloud's CLI or `kubectl config`, then choose **Reload** on the start screen.
 </Tip>
 
 ### Credential plugins
@@ -111,6 +113,62 @@ Expired credentials show up as **Unauthorized**, or as **Credentials failed** wh
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/unreachable-light-1x.webp" alt="A cluster that can't be reached, with an explanation of what to check and a Try again button." />
   <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/unreachable-dark-1x.webp" alt="A cluster that can't be reached, with an explanation of what to check and a Try again button." />
 </Frame>
+
+## Add a cluster
+
+To add a cluster you have a kubeconfig for, without changing your own files, choose **Add cluster** above the list (<kbd>⌘</kbd><kbd>N</kbd>). Paste the kubeconfig, or one context from it with its cluster and user, or drop the file on the dialog. **Check it** then checks three things, one after another, and says what it found:
+
+1. **It reads as a kubeconfig**, with at least one context, and the cluster and user each context names.
+2. **The server answers.** Lumovi asks it for its version, without any credentials, and shows the version and how long it took. A server that refuses whoever asks has answered too.
+3. **The credentials work.** Lumovi signs in, and lists one namespace. Signed in but not allowed to list namespaces still counts.
+
+Lumovi sends the credentials only to a server that answered: if its certificate doesn't hold, they're never sent, and to a server whose certificate isn't checked, only once you agree (see below). A check that fails says why, in the error's own words. **Add it anyway** keeps a cluster whose server didn't answer, like one behind a VPN that's off.
+
+A cluster with a `proxy-url` says which proxy everything to it goes through, without the proxy's password.
+
+### Credentials that run a program, send a file, or go unverified
+
+Some credentials do more than sign in, so the check stops before them, and shows exactly what:
+
+- **A [credential plugin](#credential-plugins)** (an `exec` user, or a `gcp` or `azure` auth provider's `cmd-path`) runs a program to sign in: "Signing in runs a program on this computer", with the command as it would run, and its environment.
+- **A token file** (`token-file`, or an auth provider's `tokenFile`) sends a file on your computer to the server: Lumovi names the file, and each server it goes to.
+- **A server that isn't verified** (`insecure-skip-tls-verify: true`) would get the credentials whoever answers at its address: Lumovi names the server. A server on [plain HTTP](#clusters-on-plain-http) is asked about the same way, with or without that flag, as anyone on the network in between could read what's sent to it, its credentials too. Lumovi itself connects to it only with the flag, but kubectl would either way, in a terminal or with the line for kubectl: without the flag, there's nothing Lumovi can check, so the button that allows it is **Add it anyway**, which keeps it for kubectl at once.
+
+Nothing runs, no file is read, and no credentials go to such a server, until you choose **Allow and continue**: not to check the cluster, and not to keep it. Until then, the check asks the server only for its version, with no credentials. You agree to that command, that file going to that server, or that server, exactly: change any of it, even an argument, a variable or the server, and Lumovi asks again.
+
+Once it's kept, it's used as any kubeconfig's is, each time Lumovi signs in to that cluster, the start screen's check included.
+
+This protects you from a kubeconfig that does more than it says. It's Lumovi asking you, not a wall against the page itself: see [Your credentials](/reference/privacy-and-security#your-credentials).
+
+### Where it's kept
+
+Each cluster you add is a kubeconfig file of Lumovi's own, in the `clusters` folder of its [app data](/reference/privacy-and-security#what-it-keeps-on-your-computer), named after it, like `payments-us.yaml`. On macOS and Linux, only your account can read the folder and its files. Lumovi reads them after your own files, and never writes any file but these.
+
+What it keeps is only what you added: each context, under its name, with its cluster and user, which Lumovi names `lumovi-` and 12 random characters, so that no other kubeconfig's cluster or user is ever taken for them. Comments, preferences and the current context are left out. It refuses:
+
+- **A context name it already reads**, since kubectl would take the first one: "Already read: “prod”. kubectl would take that one, so name it otherwise." Give the new one another name.
+- **A file named relative to the kubeconfig**, like `certificate-authority: ca.crt`: in Lumovi's folder, it wouldn't be found. Give its full path, or the certificate itself, in the `-data` field.
+- **A file that isn't there, isn't a file, or is over 1 MB**, for a certificate, a key or a token: "It names /dev/zero, which isn't a file."
+
+### Use it with kubectl
+
+**Copy for kubectl** gives the line that has kubectl read the cluster, in any terminal:
+
+```bash
+export KUBECONFIG="$HOME/Library/Application Support/Lumovi/clusters/payments-us.yaml"
+```
+
+On Windows, it's PowerShell's: `$env:KUBECONFIG = "$HOME\AppData\Roaming\Lumovi\clusters\payments-us.yaml"`. Each path is quoted so that nothing in it is read as more than its text: one with a character a shell would read otherwise, like `$` or `!`, goes in single quotes instead. Lumovi's own [terminals](/debug/terminal) read it already.
+
+### Change or remove it
+
+A cluster you added has, in its settings, **Edit connection…**, the add dialog again with its kubeconfig, checked as it was when you added it, and **Remove from Lumovi**, which deletes its file (<kbd>⌘</kbd><kbd>⌫</kbd> on the list). A cluster from your own kubeconfig can't be changed or removed here: change your file.
+
+Its kubeconfig comes back with each secret (a token, a password, a client key, an auth provider's tokens, the values of its program's environment, and a proxy's password) as `(kept by Lumovi)`, so they stay off your screen. Leave one as it is, and Lumovi keeps it, and checks the cluster with it; paste a new one in its place to change it. What it runs or sends, agreed to before, isn't asked again, unless you change it. A secret written into a program's arguments, like `--oidc-client-secret=…`, is shown as it's written.
+
+If you change where it connects (its server, its proxy, how its certificate is checked, or, for a user that signs in with OIDC, its identity provider), or add a context that signs in as the same user, Lumovi asks before a kept secret, or a program you allowed, is used there.
+
+Your organization's [policy](/desktop/policy#kubeconfigfiles) can keep Lumovi to the kubeconfig it manages: then you can't add clusters, and those you added aren't read until it's gone.
 
 ## Switching clusters
 
