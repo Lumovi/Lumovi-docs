@@ -64,9 +64,9 @@ A restart signs nobody out (`auth.keepSessions`, on by default). Lumovi keeps se
     stateKeySecret: lumovi-state-key
   ```
 
-  It needs at least 32 random characters, under `key`.
+  It needs at least 32 random characters, under `key`. Give each install its own: two with the same key open each other's entries, so one copied from another install's state opens there too.
 - **With `rbac.create: false`**, give Lumovi's service account `get` and `patch` on `<release>-state` yourself, or it doesn't start. It needs nothing on the key's Secret.
-- **With `auth.keepSessions: false`**, sessions live in memory, and every restart signs everyone out.
+- **With `auth.keepSessions: false`**, sessions live in memory, and every restart signs everyone out. The chart then runs a single replica, and refuses more.
 
 ## The network
 

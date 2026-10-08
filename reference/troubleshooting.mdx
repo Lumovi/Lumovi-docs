@@ -373,6 +373,17 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   <Accordion title="Lumovi stops: HTTPS_PROXY isn't a proxy's URL" icon="globe-lock">
     `HTTPS_PROXY` or `HTTP_PROXY`, which the chart sets from `proxy`, can't be read as a URL: `HTTPS_PROXY isn’t a proxy’s URL: give it as http://host:port (or https://).` Lumovi doesn't say what it was, as it can hold credentials. Check it, and encode characters like `@` in a password as `%40`. See [Proxies and certificate authorities](/server/network#credentials).
   </Accordion>
+  <Accordion title="The chart refuses more than one replica" icon="layers">
+    `More than one replica (replicaCount) needs auth.keepSessions: without it, each replica keeps who's signed in, and what's set for everyone (the clusters made read-only, say), in its own memory, and they don't agree`. Leave `auth.keepSessions` on, or run one replica. More than one also needs `assistants.enabled: false`, `audit.persistence.enabled: false`, and sticky sessions. See [`replicaCount`](/server/helm-values).
+  </Accordion>
+  <Accordion title="A cluster says it was changed outside Lumovi" icon="shield-alert">
+    Its settings were deleted, or an older copy of them put back, where the server keeps them (the Secret `<release>-state`, or `state.json`), by whoever can write there, not through Lumovi. Lumovi kept the stricter: read-only if either copy was, and its metrics source and node shells as it last set them. The banner says what it did: "production's read-only was turned off outside Lumovi, and Lumovi made it read-only again.", "production was made read-only outside Lumovi.", or "What's set for production was changed outside Lumovi, and Lumovi put it back." The audit log has it, by Lumovi itself, with `outside: true`.
+
+    - **Choose** **Keep it read-only** or **Allow changes** (**Keep it changeable** or **Make it read-only**, where it's changeable). Either is your own change, recorded as yours, and the banner goes.
+    - **Find who could write there**: whoever may `patch` that Secret, or write the file, and controllers that sync Secrets into Lumovi's namespace, or put a backup back.
+
+    See [Changed outside Lumovi](/changes/read-only#changed-outside-lumovi).
+  </Accordion>
   <Accordion title="Signing in or the webhook fails on a certificate" icon="shield-alert">
     Behind a proxy that inspects HTTPS, Lumovi gets a certificate signed by the proxy's own authority. The sign-in page says *Signing in didn't work*, and Lumovi's log, or the **Audit log** page for the webhook, says *Its certificate isn't signed by a certificate authority Lumovi trusts (…)*. Give Lumovi that authority with `extraCA`, or leave the address out of the proxy with `proxy.noProxy`. *Its certificate has expired* and *Its certificate is for another name* are said the same way. See [Proxies and certificate authorities](/server/network#when-it-doesn’t-connect).
   </Accordion>
@@ -391,8 +402,8 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
   <Accordion title="Everyone was signed out" icon="log-out">
     A restart, as an upgrade does, signs nobody out, unless Lumovi had nowhere to keep sessions, couldn't, or can't open what it kept:
 
-    - **`auth.keepSessions: false`**, or without the chart, neither `LUMOVI_STATE_SECRET` nor `LUMOVI_DATA_DIR`. The log says, as Lumovi starts: `Who’s signed in and the AI assistants they allowed are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`
-    - **The key changed, or was lost**: `12 of what Lumovi kept doesn’t open with its key (it changed, or they were): they’re let go.` With Argo CD, or anything else that renders the chart with `helm template`, each render makes a new key: give your own, in `auth.stateKeySecret`. See [Sessions across restarts](/server/hardening#sessions-across-restarts).
+    - **`auth.keepSessions: false`**, or without the chart, neither `LUMOVI_STATE_SECRET` nor `LUMOVI_DATA_DIR`. The log says, as Lumovi starts: `Who’s signed in and the AI assistants they allowed are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`, and `Run a single replica so: …`
+    - **The key changed, or was lost**: `12 of what Lumovi kept doesn’t open with its key (it changed, they were, or another replica uses another): left as they are, unused, until they’ve been so for 15 minutes, then let go.` With Argo CD, or anything else that renders the chart with `helm template`, each render makes a new key: give your own, in `auth.stateKeySecret`. See [Sessions across restarts](/server/hardening#sessions-across-restarts).
     - **Writing it failed**, before the restart: `Lumovi can’t keep who’s signed in (…): if it restarts now, what changed since is lost.`, then `Lumovi keeps who’s signed in again.` once it can.
     - **It didn't all fit** in a megabyte: `What Lumovi keeps would be more than the 1000 kB it may hold: the 40 sessions that end soonest aren’t kept (they sign in again after a restart).`
     - **What's kept can't be read**, edited by hand, say: `What Secret lumovi/lumovi-state kept can’t be read (…): everyone signs in again.`, with why in the brackets

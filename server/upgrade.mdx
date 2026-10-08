@@ -50,7 +50,7 @@ A new pod signs nobody out: Lumovi keeps sessions, and the AI assistants people 
 The same goes for any change that replaces the pod: changing a setting, or the [views everyone sees](/server/views).
 
 <Note>
-  For the same reason the chart runs one replica. More than one would need sticky sessions, and each replica would still keep its own sessions.
+  For the same reason the chart runs one replica. More than one would need sticky sessions and `auth.keepSessions`, and each replica would still keep its own sessions.
 </Note>
 
 ## AI assistants' limits, from 1.4
