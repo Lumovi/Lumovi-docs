@@ -1,7 +1,7 @@
 ---
 title: "Policy for your organization's computers"
 sidebarTitle: "Policy for your organization"
-description: "Set what the desktop app does on every computer you manage: read-only clusters, AI assistants, updates, and the proxy and certificate authorities to use."
+description: "Set what the desktop app does on every computer you manage: read-only clusters, AI assistants, updates, the kubeconfig files it reads, and the proxy and certificate authorities to use."
 icon: "building-2"
 ---
 
@@ -36,6 +36,7 @@ Lumovi reads it as it starts: restart it after a change. Only when nothing is th
   "updates": false,
   "kubectl": "https://artifacts.corp.example.com/k8s",
   "kubectlSignatures": "required",
+  "kubeconfigFiles": "locked",
   "network": {
     "proxy": "http://proxy.corp.example.com:3128",
     "noProxy": ".corp.example.com",
@@ -89,6 +90,14 @@ Whether, and from where, [terminals](/debug/terminal#a-kubectl-that-matches-the-
 ```
 
 A kubectl taken from a mirror without a signature, checked against its SHA-256 only, isn't used while the policy requires signatures. It stays kept, and is used again if the key goes. Leaving the key out leaves it to the mirror: where it keeps no signature, the checksum is all there is, and each terminal says so. Anything but `"required"` makes the policy one that [can't be used](#when-it-can’t-be-used), which gets no kubectl at all.
+
+### kubeconfigFiles
+
+`"locked"` keeps Lumovi to the kubeconfig the computer has: the files in `KUBECONFIG`, or `~/.kube/config`. People can't [choose other files, or add any](/clusters/connect) in Lumovi, and [terminals](/debug/terminal#kubectl-points-at-the-cluster) get the same ones. Lumovi says why: "Your organization's policy (/etc/lumovi/policy.json) keeps Lumovi to KUBECONFIG's kubeconfig, or ~/.kube/config."
+
+Files someone chose or added before the policy came are kept, but not read: they're back if the key goes. Leaving it out leaves the files to each person. Anything but `"locked"` makes the policy one that [can't be used](#when-it-can’t-be-used), which locks them too.
+
+It decides which files Lumovi reads, not what's in them: `~/.kube/config` is still each person's to change, and so is a `KUBECONFIG` they start Lumovi with.
 
 ### network
 
@@ -156,10 +165,10 @@ The file needn't be `root`'s. Where IT's policy is set, that one is used, and `L
 
 ## When it can't be used
 
-A policy Lumovi can't use locks the most it could, until it's put right: every cluster read-only, AI assistants off, and no kubectl got to match a cluster: terminals use the one installed, and **View → Match kubectl to Each Cluster** is off, and locked. As Lumovi starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge says why too, like:
+A policy Lumovi can't use locks the most it could, until it's put right: every cluster read-only, AI assistants off, no kubectl got to match a cluster (terminals use the one installed, and **View → Match kubectl to Each Cluster** is off, and locked), and the kubeconfig kept to the files in `KUBECONFIG`, or `~/.kube/config`, as [`kubeconfigFiles`](#kubeconfigfiles) keeps it. As Lumovi starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge says why too, like:
 
 ```text
-Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, network.), so it changes no cluster until it’s put right.
+Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, kubeconfigFiles, network.), so it changes no cluster until it’s put right.
 ```
 
 What it can say after `can't be used:`:
@@ -174,11 +183,12 @@ What it can say after `can't be used:`:
 | “it isn't JSON (at line 3 column 1).” | It isn't JSON: a comma after the last item, say. It says where when it can, and otherwise just "it isn't JSON.", but never what's there, which could be a proxy's credentials. |
 | “a key is given twice: Map keys must be unique at line 1, column 21:” | A key appears twice, and only one would count. |
 | “it must be a JSON object.” | It's JSON, but not `{ … }`. |
-| “it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, network.” | A key it doesn't know, misspelt maybe. |
+| “it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, kubeconfigFiles, network.” | A key it doesn't know, misspelt maybe. |
 | “readOnly must be true, false, or a list of cluster names (with * for any).” | |
 | “assistants must be true or false.”, "updates must be true or false." | |
 | “kubectl must be true, false, or the https URL of a mirror of dl.k8s.io, or an http one on this computer (over plain http elsewhere, what it downloads could be changed on the way).” | A mirror over plain `http`, elsewhere than on this computer, or what isn't a URL. |
 | “kubectlSignatures must be "required": a mirror's kubectl is then used only with Kubernetes' signature, as dl.k8s.io's always is.” | `false`, `"optional"` or anything else: leave the key out instead. |
+| “kubeconfigFiles must be "locked": only KUBECONFIG's kubeconfig, or ~/.kube/config, none chosen in Lumovi.” | `true`, `false` or anything else: leave the key out instead. |
 | “assistantRules[0] (Production) limits nothing: give it visibility, changes, secrets, env or logs.” | A rule that doesn't make sense, said as for a server's [rules](/server/assistants#limits-for-everyone). |
 | “network has proxyUrl: it takes proxy, noProxy, caFiles.” | |
 | “network.proxy must be the proxy's http or https URL.” | |
@@ -187,7 +197,7 @@ What it can say after `can't be used:`:
 
 ## What stays each person's
 
-The policy locks only what it sets, and only while it's there. Lumovi shows what it sets, but doesn't save it over anyone's settings: a person's own choices, like AI assistants on or automatic updates, are back if the policy goes. Everything else, like the theme, the clusters they make read-only themselves, and their own [AI permissions](/assistants/permissions) within the policy's rules, stays theirs.
+The policy locks only what it sets, and only while it's there. Lumovi shows what it sets, but doesn't save it over anyone's settings: a person's own choices, like AI assistants on, automatic updates or the kubeconfig files they chose or added, are back if the policy goes. Everything else, like the theme, the clusters they make read-only themselves, and their own [AI permissions](/assistants/permissions) within the policy's rules, stays theirs.
 
 Beyond which kubectl they get, and how it's checked, the policy doesn't reach [terminals](/debug/terminal), which are each person's own shell: read-only doesn't apply to what they run there.
 
