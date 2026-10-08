@@ -35,17 +35,22 @@ Use this when you already sign people in to internal tools with a proxy, or your
       usernamePrefix: 'proxy:'
       groupsPrefix: 'proxy:'
     networkPolicy:
-      enabled: true
       from:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: oauth2-proxy
     ```
 
-    The network policy lets only the proxy's pods reach Lumovi. A `podSelector` on its own matches pods in Lumovi's namespace, so this works when the proxy runs there too; for a proxy in another namespace, see [below](#a-proxy-in-another-namespace). Your cluster's network plugin has to enforce network policies for it to work. Leave the chart's ingress off: your ingress sends people to the proxy, and the proxy sends them on to Lumovi.
+    With `auth.mode: proxy`, the chart always makes a NetworkPolicy that lets only `networkPolicy.from` reach Lumovi, whatever `networkPolicy.enabled` says, and `from` is required: name the proxy's pods. Without it, `helm install` fails:
+
+    ```text
+    auth.mode proxy trusts the X-Forwarded-Email header from whoever reaches Lumovi: set networkPolicy.from to the proxy's pods (a podSelector, with a namespaceSelector if it runs in another namespace), so that nobody else can
+    ```
+
+    (It names the header in `auth.proxy.userHeader`.) A `podSelector` on its own matches pods in Lumovi's namespace, so this works when the proxy runs there too; for a proxy in another namespace, see [below](#a-proxy-in-another-namespace). Leave the chart's ingress off: your ingress sends people to the proxy, and the proxy sends them on to Lumovi.
 
     <Warning>
-      With `networkPolicy.enabled` and an empty `from`, the policy lets anything in on Lumovi's port. Always name the proxy.
+      A NetworkPolicy holds only where the cluster's network plugin enforces them. Most do, like Calico, Cilium, and the cloud providers' own; flannel alone doesn't. Check that yours does: otherwise anything that reaches Lumovi can say it's anyone. The chart's notes, after `helm install`, say so too.
     </Warning>
   </Step>
   <Step title="Give people roles">
@@ -69,7 +74,6 @@ When the proxy runs in a namespace of its own, name that namespace and the proxy
 
 ```yaml values.yaml
 networkPolicy:
-  enabled: true
   from:
     - namespaceSelector:
         matchLabels:
@@ -131,7 +135,7 @@ A [fleet](/server/fleet) behind a proxy works the same way: the proxy names peop
 - **Prefixes**: `auth.usernamePrefix` and `auth.groupsPrefix` apply in each cluster, unless the cluster has [its own](/server/fleet#settings-for-each-cluster). Bind roles in each cluster to the names it sees.
 - **A cluster's `groups`** decide who sees it: groups as the proxy sends them, without prefixes.
 - **There are no tokens to pass on.** The proxy names people, but gives Lumovi no token of theirs, so a cluster with `forwardToken: true` can't be used: its card says **Credentials failed**, and why. For clusters that should get people's own tokens, use [single sign-on](/server/auth/single-sign-on#in-a-fleet).
-- **Agents come through the proxy too.** Let `api/agent` through to Lumovi without signing in: agents can't sign in to a proxy, and Lumovi checks their names and tokens itself. A proxy that answers `401` makes an agent stop. See [Private clusters](/server/fleet/agents#in-front-of-lumovi).
+- **Agents come through the proxy too.** Let `api/agent` through to Lumovi without signing in: agents can't sign in to a proxy, and Lumovi checks their names and tokens itself. A proxy that answers `401` makes an agent stop. As only the proxy's pods may reach Lumovi, agents can't come in any other way. See [Private clusters](/server/fleet/agents#in-front-of-lumovi).
 
 <Columns cols={2}>
   <Card title="Security" icon="shield-check" href="/server/security">

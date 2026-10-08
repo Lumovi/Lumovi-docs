@@ -165,6 +165,7 @@ On a server, a cluster's read-only switch, metrics source and node shells are th
 | `permissions.changed` | Changed AI permissions | Someone changed [what their assistants may do](/assistants/permissions): their defaults, and their rules' names. |
 | `read-only.changed` | Changed read-only | A cluster was made [read-only](/changes/read-only), or changeable again: "Made production read-only in Lumovi" in the desktop app; on a server, where it's for everyone, "Made production read-only for everyone on this server", or "Made production changeable for everyone on this server". |
 | `metrics-source.changed` | Changed where metrics come from | Where a cluster's [usage history](/metrics/usage-history) comes from changed: "Made production’s metrics come from monitoring/prometheus-operated", "Turned off production’s metrics history", or "Made Lumovi find production’s metrics". In the desktop app too. |
+| `agent.trusted` | Let an agent be trusted again | In a fleet, an admin trusted an agent with the certificate authority whose SHA-256 they gave, from its cluster: "Trusted the agent of private-eu with the certificate authority whose SHA-256 was given". |
 | `node-shell.changed` | Changed node shells | Where a cluster's [node shells](/debug/node-shell#settings-for-each-cluster) run, and from what image, changed: "Made node shells in production run alpine:3.22 in kube-system", or "Made node shells in production run as Lumovi's defaults". |
 | `access.changed` | Changed access | On a server: an admin saved changes to [who may do what](/server/access). Its summary is the first change, and how many more: `Added the grant “On-call”, and 2 more`. Changed by hand where it's kept, it's recorded by Lumovi itself, its summary starting `Changed outside Lumovi:`, or, for a change made while Lumovi wasn't running, recorded as it starts: `Changed outside Lumovi, while it wasn’t running: what it was before can’t be known`. |
 | `assistants.changed` | Changed AI assistants | In the desktop app: assistants let connect, or stopped; their port; a new token. |
@@ -176,6 +177,8 @@ On a server, a cluster's read-only switch, metrics source and node shells are th
 | `server.started` | Lumovi started | A server started: its version, how people sign in, and where its events go. |
 | `server.stopped` | Lumovi stopped | A server stopped. |
 | `audit.dropped` | Audit events lost | Events couldn't be kept in the history, or sent: how many, where, and why. See [When events are lost](/server/audit-log#when-events-are-lost). |
+| `agent.pinned` | Trusted an agent | In a fleet, by Lumovi itself: it trusted the certificate authority an [agent](/server/fleet/agents#its-cluster’s-certificate-authority) first sent for its cluster, as the agent has no `caSha256`: "Trusted the certificate authority the agent of private-eu first sent". |
+| `agent.refused` | Refused an agent | In a fleet, by Lumovi itself, as `refused`: an agent sent a certificate authority other than the one Lumovi trusts for its cluster. Once for each one it sends, with why in `error`. |
 
 With the `changes` level, a server records everything but the **Access** kind and `assistant.tool`, but for an assistant's call to change something that was refused: that's a change asked for, and it's kept, with `changing: true` in its details.
 
@@ -231,6 +234,8 @@ What each action adds in `details`, when it applies:
 | `read-only.changed` | `readOnly` |
 | `metrics-source.changed` | `mode` (`auto`, `off` or `service`), and for a service, its `namespace` and `service` |
 | `node-shell.changed` | `namespace` and `image`, unless set back to Lumovi's defaults |
+| `agent.pinned`, `agent.refused` | `sha256`: the SHA-256 of each certificate the agent sent |
+| `agent.trusted` | `was` and `now`: the SHA-256s it was trusted with, and is now |
 | `assistants.changed` | `enabled`, `port` |
 | `server.started` | `version`, `auth`, `level`, `kept` (`files` or `memory`), `retentionDays`, `sinks` (where events go) and `auditors` |
 | `audit.dropped` | `sink` and `count`, with why in `error` |

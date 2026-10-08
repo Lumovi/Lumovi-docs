@@ -41,8 +41,18 @@ flowchart LR
     ```yaml agents.yaml
     - name: private-eu
       tokenSha256: <the token's SHA-256, from step 1>
+      caSha256: <its cluster's certificate authority's SHA-256>
       labels: { env: production, region: eu-west }
     ```
+
+    `caSha256` is the SHA-256 of the private cluster's certificate authority, the one its service accounts' `ca.crt` holds. With your kubeconfig pointing at that cluster:
+
+    ```bash
+    kubectl get configmap kube-root-ca.crt -n default -o jsonpath='{.data.ca\.crt}' \
+      | openssl x509 -noout -fingerprint -sha256
+    ```
+
+    Give its line as it is (`sha256 Fingerprint=AB:CD:…`), or just the hash. With it, Lumovi trusts no other certificate authority from that agent: see [Its cluster's certificate authority](#its-cluster’s-certificate-authority).
 
     With the Helm chart, put the list in a Secret, under `agents.yaml`, in Lumovi's namespace, and name it in `fleet.agentsSecret`:
 
@@ -71,7 +81,7 @@ flowchart LR
       --set agent.tokenSecret=lumovi-agent
     ```
 
-    `agent.hubUrl` is the address people open Lumovi at, with its base path if it has one. `clusterName` must be the agent's name in Lumovi's list: unless set, it's `in-cluster`.
+    `agent.hubUrl` is the address people open Lumovi at, with its base path if it has one, over `https`: the agent's token, and its cluster's, travel there. An `http` one fails the install, but on the same machine (`localhost`, `127.0.0.1` or `[::1]`): `agent.hubUrl must be https, not http://lumovi.example.com: the agent's token and its cluster's would cross the network as they are (http only reaches a hub on the same machine)`. `clusterName` must be the agent's name in Lumovi's list: unless set, it's `in-cluster`.
 
     The chart's notes, after installing, print a command that gives the SHA-256 of the token in `agent.tokenSecret`, and the entry for Lumovi's list, if you'd rather make the token here first.
   </Step>
@@ -85,9 +95,10 @@ flowchart LR
     ```text
     Lumovi {{version}}'s agent for private-eu, relaying to 10.96.0.1:443
     Connected to https://lumovi.example.com as private-eu
+    The hub trusts this cluster
     ```
 
-    Lumovi's log says `The agent of private-eu connected (Lumovi {{version}})`, and the cluster is on the fleet page.
+    Lumovi's log says `The agent of private-eu connected (Lumovi {{version}})`, and the cluster is on the fleet page. Without `caSha256`, it also says it trusts the certificate authority the agent first sent: see below.
   </Step>
 </Steps>
 
@@ -115,11 +126,66 @@ flowchart LR
   Only people in one of these groups see the cluster: groups as your provider or proxy names them, without prefixes. Everyone signed in does, without it, and an empty list hides it from everyone.
 </ResponseField>
 
+<ResponseField name="caSha256" type="string | string[]">
+  The SHA-256 of the cluster's certificate authority, as `openssl x509 -noout -fingerprint -sha256` prints it (`sha256 Fingerprint=AB:CD:…`), or just the hash, with or without its colons, in either case. While its certificate authority is rotated, a list of the old and the new: `[<old>, <new>]`. Lumovi then trusts no other certificate authority the agent sends. One that isn't a SHA-256 stops Lumovi: `LUMOVI_FLEET_AGENTS[0].caSha256 (private-eu) must be the SHA-256 of its cluster’s certificate authority, as openssl x509 -noout -fingerprint -sha256 prints it, or a list of them.` Without it, Lumovi trusts the one the agent first sends: see [Its cluster's certificate authority](#its-cluster’s-certificate-authority).
+</ResponseField>
+
 <ResponseField name="forwardToken" type="boolean" default="false">
   `true`: requests carry each person's own token, for an API server that trusts your provider, instead of impersonating them. Lumovi must have their tokens: set `LUMOVI_OIDC_FORWARD_TOKEN`.
 </ResponseField>
 
 An agent's cluster takes the server's prefixes for the names it impersonates. A list that isn't like this stops Lumovi, saying what's wrong, like `LUMOVI_FLEET_AGENTS[0] (private-eu) needs a token of at least 32 characters, or its tokenSha256.`
+
+## Its cluster's certificate authority
+
+The agent says which certificate authority its cluster's API server is signed by, and Lumovi checks the API server's certificate against it, end to end. So Lumovi trusts only one, for each agent:
+
+- **The one `caSha256` names.** Of what the agent sends, only certificates with that SHA-256 become its cluster's certificate authority; anything else it sends is ignored.
+- **Without `caSha256`, the one the agent first sends.** Lumovi keeps it with what it keeps across restarts (the chart's `auth.keepSessions`, or `LUMOVI_DATA_DIR`; otherwise only until it restarts), and records it in the [audit log](/audit/events), as `agent.pinned`: "Trusted the certificate authority the agent of private-eu first sent". Its log says `Trusting the certificate authority the agent of private-eu first sent (SHA-256 4a2b9c0d1e2f3a4b…)`.
+
+Give `caSha256` anyway: without it, whoever connects first with the agent's token is the one trusted. Lumovi says so as it starts, naming each agent without one:
+
+```text
+private-eu has no caSha256 in LUMOVI_FLEET_AGENTS: the hub trusts the certificate authority each first sends, from whoever has its token. Give each its cluster’s.
+```
+
+Where nothing keeps what it trusts (neither `LUMOVI_DATA_DIR` nor the chart's `auth.keepSessions`), it adds `, and, as nothing keeps what it trusts (no LUMOVI_DATA_DIR, nor the chart’s auth.keepSessions), again after every restart`. The chart's notes, after installing a fleet with `fleet.agentsSecret`, say the same; an agent's notes give the command for its `caSha256`.
+
+The agent's health says whether Lumovi uses it: `/healthz` answers `200 connected` only once Lumovi trusts its cluster. Before then it answers `503 connected, not yet trusted`, and when refused, `503 connected, but refused:` and why, so its pod isn't ready. Trusted, its log says `The hub trusts this cluster`.
+
+### When it sends another
+
+An agent that sends another certificate authority stays connected, but its cluster isn't used, and its pod isn't ready. Lumovi refuses it, once for each one it sends, in the audit log as `agent.refused` (refused), in its log (`The agent of private-eu:`, and why), and in the agent's (`The hub doesn’t trust this cluster:`, and why). The cluster's card says:
+
+| Status | It says | When |
+| --- | --- | --- |
+| **Agent not trusted** | “Its agent sent a certificate authority (SHA-256 4a2b9c0d1e2f3a4b…) other than the one it's trusted with. If its cluster's changed, an admin can trust the new one, given its SHA-256 from the cluster itself.” | Without `caSha256`. |
+| **Certificate error** | “Its agent sent a certificate authority (SHA-256 4a2b9c0d1e2f3a4b…) other than the one LUMOVI_FLEET_AGENTS names for it.” | With `caSha256`. Change it there, and restart Lumovi. |
+
+### Trusting it, by its SHA-256
+
+[Lumovi's admins](/server/access), or anyone signed in where it has none, see a banner on the fleet page for each connected agent without `caSha256` that needs them:
+
+- **One refused**: "private-eu's agent sends a certificate authority other than the one it's trusted with.", with **Trust it…**.
+- **One trusted as it first sent it**: "private-eu's agent is trusted with the certificate authority it first sent, which nobody has checked.", with **Check it…**.
+
+Either opens the same form. It shows the start of what the agent sends, and of what it's trusted with ("It sends 76cd6766…"), never the whole hash, so it can't be copied from the page: the whole ones are in Lumovi's log and the audit log. It asks for the SHA-256 taken from the cluster itself: "Its SHA-256, from the cluster itself, not from what its agent says. Run this with your own access to that cluster, not through Lumovi (which reaches it through this agent):"
+
+```bash
+kubectl get configmap kube-root-ca.crt -n default -o jsonpath='{.data.ca\.crt}' | openssl x509 -noout -fingerprint -sha256
+```
+
+Paste its line as it is (`sha256 Fingerprint=AB:CD:…`), or just the hash, with or without colons. **Trust it** trusts the agent with that certificate authority only if it's one the agent sends now, and Lumovi refuses anything else, so whoever has the agent's token can't be trusted on its own say:
+
+- A hash the agent doesn't send: "private-eu's agent doesn't send a certificate authority with that SHA-256: it sends 76cd6766….", the start of each it sends.
+- Not a SHA-256: "Give the SHA-256 of its cluster's certificate authority, as openssl x509 -noout -fingerprint -sha256 prints it."
+- An agent that isn't connected: "private-eu's agent isn't connected: it can be trusted once it is, and says what it sends."
+
+Trusted, it says "Trusted private-eu's agent", and only that one certificate is kept, as checked, recorded as `agent.trusted`: "Trusted the agent of private-eu with the certificate authority whose SHA-256 was given", with what it was trusted with before and now. Lumovi's log says `The agent of private-eu is trusted with the certificate authority …, as an admin said`. Where Lumovi has admins, others don't see the banner, and Lumovi refuses them: "Only Lumovi's admins trust an agent."
+
+Where Lumovi has no admins (`access.admins`), anyone signed in sees the banner, and can check or trust an agent, the same way: with the SHA-256 from the cluster itself, recorded under their name. Giving each agent its `caSha256` in `LUMOVI_FLEET_AGENTS` is still the surest: then Lumovi never trusts what an agent first sends.
+
+To rotate a cluster's certificate authority without a gap, list both in `caSha256`, the old and the new, until the old one is gone.
 
 ## What the chart makes
 
@@ -127,7 +193,7 @@ With `mode: agent`, the chart makes no Lumovi in the cluster, only its agent:
 
 - **A Deployment**, `lumovi-agent` for a release called `lumovi`, that runs the agent from Lumovi's image. It has one replica, whatever `replicaCount` says, and is replaced with the `Recreate` strategy: a second agent of the same cluster would take over from the first.
 - **A service account**, `lumovi`, with a ClusterRole and a ClusterRoleBinding, `lumovi-impersonate`, that let it impersonate users and groups, and nothing else (unless `rbac.create` is `false`). Its token is mounted in the agent's pod.
-- **Health checks** on port 8081. `/healthz` answers `200 connected` while the agent is connected to Lumovi, and `503 not connected` otherwise, so the pod is ready only while connected. It's alive as long as the port answers.
+- **Health checks** on port 8081. `/healthz` answers `200 connected` while the agent is connected to Lumovi, and Lumovi trusts its cluster; otherwise `503`, with `not connected`, `connected, not yet trusted`, or `connected, but refused:` and why. So the pod is ready only while Lumovi uses it. It's alive as long as the port answers.
 
 There's no Service: nothing connects to the agent. It requests `10m` of CPU and `32Mi` of memory, and is limited to `128Mi` (`agent.resources`). The chart's `image`, `extraEnv`, `podSecurityContext`, `securityContext`, `openshift`, `proxy` (and `proxy.secret`), `extraCA`, `nodeSelector`, `tolerations`, `affinity` and `priorityClassName` apply to it too. See [Helm values](/server/helm-values#an-agent).
 
@@ -151,7 +217,7 @@ containers:
 ```
 
 <ResponseField name="LUMOVI_HUB_URL" type="string" required>
-  Lumovi's address, with its base path if it has one: an `http` or `https` URL. The agent connects to `api/agent` below it, with a `wss` or `ws` WebSocket. Use `https`: the token travels in the connection's headers.
+  Lumovi's address, with its base path if it has one: an `https` URL. The agent connects to `api/agent` below it, with a `wss` WebSocket: its token, and its cluster's, travel in the connection. `http` is taken only on this computer (`localhost`, `127.0.0.1` or `[::1]`), with `ws`.
 </ResponseField>
 
 <ResponseField name="LUMOVI_AGENT_NAME" type="string" required>
@@ -163,7 +229,7 @@ containers:
 </ResponseField>
 
 <ResponseField name="LUMOVI_AGENT_HEALTH_PORT" type="number" default="8081">
-  Where `GET /healthz` says whether the agent is connected. `0`: nowhere.
+  Where `GET /healthz` says whether the agent is connected, and its cluster trusted. `0`: nowhere.
 </ResponseField>
 
 <ResponseField name="LUMOVI_AGENT_TOKEN_CHECK_SECONDS" type="number" default="60">
@@ -187,6 +253,7 @@ Without one of the required settings (`KUBERNETES_SERVICE_HOST` among them), or 
 ```text
 LUMOVI_HUB_URL must be set: see https://docs.lumovi.dev/server/fleet/agents
 LUMOVI_HUB_URL must be the hub's address, like https://lumovi.example.com, not "lumovi.example.com".
+LUMOVI_HUB_URL must be https, not http://lumovi.example.com: the agent’s token and its cluster’s would cross the network as they are.
 No service account token in /var/run/secrets/kubernetes.io/serviceaccount: the agent needs its pod's (automountServiceAccountToken).
 ```
 
@@ -214,15 +281,15 @@ Other problems reaching Lumovi are in the agent's log, like `Can't reach the hub
 Agents connect to `api/agent` below Lumovi's base path, with a WebSocket, and keep it open. Whatever is in front of Lumovi (an ingress, a load balancer, a CDN) must pass WebSockets there, as it does for pages at `api/socket`, and keep idle connections open longer than the heartbeat. Run one replica of Lumovi: an agent connects to one of them.
 
 - **Behind an [authenticating proxy](/server/auth/proxy)**, let `api/agent` through to Lumovi without signing in (with oauth2-proxy, `--skip-auth-route`). Agents can't sign in to a proxy, and Lumovi checks their names and tokens itself. A proxy that answers `401` makes an agent stop, saying Lumovi doesn't know its name and token.
-- **With the chart's `networkPolicy`**, its `from` must let in whatever agents come through, like your ingress controller or proxy.
+- **With the chart's `networkPolicy`**, its `from` must let in whatever agents come through, like your ingress controller. Behind an authenticating proxy, only the proxy's pods may reach Lumovi, so agents come through the proxy.
 - **A server of one cluster** refuses agents, with `403`: only a fleet takes them.
 
 ## Security
 
 - **Nothing in the cluster listens.** The agent only dials out, to Lumovi, and has no Service.
-- **The agent can't read what it relays.** Lumovi checks the API server's certificate itself, end to end, against the certificate authority the agent sent.
+- **The agent can't read what it relays.** Lumovi checks the API server's certificate itself, end to end, against the certificate authority it trusts for that cluster: the one `caSha256` names, or the one the agent first sent.
 - **Its service account may only impersonate**, like a member's, and Lumovi uses its token only while the agent is connected.
-- **Whoever has an agent's token can connect as its cluster.** As the agent says which certificate authority to trust, they could stand in for the cluster with a server of their own, and see what people send it: their own tokens too, with `forwardToken`. Keep the token in a Secret in that cluster that only its administrators can read, and give Lumovi only its SHA-256 (`tokenSha256`), so Lumovi's settings don't hold it.
+- **Whoever has an agent's token can connect as its agent.** With `caSha256`, or once Lumovi trusts the certificate authority the agent first sent, that's not enough to stand in for its cluster: a server of their own needs a certificate from that authority. Before then, at first contact, whoever connects first with the token decides which authority Lumovi trusts, and could stand in for the cluster and see what people send it: their own tokens too, with `forwardToken`. Give `caSha256`, so first contact decides nothing, or check what was first trusted, with **Check it…**. An admin trusts a new one only with the SHA-256 they give, from the cluster itself. Keep the token in a Secret in that cluster that only its administrators can read, and give Lumovi only its SHA-256 (`tokenSha256`), so Lumovi's settings don't hold it.
 - **A takeover shows.** When another agent connects with the same name and token, the first one stops, and its log says another agent connected as it. Unless two clusters were given the same name and token by mistake, that's a sign the token is somewhere it shouldn't be: make a new one.
 
 <Columns cols={2}>

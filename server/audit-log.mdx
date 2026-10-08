@@ -185,7 +185,7 @@ A [fleet](/server/fleet)'s Lumovi keeps one audit log for all its clusters, and 
 - **The history holds who did what, and from where**: people's names and groups, addresses, browsers, objects' names, commands, assistants' reasons. Keep it as private as Lumovi's namespace.
 - **Send to a webhook over `https`**, with its credentials in the Secret, not in the URL.
 - **Whoever can write the volume can rewrite the history**, in a way its chain doesn't show: its hashes have no key. Whoever can exec into Lumovi's pod can too. Keep a copy they can't reach, from the output or a webhook, and compare the newest event there with the history's: see [What it proves](/audit/verify#what-it-proves-and-what-it-doesn’t).
-- **Behind an authenticating proxy**, Lumovi trusts its headers: whoever reaches Lumovi directly can say they're anyone, an auditor included. Let nothing but the proxy reach it: `networkPolicy` is off unless you turn it on, and the chart's notes say so after installing.
+- **Behind an authenticating proxy**, Lumovi trusts its headers: whoever reaches Lumovi directly can say they're anyone, an auditor included. Let nothing but the proxy reach it: the chart's NetworkPolicy, always on behind a proxy, lets in only `networkPolicy.from`, where the cluster's network plugin enforces it.
 - **Anyone can try to sign in**, and each attempt that fails is recorded, up to 60 a minute: past that, one event a minute counts them, by the address they came from, and so does one as Lumovi stops.
 
 ## Troubleshooting

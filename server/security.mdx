@@ -24,7 +24,7 @@ With single sign-on that doesn't pass people's own tokens on, or behind a proxy,
 
 - **Keep it in a namespace of its own**, one only cluster administrators can exec into, read or change Secrets in, or change workloads in.
 - **Use prefixes** (`auth.usernamePrefix` and `auth.groupsPrefix`), so no name or group from a provider or proxy is one of yours by accident.
-- **Behind a proxy, let nothing else reach Lumovi.** It trusts the proxy's headers completely. Turn on `networkPolicy` with the proxy's pods in `from`.
+- **Behind a proxy, let nothing else reach Lumovi.** It trusts the proxy's headers completely. The chart's NetworkPolicy is always on behind a proxy, and the chart won't install without the proxy's pods in `networkPolicy.from`: check that your cluster's network plugin enforces NetworkPolicies (flannel alone doesn't).
 
 Lumovi never acts as one of Kubernetes' own users or groups (`system:…`), whatever a provider or proxy says. It leaves out groups that start with `system:`, and refuses users whose names (with their prefix) do.
 
@@ -53,8 +53,9 @@ A fleet's Lumovi acts as the people who sign in, in every one of its clusters, a
 
 - **Nothing in a private cluster listens.** Its agent dials out to Lumovi's `api/agent`, and has no Service.
 - **Lumovi checks every agent.** It knows each by its name and the SHA-256 of its token, and needs nothing else to: `api/agent` takes no sign-in, and an unknown name or token gets `401`, which Lumovi's log records (`An agent was refused: …`).
-- **The agent can't read what it relays.** TLS runs from Lumovi to the API server, inside its connection, checked against the certificate authority the agent sent, as `kubernetes.default.svc`.
-- **Its token stands for its cluster.** As the agent says which certificate authority to trust, whoever has its token could stand in for that cluster with a server of their own, and see what people send it, their own tokens too with `forwardToken`. Keep it in a Secret in that cluster, and give Lumovi only its SHA-256.
+- **The agent can't read what it relays.** TLS runs from Lumovi to the API server, inside its connection, checked against the certificate authority Lumovi trusts for that cluster, as `kubernetes.default.svc`: the one `caSha256` names, or the one the agent first sent, kept and recorded. Another is refused until an admin trusts it, with the SHA-256 they take from the cluster itself, never from what the agent says.
+- **Agents connect over `https`** only, but on Lumovi's own computer: their tokens travel with them.
+- **Its token alone doesn't stand for its cluster**, once its certificate authority is trusted. Before that, at first contact, whoever connects first with the token decides which one Lumovi trusts, and could stand in for the cluster with a server of their own, and see what people send it, their own tokens too with `forwardToken`. Give `caSha256`, so first contact decides nothing; keep the token in a Secret in that cluster, and give Lumovi only its SHA-256. Without it, check the one first trusted with **Check it…**, and trust a new one only when you know the cluster's changed, with its SHA-256 from the cluster: see [Trusting it, by its SHA-256](/server/fleet/agents#trusting-it-by-its-sha-256).
 - **A takeover shows.** When another agent connects with the same name and token, the first one stops, and says so in its log.
 - **Helm reaches an agent's cluster** through a port on `127.0.0.1`, inside Lumovi's container, open only while helm runs.
 

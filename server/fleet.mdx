@@ -277,6 +277,8 @@ Its card says why, and so does opening it. These are about Lumovi's settings rat
 | It takes each person's own token, and this server doesn't pass tokens on: set LUMOVI_OIDC_FORWARD_TOKEN. | **Credentials failed** | The cluster has `forwardToken: true`, and Lumovi has no tokens to pass on. |
 | Lumovi doesn't act as system:…: names starting with system: are Kubernetes' own. | **Forbidden** | With the cluster's prefix, the person's name would be one of Kubernetes' own. |
 | Its agent isn't connected. | **Unreachable** | The cluster comes from an [agent](/server/fleet/agents) that isn't connected now. |
+| Its agent sent a certificate authority (SHA-256 …) other than the one it's trusted with. If its cluster's changed, an admin can trust the new one, given its SHA-256 from the cluster itself. | **Agent not trusted** | See [Trusting it, by its SHA-256](/server/fleet/agents#trusting-it-by-its-sha-256): an admin can trust the new one, with **Trust it…** on the page of every cluster, and its SHA-256 from the cluster. |
+| Its agent sent a certificate authority (SHA-256 …) other than the one LUMOVI_FLEET_AGENTS names for it. | **Certificate error** | The agent's `caSha256` doesn't match: change it there, and restart Lumovi. |
 
 A Secret that doesn't describe a cluster as it should is shown under the Secret's name, as **Misconfigured**: see [Clusters from Secrets](/server/fleet/discovery). Anything else is the cluster's own answer, as it would be on the desktop: **Unreachable**, **Timed out**, **Certificate error**, **Unauthorized** and the rest. See [Troubleshooting](/reference/troubleshooting).
 

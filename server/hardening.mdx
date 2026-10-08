@@ -45,7 +45,7 @@ Every way to sign in to Lumovi checks who people are: there's no way to run it o
 
 - **Prefer what needs no permissions.** With [tokens](/server/auth/tokens), or [single sign-on that passes people's tokens on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider), the API server checks each request itself, and Lumovi's service account may do nothing.
 - **With single sign-on** (`auth.mode: oidc`), or **behind an [authenticating proxy](/server/auth/proxy)** (`auth.mode: proxy`), Lumovi acts as people by impersonating them. Set `auth.usernamePrefix` and `auth.groupsPrefix`, so no name or group from your provider is one of the cluster's own by accident.
-- **Behind a proxy, only the proxy may reach Lumovi.** Lumovi trusts its headers completely: whoever reaches Lumovi without it can name themselves anyone. Leave the chart's `ingress` off, keep the Service a `ClusterIP`, and turn on the [network policy](#the-network) with only the proxy in `from`.
+- **Behind a proxy, only the proxy may reach Lumovi.** Lumovi trusts its headers completely: whoever reaches Lumovi without it can name themselves anyone. Leave the chart's `ingress` off, and keep the Service a `ClusterIP`. With `auth.mode: proxy`, the chart's [network policy](#the-network) is always on, and won't install without the proxy's pods in `from`. It holds only where the cluster's network plugin enforces NetworkPolicies (most do; flannel alone doesn't): check that yours does.
 - **Keep sessions short enough**: 12 hours unless `auth.sessionHours` says otherwise.
 
 ### Sessions across restarts
@@ -318,7 +318,7 @@ audit:
 <Check>Consider `readOnly: true` for a dashboard people should only look at.</Check>
 <Check>Name your auditors in `audit.auditors`, and send the audit log to your SIEM with `audit.webhook`, or from Lumovi's output.</Check>
 <Check>Pin the image by digest, check its signature with `cosign verify`, and require it with an admission controller.</Check>
-<Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and give Lumovi agents' `tokenSha256`, not their tokens.</Check>
+<Check>In a fleet, give each cluster a [member's](/server/fleet/members) credentials, or an agent, rather than administrators', and give Lumovi agents' `tokenSha256`, not their tokens, and each one's `caSha256`, so its cluster's certificate authority isn't trusted on first contact. Lumovi's log names each agent without one as it starts.</Check>
 
 <Columns cols={2}>
   <Card title="Security" icon="shield-check" href="/server/security">

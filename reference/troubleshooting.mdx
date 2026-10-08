@@ -432,7 +432,18 @@ Lumovi tries to say what went wrong in plain words, and what to try next. On the
     - *Can't reach the hub at …*, then *Connecting again in … s*: the agent can't reach Lumovi's address. It keeps trying. Behind a proxy, give it `proxy` in the chart: *The proxy … needs credentials to … (407)* wants them in its URL, and *… didn't open a tunnel to …* refused the address. See [Proxies and certificate authorities](/server/network).
     - *Nothing from the hub in 61 s*: something between them, often a proxy's idle timeout, drops a quiet connection. Lumovi pings every 30 seconds by default, so let idle connections live longer than that.
 
-    Until it's connected, the agent's pod isn't ready, and its card says *Its agent isn't connected.* See [Agents](/server/fleet/agents).
+    - *LUMOVI_HUB_URL must be https, not http://…: the agent's token and its cluster's would cross the network as they are.* The agent stops: give Lumovi's `https` address. `http` reaches only a Lumovi on the same machine (`localhost`, `127.0.0.1` or `[::1]`). The chart refuses `agent.hubUrl` over `http` the same way, but on the same machine.
+
+    Until it's connected, and Lumovi trusts its cluster, the agent's pod isn't ready. Until it's connected, its card says *Its agent isn't connected.* See [Agents](/server/fleet/agents).
+  </Accordion>
+  <Accordion title="An agent's cluster says Agent not trusted" icon="shield-alert">
+    The agent is connected, but sent a certificate authority other than the one Lumovi trusts for its cluster, and its log says *The hub doesn't trust this cluster:*, and why. Lumovi's audit log has it as `agent.refused`.
+
+    - **Its cluster's certificate authority changed**, rotated or rebuilt: an admin (or anyone, where Lumovi has none) trusts the new one with **Trust it…** on the page of every cluster, pasting its SHA-256 from the cluster itself: `kubectl get configmap kube-root-ca.crt -n default -o jsonpath='{.data.ca\.crt}' | openssl x509 -noout -fingerprint -sha256`, run with your own access to that cluster, not through Lumovi. Lumovi trusts it only if the agent sends that one. Where Lumovi has no admins, anyone signed in can. Or set its `caSha256` in `LUMOVI_FLEET_AGENTS`, and restart Lumovi.
+    - **It didn't change**: someone else has the agent's token, and connected with it. Don't trust it. Make a new token, and give its SHA-256 to Lumovi.
+    - **The card says Certificate error, with "other than the one LUMOVI_FLEET_AGENTS names for it"**: its `caSha256` is set, and isn't this one. Change it there, and restart Lumovi.
+
+    See [Its cluster's certificate authority](/server/fleet/agents#its-cluster’s-certificate-authority).
   </Accordion>
   <Accordion title="A cluster I added doesn't appear" icon="circle-plus">
     Lumovi reads a fleet's kubeconfig files and Secrets again every 30 seconds, and a Secret mounted into a pod can take a minute or two to change there. If it still isn't there, Lumovi's log says why: *… can't be read: …* for a kubeconfig file, *… can't be listed: …* for Secrets it may not list, or *Two clusters are called …: the one from … is left out (the one from … stays).* See [A fleet of clusters](/server/fleet).

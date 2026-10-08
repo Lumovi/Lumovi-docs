@@ -86,7 +86,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_FLEET_AGENTS" type="string">
-  The agents that may connect, as a YAML list, or that encoded in base64 on one line: each with a `name`, a `token` of at least 32 characters or its `tokenSha256`, and optional `labels`, `groups` and `forwardToken`. Read when Lumovi starts. See [Private clusters](/server/fleet/agents).
+  The agents that may connect, as a YAML list, or that encoded in base64 on one line: each with a `name`, a `token` of at least 32 characters or its `tokenSha256`, and optional `caSha256` (its cluster's certificate authority's SHA-256, or a list of them), `labels`, `groups` and `forwardToken`. Read when Lumovi starts. See [Private clusters](/server/fleet/agents).
 </ResponseField>
 
 <ResponseField name="LUMOVI_FLEET_LOCAL" type="boolean">

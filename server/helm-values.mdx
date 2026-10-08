@@ -64,7 +64,7 @@ agent.tokenSecret must name a Secret with the agent's token under token
 
   - `token`: with a token the cluster accepts. Each person's requests carry their own token, and Lumovi's service account needs no permissions. Not for a fleet. See [Tokens](/server/auth/tokens).
   - `oidc`: with an OpenID Connect provider. Lumovi impersonates whoever signs in, unless `auth.oidc.forwardToken` is set. See [Single sign-on](/server/auth/single-sign-on).
-  - `proxy`: behind an authenticating proxy that names people in request headers. Lumovi impersonates them. See [Authenticating proxy](/server/auth/proxy).
+  - `proxy`: behind an authenticating proxy that names people in request headers. Lumovi impersonates them. The chart then always makes a NetworkPolicy, and needs `networkPolicy.from` to name the proxy's pods. See [Authenticating proxy](/server/auth/proxy).
 </ResponseField>
 
 <ResponseField name="auth.oidc.issuer" type="string">
@@ -152,7 +152,7 @@ Lumovi shows a fleet when `fleet.kubeconfigSecret`, `fleet.secrets` or `fleet.ag
 </ResponseField>
 
 <ResponseField name="fleet.agentsSecret" type="string">
-  A Secret in Lumovi's namespace with the agents that may connect under the key `agents.yaml`: a list of `{ name, tokenSha256, labels, groups, forwardToken }`. Lumovi reads it when its pod starts, and the pod doesn't start without it: restart Lumovi after changing it. See [Private clusters](/server/fleet/agents#the-agents-lumovi-knows).
+  A Secret in Lumovi's namespace with the agents that may connect under the key `agents.yaml`: a list of `{ name, tokenSha256, caSha256, labels, groups, forwardToken }`. `caSha256`, the SHA-256 of each agent's cluster's certificate authority (or a list of them, while it's rotated), is the only one Lumovi trusts from that agent; without it, the one the agent first sends, which the chart's notes warn of. Lumovi reads it when its pod starts, and the pod doesn't start without it: restart Lumovi after changing it. See [Private clusters](/server/fleet/agents#the-agents-lumovi-knows).
 </ResponseField>
 
 <ResponseField name="fleet.includeThisCluster" type="boolean" default="true">
@@ -168,7 +168,7 @@ Lumovi shows a fleet when `fleet.kubeconfigSecret`, `fleet.secrets` or `fleet.ag
 With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's list of agents has it. The agent always runs one replica, and uses the chart's `image`, `extraEnv`, `podSecurityContext`, `securityContext`, `nodeSelector`, `tolerations`, `affinity`, `priorityClassName` and `serviceAccount` values too.
 
 <ResponseField name="agent.hubUrl" type="string">
-  The fleet's Lumovi, like `https://lumovi.example.com`, with its base path if it has one: an `http` or `https` URL. Required.
+  The fleet's Lumovi, like `https://lumovi.example.com`, with its base path if it has one. Required, and over `https`: the agent's token, and its cluster's, travel there. `http` is taken only for a hub on the same machine (`localhost`, `127.0.0.1` or `[::1]`). Otherwise the chart refuses to install: `agent.hubUrl must be https, not http://lumovi.example.com: the agent's token and its cluster's would cross the network as they are (http only reaches a hub on the same machine)`.
 </ResponseField>
 
 <ResponseField name="agent.tokenSecret" type="string">
@@ -394,11 +394,11 @@ What Lumovi records, where it keeps and sends it, and who reads everyone's. See 
 </ResponseField>
 
 <ResponseField name="networkPolicy.enabled" type="boolean" default="false">
-  Whether the chart makes a NetworkPolicy that only lets in what `networkPolicy.from` allows, on Lumovi's port. Behind a proxy, use it to let in only the proxy.
+  Whether the chart makes a NetworkPolicy that only lets in what `networkPolicy.from` allows, on Lumovi's port. With `auth.mode: proxy`, it always does, whatever this says. It holds only where the cluster's network plugin enforces NetworkPolicies (most do; flannel alone doesn't).
 </ResponseField>
 
 <ResponseField name="networkPolicy.from" type="object[]" default="[]">
-  The NetworkPolicy's `from`: who may reach Lumovi. Empty, anything may, on Lumovi's port. A `podSelector` on its own matches pods in Lumovi's namespace only: for pods in another namespace, add a `namespaceSelector` to the same entry, as in [A proxy in another namespace](/server/auth/proxy#a-proxy-in-another-namespace).
+  The NetworkPolicy's `from`: who may reach Lumovi. With `auth.mode: proxy`, it's required, and names the proxy's pods: otherwise the chart refuses to install, saying `auth.mode proxy trusts the X-Forwarded-User header from whoever reaches Lumovi: set networkPolicy.from to the proxy's pods (a podSelector, with a namespaceSelector if it runs in another namespace), so that nobody else can`. Otherwise, empty, anything may, on Lumovi's port. A `podSelector` on its own matches pods in Lumovi's namespace only: for pods in another namespace, add a `namespaceSelector` to the same entry, as in [A proxy in another namespace](/server/auth/proxy#a-proxy-in-another-namespace).
 </ResponseField>
 
 ## A company's network
