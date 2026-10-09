@@ -7,6 +7,32 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 9, 2026" description="1.18.0" tags={["Desktop app", "In your cluster"]}>
+  ## A fleet's clusters, added and shared from its page
+
+  - **A private cluster, connected from the Fleet page.** Lumovi's admins choose **Add cluster**, then **Connect with an agent…**, give it a name, labels and groups, and run one command with their own access to the cluster. It installs the cluster's agent, which dials Lumovi: the cluster opens no port, and nobody pastes its credentials into Lumovi. The page waits for it, with the time left, and a card with **Cancel it**. See [Connect one from the Fleet page](/server/fleet/agents#connect-one-from-the-fleet-page).
+  - **A join token works once, for an hour.** It's shown once, read from the terminal, not the command line, and Lumovi keeps only its SHA-256. The agent trades it for a token of its own, kept in a Secret in its cluster, so the join token is no use once it's joined. Until an admin checks the certificate authority the agent sent, only admins see the cluster. See [Trusting it, by its SHA-256](/server/fleet/agents#trusting-it-by-its-sha-256).
+  - **Each cluster's name, labels and groups, from its card.** Its **⋯**, then **Settings…**: the name it's shown by, the labels to filter and group by, and the groups that see it besides admins, which applies at once. What a cluster's source sets, like a Secret's annotations or `LUMOVI_FLEET_AGENTS`, stays the source's, shown locked, with where to change it. See [Settings on the Fleet page](/server/fleet#settings-on-the-fleet-page).
+  - **Admins see every cluster**, whatever its groups, and open it as themselves: in it, they may do what its RBAC lets them. See [Admins see every cluster](/server/fleet#admins-see-every-cluster).
+  - **A cluster added by kubeconfig or token**, where the chart allows it (`fleet.addFromPage`, off unless you set it): **Add cluster**, then **Paste a kubeconfig…** or **Use a token…**. Lumovi checks it first: it reads, what it signs in with is in it, its server is `https` and checked against its certificate authority, and its credentials work and may act as each person. It's kept as a Secret of Lumovi's in a namespace of its own, the only place the chart then lets Lumovi write Secrets, and **Remove from the fleet…** deletes that Secret, never one Lumovi didn't make. See [From the Fleet page](/server/fleet/members#from-the-fleet-page).
+  - **Admins only, and recorded.** Connecting, cancelling, joining, adding, removing and each change of settings need Lumovi to have admins and to keep its state, and are in the audit log, with who saw a cluster before and after. See [Settings](/audit/events#settings-settings) in the audit log's events.
+
+  ## The app's menu, on Windows and Linux
+
+  - **A Menu button, at the window's top left**, in every view, since the window has no menu bar there: Help, View, Go and the rest are reachable with the mouse. <kbd>Alt</kbd> on its own, or <kbd>F10</kbd>, opens it too, except while a terminal has the focus. See [Desktop app only](/reference/keyboard-shortcuts#desktop-app-only).
+  - **Help → Documentation** opens these docs, on every platform.
+
+  ## Changed
+
+  - The project's contact address is peter@lumovi.dev: in the Code of Conduct, the Linux and AUR packages' maintainer, and the chart repository's owner on Artifact Hub.
+
+  ## Fixed
+
+  - **A connection a server refuses can't stop it.** Before, one cut off after it was refused could stop Lumovi served from a cluster, or a fleet's hub, without anyone signing in. The desktop app and agents weren't affected.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.18.0)
+</Update>
+
 <Update label="October 9, 2026" description="1.17.0" tags={["Desktop app", "In your cluster"]}>
   ## The clusters page
 
