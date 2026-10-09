@@ -1,0 +1,83 @@
+---
+title: "Lumovi and other Kubernetes tools"
+sidebarTitle: "Other tools"
+description: "How Lumovi compares with Lens, Freelens, Headlamp, k9s and the Kubernetes Dashboard, and when another tool is the better pick. Sourced, and checked on October 9, 2026."
+icon: "scale"
+---
+
+Lumovi isn't the only way to look at a cluster, and for some work it isn't the best one. This page sets it beside five other tools: what each is, where it's strong, and when to pick it.
+
+**Checked on October 9, 2026.** Every fact about another tool comes from that project's own website, docs or repository, and is linked. They change often, so follow the links for how things are today. If something here is wrong or out of date, [tell us](https://github.com/Lumovi/Lumovi-docs/issues/new/choose) and we'll correct it.
+
+## At a glance
+
+| | Lumovi | [Lens](https://lenshq.io/products/lens-k8s-ide/) | [Freelens](https://github.com/freelensapp/freelens) | [Headlamp](https://headlamp.dev) | [k9s](https://k9scli.io) | [Kubernetes Dashboard](https://github.com/kubernetes-retired/dashboard) |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Latest release** | [{{version}}](/changelog) | [2026.10.51501](https://forums.k8slens.dev/t/2026-10-51501-latest-extensions-are-back-release/7228), October 6, 2026 | [1.10.3](https://github.com/freelensapp/freelens/releases/tag/v1.10.3), July 7, 2026 | [0.45.0](https://github.com/kubernetes-sigs/headlamp/releases/tag/v0.45.0), August 20, 2026 | [0.51.0](https://github.com/derailed/k9s/releases/tag/v0.51.0), June 6, 2026 | [7.14.0](https://github.com/kubernetes-retired/dashboard/releases/tag/kubernetes-dashboard-7.14.0), October 30, 2025. [Archived](https://github.com/kubernetes-retired/dashboard#kubernetes-dashboard) in January 2026 |
+| **License and cost** | [Apache 2.0](https://github.com/Lumovi/Lumovi/blob/main/LICENSE), free | [Proprietary](https://lenshq.io/legal/tos/). Free for people and for organizations under $10 million in revenue or funding; [paid plans](https://lenshq.io/pricing/) above that | [MIT](https://github.com/freelensapp/freelens/blob/main/LICENSE), free | [Apache 2.0](https://headlamp.dev/docs/latest/faq/), free | [Apache 2.0](https://github.com/derailed/k9s/blob/master/LICENSE), free | [Apache 2.0](https://github.com/kubernetes-retired/dashboard/blob/master/LICENSE), free |
+| **An account to use it** | No | [A Lens ID](https://docs.lenshq.io/k8slens/getting-started/activate-lens-desktop/), to activate it at first launch | None in its docs | None in its docs | None in its docs | None in its docs |
+| **Where it runs** | [Desktop app](/get-started/desktop), and [in your cluster](/get-started/in-your-cluster) for a browser | [Desktop app](https://docs.lenshq.io/k8slens/getting-started/install-lens/) | [Desktop app](https://github.com/freelensapp/freelens#freelens) | [Desktop app](https://headlamp.dev/docs/latest/installation/desktop/), and [in your cluster](https://headlamp.dev/docs/latest/installation/in-cluster/) for a browser | [Your terminal](https://k9scli.io) | [In your cluster](https://github.com/kubernetes-retired/dashboard#installation), for a browser |
+| **Many clusters** | Yes: every context in your kubeconfig, or a [fleet](/server/fleet) on one server | Yes, from [kubeconfig files and folders](https://docs.lenshq.io/k8slens/using-lens/preferences/) | [Yes](https://github.com/freelensapp/docs/blob/main/docs/extensions/main/catalog-api.md) | [Yes](https://headlamp.dev/docs/latest/faq/), and several can be selected at once | One context at a time; [`:ctx`](https://k9scli.io/topics/commands/) switches | The one it runs in |
+| **Signing in, in a cluster** | [Single sign-on](/server/auth/single-sign-on) (OIDC), a [proxy](/server/auth/proxy), or [tokens](/server/auth/tokens) | It doesn't run there | It doesn't run there | [OIDC](https://headlamp.dev/docs/latest/installation/in-cluster/oidc/), or an [identity-aware proxy](https://headlamp.dev/docs/latest/installation/in-cluster/identity-aware-proxy/) | It doesn't run there | A [bearer token](https://github.com/kubernetes-retired/dashboard/blob/master/docs/user/access-control/README.md), typed in or sent by a proxy |
+| **Team rules on top of RBAC** | [Profiles, grants and limits](/server/access), in your cluster | [Teamwork](https://docs.lenshq.io/k8slens/lens-teamwork/rbac/): spaces, teams and roles for shared clusters, on a [paid plan](https://lenshq.io/pricing/) | None in its docs | None: it [shows what your RBAC allows](https://headlamp.dev/docs/latest/faq/) | A [read-only setting](https://k9scli.io/topics/config/) of your own | None: the [API server decides](https://github.com/kubernetes-retired/dashboard/blob/master/docs/user/access-control/README.md) |
+| **A log of what's done through it** | [Yes](/audit/overview), and you can [check it hasn't changed](/audit/verify) | “Audit logs” on the [Enterprise plan](https://lenshq.io/pricing/); its docs don't say what they record | None in its docs | None in its docs | None in its docs | None in its docs |
+| **AI assistants** | It's an [MCP server](/assistants/overview): agents read through it, and each change [waits for your approval](/assistants/approvals) | An [MCP server](https://docs.lenshq.io/k8slens/mcp-server/how-it-works/) that's read-only, and [Ask AI](https://docs.lenshq.io/k8slens/ask-ai/), which starts your coding agent in a terminal; both on a [paid plan](https://lenshq.io/pricing/) | Extensions: a [chat agent](https://github.com/freelensapp/freelens-ai-extension) whose changes wait for approval, and [others](https://github.com/freelensapp/freelens-agentbridge-extension) that start your coding agent | An [AI Assistant plugin](https://github.com/headlamp-k8s/plugins/tree/main/ai-assistant), in alpha, which can use [MCP servers](https://headlamp.dev/docs/latest/learn/mcp-support/) in the desktop app | None in its docs | None in its docs |
+
+“None in its docs” means we found no mention of it in the project's documentation or repository on the day we checked. It isn't the project's own statement.
+
+## What's Lumovi's own
+
+Most of what Lumovi does, at least one of these tools does too: Headlamp also runs on your desktop and in your cluster, signs people in with OIDC and shows many clusters. Three things, taken together, are what we found in none of the others:
+
+- **An audit log of what's done through it.** Changes, shells, port forwards, Secrets and logs read, and Helm releases, each with who did it and the `kubectl` or `helm` command that does the same. It's [chained with hashes](/audit/verify), so you can check it against a copy you keep elsewhere. See [The audit log](/audit/overview).
+- **Team rules in an open-source tool.** On a server, [Access](/server/access) says who may do what through Lumovi, by group, cluster and namespace: never more than Kubernetes RBAC allows, and often less.
+- **An MCP server that agents can make changes through, with approval.** An assistant's change is checked by the cluster, then [waits with its diff](/assistants/approvals) until you approve it, within the [permissions](/assistants/permissions) you've set, and the audit log records it.
+
+Lumovi is also the newest tool on this page, and a small project. The others have been used by far more people, for far longer.
+
+## k9s
+
+[k9s](https://k9scli.io) is a terminal UI for Kubernetes. It's driven from the keyboard, with [commands, aliases and hotkeys](https://k9scli.io/topics/commands/), and you can shape it with plugins and skins. It has [XRay and Pulses views](https://k9scli.io), benchmarks for HTTP services, logs, shells and port forwards. Of the tools on this page, it has the [most stars on GitHub](https://github.com/derailed/k9s).
+
+**Pick k9s when** you work in a terminal and want to stay there, when you'd rather type a command than find a button, or when the only way in is a shell on another machine.
+
+**Pick Lumovi when** you'd rather see a cluster's [health](/explore/health) than query it, when a team should share one view in a browser, or when you need a record of what was done. Plenty of people keep both: they aren't in each other's way.
+
+## Headlamp
+
+[Headlamp](https://headlamp.dev) is a Kubernetes web UI that runs as a desktop app or in your cluster. It's a [Kubernetes SIG UI project](https://github.com/kubernetes/community/blob/main/sig-ui/README.md), and a [CNCF Sandbox project](https://www.cncf.io/projects/headlamp/). [kubernetes.io](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) points people to it for new installations, now that the Dashboard is archived. Its [plugins](https://headlamp.dev/docs/latest/development/plugins/) are a large part of it: there are [official ones](https://github.com/headlamp-k8s/plugins) for Flux, Argo CD, cert-manager, KEDA, Karpenter and more, and a catalog to install them from.
+
+Headlamp and Lumovi overlap more than any other pair here: desktop and in-cluster, OIDC sign-in, many clusters, and each person's own RBAC.
+
+**Pick Headlamp when** you want a project under Kubernetes' own governance, when you need its plugins or want to write your own, or when you're replacing the Dashboard and want what Kubernetes points to.
+
+**Pick Lumovi when** you want rules on top of RBAC for what people may do through the tool, an audit log of what they did, or AI agents that work through the tool and ask before each change.
+
+## Lens
+
+[Lens](https://lenshq.io/products/lens-k8s-ide/) is a desktop IDE for Kubernetes from Mirantis. It says [more than 1 million developers](https://lenshq.io) use it. It's proprietary: the [open-source version was retired](https://github.com/lensapp/lens), and everyone signs in with a [Lens ID](https://docs.lenshq.io/faq/subscription-and-licensing/). Its [paid plans](https://lenshq.io/pricing/) add integrations with EKS, AKS and GKE, views for Flux and Argo CD, a Security Center, cost monitoring, Teamwork for sharing clusters, and for enterprises single sign-on, SCIM and an air-gapped mode, with commercial support. It [collects telemetry](https://lenshq.io/legal/tos/) by default, which you can [turn off](https://docs.lenshq.io/k8slens/using-lens/preferences/).
+
+**Pick Lens when** your organization wants a vendor behind the tool, with support, managed accounts and the features above, and a paid plan suits it.
+
+**Pick Lumovi when** you want an open-source tool with no account, one that also runs in your cluster for the whole team, or AI agents that can make changes, with your approval, rather than only read.
+
+## Freelens
+
+[Freelens](https://github.com/freelensapp/freelens) is a free and open-source desktop app, [forked from Open Lens](https://github.com/freelensapp/freelens#license) to carry its open-source version forward, and [maintained by its community](https://freelensapp.github.io). People who know Lens will know their way around, and many extensions written for Open Lens have been converted. It's [packaged widely](https://github.com/freelensapp/freelens#downloads): Homebrew, WinGet, Scoop, Flatpak, Snap, an APT repository, the AUR, and installers for macOS, Windows and Linux.
+
+**Pick Freelens when** you liked Lens and want it open source and without a sign-in, when you rely on its extensions, or when you want to install it with your system's package manager.
+
+**Pick Lumovi when** you want the same tool in your cluster for the team, a record of what was done, or a view that starts from what's wrong rather than from lists of resources.
+
+## Kubernetes Dashboard
+
+The [Kubernetes Dashboard](https://github.com/kubernetes-retired/dashboard) was the web UI many people met Kubernetes through. Its project is [archived and no longer maintained](https://github.com/kubernetes-retired/dashboard#kubernetes-dashboard), and both its README and [kubernetes.io](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) suggest Headlamp for new installations.
+
+If you're moving off it, [Headlamp](#headlamp) is where Kubernetes points, and it's a sound choice. Lumovi fills the same place too: [one Helm chart](/server/install), a page in the browser, and each person [signing in](/get-started/sign-in) with their own token, as they did on the Dashboard, or with single sign-on.
+
+## How this page is kept
+
+- Each fact about another tool is from its own website, docs, repository or releases, and is linked. Where we couldn't find a primary source for something, we've left it out.
+- The date at the top is when every link was last followed.
+- What's said of Lumovi is true of {{version}}, the version these docs describe.
+- Corrections are welcome, from the projects' own maintainers most of all: [open an issue](https://github.com/Lumovi/Lumovi-docs/issues/new/choose).
