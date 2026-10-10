@@ -33,7 +33,7 @@ Each has levels, from the least to the most:
 | Setting | Levels | What it's for |
 | --- | --- | --- |
 | **Changes** | **Read-only**, **Make changes** | Editing, scaling, restarting, deleting and creating objects, and every other change. Helm needs it too. |
-| **Shells** | **Off**, **Open them** | Shells in containers, and debug containers. |
+| **Shells** | **Off**, **Open them** | Shells in containers, debug containers, and [copying files](/debug/copy-files) out of containers and into them. |
 | **Node shells** | **Off**, **Open them** | [Shells on nodes](/debug/node-shell), as root. Decided for a cluster's nodes, never by namespace. **Changes** don't decide them: someone read-only may still open one, if this says so. |
 | **Logs** | **Off**, **Read them** | Containers' logs, for people and their AI assistants. |
 | **Secrets** | **Hidden**, **Keys only**, **Values** | What Secrets show. |
@@ -220,7 +220,7 @@ Changes, shells, logs, Secret reads, Helm and AI assistants' calls refused this 
 | Setting | What it needs |
 | --- | --- |
 | **Changes** | **Make changes** for every change: editing, scaling, restarting, deleting, creating, evicting, cordoning, and AI assistants' changes. |
-| **Shells** | **Open them** for a shell in a container. A debug container needs it too, and **Make changes**. |
+| **Shells** | **Open them** for a shell in a container. A debug container needs it too, and **Make changes**. [Downloading files](/debug/copy-files) from a container needs **Open them**; uploading needs **Make changes** too. |
 | **Node shells** | **Open them** on the cluster, for a shell on a node. |
 | **Logs** | **Read them** to read a container's logs, on a page or by an AI assistant. |
 | **Secrets** | **Hidden**: Secrets can't be read, listed or changed in that namespace ("Lumovi doesn't let you change Secrets in shop: …"), and lists across every namespace leave them out. **Keys only**: their values come back empty, and so does the annotation that holds a copy of them, in everything Lumovi answers, a change's answer and its dry run included. Editing a Secret's YAML, or applying one, needs **Values**, since it writes the Secret whole; changes to part of one, like its labels, don't. |

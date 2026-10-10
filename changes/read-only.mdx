@@ -74,6 +74,8 @@ On a server, it says who made it read-only, and when: see [In your cluster](#in-
 | [Helm](/helm/upgrade-and-rollback) upgrades, installs, rollbacks and uninstalls | Off |
 | [Shells](/debug/shell) and debug containers | Off: a shell can change a container |
 | [Shells on nodes](/debug/node-shell) | Off: a node shell can change the node |
+| [Uploading files](/debug/copy-files) to a container | Off |
+| [Downloading files](/debug/copy-files) from a container | On: it changes nothing there |
 | Changes [AI assistants](/assistants/approvals) ask for | Off: refused, and the assistant is told why |
 | [Port forwards](/debug/port-forwarding) | On: they don't change the cluster |
 | Lists, details, logs, metrics, YAML, Helm releases | On |

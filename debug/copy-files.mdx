@@ -1,0 +1,120 @@
+---
+title: "Copy files to and from a pod"
+sidebarTitle: "Copy files"
+description: "Download a file or a folder from a container by its path, or upload one into a folder there, as kubectl cp does."
+icon: "folder-sync"
+---
+
+Sometimes the thing you need is a file in a container: a log that isn’t on stdout, a heap dump, a config as the app really read it. Lumovi copies a file or a folder out of a running container, and puts one into a folder there, the way `kubectl cp` does: it runs `tar` in the container, and reads or writes its archive.
+
+Both are in a running pod’s actions: its **⋯** menu (<kbd>.</kbd>), the row’s right-click menu, or the [command palette](/explore/finding-things).
+
+## Download a file or a folder
+
+<Steps>
+  <Step title="Choose Download files…">
+    Open a running pod, and choose **Download files…** from its actions.
+  </Step>
+  <Step title="Say what to copy">
+    Pick the **Container**, and type the path of the **File or folder in the container**, like `/var/log/app.log`. A path that doesn’t start with `/` is read from the container’s working directory.
+  </Step>
+  <Step title="Choose Download">
+    <Tabs>
+      <Tab title="Desktop app">
+        Once the container starts sending it, your system’s dialog asks where to save it, starting in your Downloads folder. When it’s done, the dialog says where it is, with **Show in folder**.
+      </Tab>
+      <Tab title="In your cluster">
+        Your browser saves it, as any download. A folder comes as a `.tar` archive, named after the folder. It’s streamed from the container to your browser: nothing of it is kept on the server’s disk.
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+A download runs `tar` in the container and changes nothing there. The dialog shows the command that does the same:
+
+```bash
+kubectl cp shop/web-1:/var/log/app.log app.log -c web --context dev
+```
+
+## Upload a file or a folder
+
+<Steps>
+  <Step title="Choose Upload files…">
+    Open a running pod, and choose **Upload files…** from its actions.
+  </Step>
+  <Step title="Pick what to send">
+    Pick the **Container**, then **Choose a file…** or **Choose a folder…**. The dialog says its name, how many files it holds and their size.
+  </Step>
+  <Step title="Say where it goes">
+    Type the **Folder in the container**. It starts as `/tmp`. What you picked is put in that folder, under its own name. The folder must be there already.
+  </Step>
+  <Step title="Choose Upload">
+    On a [production cluster](/changes/safely), type the pod’s name first.
+  </Step>
+</Steps>
+
+<Warning>
+  Files in that folder with the same names are replaced, and there’s no undo: the container’s files aren’t Kubernetes objects, so Lumovi keeps no earlier copy.
+</Warning>
+
+The dialog shows the command that does the same:
+
+```bash
+kubectl cp report.csv shop/web-1:/tmp/report.csv -c web --context dev
+```
+
+Uploaded files get the time they were unpacked, as with `kubectl cp`. Where `tar` runs as root in the container, they belong to root.
+
+## While it copies
+
+The dialog shows how much has moved, of how much when that’s known, and how many files.
+
+- **Hide** closes the dialog and the copy goes on. A toast says how it ended.
+- **Stop** ends it.
+- A copy stops by itself when nothing has moved for a minute. Choosing where to save doesn’t count: take as long as you like.
+- Closing the page, or quitting the desktop app, stops every copy.
+
+A download that stops early, for any reason, leaves nothing behind: “The copy was stopped. Nothing of it was kept.” The desktop app writes under a temporary name beside where you’re saving, and gives the file or folder its name only once it’s whole.
+
+An upload that stops early can’t take back what the container has already unpacked: “The copy was stopped. What was sent before that may be in the container.”
+
+## What it needs
+
+- **A running container.** The actions show on running pods only, and the dialog lists the containers that are running, debug containers too.
+- **`tar` in the container.** Without it, the dialog says “_container_ has no tar, which copying files needs, as kubectl cp does”, with a `kubectl debug` command to copy, which starts a container with tools beside it. From there, the container’s files are under `/proc/1/root`. Or choose **Debug…** in the pod’s actions: see [Debug containers](/debug/shell#debug-containers).
+- **`create` on `pods/exec`** in the namespace, as a shell needs. See [Permissions](/clusters/permissions).
+
+Windows containers aren’t supported: they have no `tar`.
+
+## What’s kept of a download
+
+A container can send any archive it likes, so Lumovi trusts none of it:
+
+- **Only files and folders are kept.** Links, symbolic or hard, are never written, so none can lead out of the folder you save. Devices and pipes aren’t either. The dialog says how many were left out.
+- **Only what’s under the path you asked for.** An entry with an absolute path, with `..` in it, or under another name stops the copy, and nothing of it is kept.
+- **Only ordinary permission bits.** Read, write and execute are kept; the bits that make a file run as someone else aren’t.
+- **Where it’s saved is yours to say**, in the desktop app, never the archive’s. A folder is saved as a new one: Lumovi doesn’t unpack over a folder that’s there, and asks you to save it under another name.
+- **On Windows**, a file whose name Windows can’t use is left out, and counted.
+
+If the path is itself a link, nothing is copied: give the path it leads to. A file that grows while it’s read, like a log, is copied as it was when the copy began, and the dialog says so.
+
+Folders you upload are treated the same way: links in them aren’t followed and aren’t sent, and the dialog says how many.
+
+## Who may copy
+
+| | Download | Upload |
+| --- | --- | --- |
+| On a Lumovi server, your [access](/clusters/your-access) | **Shells: Open them** in the namespace | **Shells: Open them** and **Changes: Make changes** |
+| In a [read-only](/changes/read-only) cluster | On: it changes nothing | Off |
+| [AI assistants](/assistants/overview) | Never | Never |
+
+Where your access doesn’t allow it, the action is disabled and says why. In a fleet, copies go the way shells do, through the cluster’s agent where it has one, with nothing more granted to it.
+
+<Columns cols={2}>
+  <Card title="Shells and debug containers" icon="square-terminal" href="/debug/shell">
+    A terminal in a running container, or a debug container with tools.
+  </Card>
+  <Card title="Logs" icon="scroll-text" href="/debug/logs">
+    Every pod of a workload, merged in the order lines were written.
+  </Card>
+</Columns>
