@@ -95,7 +95,7 @@ On Kubernetes 1.27 and later, Lumovi reads each kind's schema from the cluster's
 
 Custom resources are first-class:
 
-- **Create** them from YAML (<kbd>⌘</kbd><kbd>N</kbd> in the desktop app), checked by the cluster before anything is created. The cluster has to serve a kind before you can create objects of it, so create a new CRD on its own first. See [Create from YAML](/changes/create).
+- **Create** them from YAML (<kbd>⌘</kbd><kbd>N</kbd> in the desktop app), checked by the cluster before anything is created. The cluster has to serve a kind before you can create objects of it, so create a new CRD on its own first. See [Create objects](/changes/create).
 - **Edit** their YAML or labels. Edits are validated by the cluster against the CRD's schema with a dry run, and shown as a diff before they're saved. See [Edit YAML](/changes/yaml).
 - **Delete** them, one or many at once. Deleting a CustomResourceDefinition asks you to type its name first, since it deletes every object of that kind.
 - **Scale** kinds that have the scale subresource, like Argo Rollouts, the same way as a Deployment.

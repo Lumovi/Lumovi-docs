@@ -1,6 +1,6 @@
 ---
-title: "Create from YAML"
-sidebarTitle: "Create from YAML"
+title: "Create objects"
+sidebarTitle: "Create"
 description: "Create one object or several from YAML, starting from a template or pasted, with the cluster checking all of them before any is created."
 icon: "file-plus"
 ---
@@ -8,15 +8,15 @@ icon: "file-plus"
 Create anything the cluster serves from YAML: a quick Deployment to try something, a ConfigMap, or a whole set of objects pasted from a file. Nothing is created until the cluster has checked every one of them.
 
 <Frame caption="Creating objects from YAML, starting from a template.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/create-light-1x.webp" alt="The Create from YAML dialog with template buttons, a YAML editor holding a Deployment, and the kubectl create command." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/create-dark-1x.webp" alt="The Create from YAML dialog with template buttons, a YAML editor holding a Deployment, and the kubectl create command." />
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/create-light-1x.webp" alt="The Create dialog with template buttons, a YAML editor holding a Deployment, and the kubectl create command." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/create-dark-1x.webp" alt="The Create dialog with template buttons, a YAML editor holding a Deployment, and the kubectl create command." />
 </Frame>
 
 ## Open it
 
-- Press <kbd>⌘</kbd><kbd>N</kbd> (<kbd>Ctrl</kbd><kbd>N</kbd> on Windows and Linux), or choose **File → New from YAML…**
-- Choose the **+** button (**Create from YAML**) in the header.
-- In the command palette (<kbd>⌘</kbd><kbd>K</kbd>), choose **Create from YAML**.
+- Press <kbd>⌘</kbd><kbd>N</kbd> (<kbd>Ctrl</kbd><kbd>N</kbd> on Windows and Linux), or choose **File → Create…**
+- Choose the **+** button (**Create…**) in the header.
+- In the command palette (<kbd>⌘</kbd><kbd>K</kbd>), choose **Create…**.
 
 <Note>
   **In your cluster:** browsers keep <kbd>⌘</kbd><kbd>N</kbd> for a new window, so use the **+** button or the command palette.
