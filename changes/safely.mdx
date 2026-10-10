@@ -51,7 +51,7 @@ Every change you make also lands in the **Activity** log, with its command. See 
 Changes you write yourself are checked by the API server before anything is saved:
 
 - **YAML edits** are sent as a server-side dry run first, and shown as a diff. Only **Apply** saves them. See [Edit YAML](/changes/yaml).
-- **New objects** from **Create from YAML** are all dry-run first. If any of them is refused, none is created. See [Create from YAML](/changes/create).
+- **New objects** from **Create** are all dry-run first. If any of them is refused, none is created. See [Create objects](/changes/create).
 - **Helm upgrades and installs** run as `helm … --dry-run=server` first, and show what the manifest would change. See [Upgrade and roll back](/helm/upgrade-and-rollback).
 - **Right-sizing recommendations** are checked as a server-side dry run, so quotas, LimitRanges and webhooks have their say, before **Apply** is enabled. See [Right-sizing](/metrics/right-sizing).
 - **Changes AI assistants ask for** are dry-run first, then wait in Lumovi, with their diff and their command, for you to approve. Approved, they're made only if they still do what you saw. See [Approving changes](/assistants/approvals).
