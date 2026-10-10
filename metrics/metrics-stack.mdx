@@ -13,11 +13,11 @@ It’s sized for small clusters. If you already run Prometheus or VictoriaMetric
 
 ## When it’s offered
 
-Where a chart would be, **No Prometheus found** means Lumovi looked and found no source. Under it, Lumovi says "Or let Lumovi install a small one: you review everything it makes first.", with the button **Install a metrics stack…**.
+Where a chart would be, **No Prometheus found** means Lumovi looked and found no source. Under it, Lumovi says “Or let Lumovi install a small one: you review everything it makes first.”, with the button **Install a metrics stack…**.
 
 There’s no button when:
 
-- **The cluster is [read-only](/changes/read-only).** It says "Lumovi can install a small one, once the cluster isn’t read-only."
+- **The cluster is [read-only](/changes/read-only).** It says “Lumovi can install a small one, once the cluster isn’t read-only.”
 - **You’re not one of Lumovi’s admins**, on a server. See [Who may install it](#who-may-install-it).
 - **A policy turns it off.** Then it isn’t mentioned at all. See [Turning it off](#turning-it-off).
 
@@ -37,7 +37,7 @@ It isn’t offered where history is turned off for the cluster, or where a sourc
   <Step title="Install">
     **Install** is offered only after the review. Lumovi makes the namespace, then installs the release.
 
-    The cluster pulls the two images and starts Prometheus. Meanwhile, the charts say "The metrics stack is starting…". They fill in a minute or two after Prometheus is up.
+    The cluster pulls the two images and starts Prometheus. Meanwhile, the charts say “The metrics stack is starting…”. They fill in a minute or two after Prometheus is up.
   </Step>
 </Steps>
 
@@ -127,7 +127,7 @@ Installing and removing run as you, so the cluster’s RBAC decides. Your accoun
     Anyone whose account the cluster allows, unless your organization’s [policy](#turning-it-off) turns it off.
   </Tab>
   <Tab title="In your cluster">
-    Only [Lumovi’s admins](/server/access), and as themselves, so their own RBAC still decides. Everyone else sees "Only Lumovi’s admins install or remove its metrics stack. Ask one of them."
+    Only [Lumovi’s admins](/server/access), and as themselves, so their own RBAC still decides. Everyone else sees “Only Lumovi’s admins install or remove its metrics stack. Ask one of them.”
 
     Where the server names no admins, nobody can install or remove it, and it says “Lumovi’s admins install or remove its metrics stack, and this server names none.” Whoever runs the server names them with the chart’s `access.admins` (`LUMOVI_ADMINS`).
 

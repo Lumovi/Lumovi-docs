@@ -7,6 +7,19 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 10, 2026" description="1.19.0" tags={["Desktop app", "In your cluster"]}>
+  ## Usage history, where a cluster has no Prometheus
+
+  - **Lumovi offers to install a small metrics stack**, so the Metrics page, each object’s charts and right-sizing have history: Prometheus and kube-state-metrics, in a namespace of their own, `lumovi-metrics`. Nothing is made before the review, which shows what will run, the values, and a dry run on the API server with every object. An install that fails is undone. See [Lumovi’s metrics stack](/metrics/metrics-stack).
+  - **What it installs is pinned.** The chart ships with Lumovi and is checked against its SHA-256 before every use, so Lumovi downloads nothing, and both images are pinned by digest. See [What it installs](/metrics/metrics-stack#what-it-installs).
+  - **It collects only what Lumovi reads**: CPU, memory and network use, and restarts, of pods’ containers. Its two cluster roles read nodes, their kubelets’ metrics and pods: no Secrets, no ConfigMaps. History is kept for 7 days on the node’s disk, without a volume. See [What it can read](/metrics/metrics-stack#what-it-can-read).
+  - **Who may install it.** On the desktop, anyone the cluster lets: without its permission for all of it, Lumovi says what’s missing and installs nothing. On a server, only Lumovi’s admins, and nobody where it names none. It isn’t offered on a read-only cluster, and assistants can’t install it. Installing and removing are in the audit log, with a `helm` command that does the same. See [Who may install it](/metrics/metrics-stack#who-may-install-it).
+  - **Removing it** is under **Metrics source**: Lumovi uninstalls the release and deletes the namespace, and the two cluster roles and their bindings go as well. A namespace Lumovi didn’t make is never taken or removed. See [Removing it](/metrics/metrics-stack#removing-it).
+  - **Turning the offer off.** An organization sets `"metricsStack": false` in its policy; on a server, `metrics.stack: false` in the chart’s values (`LUMOVI_METRICS_STACK=off`). See [Turning it off](/metrics/metrics-stack#turning-it-off).
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.19.0)
+</Update>
+
 <Update label="October 9, 2026" description="1.18.0" tags={["Desktop app", "In your cluster"]}>
   ## A fleet's clusters, added and shared from its page
 
