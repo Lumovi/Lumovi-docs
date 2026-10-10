@@ -7,6 +7,28 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 10, 2026" description="1.21.0" tags={["Desktop app", "In your cluster"]}>
+  ## Files, to and from a pod
+
+  - **Download files…** and **Upload files…**, in a running pod’s actions. A download takes a file or a folder from a container by its path; an upload puts a file or a folder into a folder there. Both work as `kubectl cp` does, by running `tar` in the container, and each shows the command that does the same, its progress, and **Stop**. A copy stops by itself when nothing moves for a minute. See [Copy files to and from a pod](/debug/copy-files).
+  - **Where it lands.** The desktop app asks where to save, in your system’s dialog. On a server, your browser downloads it, a folder as a `.tar`, streamed from the container with nothing kept on the server. A download that ends early leaves nothing behind.
+  - **Nothing a container sends is trusted.** Only files and folders under the path you asked for are kept. Links, devices and pipes are left out and counted, and an entry that names anything else ends the copy. See [What’s kept of a download](/debug/copy-files#what’s-kept-of-a-download).
+  - **Without `tar`**, Lumovi says so, with the `kubectl debug` command that reaches the container’s files instead. See [What it needs](/debug/copy-files#what-it-needs).
+  - **Who may copy.** A download needs what a shell needs, and works in a read-only cluster, since it changes nothing. An upload also needs changes allowed, is refused where the cluster is read-only, and asks for the pod’s name on a production cluster. AI assistants can’t copy files. See [Who may copy](/debug/copy-files#who-may-copy).
+  - **Recorded.** The audit log has an entry when a copy begins and one for how it ended: who, the pod, the container, the path and the size. Never the files’ contents, the names of files in a folder, or what the container said. See [What’s recorded](/debug/copy-files#what’s-recorded).
+  - **2 GiB a copy**, unless you say otherwise: the chart’s `fileCopy.maxBytes` on a server, or `fileCopy` in your organization’s policy on the desktop. `fileCopy.enabled: false`, or the policy, turns copying off. See [How much one copy carries](/debug/copy-files#how-much-one-copy-carries).
+
+  ## Fixed
+
+  - **Two servers on one volume never both keep its audit history.** Starting together, or one reading the other’s lock as it was renewed, could leave both writing it, numbering events the same. The lock is now always whole, one of any number takes it, and a server reads it before each event: one that finds another has taken its history over writes nothing more to it, and says so. A lock nobody renews is told by watching it for 30 seconds, not by comparing two computers’ clocks. See [Where it’s kept](/server/audit-log#where-it’s-kept).
+  - **The check names two servers as a cause**, where a history was kept by two at once: no event is lost, and the check lists where their numbers meet. See [On the page](/audit/verify#on-the-page).
+  - **The Metrics page with a Prometheus that keeps each node’s own network series.** Choosing **Network in** or **Network out** could replace the page with an error. Network usage now counts only pods’ traffic, on the page and in a node’s charts.
+  - **A list’s bar keeps to one row** beside an open object: its label selector and filter shrink instead of dropping to a second line. With less room still, the label selector is a button that opens its field under it.
+  - **The Map opens beside a custom resource that owns both its pods and the Services that select them**, as CloudNativePG’s `Cluster` does. Opening one of its Secrets from the Cluster’s Map showed an error in place of the Secret.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.21.0)
+</Update>
+
 <Update label="October 10, 2026" description="1.20.0" tags={["Desktop app", "In your cluster"]}>
   ## One place to sponsor Lumovi
 
