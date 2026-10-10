@@ -51,18 +51,19 @@ When some don't, it says "The log doesn't hold in 3 places.", and "Of the 30 eve
 | --- | --- |
 | “Its hash isn't what its contents give: it was changed after it was recorded.” | The event was edited. |
 | “Event 9 is missing.” or "Events 9–11 are missing." | Events were taken out, or moved later. Or the history couldn't keep them: see below. |
-| “It's number 9, after number 10: one was repeated, or moved.” | An event is there twice, or was moved earlier. |
+| “It's number 9, after number 10: one was repeated, or moved, or two of Lumovi's servers kept this history at once.” | An event is there twice, or was moved earlier. Or two servers went on from one history: see below. |
 | “It doesn't follow from the event before it: one of them was changed, or replaced.” | An event was edited and its hash worked out again, or replaced by another. |
-| “A new chain starts here, after event 30: Lumovi started again without the events before it (they were removed, or couldn't be read).” | An event #1, after others: the history lost what came before, and Lumovi started a chain afresh. Or another chain's start was put in. |
-| “It's from another chain than the events before it: two of Lumovi's servers kept their events here at once, or one was put in.” | A chain not seen before, past its #1. One server keeps a folder at a time, so this is one put in. |
+| “A new chain starts here, after event 30: Lumovi started again without the events before it (they were removed, or couldn't be read), or two of Lumovi's servers kept this history at once.” | An event #1, after others: the history lost what came before, and Lumovi started a chain afresh. Or another chain's start was put in. Or two servers each started a chain in one empty folder: see below. |
+| “It's from another chain than the events before it: two of Lumovi's servers kept their events here at once, or one was put in.” | A chain not seen before, past its #1. One server keeps a folder at a time, so this is most likely one put in. |
 | “Line 12 of audit-2026-10-06.jsonl can't be read as an audit event.” | A line in the history isn't an event. |
 
 Each chain is checked against its own last event: events of another chain put in among this one's are one place it doesn't hold, and this chain's events after them still follow from its own.
 
-Two of these can happen without anyone changing anything:
+Three of these can happen without anyone changing anything:
 
 - **A line left unfinished**, when the computer or the pod stopped as Lumovi wrote it, can't be read. It's listed as itself, and the events after it are whole: Lumovi went on from the last event it had.
 - **An event the history couldn't keep**, when its volume was full, say, leaves "Event 9 is missing.": the chain goes on without it. An **Audit events lost** event (`audit.dropped`) says how many, and why. See [When events are lost](/server/audit-log#when-events-are-lost).
+- **A history two servers kept at once**, on one volume. Two that went on from the same history numbered their events the same, so the check says “It's number 9, after number 9: one was repeated, or moved, or two of Lumovi's servers kept this history at once.” where their numbers meet. Two that started in an empty folder each began a chain, and it says “A new chain starts here…” once. No event is lost: each server's events are all there, and each one's hash is still its own. The check goes on listing those places, since the history isn't rewritten to hide them. Run one Lumovi for each history: see [One Lumovi at a time](/server/audit-log#where-it’s-kept).
 
 On a server, the page checks the history the server keeps: on its volume, or in its memory. In the desktop app, the files on your computer.
 
