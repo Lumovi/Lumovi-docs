@@ -188,6 +188,7 @@
               "server/overview",
               "server/install",
               "server/expose",
+              "server/phone",
               "server/upgrade"
             ]
           },
