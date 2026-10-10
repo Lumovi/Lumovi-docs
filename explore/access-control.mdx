@@ -1,0 +1,92 @@
+---
+title: "Access control"
+description: "Roles, cluster roles, their bindings and service accounts: what each allows, who it's granted to, and how to follow the links between them."
+icon: "user-lock"
+---
+
+Who may do what in a cluster is spread over three kinds of object: roles say what's allowed, bindings say to whom, and service accounts are who workloads act as. Lumovi shows each, and links them both ways, so you can start from any one and reach the others.
+
+The sidebar's **Access control** section holds five lists:
+
+| List | Shortcut | Columns |
+| --- | --- | --- |
+| **Roles** | <kbd>G</kbd> <kbd>R</kbd> | Rules |
+| **Cluster Roles** | <kbd>G</kbd> <kbd>K</kbd> | Rules |
+| **Role Bindings** | <kbd>G</kbd> <kbd>B</kbd> | Role, Subjects |
+| **Cluster Role Bindings** | <kbd>G</kbd> <kbd>G</kbd> | Role, Subjects |
+| **Service Accounts** | <kbd>G</kbd> <kbd>T</kbd> | Secrets |
+
+Cluster roles and cluster role bindings aren't in a namespace, so their lists always show all of them. Each list is in the [command palette](/explore/finding-things) too. In a binding's row, its role is a link, and **Subjects** names the first and counts the rest.
+
+This is the cluster's own RBAC, as it's written. What Lumovi itself lets people do on a server is another thing: see [Access](/server/access). And for what your own account may do, see [Permissions](/clusters/permissions).
+
+## A role's rules
+
+Open a role or a cluster role, and **Rules** is a table with a row for each rule: its **API groups**, its **Resources** and its **Verbs**.
+
+- `*` reads as **All groups**, **All resources** or **All verbs**, and the group with no name as **core**.
+- A rule limited to some objects says **only those named** and their names, on a line under the resources. The names limit every resource in that rule.
+- A cluster role's rule about addresses that aren't resources, like `/healthz` or `/metrics`, reads **Not a resource**, with **URLs:** and the addresses.
+- A role with no rules says "No rules: it allows nothing."
+
+A cluster role that gathers its rules from others (an aggregated one, like `admin`, `edit` and `view`) says so above the table: "Its rules are gathered by the cluster from the cluster roles labelled…", with the selector as `kubectl` writes it. The table then shows the rules the cluster has gathered.
+
+## Who a role is granted to
+
+Under the rules, **Granted by** lists the bindings that grant the role: each **Binding**, linked, **To** its subjects, and **In** the namespace it reaches, or **Everywhere** for a cluster role binding.
+
+- A role is looked for in the role bindings of its own namespace: nothing else can grant it.
+- A cluster role is looked for in every namespace's role bindings and in the cluster role bindings. **In** tells the two apart: a role binding grants a cluster role's rules in one namespace only.
+- A cluster role's rules can also be granted without a binding of its own, when another cluster role gathers them. Then it says "Its rules are also part of" that cluster role, linked, "which gathers them: whoever that is granted to has them too."
+
+When nothing grants it, Lumovi says "No binding grants it to anyone.", or "No binding grants it by its own name." where another cluster role gathers its rules. It says either only when it could read every list it needed.
+
+## A binding
+
+A role binding's or a cluster role binding's facts start with its **Role**, linked, and **Subjects** is a table of whom it's granted to: each one's **Kind** (`User`, `Group` or `ServiceAccount`), **Name** and **Namespace**. A service account is a link. One named without a namespace is in the binding's own.
+
+A binding with no subjects says "No subjects: it grants its role to nobody."
+
+## A service account
+
+A service account's facts say whether its **API token** is mounted in its pods ("Mounted in its pods, unless a pod says not to", or "Not mounted in its pods, unless a pod asks"), and link its **Secrets** and **Image pull secrets**.
+
+**Bindings** lists every binding that reaches it, with the role each **Grants**, linked, and where: **In** a namespace, or **Everywhere**. A binding reaches a service account in three ways, and Lumovi looks for all of them:
+
+- by naming it, the plain case;
+- by naming it as a user, `system:serviceaccount:<namespace>:<name>`: the row says "as the user…";
+- by naming a group it's in: its namespace's accounts (`system:serviceaccounts:<namespace>`), every service account (`system:serviceaccounts`), or everyone signed in (`system:authenticated`). The row says "through the group…".
+
+So most service accounts list a few bindings they share with every account, like the ones that let anyone signed in discover the API.
+
+When none reaches it: "No binding names it, or a group it’s in."
+
+## From a workload
+
+A pod's **Service account** fact is a link to the account it acts as. So is a workload's: a Deployment, StatefulSet, DaemonSet, Job or CronJob links the account its pods will act as, which is its namespace's `default` where its template names none. From there, **Bindings** shows what that workload may do in the cluster.
+
+The [Map](/explore/map) shows a workload's service account too.
+
+## When you can't read them
+
+Reading roles and bindings needs `list` on each kind, and many accounts don't have it.
+
+- A list you may not read says so on its page, with the cluster's reason, as any list does.
+- In a panel, **Granted by** and **Bindings** need both role bindings and cluster role bindings. If one can't be read, the panel shows what it found in the other, and says "There may be more: some bindings couldn’t be read.", with the reason. With nothing found, it says "Some bindings couldn’t be read.", never that there are none.
+- A cluster role also needs the list of cluster roles, to know whether another gathers its rules. Without it: "Whether another cluster role gathers its rules couldn’t be read."
+- If a list was read once and is refused later, the rows last read stay, under "There may be more".
+
+On a Lumovi server, [your access](/clusters/your-access) applies here as everywhere: these are cluster objects like any others.
+
+## Views of your own
+
+These five kinds have pages of their own, like Pods and Secrets. A [view of your own](/custom-resources/write-a-view) for one of them adds its actions and nothing else: Lumovi keeps its own columns, details and tabs.
+
+<Columns cols={2}>
+  <Card title="Permissions" icon="lock-keyhole" href="/clusters/permissions">
+    What your own account may do, and how Lumovi shows it.
+  </Card>
+  <Card title="Map" icon="waypoints" href="/explore/map">
+    What an object uses and what uses it, its service account included.
+  </Card>
+</Columns>
