@@ -38,6 +38,7 @@ Lumovi reads it as it starts: restart it after a change. Only when nothing is th
   "kubectlSignatures": "required",
   "kubeconfigFiles": "locked",
   "metricsStack": false,
+  "fileCopy": 1073741824,
   "network": {
     "proxy": "http://proxy.corp.example.com:3128",
     "noProxy": ".corp.example.com",
@@ -103,6 +104,10 @@ It decides which files Lumovi reads, not what's in them: `~/.kube/config` is sti
 ### metricsStack
 
 `false` turns [Lumovi’s metrics stack](/metrics/metrics-stack) off: where a cluster has no usage history, Lumovi doesn’t offer to install one, and it refuses to install or remove one. A stack that’s already installed keeps running, and Lumovi keeps charting from it. `true`, or leaving it out, leaves it to each person and their cluster’s RBAC.
+
+### fileCopy
+
+`false` turns [copying files](/debug/copy-files) to and from containers off: Lumovi refuses every copy, saying “Copying files is turned off here. Your organization’s policy turns it off (fileCopy).” A whole number sets the most one copy carries, in bytes, in place of 2 GiB: `1073741824` is 1 GiB. Either wins over `LUMOVI_FILE_COPY_MAX_BYTES` in a person’s environment. Anything else is a mistake in the file.
 
 ### network
 

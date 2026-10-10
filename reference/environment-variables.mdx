@@ -27,6 +27,10 @@ Lumovi reads them once, when it starts. Restart it after changing one.
   Makes every cluster read-only, whatever is set in the app. The read-only switch then reads **Set by LUMOVI_READ_ONLY** and can't be turned off. The app's main process enforces it, not just the buttons, and it covers shells, node shells and Helm too. It doesn't reach [terminals](/debug/terminal), which are your own shell. Useful on shared machines. Only `1` and `true` turn it on: anything else, like `yes` or `TRUE`, leaves changes on. See [Read-only mode](/changes/read-only).
 </ResponseField>
 
+<ResponseField name="LUMOVI_FILE_COPY_MAX_BYTES" type="bytes, or off" default="2147483648">
+  The most one [copy of files](/debug/copy-files) to or from a container carries: a whole number of bytes, or `off`, which turns copying off. With anything else, Lumovi copies nothing until it’s put right. Your organization’s [policy](/desktop/policy#filecopy) wins over it.
+</ResponseField>
+
 <ResponseField name="HTTPS_PROXY, HTTP_PROXY, NO_PROXY" type="URL, URL, list">
   The proxy Lumovi goes through for `https` and `http` addresses, and what it reaches directly, as `kubectl` and `helm` read them, in upper case or lower case. A proxy without a scheme is taken as `http://`; one that isn't a URL is left out, and Lumovi says so as it starts, in a notice. On macOS and Linux, Lumovi takes them from your login shell, when they aren't set where it starts. Your clusters, Helm repositories and Artifact Hub go through it; `localhost`, `127.0.0.1` and `::1` never do. Your organization's [policy](/desktop/policy) can set the proxy instead. See [Proxies and certificates](/desktop/network).
 </ResponseField>

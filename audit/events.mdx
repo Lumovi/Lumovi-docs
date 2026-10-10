@@ -123,6 +123,7 @@ Each action, by kind, and what the page calls it.
 | `helm.upgrade` | Upgraded a Helm release | To another chart version, or with new values. |
 | `helm.rollback` | Rolled a Helm release back | |
 | `helm.uninstall` | Uninstalled a Helm release | |
+| `files.upload` | Uploaded files to a container | A file or a folder was [copied into a container](/debug/copy-files): once when the copy begins, and once for how it ended. |
 
 ### Access (`access`)
 
@@ -131,6 +132,7 @@ Each action, by kind, and what the page calls it.
 | `shell.open`, `shell.close` | Opened a shell, Closed a shell | A shell in a container. Closing says how long it ran, and the exit code. |
 | `node-shell.open`, `node-shell.close` | Opened a node shell, Closed a node shell | A [shell on a node](/debug/node-shell), and the pod Lumovi started for it. |
 | `port-forward.open`, `port-forward.close` | Forwarded a port, Stopped forwarding a port | A [port forward](/debug/port-forwarding), in the desktop app. |
+| `files.download` | Downloaded files from a container | A file or a folder was [copied out of a container](/debug/copy-files): once when the copy begins, and once for how it ended. |
 | `logs.read` | Read logs | A container's logs: once for each container every ten minutes, at most, for each page or assistant. |
 | `secret.read` | Read a Secret | A Secret's values reached the page or an assistant, or reading it was refused: once for each Secret every ten minutes, at most, for each page or assistant. A dry run of a change to a Secret counts, since it answers with the Secret. |
 | `helm.values.read` | Read a release's values | A [Helm release](/helm/releases)'s values and manifests reached the page, which can hold what its Secrets do: once for each release every ten minutes, at most. Not where they're withheld. |
@@ -228,6 +230,7 @@ What each action adds in `details`, when it applies:
 | `shell.*` | `container`; on closing, `seconds`, and `exit`, how it ended |
 | `node-shell.*` | `mode`, and `pod`, the pod Lumovi started for it; on closing, `seconds`, `exit`, and `left` when its pod couldn't be deleted |
 | `port-forward.*` | `pod`, `podPort`, `localPort`; on closing, `seconds` |
+| `files.download`, `files.upload` | `container`, `path`, `direction` and `stage` (`began` or `ended`); on ending, `bytes`, `files`, `seconds`, and `leftOut` when links, devices or unusable names were left out. Never the files' contents, the names of files in a folder, or what the container wrote |
 | `logs.read` | `container`, `previous` and `follow`; for an assistant, `tailLines` and `previous` |
 | `secret.read` | `keys`: the Secret's keys, never their values (none when it was refused) |
 | `session.sign-in`, `session.sign-out` | `method` (`token` or `oidc`), and `with`: `a token`, or the provider's name |

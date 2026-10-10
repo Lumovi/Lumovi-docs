@@ -78,6 +78,8 @@ A download that stops early, for any reason, leaves nothing behind: “The copy 
 
 An upload that stops early can’t take back what the container has already unpacked: “The copy was stopped. What was sent before that may be in the container.”
 
+On a server, a download’s address works once, for 30 seconds, and only for whoever asked for it. If the copy ends before your browser fetches it, the address answers `404`, as it does for anyone else, and afterwards. Where Lumovi runs as [several replicas](/server/helm-values), a browser’s requests must stay with one of them for a copy to work.
+
 ## What it needs
 
 - **A running container.** The actions show on running pods only, and the dialog lists the containers that are running, debug containers too.
@@ -109,6 +111,47 @@ Folders you upload are treated the same way: links in them aren’t followed and
 | [AI assistants](/assistants/overview) | Never | Never |
 
 Where your access doesn’t allow it, the action is disabled and says why. In a fleet, copies go the way shells do, through the cluster’s agent where it has one, with nothing more granted to it.
+
+## How much one copy carries
+
+One copy carries 2 GiB of files at most, and 100,000 files and folders. Past either, it stops; past the size, it says “That’s more than one copy carries here, which is 2 GiB.”, and what sets the limit. A download that’s stopped this way keeps nothing.
+
+<Tabs>
+  <Tab title="Desktop app">
+    Your organization’s [policy](/desktop/policy#filecopy) sets another limit, in bytes, or turns copying off:
+
+    ```json
+    { "fileCopy": 1073741824 }
+    ```
+
+    ```json
+    { "fileCopy": false }
+    ```
+
+    Without a policy that sets it, the desktop app follows `LUMOVI_FILE_COPY_MAX_BYTES` in its environment, as a server does.
+  </Tab>
+  <Tab title="In your cluster">
+    The chart’s values set it for everyone on the server:
+
+    ```yaml
+    fileCopy:
+      enabled: true
+      maxBytes: 1073741824
+    ```
+
+    `fileCopy.enabled: false` turns copying off. The chart sets `LUMOVI_FILE_COPY_MAX_BYTES` from them: a whole number of bytes, or `off`. Anything else stops the server from starting. As it starts, Lumovi logs which it is: “Files are copied to and from containers, 2 GiB a copy at most” or “Copying files to and from containers is turned off”. See [Helm values](/server/helm-values).
+  </Tab>
+</Tabs>
+
+Where it’s off, the actions still show, and a copy is refused with “Copying files is turned off here.”, recorded as refused.
+
+## What’s recorded
+
+The [audit log](/audit/overview) has two entries for each copy, **Downloaded files from a container** or **Uploaded files to a container**: one when it begins, before anything moves, and one for how it ended, whether it finished, failed or was stopped. A copy that’s refused, by your access, by read-only or because copying is off, has one.
+
+Each says who, the pod, the container, the path, and the `kubectl cp` command that does the same. The ending adds how many files and bytes were copied, how long it took, and what was left out.
+
+It never records what was in the files, the names of files inside a folder, or anything the container said: when `tar` fails, the page shows you its words, and the log keeps a sentence of Lumovi’s own. See [Events](/audit/events#access-access).
 
 <Columns cols={2}>
   <Card title="Shells and debug containers" icon="square-terminal" href="/debug/shell">

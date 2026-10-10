@@ -187,6 +187,10 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   `on` or `off`: whether Lumovi’s admins can install [its metrics stack](/metrics/metrics-stack) where a cluster has no usage history. The chart sets it from `metrics.stack`. Anything else stops the server from starting.
 </ResponseField>
 
+<ResponseField name="LUMOVI_FILE_COPY_MAX_BYTES" type="string" default="2147483648">
+  The most one [copy of files](/debug/copy-files) to or from a container carries: a whole number of bytes, or `off`, which turns copying off. The chart sets it from `fileCopy.enabled` and `fileCopy.maxBytes`. Anything else stops the server from starting, and Lumovi logs the limit as it starts.
+</ResponseField>
+
 <ResponseField name="LUMOVI_NODE_SHELL" type="string" default="on">
   `on` or `off`: whether people can open [shells on nodes](/debug/node-shell). With `off`, nobody can, in any cluster of a fleet, whatever their RBAC allows: a node's **Shell** tab says **Node shells are off**, and Lumovi refuses to start one, saying `Node shells are turned off on this Lumovi server (LUMOVI_NODE_SHELL=off).` Anything else stops Lumovi, saying `LUMOVI_NODE_SHELL must be on or off, not "…".`
 </ResponseField>
