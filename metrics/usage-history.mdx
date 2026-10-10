@@ -32,7 +32,7 @@ You usually don't have to do anything. Unless you've chosen a source, Lumovi loo
 
 <Steps>
   <Step title="It scores every service">
-    It skips services that come with Prometheus but don't answer queries themselves (Alertmanager, operators, exporters, kube-state-metrics, Grafana, VictoriaMetrics' agent and storage components, and so on), and rates the rest by their name and their `app.kubernetes.io/name` or `app` label:
+    It skips services that come with Prometheus but don't answer queries themselves (Alertmanager, operators, exporters, kube-state-metrics, the operator’s service for the kubelets, Grafana, VictoriaMetrics' agent and storage components, and so on), and rates the rest by their name and their `app.kubernetes.io/name` or `app` label:
 
     | Score | Looks like | Port it uses |
     | --- | --- | --- |
