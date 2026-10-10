@@ -1,0 +1,209 @@
+---
+title: "Lumovi’s metrics stack"
+sidebarTitle: "Metrics stack"
+description: "Where a cluster has no Prometheus, Lumovi can install a small one: what it puts in the cluster, what it can read, who may install it, and how to remove it or turn the offer off."
+icon: "package-plus"
+---
+
+[Usage history](/metrics/usage-history) comes from a Prometheus or VictoriaMetrics in the cluster. Where a cluster has neither, Lumovi offers to install a small Prometheus that collects only what Lumovi charts: CPU, memory and network use, and restarts.
+
+It’s one Helm release in a namespace of its own. You see every object before anything is made, and removing it leaves nothing in the cluster.
+
+It’s sized for small clusters. If you already run Prometheus or VictoriaMetrics, [use that instead](#using-your-own-prometheus-instead).
+
+## When it’s offered
+
+Where a chart would be, **No Prometheus found** means Lumovi looked and found no source. Under it, Lumovi says "Or let Lumovi install a small one: you review everything it makes first.", with the button **Install a metrics stack…**.
+
+There’s no button when:
+
+- **The cluster is [read-only](/changes/read-only).** It says "Lumovi can install a small one, once the cluster isn’t read-only."
+- **You’re not one of Lumovi’s admins**, on a server. See [Who may install it](#who-may-install-it).
+- **A policy turns it off.** Then it isn’t mentioned at all. See [Turning it off](#turning-it-off).
+
+It isn’t offered where history is turned off for the cluster, or where a source was found or chosen but doesn’t answer.
+
+## Installing it
+
+<Steps>
+  <Step title="Open the dialog">
+    Choose **Install a metrics stack…**. The dialog says what will run, how much history it keeps, how to remove it, and which chart and images it uses. **The values it’s installed with** shows the chart’s values. They can’t be changed here.
+
+    If the cluster doesn’t let you create something the stack needs, the dialog names what’s missing, and **Review** is disabled.
+  </Step>
+  <Step title="Review">
+    **Review** asks the API server to check the install without making anything (`helm install --dry-run=server`). Lumovi then shows every object it would make, as manifest: the namespace first, then the chart’s 11 objects. **Back** returns to the summary.
+  </Step>
+  <Step title="Install">
+    **Install** is offered only after the review. Lumovi makes the namespace, then installs the release.
+
+    The cluster pulls the two images and starts Prometheus. Meanwhile, the charts say "The metrics stack is starting…". They fill in a minute or two after Prometheus is up.
+  </Step>
+</Steps>
+
+If the install fails, Lumovi undoes it: it uninstalls the release and deletes the namespace it made.
+
+Where the cluster has more than 100 nodes or 3,000 pods, the dialog warns that the stack is sized for small clusters. Its Prometheus may run out of memory and restart, and its storage may hold less than a week. A cluster that size is better served by a Prometheus set up for it.
+
+## What it installs
+
+| | |
+| --- | --- |
+| **Chart** | The Prometheus community’s `prometheus` chart, version 29.36.1, from `https://prometheus-community.github.io/helm-charts` |
+| **Release and namespace** | Both named `lumovi-metrics`. The namespace carries the label `app.kubernetes.io/managed-by: lumovi`. |
+| **What runs** | Two Deployments with one pod each: Prometheus v3.15.0 and kube-state-metrics v2.20.0. Both run as an unprivileged user. |
+| **What doesn’t** | No Alertmanager, Pushgateway or node exporter. No DaemonSet, no privileged pod, no host mounts, no custom resource definitions, no Ingress. |
+| **Other objects** | Two service accounts, two cluster roles with their bindings, two `ClusterIP` services and one ConfigMap. Helm keeps the release’s record in a Secret in the namespace. |
+| **Resources** | Prometheus requests 0.1 CPU and 256 MiB of memory, limited to 1 CPU and 1 GiB. kube-state-metrics requests 0.01 CPU and 32 MiB, limited to 0.1 CPU and 128 MiB. |
+
+### Where the chart and images come from
+
+The chart is built into Lumovi, so Lumovi downloads nothing to install it. It’s the archive the chart’s repository publishes, unchanged, with this SHA-256:
+
+```text
+8492d3a0e99f99a12bb389f1c83f3636e3fc5d68f995a09e815044773246217e
+```
+
+Lumovi checks that checksum before every review and install, and installs nothing if it doesn’t match.
+
+The cluster pulls the images itself, each by its digest:
+
+```text
+quay.io/prometheus/prometheus@sha256:efd719c99d83b060d9daefdcf00360461adf279f45ef5391f8d111892118753e
+registry.k8s.io/kube-state-metrics/kube-state-metrics@sha256:42cfe3723a5f058171c627537fb57a3ea0f26e4380fa18555a95cb1a1b4cfc5b
+```
+
+Lumovi doesn’t verify the images’ signatures. A cluster that can’t reach quay.io and registry.k8s.io can’t start the stack.
+
+## What it can read
+
+The stack has two cluster roles, both read-only:
+
+| Cluster role | Held by | Allows |
+| --- | --- | --- |
+| `lumovi-metrics-server` | Prometheus | `get`, `list` and `watch` on nodes, and `get` on `nodes/metrics` |
+| `lumovi-metrics-kube-state-metrics` | kube-state-metrics | `list` and `watch` on pods |
+
+Neither can read Secrets, ConfigMaps or Services, and neither can change anything.
+
+Prometheus collects from two places, and keeps only these series:
+
+- **Each node’s kubelet** (cAdvisor): `container_cpu_usage_seconds_total`, `container_cpu_cfs_periods_total`, `container_cpu_cfs_throttled_periods_total`, `container_memory_working_set_bytes`, `container_network_receive_bytes_total` and `container_network_transmit_bytes_total`.
+- **kube-state-metrics**: `kube_pod_info` and `kube_pod_container_status_restarts_total`.
+
+Everything else is dropped as it’s collected. That’s what the Metrics page, the Metrics tabs and [Right-sizing](/metrics/right-sizing) chart from. One thing is missing for Right-sizing: the series that says why a container last stopped isn’t kept, so it sees an OOM kill only in the last state of the pods running now, not over the whole week.
+
+### Who can read what it collects
+
+Lumovi asks Prometheus through the API server, with your own credentials. To see charts, an account needs `get` on `services/proxy` in `lumovi-metrics`, and `list` on services across the cluster to find it. See [Permissions](/clusters/permissions#usage-history).
+
+Two things are worth knowing before you install it:
+
+- **Anyone with that permission can query every namespace’s usage.** Prometheus doesn’t know about namespaces’ RBAC. The series carry the names of pods, containers and images, each node’s labels, and pods’ IP addresses.
+- **Workloads inside the cluster can query it too.** Prometheus has no sign-in, and the stack has no NetworkPolicy, so a pod in any namespace can reach its service. Nothing is exposed outside the cluster. If that matters in your cluster, add a NetworkPolicy to `lumovi-metrics`, or run a Prometheus of your own.
+
+Both are how a Prometheus in a cluster usually behaves. Nobody can change or delete what it holds over HTTP: its admin and lifecycle endpoints are off.
+
+## History and storage
+
+- **7 days** of history, in at most **3 GB**. When it’s full, the oldest goes first.
+- It’s kept in an `emptyDir` limited to 4 GiB, on the disk of the node Prometheus runs on. There’s no volume claim.
+- **History starts over when the pod is replaced or moves to another node**: after a node drain, an eviction, or the pod running out of memory.
+- Samples are taken every 30 seconds.
+
+[Right-sizing](/metrics/right-sizing) needs a day of history before it recommends anything, and is surest with a week.
+
+## Who may install it
+
+Installing and removing run as you, so the cluster’s RBAC decides. Your account must be allowed to create (to remove: delete):
+
+- namespaces, cluster roles and cluster role bindings;
+- Deployments, Services, service accounts, ConfigMaps and Secrets in `lumovi-metrics`.
+
+<Tabs>
+  <Tab title="Desktop app">
+    Anyone whose account the cluster allows, unless your organization’s [policy](#turning-it-off) turns it off.
+  </Tab>
+  <Tab title="In your cluster">
+    Only [Lumovi’s admins](/server/access), and as themselves, so their own RBAC still decides. Everyone else sees "Only Lumovi’s admins install or remove its metrics stack. Ask one of them."
+
+    Where the server names no admins, nobody can install or remove it. Whoever runs the server names them with the chart’s `access.admins` (`LUMOVI_ADMINS`).
+
+    In a [fleet](/server/fleet), it’s the same for each cluster, and it’s installed in the cluster you’re looking at.
+  </Tab>
+</Tabs>
+
+[AI assistants](/assistants/overview) can’t install or remove it.
+
+The [audit log](/audit/overview) records each install as `helm.install` and each removal as `helm.uninstall`, with who did it, the chart, its version, repository and SHA-256, and whether it worked or was refused. Reviews aren’t recorded, since they make nothing.
+
+## Removing it
+
+Open **Metrics source** from the chip on any chart, or from the command palette. Under **Lumovi’s metrics stack**, choose **Remove…**, type `lumovi-metrics` to confirm, and choose **Remove**.
+
+Lumovi uninstalls the release, deletes the namespace, and waits until it’s gone. Nothing of it stays in the cluster: not the cluster roles, and not the history. The charts go back to having no history.
+
+<Warning>
+  Deleting the namespace deletes everything in it. Don’t put anything of your own in `lumovi-metrics`.
+</Warning>
+
+Lumovi removes only what it installed. It tells by the namespace’s label:
+
+- A namespace named `lumovi-metrics` without the label isn’t Lumovi’s. Lumovi installs nothing there, and doesn’t offer to remove it. Delete or rename it to install the stack.
+- **Remove…** isn’t offered for a Prometheus you installed yourself.
+
+To remove it without Lumovi:
+
+```sh
+helm uninstall lumovi-metrics --namespace lumovi-metrics
+kubectl delete namespace lumovi-metrics
+```
+
+## Turning it off
+
+<Tabs>
+  <Tab title="Desktop app">
+    In your organization’s [policy](/desktop/policy#metricsstack):
+
+    ```json policy.json
+    {
+      "metricsStack": false
+    }
+    ```
+
+    Lumovi then doesn’t offer the stack, and refuses to install or remove one.
+  </Tab>
+  <Tab title="In your cluster">
+    In the chart’s values:
+
+    ```yaml values.yaml
+    metrics:
+      stack: false
+    ```
+
+    That sets `LUMOVI_METRICS_STACK=off`. Lumovi then doesn’t offer the stack to anyone, admins included, and refuses to install or remove one. See [Helm values](/server/helm-values).
+  </Tab>
+</Tabs>
+
+A stack that’s already installed keeps running, and Lumovi keeps charting from it. Remove it first, or with `helm` and `kubectl` as above.
+
+## Using your own Prometheus instead
+
+Lumovi’s stack is the small option. Your own Prometheus or VictoriaMetrics is the better one when:
+
+- the cluster is large, or you want more than a week of history;
+- history should survive a pod restart, on a persistent volume;
+- you want alerts, dashboards, or metrics beyond what Lumovi charts.
+
+Lumovi finds most installations on its own, and you can point it at any service that answers PromQL. See [How Lumovi finds it](/metrics/usage-history#how-lumovi-finds-it) and [Choosing the source](/metrics/usage-history#choosing-the-source).
+
+If you install your own after Lumovi’s, remove Lumovi’s stack, so the cluster doesn’t collect the same things twice.
+
+<Columns cols={2}>
+  <Card title="Usage history" icon="chart-area" href="/metrics/usage-history">
+    What Lumovi charts, and where it finds it.
+  </Card>
+  <Card title="Right-sizing" icon="scale" href="/metrics/right-sizing">
+    What each workload should request, from a week of history.
+  </Card>
+</Columns>

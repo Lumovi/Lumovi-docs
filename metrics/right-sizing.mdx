@@ -19,7 +19,7 @@ The page follows the namespace menu: pick a namespace to see only its workloads.
 
 ## What you need
 
-- **[Usage history](/metrics/usage-history).** The same Prometheus or VictoriaMetrics the Metrics page charts from, found or chosen the same way. Without it, the page says why, as the charts do.
+- **[Usage history](/metrics/usage-history).** The same Prometheus or VictoriaMetrics the Metrics page charts from, found or chosen the same way. Without it, the page says why, as the charts do. Where the cluster has no Prometheus, Lumovi can install [a small one](/metrics/metrics-stack).
 - **A week of it, ideally.** Recommendations look at the last 7 days. A workload needs a day of history before Lumovi recommends anything, and more of the week makes for a surer recommendation, so keep at least 7 days of history.
 - **cAdvisor's metrics**, scraped: CPU and memory use, and how often CPU limits throttle (`container_cpu_cfs_periods_total` and `container_cpu_cfs_throttled_periods_total`). kube-prometheus-stack scrapes them out of the box.
 - **kube-state-metrics**, to see OOM kills over the whole week. Without it, Lumovi still sees an OOM kill in the last state of the pods running now.

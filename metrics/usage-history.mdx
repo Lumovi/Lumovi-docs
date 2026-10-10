@@ -19,7 +19,7 @@ History shows up in a few places:
 
 ## What you need
 
-- **A Prometheus-compatible server in the cluster.** Prometheus (as kube-prometheus-stack, the Prometheus chart or kube-prometheus install it) or VictoriaMetrics, single-node or cluster.
+- **A Prometheus-compatible server in the cluster.** Prometheus (as kube-prometheus-stack, the Prometheus chart or kube-prometheus install it) or VictoriaMetrics, single-node or cluster. Where the cluster has none, Lumovi can install a small one: see [Lumovi’s metrics stack](/metrics/metrics-stack).
 - **cAdvisor's metrics, scraped.** CPU, memory and network charts use the kubelet's `container_*` series. kube-prometheus-stack scrapes them out of the box.
 - **kube-state-metrics**, for restarts. It also places pods on nodes when cAdvisor's series don't carry a `node` label.
 - **Permission to reach it.** Your account needs `get` on `services/proxy` in the namespace the server runs in, and `list` on services across the cluster to find it.
@@ -148,7 +148,7 @@ Where a chart would be, Lumovi says why, and what to do:
 
 | You see | It means | Try |
 | --- | --- | --- |
-| **No Prometheus found** | No service looked like Prometheus or VictoriaMetrics | **Choose a service**, if yours runs under another name |
+| **No Prometheus found** | No service looked like Prometheus or VictoriaMetrics | **Choose a service**, if yours runs under another name. If the cluster has none, **Install a metrics stack…** installs a small one: see [Lumovi’s metrics stack](/metrics/metrics-stack). |
 | **Usage history is off** | Someone chose **Don't use history** for this cluster | **Change** |
 | **Can't read usage history** | Lumovi couldn't look for a source, or the one it found or you chose didn't answer | Read the message under it, then **Look again** or **Choose a service** |
 

@@ -183,6 +183,10 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   Where usage history comes from, unless another source is set for a cluster, for everyone, on the page: `auto`, `off`, or `namespace/service:port`, with a path after it for vmselect (`vm/vmselect:8481/select/0/prometheus`). In a fleet, it's every cluster's.
 </ResponseField>
 
+<ResponseField name="LUMOVI_METRICS_STACK" type="string" default="on">
+  `on` or `off`: whether Lumovi’s admins can install [its metrics stack](/metrics/metrics-stack) where a cluster has no usage history. The chart sets it from `metrics.stack`. Anything else stops the server from starting.
+</ResponseField>
+
 <ResponseField name="LUMOVI_NODE_SHELL" type="string" default="on">
   `on` or `off`: whether people can open [shells on nodes](/debug/node-shell). With `off`, nobody can, in any cluster of a fleet, whatever their RBAC allows: a node's **Shell** tab says **Node shells are off**, and Lumovi refuses to start one, saying `Node shells are turned off on this Lumovi server (LUMOVI_NODE_SHELL=off).` Anything else stops Lumovi, saying `LUMOVI_NODE_SHELL must be on or off, not "…".`
 </ResponseField>

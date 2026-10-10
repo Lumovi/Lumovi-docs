@@ -127,6 +127,7 @@
             "pages": [
               "metrics/live-usage",
               "metrics/usage-history",
+              "metrics/metrics-stack",
               "metrics/right-sizing"
             ]
           },

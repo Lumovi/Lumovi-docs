@@ -247,6 +247,10 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
   In a fleet, this is every cluster's: leave it `auto` unless they all have the same service. See [Usage history](/metrics/usage-history).
 </ResponseField>
 
+<ResponseField name="metrics.stack" type="boolean" default="true">
+  Whether Lumovi offers its admins [a small metrics stack](/metrics/metrics-stack) to install where a cluster has no usage history. When `true`, only [Lumovi’s admins](/server/access) install or remove it, as themselves, so their RBAC decides; where `access.admins` names nobody, nobody can. When `false`, it’s never offered, installed or removed through Lumovi, in any cluster of a fleet.
+</ResponseField>
+
 <ResponseField name="nodeShell.enabled" type="boolean" default="true">
   Whether people can open [shells on nodes](/debug/node-shell) through Lumovi. When `true`, each person's RBAC and the namespace's Pod Security decide, as for `kubectl debug node`. When `false`, nobody can, whatever their RBAC allows, in any cluster of a fleet: a node's **Shell** tab says **Node shells are off**. See [Security](/server/security#shells-on-nodes).
 </ResponseField>

@@ -37,6 +37,7 @@ Lumovi reads it as it starts: restart it after a change. Only when nothing is th
   "kubectl": "https://artifacts.corp.example.com/k8s",
   "kubectlSignatures": "required",
   "kubeconfigFiles": "locked",
+  "metricsStack": false,
   "network": {
     "proxy": "http://proxy.corp.example.com:3128",
     "noProxy": ".corp.example.com",
@@ -98,6 +99,10 @@ A kubectl taken from a mirror without a signature, checked against its SHA-256 o
 Files someone chose or added before the policy came, and clusters they added, are kept, but not read: they're back if the key goes. Leaving it out leaves the files to each person. Anything but `"locked"` makes the policy one that [can't be used](#when-it-can’t-be-used), which locks them too.
 
 It decides which files Lumovi reads, not what's in them: `~/.kube/config` is still each person's to change, and so is a `KUBECONFIG` they start Lumovi with.
+
+### metricsStack
+
+`false` turns [Lumovi’s metrics stack](/metrics/metrics-stack) off: where a cluster has no usage history, Lumovi doesn’t offer to install one, and it refuses to install or remove one. A stack that’s already installed keeps running, and Lumovi keeps charting from it. `true`, or leaving it out, leaves it to each person and their cluster’s RBAC.
 
 ### network
 
