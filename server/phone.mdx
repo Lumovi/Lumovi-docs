@@ -1,0 +1,72 @@
+---
+title: "Lumovi on a phone"
+sidebarTitle: "On a phone"
+description: "A server’s page lays itself out for a narrow screen. On a phone it reads everything you can read, and makes a short list of changes."
+icon: "smartphone"
+---
+
+Lumovi served from a cluster works in a phone’s browser, and a tablet’s. There’s nothing to install and nothing to turn on: the page lays itself out for the room it has. The desktop app is unchanged, since its window is never narrower than 1024 pixels.
+
+| The page’s width | What changes |
+|---|---|
+| 1024 px and up | Nothing: the sidebar, a list, and a detail beside it |
+| 640 to 1023 px | The sidebar is a drawer. A detail opens over the list. Lists stay tables |
+| Under 640 px | One column: lists as rows, a detail as a page of its own, menus and dialogs as sheets from the bottom. And [fewer changes](#what-a-phone-changes) |
+
+It’s the width that decides, not the device. A phone held sideways is usually wider than 640 pixels and gets the middle layout, and a narrow browser window on a computer gets a phone’s.
+
+Wherever the page is used by touch, whatever you press is at least 44 pixels high and nothing needs a hover. Nothing scrolls sideways except a strip of tabs.
+
+## Finding your way
+
+- **The sidebar is a drawer.** The menu button in the top bar opens it. Choosing a page closes it, and so does a tap beside it.
+- **Cluster and Namespace** are two chips under the top bar. Each opens a sheet to choose from.
+- **Search** in the top bar opens the command palette.
+- There are no back and forward buttons of Lumovi’s own: the browser’s do that.
+
+## Lists
+
+Under 640 pixels a list has no table. Each object is two lines: its name and status, then the first facts of its kind and its age. A pod’s second line says "2/2 ready · 0 restarts", a Job’s how many completed, a CronJob’s when it runs next. With every namespace listed, each row starts with its own.
+
+- **Sort** opens a sheet of what the list can be sorted by. Choose one again to turn it around; the sheet says which way in the column’s own words, like "A to Z" or "Worst first".
+- **Filters** open as sheets too.
+- A long name is cut in the middle, so two objects that differ only at the end stay apart.
+- There’s nothing to tick: [selecting several objects](/changes/bulk) needs a larger screen.
+
+## An object’s page
+
+A tap on a row opens the object as a page, with **Back** to return to the list. Under its name it says its kind, namespace and cluster. Its facts are stacked, and its tables are cards.
+
+Its tabs are the ones a larger screen has, except **Shell** and **Map**: a shell needs a keyboard, and a map more room. As you scroll, the top bar takes the object’s name and the tabs stay in view.
+
+On the **Logs** tab, lines wrap. **Follow** starts on and **Timestamps** off. **More** holds the rest: **Show the previous container**, **Copy logs** and **Download**.
+
+The **YAML** tab reads. Editing it needs a larger screen.
+
+## What a phone changes
+
+Under 640 pixels, Lumovi reads everything you can read, and makes these changes, each behind its usual confirmation:
+
+- **Approve or reject a change an AI assistant asks for.** See [below](#approving-an-assistant’s-change).
+- **Restart** a workload.
+- **Restart** a pod that has a controller to replace it.
+- **Scale** a workload.
+- **Cordon** and **Uncordon** a node.
+
+Everything else that changes a cluster or Lumovi’s own settings waits for a larger screen: deleting, editing, creating, rolling back, draining, shells, [copying files](/debug/copy-files) to or from a pod, installing or upgrading a Helm release, applying right-sizing advice, and setting access or what assistants may do.
+
+What isn’t done there isn’t shown: no greyed-out button, no menu of more, and no key or command in the palette that leads to it. Where you’d look for it, one line says where it’s done, like "Open Lumovi on a larger screen to upgrade it, roll it back or uninstall it." A dialog opened with room, then narrowed, closes, unless it’s for one of the changes above.
+
+<Note>
+It is a rule of the phone’s interface, not a security boundary. A server can’t know how wide a screen is: turn the phone sideways, or ask the browser for the desktop site, and everything is offered again. What protects a cluster is what always does: each person’s RBAC, [Lumovi’s access](/server/access) and [read-only mode](/changes/read-only). Nothing on a phone is laxer than on a larger screen, only narrower.
+</Note>
+
+## Approving an assistant’s change
+
+A change an [AI assistant](/assistants/approvals) asks for comes to a phone as a sheet, with everything the dialog shows on a larger screen: who asks and why, the cluster and its **Production** mark, the diff, the command that does the same, and how long it waits.
+
+- **Reject…** is at the left edge and **Approve** at the right.
+- Dragging the sheet down, or a tap outside it, puts the change aside. That isn’t an answer: the change waits, and a line at the bottom of the page brings it back.
+- Any change an assistant may ask for can be approved here, a deletion included. Where a larger screen asks you to type the object’s name first, so does a phone.
+
+Connecting an assistant, and setting what it may do, are done on a larger screen. When an assistant sends you to Lumovi to allow it, that page opens on a phone too.
