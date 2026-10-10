@@ -93,6 +93,7 @@
               "explore/nodes",
               "explore/networking",
               "explore/config-and-storage",
+              "explore/access-control",
               "explore/events",
               "explore/details",
               "explore/map",

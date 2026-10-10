@@ -30,6 +30,11 @@ Lumovi shows every kind your cluster serves. Nineteen common kinds have pages of
 | Volume Claims (PersistentVolumeClaim) | `v1` | Sidebar → Storage | <kbd>G</kbd> <kbd>L</kbd> |
 | Volumes (PersistentVolume) | `v1` | Sidebar → Storage | |
 | Storage Classes | `storage.k8s.io/v1` | Sidebar → Storage | |
+| Roles | `rbac.authorization.k8s.io/v1` | Sidebar → Access control | <kbd>G</kbd> <kbd>R</kbd> |
+| Cluster Roles | `rbac.authorization.k8s.io/v1` | Sidebar → Access control | <kbd>G</kbd> <kbd>K</kbd> |
+| Role Bindings | `rbac.authorization.k8s.io/v1` | Sidebar → Access control | <kbd>G</kbd> <kbd>B</kbd> |
+| Cluster Role Bindings | `rbac.authorization.k8s.io/v1` | Sidebar → Access control | <kbd>G</kbd> <kbd>G</kbd> |
+| Service Accounts | `v1` | Sidebar → Access control | <kbd>G</kbd> <kbd>T</kbd> |
 
 <kbd>⌘</kbd><kbd>K</kbd> is <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux.
 
@@ -89,6 +94,16 @@ Lists of Secrets carry only the names of their keys. Values are read when you op
 | Volume Claims | Capacity, Storage class, Volume | <span className="lumovi-status healthy">Bound</span>, or its phase | Expand volume… |
 | Volumes | Capacity, Claim, Storage class, Reclaim | <span className="lumovi-status healthy">Bound</span>, <span className="lumovi-status healthy">Available</span>, or its phase | |
 | Storage Classes | Default, Provisioner, Reclaim, Binding | | |
+
+## Access control
+
+| Kind | Columns | Status | Actions |
+| --- | --- | --- | --- |
+| Roles, Cluster Roles | Rules | | |
+| Role Bindings, Cluster Role Bindings | Role, Subjects | | |
+| Service Accounts | Secrets | | |
+
+A role's panel has its rules as a table and the bindings that grant it; a binding's has its subjects; a service account's has every binding that reaches it. See [Access control](/explore/access-control).
 
 ## Every other kind
 
