@@ -45,7 +45,7 @@ The desktop app updates itself. In a cluster, Lumovi is upgraded like anything e
 
 ## What people see
 
-A new pod signs nobody out: Lumovi keeps sessions, and the AI assistants people allowed, in a Secret the chart makes (`auth.keepSessions`), which upgrades leave as it is. Open pages reconnect to the new pod by themselves, and carry on. AI assistants open a new connection; those that pass their person's own token on wait until that person opens Lumovi again. See [Across restarts](/server/security#across-restarts). With `auth.keepSessions: false`, a new pod signs everyone out, and open pages show the sign-in page.
+A new pod signs nobody out, with [one exception](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) where single sign-on passes people's tokens on: Lumovi keeps sessions, and the AI assistants people allowed, in a Secret the chart makes (`auth.keepSessions`), which upgrades leave as it is. Open pages reconnect to the new pod by themselves, and carry on. AI assistants open a new connection; those that pass their person's own token on wait until that person opens Lumovi again. See [Across restarts](/server/security#across-restarts). With `auth.keepSessions: false`, a new pod signs everyone out, and open pages show the sign-in page.
 
 The same goes for any change that replaces the pod: changing a setting, or the [views everyone sees](/server/views).
 
