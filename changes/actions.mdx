@@ -50,7 +50,7 @@ Each action's dialog shows its **Equivalent command**, the `kubectl` command tha
 | Autoscalers | Edit replica range |
 | Volume claims | Expand volume |
 | Services | Forward a port (desktop app) |
-| Custom resources | Scale (with the scale subresource), and their [view's](/custom-resources/built-in-views) actions |
+| Custom resources | Scale (with the scale subresource), and their [plugin's](/custom-resources/included-plugins) actions |
 | Everything but events | Edit labels, Edit YAML, Delete |
 
 Actions only show when they apply: **Uncordon** on a cordoned node, **Resume rollout** on a paused deployment, **Shell** on a running pod.
@@ -233,7 +233,7 @@ Most view actions patch the object, with the `kubectl patch` command shown, and 
 - **Values to fill in**: text, a number, or one of a few choices, like the replica count **Pause at…** keeps a KEDA ScaledObject at.
 - **A new object to create**, like the Backup that **Back up now…** makes for a CloudNativePG cluster. The dialog shows the object's YAML before it's created, and the command is `kubectl create -f` with its name. Lumovi checks that you may create that kind, rather than change the object, and the notification has **Open** to go to it.
 
-The dialog's button is the action's name. See [Built-in views](/custom-resources/built-in-views), and [Write a view](/custom-resources/write-a-view) to add actions of your own.
+The dialog's button is the action's name. See [Included plugins](/custom-resources/included-plugins), and [Write a plugin](/custom-resources/write-a-plugin) to add actions of your own.
 
 ## What can be undone
 

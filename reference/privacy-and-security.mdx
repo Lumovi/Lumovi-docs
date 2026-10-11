@@ -126,7 +126,7 @@ They live in Lumovi's folder for app data:
 | Windows | `%APPDATA%\Lumovi` |
 | Linux | `~/.config/Lumovi`, or `$XDG_CONFIG_HOME/Lumovi` |
 
-Lumovi also reads your own [views](/custom-resources/write-a-view) from `~/.lumovi/views`, or the folder `LUMOVI_VIEWS_DIR` names. It never writes there. When you upgrade or install a Helm release, the values go to `helm` in a temporary folder, which Lumovi deletes as soon as `helm` is done.
+Lumovi also reads your own [plugins](/custom-resources/write-a-plugin) from `~/.lumovi/plugins`, or the folder `LUMOVI_PLUGINS_DIR` names. It never writes there. When you upgrade or install a Helm release, the values go to `helm` in a temporary folder, which Lumovi deletes as soon as `helm` is done.
 
 Each [terminal](/debug/terminal) gets a small kubeconfig, in a folder of its own in the system's temporary folder, named `lumovi-terminal-`, the app's process ID, and six random characters. It holds the context's name, its cluster's and user's names, and the namespace: no addresses, and no credentials. On macOS and Linux, only you can read it. Lumovi deletes it when the terminal's shell ends: when the shell exits, when you close its tab, and when you quit. If Lumovi doesn't get to quit, because it crashed or was killed, it deletes what's left the next time it starts.
 

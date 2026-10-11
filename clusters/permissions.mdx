@@ -36,7 +36,7 @@ Lists and details need `list` and `get` on the kinds you look at. Lumovi refresh
 | Custom resources | API discovery, which every account can read, and `list` on the kinds |
 | A cluster's card in a [fleet](/clusters/fleet) | `list` on nodes, pods, Deployments, StatefulSets, DaemonSets and events across that cluster, and node metrics for CPU and memory. A figure you can't list says **No access**. |
 | **Find a workload** in a fleet | `list` on Deployments, StatefulSets, DaemonSets and CronJobs across each cluster |
-| An add-on's page | `list` on each of its kinds |
+| A plugin's page | `list` on each of its kinds |
 | Karpenter's overview | `list` on node pools, node claims and nodes, and on pods in every namespace |
 | The **Map** tab | `list` in the object's namespace on what it shows: pods, workloads, services, ingresses, network policies, autoscalers, disruption budgets, ConfigMaps, Secrets, service accounts and volume claims (and Gateway API gateways and routes, when the cluster serves them). Also `list` on nodes, persistent volumes and storage classes. A kind it can't list still appears where it's referenced, without a status, and so does a route's gateway or service in another namespace, which the map doesn't list. |
 | Field explanations | The cluster's OpenAPI schema, which every account can read |

@@ -11,7 +11,7 @@ Lumovi reads them when it starts, and checks most of them: one that doesn't make
 
 ## Set by the chart itself
 
-The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_VIEWS_DIR` to `/etc/lumovi/views`, where it mounts the [views everyone sees](/server/views), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-it’s-kept), with `access.admins`, `LUMOVI_ACCESS_CONFIGMAP` to `<release>-access`, the ConfigMap it makes for [access](/server/access#where-it’s-kept), with `auth.keepSessions`, `LUMOVI_STATE_SECRET` to `<release>-state`, the Secret it makes to keep sessions across restarts, and `LUMOVI_STATE_KEY` from the Secret of the key they're sealed with, and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
+The chart sets a few of these without a value of its own: `LUMOVI_PORT` to `8080`, the port its Service, probes and network policy point at, `LUMOVI_PLUGINS_DIR` to `/etc/lumovi/plugins`, where it mounts the [plugins everyone sees](/server/plugins), with `audit.persistence`, `LUMOVI_AUDIT_DIR` to `/var/lib/lumovi/audit`, where it mounts the [audit history's volume](/server/audit-log#where-it’s-kept), with `access.admins`, `LUMOVI_ACCESS_CONFIGMAP` to `<release>-access`, the ConfigMap it makes for [access](/server/access#where-it’s-kept), with `auth.keepSessions`, `LUMOVI_STATE_SECRET` to `<release>-state`, the Secret it makes to keep sessions across restarts, and `LUMOVI_STATE_KEY` from the Secret of the key they're sealed with, and in a fleet with `fleet.kubeconfigSecret`, `LUMOVI_FLEET_KUBECONFIG_FILE` to `/etc/lumovi/fleet/kubeconfig`, where it mounts that Secret. For an [agent](/server/fleet/agents), it sets `LUMOVI_AGENT_HEALTH_PORT` to `8081`, where its probes point. Leave these out of `extraEnv`.
 
 The chart puts `extraEnv` after its own variables. When two have the same name, Kubernetes uses the last, so a variable repeated in `extraEnv` wins over the chart's. For the ones above, that breaks Lumovi: it listens on a port nothing sends to, or reads files from a folder the chart doesn't mount. For the others, set the chart's value instead. The chart builds more than the variable on its values, like the permission to impersonate for `auth.mode`, or the probes and the ingress path for `basePath`, while a variable in `extraEnv` changes only Lumovi.
 
@@ -213,8 +213,8 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   Where to search for charts.
 </ResponseField>
 
-<ResponseField name="LUMOVI_VIEWS_DIR" type="string" default="/etc/lumovi/views">
-  Where the views and add-ons everyone sees are. The chart sets it itself, to the folder it mounts its `views` value at.
+<ResponseField name="LUMOVI_PLUGINS_DIR" type="string" default="/etc/lumovi/plugins">
+  Where the plugins everyone sees are. The chart sets it itself, to the folder it mounts its `plugins` value at.
 </ResponseField>
 
 <ResponseField name="LUMOVI_HELM" type="string" default="helm">

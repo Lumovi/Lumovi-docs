@@ -1,34 +1,34 @@
 ---
-title: "Add-ons"
+title: "Plugins"
 description: "Each tool your cluster runs gets an entry in the sidebar, leading to everything of its kinds in one list, what's failing first, with a tab for each kind."
 icon: "package"
 ---
 
-An add-on gathers the kinds of one tool, like Flux, cert-manager or Karpenter, under one entry in the sidebar. Its page lists everything of those kinds together, the way [Workloads](/explore/workloads) does: one list, what's failing first, and a tab for each kind.
+A plugin gathers the kinds of one tool, like Flux, cert-manager or Karpenter, under one entry in the sidebar. Its page lists everything of those kinds together, the way [Workloads](/explore/workloads) does: one list, what's failing first, and a tab for each kind.
 
-Lumovi ships add-ons for 32 tools, from Argo CD to Velero, and shows the ones your cluster runs. However many CRDs a cluster has, the tools on it are a click away. See [Built-in views](/custom-resources/built-in-views) for every add-on and what it covers.
+Lumovi ships plugins for 32 tools, from Argo CD to Velero, and shows the ones your cluster runs. However many CRDs a cluster has, the tools on it are a click away. See [Included plugins](/custom-resources/included-plugins) for every plugin and what it covers.
 
-<Frame caption="Flux's add-on: everything Flux runs in one list, what's failing first, and a tab for each of its kinds.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/add-on-light-1x.webp" alt="Flux's add-on page: tabs for All, Kustomizations, HelmReleases and GitRepositories, and one list of five objects with their type, status and message, a Kustomization that failed to build first." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/add-on-dark-1x.webp" alt="Flux's add-on page: tabs for All, Kustomizations, HelmReleases and GitRepositories, and one list of five objects with their type, status and message, a Kustomization that failed to build first." />
+<Frame caption="Flux's plugin: everything Flux runs in one list, what's failing first, and a tab for each of its kinds.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/add-on-light-1x.webp" alt="Flux's plugin page: tabs for All, Kustomizations, HelmReleases and GitRepositories, and one list of five objects with their type, status and message, a Kustomization that failed to build first." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/add-on-dark-1x.webp" alt="Flux's plugin page: tabs for All, Kustomizations, HelmReleases and GitRepositories, and one list of five objects with their type, status and message, a Kustomization that failed to build first." />
 </Frame>
 
 ## In the sidebar
 
-An add-on shows up once the cluster serves one of its tool's kinds. Lumovi looks at what the cluster serves again every minute, so a tool you just installed appears on its own, and one you removed goes away.
+A plugin shows up once the cluster serves one of its tool's kinds. Lumovi looks at what the cluster serves again every minute, so a tool you just installed appears on its own, and one you removed goes away.
 
-- **Under Add-ons.** Most add-ons sit in a section of their own, by name, between **Pinned** and **Custom resources**.
-- **With Kubernetes' own kinds.** Add-ons that extend what Kubernetes does sit at the end of that section: **Cilium**, **Gateway API**, **Linkerd** and **Traefik** under **Network**, **Sealed Secrets** under **Configuration**, and **Longhorn**, **Rook Ceph** and **Volume Snapshots** under **Storage**.
+- **Under Plugins.** Most plugins sit in a section of their own, by name, between **Pinned** and **Custom resources**.
+- **With Kubernetes' own kinds.** Plugins that extend what Kubernetes does sit at the end of that section: **Cilium**, **Gateway API**, **Linkerd** and **Traefik** under **Network**, **Sealed Secrets** under **Configuration**, and **Longhorn**, **Rook Ceph** and **Volume Snapshots** under **Storage**.
 
-An add-on's entry stays highlighted on its page and on its kinds' lists. Its kinds are left out of the kinds you opened lately, under **Custom resources**, since they're a click away already. To keep one of them at hand anyway, [pin it](/custom-resources/overview#a-short-sidebar-however-many-crds).
+A plugin's entry stays highlighted on its page and on its kinds' lists. Its kinds are left out of the kinds you opened lately, under **Custom resources**, since they're a click away already. To keep one of them at hand anyway, [pin it](/custom-resources/overview#a-short-sidebar-however-many-crds).
 
-The command palette (<kbd>⌘</kbd><kbd>K</kbd>) finds add-ons too, marked **Add-on**: by their name, or by the name of any of their kinds, so typing `certificates` offers **cert-manager**. (⌘ is Ctrl on Windows and Linux.)
+The command palette (<kbd>⌘</kbd><kbd>K</kbd>) finds plugins too, marked **Plugin**: by their name, or by the name of any of their kinds, so typing `certificates` offers **cert-manager**. (⌘ is Ctrl on Windows and Linux.)
 
-## The add-on's page
+## The plugin's page
 
 ### Tabs
 
-**All** comes first, then a tab for each of the tool's kinds that the cluster serves, in the add-on's order, with how many objects it has. A kind's tab is its usual list, with its view's columns and actions, and the add-on's tabs stay above it. When there are more tabs than fit, they scroll sideways.
+**All** comes first, then a tab for each of the tool's kinds that the cluster serves, in the plugin's order, with how many objects it has. A kind's tab is its usual list, with its view's columns and actions, and the plugin's tabs stay above it. When there are more tabs than fit, they scroll sideways.
 
 Counts and lists follow the [namespace](/clusters/namespaces) you picked. Kinds without namespaces are always the whole cluster's, and when all of a tool's kinds are, like Karpenter's, the namespace picker says **Cluster-wide**.
 
@@ -57,11 +57,11 @@ Click a row to open its details, with what its kind's view adds: details, links,
 - **Nothing yet.** With no objects, the page says **Nothing from Flux in shop** (or **in this cluster**), and which kinds would show up here.
 - **A kind it couldn't list.** When you can't list one of the kinds, a line above the list says **Couldn't list**, which kind, and why. The other kinds still show.
 - **A long list.** Lists that are too long to load whole are cut short, and the page says some objects may be missing. Choose a namespace, or use **Filter by label**.
-- **A tool the cluster doesn't have.** An add-on's page opened from a link, in a cluster without the tool, says **This cluster doesn't have it**: none of its kinds are served there.
+- **A tool the cluster doesn't have.** A plugin's page opened from a link, in a cluster without the tool, says **This cluster doesn't have it**: none of its kinds are served there.
 
 ## Karpenter
 
-[Karpenter](https://karpenter.sh)'s add-on opens on an overview of its own instead of a list: its node pools against their limits, the nodes they launched and the ones launching, the mix of instance types, capacity types and zones, what's being disrupted, and the pods waiting for a node. Its first tab is **Overview**, and its kinds' tabs (NodePools, NodeClaims, and the node classes) follow.
+[Karpenter](https://karpenter.sh)'s plugin opens on an overview of its own instead of a list: its node pools against their limits, the nodes they launched and the ones launching, the mix of instance types, capacity types and zones, what's being disrupted, and the pods waiting for a node. Its first tab is **Overview**, and its kinds' tabs (NodePools, NodeClaims, and the node classes) follow.
 
 <Frame caption="Karpenter's node pools against their limits, the nodes they launched, and what's being replaced or waiting for a node.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/karpenter-light-1x.webp" alt="Karpenter's overview: tiles for node pools ready, nodes ready, launching and being replaced; three node pools with their CPU and memory against their limits; nodes grouped by node pool with their usage and one still launching; and the mix of instance types, capacity types and zones." />
@@ -116,13 +116,13 @@ The pods the scheduler couldn't place anywhere, which Karpenter launches nodes f
 
 The overview reads node pools, node claims and nodes, and pods in every namespace, so it needs `list` on all four. A card whose list you can't read says why, and the others still show.
 
-## Your own add-ons
+## Your own plugins
 
-An add-on is a short YAML document of kind `AddOn`, kept with your [views](/custom-resources/write-a-view), in `~/.lumovi/views`:
+A plugin is one short YAML file, a document of kind `Plugin`, in `~/.lumovi/plugins`. This one gives two kinds of your own a place in the sidebar:
 
 ```yaml platform.yaml
 apiVersion: lumovi.dev/v1alpha1
-kind: AddOn
+kind: Plugin
 metadata:
   name: platform
 spec:
@@ -133,22 +133,23 @@ spec:
     - { group: platform.example.com, kind: DatabaseBackup }
 ```
 
-Press <kbd>⌘</kbd><kbd>R</kbd>, and **Platform** appears under **Add-ons**, with a tab for each kind.
+Press <kbd>⌘</kbd><kbd>R</kbd>, and **Platform** appears under **Plugins**, with a tab for each kind.
 
 - **`kinds`** are the tabs, in order. `kind: '*'` with a `group` is every kind of that group, each with a tab.
-- **`icon`** is one of the [view icons](/reference/view-format#icons).
+- **`label`** is its name in the sidebar, and needed with `kinds`.
+- **`icon`** is one of the [icons](/reference/plugin-format#icons).
 - **`category`** puts it at the end of one of Kubernetes' sections instead: `cluster`, `network`, `config` or `storage`.
-- Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be in an add-on.
+- Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be in a plugin.
 
-An add-on only groups kinds. How each kind looks, its columns, status and actions, comes from its view.
+A place in the sidebar only groups kinds. How each kind looks, its columns, status and actions, comes from a view, which a plugin holds under `views:`. See [Write a plugin](/custom-resources/write-a-plugin).
 
 ### Replacing one of Lumovi's
 
-Give yours the same `metadata.name` as Lumovi's, like `flux` or `cert-manager` ([Built-in views](/custom-resources/built-in-views) gives each one's name). Yours replaces it whole: its label, icon, place and kinds. The kinds' views stay as they are.
+Give yours the same `metadata.name` as Lumovi's, like `flux` or `cert-manager` ([Included plugins](/custom-resources/included-plugins) gives each one's name). Yours replaces its place whole: its label, icon, section and kinds.
 
-```yaml
+```yaml flux.yaml
 apiVersion: lumovi.dev/v1alpha1
-kind: AddOn
+kind: Plugin
 metadata:
   name: flux
 spec:
@@ -159,17 +160,21 @@ spec:
     - { group: helm.toolkit.fluxcd.io, kind: HelmRelease }
 ```
 
-If something's wrong with an add-on, **API resources** says so at the top, as it does for views. Every field is in the [view format](/reference/view-format#add-ons).
+Views are another matter: they're matched kind by kind, whatever plugin they're in. So a view of yours for a kind replaces Lumovi's for that kind, and every other kind keeps Lumovi's. A plugin of yours with Lumovi's name and views only leaves Lumovi's place in the sidebar as it is.
+
+### When something's wrong with it
+
+A plugin is used whole or not at all. If anything in its file is wrong, none of it is used, and **API resources** lists everything wrong with it at the top. When that leaves one of Lumovi's in use in place of yours, one more line says so: "my-flux.yaml: isn’t in use, so Lumovi’s Flux is shown instead". Every field, and every message, is in the [plugin format](/reference/plugin-format).
 
 <Note>
-  **In your cluster:** add-ons everyone sees go in the chart's `views` value, with the views. People can't add their own from a browser. See [Views for everyone](/server/views).
+  **In your cluster:** plugins everyone sees go in the chart's `plugins` value. People can't add their own from a browser. See [Plugins for everyone](/server/plugins).
 </Note>
 
 <Columns cols={2}>
-  <Card title="Built-in views" icon="blocks" href="/custom-resources/built-in-views">
-    Every add-on Lumovi ships, and what its views add.
+  <Card title="Included plugins" icon="blocks" href="/custom-resources/included-plugins">
+    Every plugin Lumovi comes with, and what its views add.
   </Card>
-  <Card title="View format" icon="braces" href="/reference/view-format#add-ons">
-    Every field an add-on can have.
+  <Card title="Plugin format" icon="braces" href="/reference/plugin-format">
+    Every field a plugin can have.
   </Card>
 </Columns>
