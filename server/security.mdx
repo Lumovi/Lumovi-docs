@@ -97,7 +97,7 @@ Each entry is sealed (AES-256-GCM) with the state's key, and filed under an HMAC
 | Without Kubernetes | `state.json` in `LUMOVI_DATA_DIR` | `state.key` beside it, which Lumovi makes as it first starts, only its user's |
 | Neither | Memory | A new one each start |
 
-Lumovi writes the state about 50 ms after something changes, and as it stops. What mustn't come back is kept before it's answered: a sign-out, and an assistant let go or signed out. When that can't be kept, Lumovi says so instead of saying it's done: see [When it can't be kept](#when-it-can’t-be-kept). Uninstalling the chart deletes both Secrets, and signs everyone out. With `auth.keepSessions: false`, nothing is kept but in memory, and a restart signs everyone out.
+Lumovi writes the state about 50 ms after something changes, and as it stops. A change made in the moment before Lumovi dies, or while it's stopping, can be missing after the restart. For a person's token that was [renewed](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) just then, with a provider that refuses a refresh token once it's used, it means that person signs in again after the restart. What mustn't come back is kept before it's answered: a sign-out, and an assistant let go or signed out. When that can't be kept, Lumovi says so instead of saying it's done: see [When it can't be kept](#when-it-can’t-be-kept). Uninstalling the chart deletes both Secrets, and signs everyone out. With `auth.keepSessions: false`, nothing is kept but in memory, and a restart signs everyone out.
 
 Not kept: the changes assistants asked for that were waiting for an answer (the assistant asks again), sign-ins under way, and assistants' connections, which they open again by themselves.
 
