@@ -108,6 +108,7 @@
               "changes/actions",
               "changes/yaml",
               "changes/create",
+              "changes/create-form",
               "changes/bulk",
               "changes/read-only",
               "changes/undo-and-activity"

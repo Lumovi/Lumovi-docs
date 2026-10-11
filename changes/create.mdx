@@ -1,16 +1,13 @@
 ---
 title: "Create objects"
 sidebarTitle: "Create"
-description: "Create one object or several from YAML, starting from a template or pasted, with the cluster checking all of them before any is created."
+description: "Create objects from a form or from YAML, one or several, with the cluster checking all of them before any is created."
 icon: "file-plus"
 ---
 
-Create anything the cluster serves from YAML: a quick Deployment to try something, a ConfigMap, or a whole set of objects pasted from a file. Nothing is created until the cluster has checked every one of them.
+Create anything the cluster serves: a quick Deployment to try something, a ConfigMap, or a whole set of objects pasted from a file. Nothing is created until the cluster has checked every one of them.
 
-<Frame caption="Creating objects from YAML, starting from a template.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/create-light-1x.webp" alt="The Create dialog with template buttons, a YAML editor holding a Deployment, and the kubectl create command." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/create-dark-1x.webp" alt="The Create dialog with template buttons, a YAML editor holding a Deployment, and the kubectl create command." />
-</Frame>
+Create has two sides, **Form** and **YAML**, with a switch at the top. [The form](/changes/create-form) asks the essentials of nine common kinds and writes the YAML beside them. The YAML side, which this page is about, takes any kind and several objects at once. The first time, Create opens on the form; after that, on the side you used last.
 
 ## Open it
 
@@ -22,7 +19,9 @@ Create anything the cluster serves from YAML: a quick Deployment to try somethin
   **In your cluster:** browsers keep <kbd>⌘</kbd><kbd>N</kbd> for a new window, so use the **+** button or the command palette.
 </Note>
 
-## Create objects
+## Create from YAML
+
+Choose **YAML** at the top.
 
 <Steps>
   <Step title="Start from a template, or paste your own">
@@ -88,6 +87,9 @@ The equivalent command is `kubectl create -f objects.yaml`, with the namespace a
 In a [read-only](/changes/read-only) cluster, the dialog opens, but says that changes are turned off, and **Create** stays disabled.
 
 <Columns cols={2}>
+  <Card title="Create with the form" icon="list-checks" href="/changes/create-form">
+    Nine common kinds, with the YAML written beside the fields.
+  </Card>
   <Card title="Edit YAML" icon="file-code" href="/changes/yaml">
     Change an existing object, with a dry run and a diff first.
   </Card>

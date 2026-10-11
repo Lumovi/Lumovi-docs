@@ -43,7 +43,7 @@ Each entry shows:
 
 - **What happened**, like "Restarted checkout". Choose it to open the object, when it's in the cluster you're looking at.
 - **When**, and the cluster, when it's another one than you're looking at.
-- **Its status**: In progress, Done, Failed (with the reason), or Rejected.
+- **Its status**: In progress, Done, Failed (with the reason), or Rejected. For a change to a Secret that failed, the reason is a code and one sentence, not the cluster’s words: "It failed (invalid). What the cluster said of the Secret isn’t kept here: it can quote its values." The dialog that made the change still shows what the cluster said.
 - **Who asked**, for a change an [AI assistant](/assistants/overview) asked for: "via Claude Code", or "rejected, asked by Claude Code" for one you rejected, with the note you wrote.
 - **The kubectl command** that does the same thing, with **Copy command**.
 

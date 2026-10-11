@@ -1,0 +1,116 @@
+---
+title: "Create with the form"
+sidebarTitle: "The form"
+description: "Fill in the essentials of nine common kinds while Lumovi writes the YAML beside them. Either side can be edited, and the YAML is what’s created."
+icon: "list-checks"
+---
+
+**Create…** opens on two sides: **Form** and **YAML**. The form asks for the essentials of nine kinds and writes the YAML as you type. The YAML is beside it the whole time, and it’s what gets created: the form is a way of writing it, not something else.
+
+<Frame caption="Creating a Deployment from the form, with the YAML it writes beside it.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/create-light-1x.webp" alt="The Create dialog on its Form side. On the left, a Deployment’s fields: Name web, Namespace, Replicas, and under Container the Image nginx:1.27 with its path, and Port 80. On the right, the YAML those fields write, with the image’s line lit." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/create-dark-1x.webp" alt="The Create dialog on its Form side. On the left, a Deployment’s fields: Name web, Namespace, Replicas, and under Container the Image nginx:1.27 with its path, and Port 80. On the right, the YAML those fields write, with the image’s line lit." />
+</Frame>
+
+[Open Create](/changes/create#open-it) as always. The first time it opens on the form; after that, on the side you used last. **Form | YAML** at the top switches. The [YAML side](/changes/create) is Create as it has always been, for any kind and for several objects at once, and each side has its own text: switching doesn’t carry what you wrote from one to the other.
+
+## The nine kinds
+
+Choose one under **Kind**. Each starts from a blank the form wrote, so choosing a kind starts over.
+
+| Kind | What the form asks |
+| --- | --- |
+| **Deployment** | Name, namespace, replicas; its container’s image, command, port, environment, requests and limits |
+| **StatefulSet** | The same, with its headless Service and storage for each pod: size, storage class, where it’s mounted |
+| **DaemonSet** | The same without replicas: it runs one pod on every node |
+| **Job** | Its container, how many retries, and what happens when a pod fails |
+| **CronJob** | A Job’s fields, its schedule, and what happens if the last run is still going |
+| **Service** | Its type, the labels of the pods it sends traffic to, and its ports |
+| **ConfigMap** | Keys and values. A value can have several lines |
+| **Secret** | Keys and values, [hidden](#a-secret’s-values) until you ask |
+| **PersistentVolumeClaim** | Size, storage class, and who can mount it |
+
+A few fields say more than they ask:
+
+- **Namespace** starts at the one chosen in the header. When the header shows all namespaces, it starts at `default`, and says so: "No namespace is chosen in the header, so it starts at `default`. Choose another here."
+- A CronJob’s **Schedule** takes cron’s five fields and reads them back in words, with the time zone: "Every day at 02:30, in the cluster’s time zone (usually UTC)." For a schedule that’s valid but has no plain words, it says so, and asks you to check it against what you meant.
+- A Service’s **Type** says what each of the three means, and under its labels it says how many pods match them now. A port’s row is the Service’s port, then the pod’s port, by number or by the name the pod gives it.
+- A PersistentVolumeClaim says that its size can grow later where the class allows it, and can’t shrink.
+
+## The form and the YAML stay in step
+
+- **Edit either side.** Type in a field, and its lines in the YAML change. Edit the YAML, and the fields follow.
+- **Each field names the path it writes**, like `spec.replicas`, and its lines in the YAML light up while the field has the focus.
+- **What’s wrong is said under its field as you type**, with its lines marked: a name that can’t be a name, a port that isn’t a number, a value the YAML has as a number where the cluster wants text.
+- **What the cluster refuses is said under the field it names**, after its dry run, as "The cluster refused it: …".
+- **What the form has no field for is kept.** If the YAML sets something else, a strategy or a node selector, the form names it and leaves it as it is: "The YAML also sets `spec.strategy`. The form has no field for it, and keeps it as it is."
+
+### What a form edit changes in YAML you wrote
+
+A field’s edit changes its own characters and nothing around them. Comments, the order of keys, blank lines and keys the form has no field for stay as you wrote them. Four things to know if you paste YAML and then use the fields:
+
+- A value the form replaces is written plainly, with quotes only where YAML needs them. Values it doesn’t touch keep their quoting. So pasted JSON stays valid YAML, but stops being JSON once a field changes a value in it.
+- A map or list written in brackets (`{…}`, `[…]`) that gains or loses something is written again with standard spacing. Nothing outside it changes.
+- What the form adds is indented by two spaces, whatever the rest of the text uses.
+- The editor holds text with plain line ends, however it arrived, and that’s what’s created. A byte-order mark at the start is kept.
+
+## When the form steps back
+
+Some YAML is more than the form’s fields can show. The form then steps back: its fields dim, it says "The form can’t show this YAML" and why, and the YAML goes on being exactly what’s created. Its heading says "Edited by hand. This is what gets created."
+
+It steps back for:
+
+- YAML that doesn’t parse, or isn’t an object with keys;
+- more than one document: the form edits one;
+- two or more containers, or a StatefulSet with more than one claim for each pod;
+- a container whose command isn’t run as `sh -c`, which is how the form’s **Command** field writes one;
+- a Service of a type other than ClusterIP, NodePort and LoadBalancer;
+- a Secret of a type other than Opaque;
+- a claim that asks for more than one way to be mounted;
+- a label, a port’s setting or a value that holds more than one value, where the form’s field takes one.
+
+The form says which of these it is, and where.
+
+**Go back to the form’s version** returns to the last text the form could show. Or keep editing the YAML: when it’s something the form can show again, the fields come back by themselves.
+
+Once in a while a field’s edit can’t be made without rewriting more of your YAML than its own lines, because of how it’s written. The form doesn’t make it, and says so.
+
+## A Secret’s values
+
+A Secret’s values are hidden on both sides each time you choose the Secret kind, until you choose **Show values**, above the YAML.
+
+While they’re hidden:
+
+- **The YAML that’s shown is another text**, with `••••••••` in place of every value under `data` and `stringData`. It can be read and copied, and holds none of the values. It’s read-only: edit through the form, or show the values first.
+- **Comments inside those blocks are hidden too**, since that’s where an old value is often left.
+- **A field never shows the value the YAML has.** It shows that there is one. What you type into it is drawn as dots and replaces the value. The number of dots is the length of what you typed, and what you’ve typed can be copied out of the field until you leave it.
+- **The cluster’s words are kept back.** If the cluster refuses the Secret, it may quote a value, so the form says only "The cluster refused it. Choose Show values to read what it said."
+- **A Secret copied out of a cluster is hidden whole.** `kubectl apply` leaves a copy of the object, values and all, in the annotation `kubectl.kubernetes.io/last-applied-configuration`; its value is hidden with the rest.
+
+What isn’t hidden, so you know:
+
+- **Keys, and the Secret’s `type`.**
+- **Comments outside the `data` and `stringData` blocks**, including one on the `type:` line.
+- **The YAML side of Create**, and a Secret typed under another kind: both show it as written.
+- **Values that can’t be told from the rest.** Where the text isn’t YAML as it stands, or a value comes through an alias or a merge key (so it’s written somewhere else in the text), Lumovi can’t hide it value by value and doesn’t pretend to: the values stay showing, **Hide values** is off, and a line above the YAML says why. This can only happen while you’re already showing them.
+
+**Show values** stays on until you choose **Hide values**, choose another kind, or close the dialog. The form writes values as text under `stringData`. The cluster stores them base64-encoded, which isn’t encryption, and the form says so.
+
+A change to a Secret that fails is in the [activity log](/changes/undo-and-activity) as having failed, without what the cluster said, for the same reason.
+
+## Creating it
+
+**Create** is ready once nothing is missing and nothing typed is wrong. It works as on the YAML side: the cluster [checks it first](/changes/create#how-it’s-checked) with a dry run, and nothing is created if it’s refused. In a [read-only](/changes/read-only) cluster the form opens, says that changes are turned off, and **Create** stays disabled.
+
+<Note>
+  **In your cluster:** the form works on a tablet as well as a computer. On a [phone](/server/phone), Create isn’t offered.
+</Note>
+
+<Columns cols={2}>
+  <Card title="Create from YAML" icon="file-plus" href="/changes/create">
+    Any kind, several objects at once, from a template or pasted.
+  </Card>
+  <Card title="Edit YAML" icon="file-code" href="/changes/yaml">
+    Change an existing object, with a dry run and a diff first.
+  </Card>
+</Columns>
