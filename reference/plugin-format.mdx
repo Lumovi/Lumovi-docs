@@ -1,53 +1,54 @@
 ---
-title: "View format"
-description: "Every field a Lumovi view or add-on can have: kinds, columns, status rules, details, links, related lists and actions, with the paths, conditions and templates they use."
+title: "Plugin format"
+description: "Every field a Lumovi plugin can have: its place in the sidebar, and its views' kinds, columns, status rules, details, links, related lists and actions, with the paths, conditions and templates they use."
 icon: "braces"
 ---
 
-A view is a YAML document of kind `View`: it tells Lumovi how to show a kind. An add-on is a document of kind `AddOn`: it gives a tool an entry in the sidebar, with all its kinds on one page. This page lists everything both can say. For a guided introduction, see [Write a view](/custom-resources/write-a-view) and [Add-ons](/custom-resources/add-ons).
+A plugin is a YAML file with one document of kind `Plugin`. Its `spec` can hold a place in the sidebar, for a tool whose kinds belong together on one page, and views: under `views:`, a view tells Lumovi how to show a kind. This page lists everything a plugin can say. For a guided introduction, see [Write a plugin](/custom-resources/write-a-plugin) and [Plugins](/custom-resources/plugins).
 
-```yaml
+```yaml certificates.yaml
 apiVersion: lumovi.dev/v1alpha1
-kind: View
+kind: Plugin
 metadata:
-  name: cert-manager-certificates
+  name: certificates
 spec:
-  kinds:
-    - { group: cert-manager.io, kind: Certificate }
-  icon: shield-check
-  columns:
-    - { name: Hosts, path: '.spec.dnsNames[*]' }
-    - { name: Secret, path: .spec.secretName }
-    - { name: Expires, path: .status.notAfter, type: date }
-  status:
-    - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'True' }
-      health: healthy
-      label: Ready
-    - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'False' }
-      health: critical
-      label: '{{ .status.conditions[?(@.type=="Ready")].reason ?? "Not ready" }}'
-      detail: '{{ .status.conditions[?(@.type=="Ready")].message }}'
-  details:
-    - { name: Issuer, path: .spec.issuerRef.name }
-    - { name: Renews, path: .status.renewalTime, type: date }
-  links:
-    - name: Secret
-      kind: Secret
-      objectName: '{{ .spec.secretName }}'
-    - name: Issuer
-      kind: '{{ .spec.issuerRef.kind ?? "Issuer" }}.cert-manager.io'
-      objectName: '{{ .spec.issuerRef.name }}'
+  views:
+    - kinds:
+        - { group: cert-manager.io, kind: Certificate }
+      icon: shield-check
+      columns:
+        - { name: Hosts, path: '.spec.dnsNames[*]' }
+        - { name: Secret, path: .spec.secretName }
+        - { name: Expires, path: .status.notAfter, type: date }
+      status:
+        - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'True' }
+          health: healthy
+          label: Ready
+        - when: { path: '.status.conditions[?(@.type=="Ready")].status', equals: 'False' }
+          health: critical
+          label: '{{ .status.conditions[?(@.type=="Ready")].reason ?? "Not ready" }}'
+          detail: '{{ .status.conditions[?(@.type=="Ready")].message }}'
+      details:
+        - { name: Issuer, path: .spec.issuerRef.name }
+        - { name: Renews, path: .status.renewalTime, type: date }
+      links:
+        - name: Secret
+          kind: Secret
+          objectName: '{{ .spec.secretName }}'
+        - name: Issuer
+          kind: '{{ .spec.issuerRef.kind ?? "Issuer" }}.cert-manager.io'
+          objectName: '{{ .spec.issuerRef.name }}'
 ```
 
 ## Files
 
 | | Desktop app | In your cluster |
 | --- | --- | --- |
-| **Where** | `~/.lumovi/views`, or the folder in `LUMOVI_VIEWS_DIR` | The chart's `views` value, mounted at `/etc/lumovi/views` |
+| **Where** | `~/.lumovi/plugins`, or the folder in `LUMOVI_PLUGINS_DIR` | The chart's `plugins` value, mounted at `/etc/lumovi/plugins` |
 | **Which files** | Files and links whose names end in `.yaml` or `.yml`, in the folder itself, not in subfolders. A link is followed to the file it points to. Lumovi reads them in order of their names, up to 200, each up to 256 KB. | The same. Kubernetes mounts each entry as a link, which Lumovi follows. |
-| **Reloading** | Press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux) | Change the chart's `views` value and upgrade the release |
+| **Reloading** | Press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux) | Change the chart's `plugins` value and upgrade the release |
 
-A file can hold several documents separated by `---`, views and add-ons in any mix. Each is checked on its own: one with a problem isn't used, and the others are. Files are read on their own too: one that can't be read, like a link to nothing, is listed as a [problem](#problems), and the others load.
+A file is one plugin: one document. It's used whole or not at all: if anything in it is wrong, none of it is used, and everything wrong with it is listed as a [problem](#problems). Files are read on their own: one with a problem, or one that can't be read, like a link to nothing, doesn't stop the others loading.
 
 ## Which view a kind uses
 
@@ -58,11 +59,11 @@ Each kind gets one view. Lumovi takes the first it finds:
 3. Lumovi's, for the kind.
 4. Lumovi's, for every kind of its group.
 
-So your views replace Lumovi's one kind at a time. If Lumovi's view covers five kinds and yours covers one of them, the other four keep Lumovi's. If two of your views name the same kind, the one read last wins: files are read in order of their names, and documents in the order they come in.
+So your views replace Lumovi's one kind at a time, whichever of your plugins they're in. If Lumovi's view covers five kinds and yours covers one of them, the other four keep Lumovi's. If two of your views name the same kind, the one read last wins: files are read in order of their names, and a plugin's views in the order they come in.
 
-Add-ons are matched by name instead: an add-on of yours replaces Lumovi's add-on with the same `metadata.name`, whole. See [Add-ons](#add-ons).
+A place in the sidebar is matched by name instead: a plugin of yours with the same `metadata.name` as one of Lumovi's replaces its place whole. See [spec](#spec).
 
-**API resources** shows which view each kind uses: **Lumovi**, or the name of your file.
+**API resources** says what shows each kind, under **Shown by**: the plugin's name as the sidebar has it, the name of your file, **Lumovi**, or a dash for a kind nothing shows specially. Lumovi has views of its own for a few of Kubernetes' kinds that have no page, like CustomResourceDefinitions. They aren't plugins and aren't among the [included ones](/custom-resources/included-plugins); **Shown by** says **Lumovi** for them.
 
 ## The document
 
@@ -71,20 +72,70 @@ Add-ons are matched by name instead: an add-on of yours replaces Lumovi's add-on
 </ResponseField>
 
 <ResponseField name="kind" type="string" required>
-  `View` or `AddOn`.
+  Always `Plugin`.
 </ResponseField>
 
 <ResponseField name="metadata.name" type="string" required>
-  Its name. It appears in problem messages, so make it recognizable. An add-on's name is also its address, and what decides which of Lumovi's add-ons yours replaces.
+  The plugin's name. It's the address of its page (`plugins/platform`), and what decides which of Lumovi's places in the sidebar yours replaces.
 </ResponseField>
 
 <ResponseField name="spec" type="object" required>
-  What it says: below for a view, and in [Add-ons](#add-ons) for an add-on. Any field it doesn't know is a problem, so typos don't go unnoticed.
+  What it says: see [spec](#spec). Any field it doesn't know is a problem, so typos don't go unnoticed.
 </ResponseField>
 
 ## spec
 
-A view's `spec`:
+A plugin's `spec` holds a place in the sidebar, views, or both. A file with one view and nothing else is a plugin too, the smallest one.
+
+```yaml platform.yaml
+apiVersion: lumovi.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: platform
+spec:
+  label: Platform
+  icon: database
+  kinds:
+    - { group: platform.example.com, kind: Database }
+    - { group: platform.example.com, kind: DatabaseBackup }
+  views:
+    - kinds:
+        - { group: platform.example.com, kind: Database }
+      columns:
+        - { name: Engine, path: .spec.engine }
+```
+
+<ResponseField name="kinds" type="list">
+  The kinds of its place in the sidebar, in the order of their tabs: an entry in the sidebar leads to a page with all of them, everything in one list and a tab for each. Written as a view's [kinds](#a-view): `kind: '*'` is every kind of a group, each with a tab, in order of their names. Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be among them. See [Plugins](/custom-resources/plugins).
+</ResponseField>
+
+<ResponseField name="label" type="string">
+  Its name in the sidebar, on its page and in the command palette. Required with `kinds`.
+</ResponseField>
+
+<ResponseField name="icon" type="string">
+  One of the [icons](#icons). Without one, it gets the puzzle piece of custom resources.
+</ResponseField>
+
+<ResponseField name="category" type="string">
+  A section of the sidebar for Kubernetes' own kinds to sit in, at its end: `cluster` (**Cluster**), `network` (**Network**), `config` (**Configuration**) or `storage` (**Storage**). Without one, it's under **Plugins**.
+</ResponseField>
+
+<ResponseField name="views" type="list of views">
+  How its kinds are shown: see [A view](#a-view). A plugin needs views, or `kinds` for a place in the sidebar.
+</ResponseField>
+
+A label, an icon and a category are for a place in the sidebar, so they need `kinds`. A place only groups kinds: how each kind looks, its columns, status and actions, comes from a view, matched by kind, in this plugin or another.
+
+One of yours with the same `metadata.name` as one of Lumovi's replaces its place whole: its label, icon, section and kinds. One with that name and views only leaves Lumovi's place as it is, and replaces views kind by kind. [Included plugins](/custom-resources/included-plugins) lists Lumovi's plugins and their names.
+
+## A view
+
+Each item under `views:`:
+
+<ResponseField name="name" type="string">
+  A name of its own, if you like. Nothing depends on it.
+</ResponseField>
 
 <ResponseField name="kinds" type="list" required>
   The kinds it's for, at least one. Each is a `kind` and its API `group`. Leave out `group` for the core group's kinds.
@@ -195,7 +246,7 @@ A path can also be written `{.spec.x}` or `$.spec.x`. When a path finds several 
 </ResponseField>
 
 <ResponseField name="detail" type="template">
-  More about it, shown on hover, and in an add-on's **Message** column.
+  More about it, shown on hover, and in a plugin's **Message** column.
 </ResponseField>
 
 ## Conditions
@@ -484,75 +535,47 @@ Creating something can't be undone from the notification: delete what it made in
 
 An action is enabled only when the cluster says your account may make the change: `patch` on the kind (or on its `status`, with `subresource: status`) for a patch, and `create` on the kind it creates for a `create`. Like every change, it shows the equivalent command, `kubectl patch …` or `kubectl create -f <name>.yaml`, and is refused in a [read-only](/changes/read-only) cluster.
 
-## Add-ons
-
-An add-on gives a tool an entry in the sidebar, leading to a page with all its kinds: everything in one list, and a tab for each kind. See [Add-ons](/custom-resources/add-ons).
-
-```yaml
-apiVersion: lumovi.dev/v1alpha1
-kind: AddOn
-metadata:
-  name: platform
-spec:
-  label: Platform
-  icon: database
-  kinds:
-    - { group: platform.example.com, kind: Database }
-    - { group: platform.example.com, kind: DatabaseBackup }
-```
-
-An add-on's `metadata.name` is its address (`add-ons/platform`). One of yours with the same name as one of Lumovi's replaces it whole: its label, icon, place and kinds. [Built-in views](/custom-resources/built-in-views) lists Lumovi's add-ons and their names.
-
-<ResponseField name="label" type="string" required>
-  Its name in the sidebar, on its page and in the command palette.
-</ResponseField>
-
-<ResponseField name="kinds" type="list" required>
-  Its kinds, at least one, in the order of their tabs. Written as a view's [kinds](#spec): `kind: '*'` is every kind of a group, each with a tab, in order of their names. Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be in an add-on.
-</ResponseField>
-
-<ResponseField name="icon" type="string">
-  One of the [icons](#icons). Without one, it gets the puzzle piece of custom resources.
-</ResponseField>
-
-<ResponseField name="category" type="string">
-  A section of the sidebar for Kubernetes' own kinds to sit in, at its end: `cluster` (**Cluster**), `network` (**Network**), `config` (**Configuration**) or `storage` (**Storage**). Without one, it's under **Add-ons**.
-</ResponseField>
-
-An add-on only groups kinds. How each kind looks, its columns, status and actions, comes from its view, matched by kind.
-
 ## Icons
 
-Views can use these [Lucide](https://lucide.dev/icons) icons, for kinds, actions and add-ons:
+Plugins can use these [Lucide](https://lucide.dev/icons) icons, for their place in the sidebar, their views' kinds and their actions:
 
 `activity`, `archive`, `bell`, `box`, `boxes`, `bug`, `camera`, `cloud`, `database`, `file-check`, `flame`, `gauge`, `git-branch`, `git-merge`, `globe`, `hexagon`, `key-round`, `layers`, `lock`, `network`, `package`, `play`, `puzzle`, `radar`, `refresh-cw`, `rocket`, `route`, `scaling`, `server`, `server-cog`, `shield-check`, `signpost`, `timer`, `waves`, `waypoints`, `workflow`
 
 ## Problems
 
-Lumovi checks every view and add-on before using it. One with a problem isn't used at all, and **API resources** lists the problem at the top, under **A view couldn't be used** (or how many problems there are), saying where it is: the file, the document's number when it isn't the first, its name and the field.
+Lumovi checks every plugin before using it. One with a problem isn't used at all, and **API resources** lists everything wrong with it at the top, under **A plugin couldn't be used** (or how many problems there are), each saying where it is: the file, then the place in it, from the top.
 
 | Message | Cause |
 | --- | --- |
-| `views.yaml: should start with apiVersion: lumovi.dev/v1alpha1 and kind: View or AddOn` | The document isn't a view or an add-on |
-| `views.yaml (document 2): needs metadata.name` | The second document in the file has no name |
-| `views.yaml: my-view: spec.columns[0].path: is required` | A column without a path |
-| `views.yaml: my-view: spec.colums: isn’t something a view has` | A misspelled field |
-| `views.yaml: my-view: spec.icon: should be one of activity, archive, …` | An icon that isn't on the list |
-| `views.yaml: my-view: spec.columns[1].path: “spec.ready” should start with a dot, like .spec.replicas` | A path that isn't one |
-| `views.yaml: my-view: spec.kinds[0]: every kind (*) is of a group: name it` | `kind: '*'` without a `group` |
-| `views.yaml: my-view: spec.related[0]: needs labels or a fieldSelector to find them` | A related list that would be every object of its kind |
-| `views.yaml: my-view: spec.actions[0]: needs a patch, or an object to create (not both)` | An action with neither, or both |
-| `views.yaml: my-view: spec.actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |
-| `views.yaml: my-view: spec.actions[0]: what it creates needs an apiVersion, a kind, and a metadata.name or generateName` | An incomplete object to create |
-| `views.yaml: my-view: spec.actions[0]: can’t undo creating something` | An `undo` on an action that creates |
-| `views.yaml: my-view: spec.actions[0]: {{ input.size }} isn’t one of its inputs` | A template naming an input the action doesn't have |
-| `views.yaml: my-view: spec.actions[0].inputs[0]: a choice needs options, or a path to read them from` | A choice without `options` or `from`, or with both |
-| `views.yaml: my-view: spec.actions[0].inputs[0]: only a choice has options` | `options` or `from` on a text or number input |
-| `views.yaml: my-tools: spec: Pod has a page of its own, so it can’t be in an add-on` | One of Lumovi's own kinds in an add-on |
-| `views.yaml: my-tools: spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section add-ons can't sit in |
-| `views.yaml: It’s larger than 256 KB.` | A file over the limit, which isn't read |
-| `views.yaml: It couldn’t be read: ENOENT: no such file or directory, open '…'` | A file that can't be read, like a link to nothing or to a folder. What follows says why, in the operating system's words. |
+| `platform.yaml: should start with apiVersion: lumovi.dev/v1alpha1 and kind: Plugin` | The file isn't a plugin |
+| `platform.yaml: a view goes inside a plugin: start with kind: Plugin and put this under its views.` | A document of kind `View` |
+| `platform.yaml: holds 2 documents, and a file is one plugin` | More than one document in a file |
+| `platform.yaml: needs metadata.name` | A plugin without a name |
+| `platform.yaml: needs spec` | A plugin with no `spec` |
+| `platform.yaml: spec: needs views, or kinds for a place in the sidebar` | A plugin with neither |
+| `platform.yaml: spec: needs a label for its place in the sidebar` | `kinds` without a `label` |
+| `platform.yaml: spec: a label, an icon or a category is for a place in the sidebar, and that needs kinds` | One of them without `kinds` |
+| `platform.yaml: spec: Pod has a page of its own, so it can’t be in a plugin` | One of Lumovi's own kinds among a plugin's `kinds` |
+| `platform.yaml: spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section plugins can't sit in |
+| `platform.yaml: spec.colour: isn’t something a plugin has` | A misspelled field of the plugin's |
+| `platform.yaml: spec.views[0].colums: isn’t something a view has` | A misspelled field of a view's |
+| `platform.yaml: spec.views[0].columns[0].path: is required` | A column without a path |
+| `platform.yaml: spec.views[0].icon: should be one of activity, archive, …` | An icon that isn't on the list |
+| `platform.yaml: spec.views[0].columns[1].path: “spec.ready” should start with a dot, like .spec.replicas` | A path that isn't one |
+| `platform.yaml: spec.views[0].kinds[0]: every kind (*) is of a group: name it` | `kind: '*'` without a `group` |
+| `platform.yaml: spec.views[0].related[0]: needs labels or a fieldSelector to find them` | A related list that would be every object of its kind |
+| `platform.yaml: spec.views[0].actions[0]: needs a patch, or an object to create (not both)` | An action with neither, or both |
+| `platform.yaml: spec.views[0].actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |
+| `platform.yaml: spec.views[0].actions[0]: what it creates needs an apiVersion, a kind, and a metadata.name or generateName` | An incomplete object to create |
+| `platform.yaml: spec.views[0].actions[0]: can’t undo creating something` | An `undo` on an action that creates |
+| `platform.yaml: spec.views[0].actions[0]: {{ input.size }} isn’t one of its inputs` | A template naming an input the action doesn't have |
+| `platform.yaml: spec.views[0].actions[0].inputs[0]: a choice needs options, or a path to read them from` | A choice without `options` or `from`, or with both |
+| `platform.yaml: spec.views[0].actions[0].inputs[0]: only a choice has options` | `options` or `from` on a text or number input |
+| `platform.yaml: It’s larger than 256 KB.` | A file over the limit, which isn't read |
+| `platform.yaml: It couldn’t be read: ENOENT: no such file or directory, open '…'` | A file that can't be read, like a link to nothing or to a folder. What follows says why, in the operating system's words. |
 
-A file that isn't valid YAML shows the parser's message, after the file's name.
+A file that isn't valid YAML shows the parser's message, after the file's name. One that can't be read as YAML for any other reason is listed as one that couldn't be read, with the reason, and the others load.
 
-Below the list, **API resources** says how many views are Lumovi's and how many are yours, and where yours go, with **How to write a view**.
+When a plugin of yours with a problem has the name of one of Lumovi's, Lumovi's is what's shown, and one more line says so, last among that file's: `my-flux.yaml: isn’t in use, so Lumovi’s Flux is shown instead`. It's said only where the file's name for itself could be read. A plugin of yours under another name falls back the same way, kind by kind, and **Shown by** is where that shows.
+
+Below the list, **API resources** says how many plugins are Lumovi's and how many are yours, and where yours go, with **How to write a plugin**.

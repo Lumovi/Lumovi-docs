@@ -100,7 +100,7 @@ icon: "circle-question-mark"
     Yes. Lists load in chunks of 500 and are paginated and virtualized, so thousands of pods stay smooth. They stop at 5,000 objects by default, with a note saying so; a label selector narrows a list on the server. Busy lists refresh less often.
   </Accordion>
   <Accordion title="Does it support my custom resources?">
-    Yes, every kind the cluster serves, found through API discovery. They get the columns `kubectl get` prints and a status read from their conditions. Views for popular projects (cert-manager, Argo CD, Flux, Karpenter and more) add better columns, links and actions, and each project's add-on gives it an entry in the sidebar, with everything it runs in one list. You can write your own views and add-ons too. See [Custom resources](/custom-resources/overview).
+    Yes, every kind the cluster serves, found through API discovery. They get the columns `kubectl get` prints and a status read from their conditions. Plugins for popular projects (cert-manager, Argo CD, Flux, Karpenter and more) add better columns, links and actions, and give each project an entry in the sidebar, with everything it runs in one list. You can write your own plugins too. See [Custom resources](/custom-resources/overview).
   </Accordion>
   <Accordion title="Does Lumovi work with AI assistants?">
     Yes, in the desktop app and on your team's Lumovi. Lumovi is an MCP server, so any AI assistant or agent that speaks MCP can read your clusters through it, and find what's wrong. They ask before they change anything: each change is checked by the cluster, then waits in Lumovi with its diff and its `kubectl` command, for you to approve or reject. Lumovi has no AI of its own and needs no API key: it's a tool your assistant uses, with your credentials, and you say [what it may do](/assistants/permissions), and where: what it sees, whether its changes ask you, and whether it reads Secrets' values, env values and logs. In the desktop app, it's off until you turn it on. On a server, assistants sign in through Lumovi in your browser, and act as you. See [AI assistants](/assistants/overview), and [On a server](/assistants/server).
@@ -124,13 +124,13 @@ icon: "circle-question-mark"
 
     - **Installed copies don't update into Lumovi.** [Download Lumovi](https://lumovi.dev/#download) and install it. It's a separate app, so KubeStacks stays until you remove it.
     - **Settings start over.** Your theme, read-only clusters, usage history sources and the rest stay in KubeStacks' own folder, which Lumovi doesn't read. Your kubeconfig is read as before.
-    - **Your own views** go in `~/.lumovi/views` instead of `~/.kubestacks/views`, and start with `apiVersion: lumovi.dev/v1alpha1` instead of `kubestacks.dev/v1alpha1`. Lumovi doesn't use a file with the old `apiVersion`, and lists it under **API resources**.
+    - **Your own plugins** go in `~/.lumovi/plugins` instead of `~/.kubestacks/views`, and start with `apiVersion: lumovi.dev/v1alpha1` instead of `kubestacks.dev/v1alpha1`. Lumovi doesn't use a file with the old `apiVersion`, and lists it under **API resources**.
     - **Environment variables** start with `LUMOVI_` instead of `KUBESTACKS_`.
     - **In your cluster**, the image is `ghcr.io/lumovi/lumovi` and the chart `oci://ghcr.io/lumovi/charts/lumovi`, and the server's settings are `LUMOVI_*` variables. See [Install Lumovi in your cluster](/server/install).
   </Accordion>
   <Accordion title="How can I help?">
     - **Report what's wrong, or what's missing**, in an [issue](https://github.com/Lumovi/Lumovi/issues).
-    - **Add support for a tool you run.** An add-on and views for it are YAML, checked against the tool's CRDs, with no code to write. It's an easy and welcome first contribution. See [Built-in views](/custom-resources/built-in-views) for what Lumovi has, and [Build from source](/reference/build-from-source#contributing) for how to add one.
+    - **Add support for a tool you run.** A plugin for it is YAML, checked against the tool's CRDs, with no code to write. It's an easy and welcome first contribution. See [Included plugins](/custom-resources/included-plugins) for what Lumovi has, and [Build from source](/reference/build-from-source#contributing) for how to add one.
     - **Contribute.** Pull requests are welcome; for anything bigger than a small fix, open an issue first. See [Build from source](/reference/build-from-source).
     - **Sponsor** its development on [GitHub Sponsors](https://github.com/sponsors/Lumovi). The desktop app has a link in **Help → Sponsor Lumovi…** too.
     - **Star it** on [GitHub](https://github.com/Lumovi/Lumovi), so others find it.

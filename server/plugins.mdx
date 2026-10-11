@@ -1,0 +1,56 @@
+---
+title: "Plugins for everyone"
+sidebarTitle: "Shared plugins"
+description: "Give the custom resources your team uses better columns, statuses, links and actions, and its tools an entry in the sidebar, for everyone who signs in."
+icon: "layout-template"
+---
+
+A [plugin](/custom-resources/plugins) tells Lumovi how to show the kinds of a tool: under `views:`, which columns matter for a kind, how to tell whether an object is healthy, which facts to show, what it links to and what belongs to it, and which changes people make to it; and, with a place in the sidebar, an entry that leads to all the tool's kinds on one page. Lumovi comes with plugins for popular tools; see [Included plugins](/custom-resources/included-plugins).
+
+In your cluster, the plugins everyone sees go in the chart's `plugins` value, one entry per file name:
+
+```yaml values.yaml
+plugins:
+  team-certificates.yaml: |
+    apiVersion: lumovi.dev/v1alpha1
+    kind: Plugin
+    metadata: { name: team-certificates }
+    spec:
+      views:
+        - kinds: [{ group: cert-manager.io, kind: Certificate }]
+          columns: [{ name: Issuer, path: .spec.issuerRef.name }]
+  platform.yaml: |
+    apiVersion: lumovi.dev/v1alpha1
+    kind: Plugin
+    metadata: { name: platform }
+    spec:
+      label: Platform
+      kinds: [{ group: platform.example.com, kind: Database }]
+```
+
+Each entry is a file, named with `.yaml` or `.yml` at the end, holding one plugin, exactly as you'd write it for the desktop app. See [Write a plugin](/custom-resources/write-a-plugin), [Plugins](/custom-resources/plugins) and the [plugin format](/reference/plugin-format).
+
+## How it works
+
+- The chart puts the files in a ConfigMap, and mounts it at `/etc/lumovi/plugins`, where Lumovi reads them (`LUMOVI_PLUGINS_DIR`). Kubernetes mounts each file as a link, which Lumovi follows.
+- A view of a kind, in any of these plugins, replaces Lumovi's own view of that kind, one kind at a time.
+- A plugin's place in the sidebar replaces that of Lumovi's plugin with the same name, like `flux` or `cert-manager`.
+- A change to `plugins` rolls out a new pod, which reads them. People stay signed in, as across any restart, and open pages reconnect.
+- Without the chart, put the files in the folder `LUMOVI_PLUGINS_DIR` names. Lumovi reads it again whenever a page loads, so people see a change when they reload.
+- These plugins are the server's, for everyone. What goes here is described, never code. People can't add their own from a browser.
+- In a [fleet](/server/fleet), they're for every cluster: a view of a kind is used in each cluster that has that kind, and a plugin's place in the sidebar shows in each cluster that serves one of its kinds.
+
+## Check them
+
+**API resources** (in the sidebar, or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) says what shows each kind, under **Shown by**, and lists anything wrong with the plugins. One with a problem isn't used at all, and each problem says where it is. A file that can't be read, or is larger than 256 KB, is listed as a problem too, by its name, like `team.yaml: It couldn't be read: …`, and the other files load. Lumovi reads up to 200 files, in order of name. At the bottom, it says how many plugins come from Lumovi and how many from this server, and where they are, like *32 plugins from Lumovi, 2 from this server. This server’s are in /etc/lumovi/plugins*.
+
+Plugins are data only. Their views read fields with JSONPath, and change objects only with the patches and new objects they spell out. Their actions go through the same checks as Lumovi's own: the cluster is asked first whether the person may make the change, the equivalent `kubectl` command is shown, and a read-only Lumovi stays read-only.
+
+<Columns cols={2}>
+  <Card title="Write a plugin" icon="layout-template" href="/custom-resources/write-a-plugin">
+    A step-by-step guide, from columns to actions.
+  </Card>
+  <Card title="Plugin format" icon="book-open" href="/reference/plugin-format">
+    Every field a plugin can have.
+  </Card>
+</Columns>

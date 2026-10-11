@@ -1,15 +1,15 @@
 ---
-title: "Built-in views"
-description: "The add-ons and views Lumovi ships for 32 popular tools: each tool's entry in the sidebar, and the columns, status, links, related tabs and actions its custom resources get."
+title: "Included plugins"
+description: "The plugins Lumovi comes with, for 32 popular tools: each tool's entry in the sidebar, and the columns, status, links, related tabs and actions its custom resources get."
 icon: "blocks"
 ---
 
-Lumovi ships an add-on and views for the tools most clusters run. When a cluster serves one of a tool's kinds:
+Lumovi comes with a plugin for each of the tools most clusters run. When a cluster serves one of a tool's kinds:
 
-- **Its add-on** gives the tool an entry in the sidebar. It leads to everything of the tool's kinds in one list, what's failing first, with a tab for each kind. See [Add-ons](/custom-resources/add-ons).
-- **Its views** give each kind the columns people look at first, a status that understands the tool, links to the objects it points to, tabs for the objects that belong to it, and the changes its own CLI offers, as actions.
+- **Its place in the sidebar** gives the tool an entry. It leads to everything of the tool's kinds in one list, what's failing first, with a tab for each kind. See [Plugins](/custom-resources/plugins).
+- **Its views** give each of its kinds the columns people look at first, a status that understands the tool, links to the objects it points to, tabs for the objects that belong to it, and the changes its own CLI offers, as actions.
 
-Each section below names the add-on, where it sits in the sidebar, and its kinds in the order of their tabs, then what each kind's view adds. A kind without a view shows the columns the API server prints, and a status read from [the usual conventions](/custom-resources/overview#status).
+Each section below names the plugin, where it sits in the sidebar, and its kinds in the order of their tabs, then what each kind's view adds. A kind without a view shows the columns the API server prints, and a status read from [the usual conventions](/custom-resources/overview#status).
 
 A related tab of pods takes its place as the detail panel's **Pods** tab, under its own name, and comes with **Logs** and **Metrics** tabs for those pods.
 
@@ -22,44 +22,44 @@ Like every change in Lumovi, a view's actions check your permissions first: `pat
 
 | Tool | In the sidebar |
 | --- | --- |
-| [Argo CD and Argo Rollouts](#argo-cd-and-argo-rollouts) | **Argo CD** and **Argo Rollouts**, under **Add-ons** |
-| [Argo Workflows](#argo-workflows) | **Argo Workflows**, under **Add-ons** |
-| [cert-manager](#cert-manager) | **cert-manager**, under **Add-ons** |
+| [Argo CD and Argo Rollouts](#argo-cd-and-argo-rollouts) | **Argo CD** and **Argo Rollouts**, under **Plugins** |
+| [Argo Workflows](#argo-workflows) | **Argo Workflows**, under **Plugins** |
+| [cert-manager](#cert-manager) | **cert-manager**, under **Plugins** |
 | [Cilium](#cilium) | **Cilium**, under **Network** |
-| [CloudNativePG](#cloudnativepg) | **CloudNativePG**, under **Add-ons** |
-| [Cluster API](#cluster-api) | **Cluster API**, under **Add-ons** |
-| [Crossplane](#crossplane) | **Crossplane**, under **Add-ons** |
-| [Elastic](#elastic) | **Elastic**, under **Add-ons** |
-| [External Secrets](#external-secrets) | **External Secrets**, under **Add-ons** |
-| [Flux](#flux) | **Flux**, under **Add-ons** |
-| [Gatekeeper](#gatekeeper) | **Gatekeeper**, under **Add-ons** |
+| [CloudNativePG](#cloudnativepg) | **CloudNativePG**, under **Plugins** |
+| [Cluster API](#cluster-api) | **Cluster API**, under **Plugins** |
+| [Crossplane](#crossplane) | **Crossplane**, under **Plugins** |
+| [Elastic](#elastic) | **Elastic**, under **Plugins** |
+| [External Secrets](#external-secrets) | **External Secrets**, under **Plugins** |
+| [Flux](#flux) | **Flux**, under **Plugins** |
+| [Gatekeeper](#gatekeeper) | **Gatekeeper**, under **Plugins** |
 | [Gateway API](#gateway-api) | **Gateway API**, under **Network** |
-| [Istio](#istio) | **Istio**, under **Add-ons** |
-| [Karpenter](#karpenter) | **Karpenter**, under **Add-ons** |
-| [KEDA](#keda) | **KEDA**, under **Add-ons** |
-| [Knative Serving](#knative-serving) | **Knative Serving**, under **Add-ons** |
-| [KubeVirt](#kubevirt) | **KubeVirt**, under **Add-ons** |
-| [Kyverno](#kyverno) | **Kyverno**, under **Add-ons** |
+| [Istio](#istio) | **Istio**, under **Plugins** |
+| [Karpenter](#karpenter) | **Karpenter**, under **Plugins** |
+| [KEDA](#keda) | **KEDA**, under **Plugins** |
+| [Knative Serving](#knative-serving) | **Knative Serving**, under **Plugins** |
+| [KubeVirt](#kubevirt) | **KubeVirt**, under **Plugins** |
+| [Kyverno](#kyverno) | **Kyverno**, under **Plugins** |
 | [Linkerd](#linkerd) | **Linkerd**, under **Network** |
 | [Longhorn](#longhorn) | **Longhorn**, under **Storage** |
-| [Prometheus operator](#prometheus-operator) | **Prometheus Operator**, under **Add-ons** |
+| [Prometheus operator](#prometheus-operator) | **Prometheus Operator**, under **Plugins** |
 | [Rook Ceph](#rook-ceph) | **Rook Ceph**, under **Storage** |
 | [Sealed Secrets](#sealed-secrets) | **Sealed Secrets**, under **Configuration** |
-| [Strimzi](#strimzi) | **Strimzi**, under **Add-ons** |
-| [Tekton](#tekton) | **Tekton**, under **Add-ons** |
+| [Strimzi](#strimzi) | **Strimzi**, under **Plugins** |
+| [Tekton](#tekton) | **Tekton**, under **Plugins** |
 | [Traefik](#traefik) | **Traefik**, under **Network** |
-| [Trivy](#trivy) | **Trivy**, under **Add-ons** |
-| [Velero](#velero) | **Velero**, under **Add-ons** |
-| [Vertical Pod Autoscaler](#vertical-pod-autoscaler) | **Vertical Pod Autoscaler**, under **Add-ons** |
-| [VictoriaMetrics](#victoriametrics) | **VictoriaMetrics**, under **Add-ons** |
+| [Trivy](#trivy) | **Trivy**, under **Plugins** |
+| [Velero](#velero) | **Velero**, under **Plugins** |
+| [Vertical Pod Autoscaler](#vertical-pod-autoscaler) | **Vertical Pod Autoscaler**, under **Plugins** |
+| [VictoriaMetrics](#victoriametrics) | **VictoriaMetrics**, under **Plugins** |
 | [Volume snapshots](#volume-snapshots) | **Volume Snapshots**, under **Storage** |
 
 ## Argo CD and Argo Rollouts
 
-[Argo CD](https://argo-cd.readthedocs.io) applications, and [Argo Rollouts](https://argoproj.github.io/rollouts). They're two add-ons:
+[Argo CD](https://argo-cd.readthedocs.io) applications, and [Argo Rollouts](https://argoproj.github.io/rollouts). They're two plugins:
 
-- **Argo CD**, under **Add-ons** (`argo-cd`): Application, ApplicationSet, AppProject.
-- **Argo Rollouts**, under **Add-ons** (`argo-rollouts`): Rollout, AnalysisRun, AnalysisTemplate, ClusterAnalysisTemplate, Experiment.
+- **Argo CD**, under **Plugins** (`argo-cd`): Application, ApplicationSet, AppProject.
+- **Argo Rollouts**, under **Plugins** (`argo-rollouts`): Rollout, AnalysisRun, AnalysisTemplate, ClusterAnalysisTemplate, Experiment.
 
 Applications and rollouts have views; the other kinds don't. Applications take their status from Argo CD's own health: <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status progressing">Progressing</span>, <span className="lumovi-status critical">Degraded</span>, <span className="lumovi-status warning">Missing</span> or <span className="lumovi-status neutral">Suspended</span>. A rollout is <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status neutral">Paused</span>, <span className="lumovi-status critical">Degraded</span>, <span className="lumovi-status critical">Aborted</span>, or in progress with its phase.
 
@@ -81,7 +81,7 @@ Rollouts have the scale subresource, so you can also **Scale** them like a Deplo
 
 [Argo Workflows](https://argoproj.github.io/workflows): workflows, their templates and schedules.
 
-**Argo Workflows**, under **Add-ons** (`argo-workflows`): Workflow, CronWorkflow, WorkflowTemplate, ClusterWorkflowTemplate.
+**Argo Workflows**, under **Plugins** (`argo-workflows`): Workflow, CronWorkflow, WorkflowTemplate, ClusterWorkflowTemplate.
 
 A workflow is <span className="lumovi-status healthy">Succeeded</span>, <span className="lumovi-status neutral">Suspended</span>, <span className="lumovi-status progressing">Stopping</span>, critical when it failed or hit an error, and otherwise in progress with its phase. A cron workflow is <span className="lumovi-status healthy">Scheduled</span>, <span className="lumovi-status neutral">Suspended</span>, <span className="lumovi-status neutral">Stopped</span>, or <span className="lumovi-status critical">Can't submit</span> when it couldn't start a run.
 
@@ -102,7 +102,7 @@ A workflow is <span className="lumovi-status healthy">Succeeded</span>, <span cl
 
 [cert-manager](https://cert-manager.io): certificates, their requests, and issuers.
 
-**cert-manager**, under **Add-ons** (`cert-manager`): Certificate, CertificateRequest, Issuer, ClusterIssuer, Order, Challenge. Orders and challenges have no view.
+**cert-manager**, under **Plugins** (`cert-manager`): Certificate, CertificateRequest, Issuer, ClusterIssuer, Order, Challenge. Orders and challenges have no view.
 
 A certificate is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status progressing">Issuing</span>, or critical with cert-manager's reason. A request is <span className="lumovi-status healthy">Issued</span>, <span className="lumovi-status progressing">Pending</span>, <span className="lumovi-status critical">Denied</span>, or critical with the reason. Issuers are <span className="lumovi-status healthy">Ready</span>, or critical with the reason.
 
@@ -134,7 +134,7 @@ Policies are <span className="lumovi-status healthy">Valid</span> or <span class
 
 [CloudNativePG](https://cloudnative-pg.io): PostgreSQL clusters and their backups.
 
-**CloudNativePG**, under **Add-ons** (`cloudnative-pg`): Cluster, Pooler, Backup, ScheduledBackup, Database. Poolers and databases have no view.
+**CloudNativePG**, under **Plugins** (`cloudnative-pg`): Cluster, Pooler, Backup, ScheduledBackup, Database. Poolers and databases have no view.
 
 A cluster is <span className="lumovi-status healthy">Healthy</span>, critical with its phase when that speaks of a failure or an error, and otherwise in progress with its phase. A backup is <span className="lumovi-status healthy">Completed</span>, <span className="lumovi-status critical">Failed</span>, or in progress with its phase.
 
@@ -154,7 +154,7 @@ A cluster is <span className="lumovi-status healthy">Healthy</span>, critical wi
 
 [Cluster API](https://cluster-api.sigs.k8s.io): the clusters this one manages, and their machines.
 
-**Cluster API**, under **Add-ons** (`cluster-api`): Cluster, MachineDeployment, KubeadmControlPlane, Machine, MachineSet, MachinePool, MachineHealthCheck, ClusterClass.
+**Cluster API**, under **Plugins** (`cluster-api`): Cluster, MachineDeployment, KubeadmControlPlane, Machine, MachineSet, MachinePool, MachineHealthCheck, ClusterClass.
 
 Statuses read both API versions, where `v1beta2` says Available and `v1beta1` says Ready. A cluster is <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Not available</span>, <span className="lumovi-status neutral">Paused</span>, <span className="lumovi-status critical">Failed</span>, or in progress with its phase. Machine deployments, sets and pools are <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Not available</span>, <span className="lumovi-status critical">Failed</span>, or in progress. A control plane is <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Not available</span> or <span className="lumovi-status progressing">Initializing</span>. A machine is <span className="lumovi-status healthy">Running</span>, <span className="lumovi-status critical">Failed</span>, or in progress with its phase. A health check that may not remediate any more machines is <span className="lumovi-status warning">Not remediating</span>.
 
@@ -173,7 +173,7 @@ Statuses read both API versions, where `v1beta2` says Available and `v1beta1` sa
 
 [Crossplane](https://crossplane.io): the packages that extend it.
 
-**Crossplane**, under **Add-ons** (`crossplane`): Provider, Configuration, Function, CompositeResourceDefinition, Composition. Composite resource definitions and compositions have no view.
+**Crossplane**, under **Plugins** (`crossplane`): Provider, Configuration, Function, CompositeResourceDefinition, Composition. Composite resource definitions and compositions have no view.
 
 A package is <span className="lumovi-status healthy">Healthy</span>, <span className="lumovi-status progressing">Installing</span>, or critical with the reason it isn't installed or healthy.
 
@@ -185,7 +185,7 @@ A package is <span className="lumovi-status healthy">Healthy</span>, <span class
 
 [Elastic Cloud on Kubernetes](https://www.elastic.co/guide/en/cloud-on-k8s/current): Elasticsearch, Kibana and the rest of the Elastic Stack.
 
-**Elastic**, under **Add-ons** (`eck`): Elasticsearch, Kibana, Agent, Beat, ApmServer, Logstash, ElasticMapsServer.
+**Elastic**, under **Plugins** (`eck`): Elasticsearch, Kibana, Agent, Beat, ApmServer, Logstash, ElasticMapsServer.
 
 Each reports its health as a color: <span className="lumovi-status healthy">Green</span>, <span className="lumovi-status warning">Yellow</span> or <span className="lumovi-status critical">Red</span> (Kibana has no yellow), and is in progress until it does. Elasticsearch can also be <span className="lumovi-status critical">Invalid</span>.
 
@@ -199,7 +199,7 @@ Each reports its health as a color: <span className="lumovi-status healthy">Gree
 
 [External Secrets](https://external-secrets.io): secrets kept in sync with a vault or a cloud's secret store.
 
-**External Secrets**, under **Add-ons** (`external-secrets`): ExternalSecret, ClusterExternalSecret, SecretStore, ClusterSecretStore, PushSecret. Cluster external secrets and push secrets have no view.
+**External Secrets**, under **Plugins** (`external-secrets`): ExternalSecret, ClusterExternalSecret, SecretStore, ClusterSecretStore, PushSecret. Cluster external secrets and push secrets have no view.
 
 An external secret is <span className="lumovi-status healthy">Synced</span>, or critical with the reason. A store is <span className="lumovi-status healthy">Valid</span>, or critical with the reason.
 
@@ -214,7 +214,7 @@ An external secret is <span className="lumovi-status healthy">Synced</span>, or 
 
 [Flux](https://fluxcd.io): what it applies, and where it fetches it from.
 
-**Flux**, under **Add-ons** (`flux`): Kustomization, HelmRelease, GitRepository, OCIRepository, HelmRepository, HelmChart, Bucket.
+**Flux**, under **Plugins** (`flux`): Kustomization, HelmRelease, GitRepository, OCIRepository, HelmRepository, HelmChart, Bucket.
 
 Statuses follow Flux's conditions: <span className="lumovi-status neutral">Suspended</span>, <span className="lumovi-status critical">Stalled</span>, <span className="lumovi-status progressing">Reconciling</span> or <span className="lumovi-status healthy">Ready</span>, or critical with Flux's reason.
 
@@ -236,9 +236,9 @@ A Helm release that Flux manages links to its HelmRelease from [Helm releases](/
 
 [OPA Gatekeeper](https://open-policy-agent.github.io/gatekeeper): constraint templates, the constraints made from them, and mutations.
 
-**Gatekeeper**, under **Add-ons** (`gatekeeper`): every kind in `constraints.gatekeeper.sh`, ConstraintTemplate, Assign, AssignMetadata, ModifySet, AssignImage, ExpansionTemplate, Config. Expansion templates and the config have no view.
+**Gatekeeper**, under **Plugins** (`gatekeeper`): every kind in `constraints.gatekeeper.sh`, ConstraintTemplate, Assign, AssignMetadata, ModifySet, AssignImage, ExpansionTemplate, Config. Expansion templates and the config have no view.
 
-Gatekeeper makes a kind of constraint for each template, in the `constraints.gatekeeper.sh` group. The add-on and the view cover every one of them, whatever its name: the add-on has a tab for each, in order of their names. A constraint shows what the last audit found: <span className="lumovi-status warning">2 violations</span>, <span className="lumovi-status healthy">No violations</span>, or <span className="lumovi-status progressing">Not audited yet</span>. A template is <span className="lumovi-status healthy">Created</span>, <span className="lumovi-status progressing">Creating</span>, or <span className="lumovi-status critical">Errors</span>; a mutation is <span className="lumovi-status critical">Errors</span> when Gatekeeper reports one.
+Gatekeeper makes a kind of constraint for each template, in the `constraints.gatekeeper.sh` group. The plugin and the view cover every one of them, whatever its name: the plugin has a tab for each, in order of their names. A constraint shows what the last audit found: <span className="lumovi-status warning">2 violations</span>, <span className="lumovi-status healthy">No violations</span>, or <span className="lumovi-status progressing">Not audited yet</span>. A template is <span className="lumovi-status healthy">Created</span>, <span className="lumovi-status progressing">Creating</span>, or <span className="lumovi-status critical">Errors</span>; a mutation is <span className="lumovi-status critical">Errors</span> when Gatekeeper reports one.
 
 | Kind | Columns |
 | --- | --- |
@@ -264,7 +264,7 @@ A gateway is <span className="lumovi-status healthy">Programmed</span> once its 
 
 [Istio](https://istio.io): traffic routing and security.
 
-**Istio**, under **Add-ons** (`istio`): VirtualService, DestinationRule, Gateway, ServiceEntry, PeerAuthentication, AuthorizationPolicy.
+**Istio**, under **Plugins** (`istio`): VirtualService, DestinationRule, Gateway, ServiceEntry, PeerAuthentication, AuthorizationPolicy.
 
 | Kind | Columns |
 | --- | --- |
@@ -278,7 +278,7 @@ A gateway is <span className="lumovi-status healthy">Programmed</span> once its 
 
 [Karpenter](https://karpenter.sh): node pools, and the nodes it launched for them.
 
-**Karpenter**, under **Add-ons** (`karpenter`): NodePool, NodeClaim, EC2NodeClass, AKSNodeClass. AKS node classes have no view. Karpenter's add-on opens on an overview of its own: its node pools against their limits, the nodes they launched and the ones launching, what's being replaced, and the pods waiting for a node. See [Karpenter's overview](/custom-resources/add-ons#karpenter).
+**Karpenter**, under **Plugins** (`karpenter`): NodePool, NodeClaim, EC2NodeClass, AKSNodeClass. AKS node classes have no view. Karpenter's plugin opens on an overview of its own: its node pools against their limits, the nodes they launched and the ones launching, what's being replaced, and the pods waiting for a node. See [Karpenter's overview](/custom-resources/plugins#karpenter).
 
 A node pool is <span className="lumovi-status healthy">Ready</span>, or critical with Karpenter's reason. A node claim is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status progressing">Launching</span> until its node registers, <span className="lumovi-status warning">Drifted</span> when it no longer matches its node pool or node class, <span className="lumovi-status progressing">Terminating</span>, critical with the reason when it couldn't be launched, and otherwise <span className="lumovi-status critical">Not ready</span>.
 
@@ -294,7 +294,7 @@ A node pool's details add its node class, CPU and memory limits, consolidation s
 
 [KEDA](https://keda.sh): event-driven autoscaling of workloads and jobs.
 
-**KEDA**, under **Add-ons** (`keda`): ScaledObject, ScaledJob, TriggerAuthentication, ClusterTriggerAuthentication. Trigger authentications have no view.
+**KEDA**, under **Plugins** (`keda`): ScaledObject, ScaledJob, TriggerAuthentication, ClusterTriggerAuthentication. Trigger authentications have no view.
 
 A scaled object is <span className="lumovi-status healthy">Scaling</span> or <span className="lumovi-status healthy">Idle</span>, <span className="lumovi-status neutral">Paused</span>, <span className="lumovi-status neutral">Paused at 2</span> with the replicas it's held at, or critical with KEDA's reason.
 
@@ -312,7 +312,7 @@ A scaled object is <span className="lumovi-status healthy">Scaling</span> or <sp
 
 [Knative Serving](https://knative.dev/docs/serving): services that scale with requests, their revisions, and the routes that split traffic between them.
 
-**Knative Serving**, under **Add-ons** (`knative-serving`): Service, Revision, Route, Configuration, DomainMapping.
+**Knative Serving**, under **Plugins** (`knative-serving`): Service, Revision, Route, Configuration, DomainMapping.
 
 Everything is <span className="lumovi-status healthy">Ready</span>, critical with Knative's reason, or in progress (<span className="lumovi-status progressing">Deploying</span>, or the reason Knative gives).
 
@@ -325,7 +325,7 @@ Everything is <span className="lumovi-status healthy">Ready</span>, critical wit
 
 [KubeVirt](https://kubevirt.io): virtual machines, their running instances and migrations, and the disks CDI imports for them.
 
-**KubeVirt**, under **Add-ons** (`kubevirt`): VirtualMachine, VirtualMachineInstance, VirtualMachineInstanceMigration, DataVolume, DataSource.
+**KubeVirt**, under **Plugins** (`kubevirt`): VirtualMachine, VirtualMachineInstance, VirtualMachineInstanceMigration, DataVolume, DataSource.
 
 A virtual machine is <span className="lumovi-status healthy">Running</span>, <span className="lumovi-status neutral">Stopped</span> or <span className="lumovi-status neutral">Paused</span>, critical with its status when it's an error (like `ErrImagePull` or `Unschedulable`), and otherwise in progress with its status. An instance is <span className="lumovi-status healthy">Running</span>, <span className="lumovi-status neutral">Shut down</span>, <span className="lumovi-status critical">Failed</span>, or in progress with its phase. Migrations are <span className="lumovi-status healthy">Migrated</span> or <span className="lumovi-status critical">Failed</span>, data volumes <span className="lumovi-status healthy">Ready</span> or <span className="lumovi-status critical">Failed</span>, both in progress until then, and data sources <span className="lumovi-status healthy">Ready</span> or <span className="lumovi-status warning">Not ready</span>.
 
@@ -344,7 +344,7 @@ A virtual machine is <span className="lumovi-status healthy">Running</span>, <sp
 
 [Kyverno](https://kyverno.io): policies, and what they found in the cluster's resources.
 
-**Kyverno**, under **Add-ons** (`kyverno`): PolicyReport, ClusterPolicyReport, ClusterPolicy, Policy, ValidatingPolicy, PolicyException, ClusterCleanupPolicy, CleanupPolicy.
+**Kyverno**, under **Plugins** (`kyverno`): PolicyReport, ClusterPolicyReport, ClusterPolicy, Policy, ValidatingPolicy, PolicyException, ClusterCleanupPolicy, CleanupPolicy.
 
 A report, one for each resource, says how it did against every policy that applies to it: <span className="lumovi-status critical">2 errors</span>, <span className="lumovi-status critical">3 failing</span>, <span className="lumovi-status warning">2 warnings</span>, <span className="lumovi-status healthy">Passing</span> or <span className="lumovi-status neutral">Skipped</span>. Policies and cleanup policies are <span className="lumovi-status healthy">Ready</span>, or critical with the reason.
 
@@ -395,7 +395,7 @@ A volume is <span className="lumovi-status healthy">Healthy</span>, <span classN
 
 The [Prometheus operator](https://prometheus-operator.dev)'s kinds, as kube-prometheus-stack installs them.
 
-**Prometheus Operator**, under **Add-ons** (`prometheus-operator`): Prometheus, Alertmanager, ServiceMonitor, PodMonitor, PrometheusRule.
+**Prometheus Operator**, under **Plugins** (`prometheus-operator`): Prometheus, Alertmanager, ServiceMonitor, PodMonitor, PrometheusRule.
 
 Prometheus and Alertmanager are <span className="lumovi-status healthy">Available</span>, <span className="lumovi-status warning">Degraded</span> or <span className="lumovi-status critical">Unavailable</span>, as the operator reports them, or critical with its reason when it couldn't reconcile them.
 
@@ -435,7 +435,7 @@ A sealed secret is <span className="lumovi-status healthy">Unsealed</span>, <spa
 
 [Strimzi](https://strimzi.io): Kafka clusters, their topics and users, and Kafka Connect.
 
-**Strimzi**, under **Add-ons** (`strimzi`): Kafka, KafkaNodePool, KafkaTopic, KafkaUser, KafkaConnect, KafkaConnector, KafkaMirrorMaker2, KafkaBridge, KafkaRebalance.
+**Strimzi**, under **Plugins** (`strimzi`): Kafka, KafkaNodePool, KafkaTopic, KafkaUser, KafkaConnect, KafkaConnector, KafkaMirrorMaker2, KafkaBridge, KafkaRebalance.
 
 A Kafka cluster is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status warning">Ready, with warnings</span> when Strimzi fixed or ignored something, critical with Strimzi's reason, or <span className="lumovi-status progressing">Reconciling</span>. Topics, users and Kafka Connect are <span className="lumovi-status healthy">Ready</span>, or critical with the reason. A connector is <span className="lumovi-status healthy">Running</span>, paused or stopped as its state says, or critical. A rebalance is <span className="lumovi-status warning">Waiting for approval</span> once Cruise Control has proposed one, <span className="lumovi-status healthy">Done</span>, critical when it stopped or isn't ready, and otherwise in progress.
 
@@ -457,7 +457,7 @@ A Kafka cluster is <span className="lumovi-status healthy">Ready</span>, <span c
 
 [Tekton](https://tekton.dev): pipelines and tasks, and their runs.
 
-**Tekton**, under **Add-ons** (`tekton`): PipelineRun, TaskRun, Pipeline, Task.
+**Tekton**, under **Plugins** (`tekton`): PipelineRun, TaskRun, Pipeline, Task.
 
 Runs are <span className="lumovi-status healthy">Succeeded</span>, <span className="lumovi-status neutral">Cancelled</span>, critical with Tekton's reason when they failed, and otherwise in progress with the reason. A pipeline run that's waiting to start is <span className="lumovi-status neutral">Pending</span>.
 
@@ -490,7 +490,7 @@ A middleware's details say what it does: where it redirects to, the prefixes it 
 
 [Trivy Operator](https://aquasecurity.github.io/trivy-operator): what it found scanning the cluster.
 
-**Trivy**, under **Add-ons** (`trivy-operator`): VulnerabilityReport, ConfigAuditReport, ExposedSecretReport, RbacAssessmentReport, ClusterRbacAssessmentReport, ClusterComplianceReport.
+**Trivy**, under **Plugins** (`trivy-operator`): VulnerabilityReport, ConfigAuditReport, ExposedSecretReport, RbacAssessmentReport, ClusterRbacAssessmentReport, ClusterComplianceReport.
 
 Reports are <span className="lumovi-status critical">2 critical</span> when they found critical issues, <span className="lumovi-status warning">5 high</span> when the worst are high, and otherwise <span className="lumovi-status healthy">No critical or high</span>. A compliance report is <span className="lumovi-status warning">3 failing</span> or <span className="lumovi-status healthy">Compliant</span>.
 
@@ -504,7 +504,7 @@ Reports are <span className="lumovi-status critical">2 critical</span> when they
 
 [Velero](https://velero.io): backups of cluster resources and volumes.
 
-**Velero**, under **Add-ons** (`velero`): Backup, Restore, Schedule, BackupStorageLocation. Backup storage locations have no view.
+**Velero**, under **Plugins** (`velero`): Backup, Restore, Schedule, BackupStorageLocation. Backup storage locations have no view.
 
 Backups and restores are <span className="lumovi-status healthy">Completed</span>, <span className="lumovi-status warning">Partially failed</span>, <span className="lumovi-status warning">Deleting</span>, critical with Velero's phase when they failed, or in progress with it. A schedule is <span className="lumovi-status healthy">Enabled</span>, <span className="lumovi-status neutral">Paused</span>, or <span className="lumovi-status critical">Failed validation</span>.
 
@@ -517,7 +517,7 @@ Backups and restores are <span className="lumovi-status healthy">Completed</span
 
 The [Vertical Pod Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler): the requests it recommends for workloads, and whether it applies them.
 
-**Vertical Pod Autoscaler**, under **Add-ons** (`vertical-pod-autoscaler`): VerticalPodAutoscaler.
+**Vertical Pod Autoscaler**, under **Plugins** (`vertical-pod-autoscaler`): VerticalPodAutoscaler.
 
 An autoscaler is <span className="lumovi-status healthy">Recommending</span>, <span className="lumovi-status progressing">Gathering data</span>, <span className="lumovi-status warning">Low confidence</span>, <span className="lumovi-status warning">No pods</span> when no pods match it, or <span className="lumovi-status critical">Unsupported</span>.
 
@@ -531,7 +531,7 @@ An autoscaler is <span className="lumovi-status healthy">Recommending</span>, <s
 
 The [VictoriaMetrics operator](https://docs.victoriametrics.com/operator): VictoriaMetrics and VictoriaLogs, what they scrape, and their alerting rules.
 
-**VictoriaMetrics**, under **Add-ons** (`victoriametrics-operator`): VMCluster, VMSingle, VMAgent, VMAlert, VMAlertmanager, VMAuth, VMServiceScrape, VMPodScrape, VMRule, VLSingle, VLCluster.
+**VictoriaMetrics**, under **Plugins** (`victoriametrics-operator`): VMCluster, VMSingle, VMAgent, VMAlert, VMAlertmanager, VMAuth, VMServiceScrape, VMPodScrape, VMRule, VLSingle, VLCluster.
 
 Everything is <span className="lumovi-status healthy">Operational</span> or <span className="lumovi-status critical">Failed</span>, as the operator reports it. Servers can also be <span className="lumovi-status neutral">Paused</span>, or in progress while they're created or updated.
 
@@ -555,44 +555,44 @@ A snapshot is <span className="lumovi-status healthy">Ready</span>, <span classN
 
 ## CustomResourceDefinitions
 
-CustomResourceDefinitions themselves get a view too: their list shows each one's **Kind**, **Group**, **Scope** and **Versions**, and their details add the plural, short names and stored versions. They aren't in an add-on: open them from **API resources**.
+CustomResourceDefinitions themselves get a view too: their list shows each one's **Kind**, **Group**, **Scope** and **Versions**, and their details add the plural, short names and stored versions. That view is Lumovi's own, not a plugin's: **API resources** says **Lumovi** under **Shown by** for it, and that's where to open them from.
 
-## Changing a built-in view
+## Changing one of Lumovi's
 
-Your own view of a kind replaces Lumovi's for that kind, and your own add-on replaces Lumovi's add-on with the same name: the one each section above gives after the add-on's label, like `flux`. Copy the file you want to change from [Lumovi's views](https://github.com/Lumovi/Lumovi/tree/main/src/renderer/src/views) into `~/.lumovi/views`, edit it, and press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** then shows your file as the kind's view.
+A view of yours for a kind replaces Lumovi's for that kind, and a place in the sidebar of yours replaces that of Lumovi's plugin with the same name: the one each section above gives after the plugin's label, like `flux`. Copy the file you want to change from [Lumovi's plugins](https://github.com/Lumovi/Lumovi/tree/main/plugins) into `~/.lumovi/plugins`, edit it, and press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** then names your file under **Shown by** for its kinds. If your copy has a problem, none of it is used, and the page says that Lumovi's is shown instead.
 
-Views replace each other kind by kind: a view of yours for one of a tool's kinds leaves Lumovi's views of its other kinds in place. See [Which view a kind uses](/reference/view-format#which-view-a-kind-uses).
+Views replace each other kind by kind: a view of yours for one of a tool's kinds leaves Lumovi's views of its other kinds in place. See [Which view a kind uses](/reference/plugin-format#which-view-a-kind-uses).
 
 <Note>
-  **In your cluster:** put your views and add-ons in the chart's `views` value. See [Views for everyone](/server/views).
+  **In your cluster:** put your plugins in the chart's `plugins` value. See [Plugins for everyone](/server/plugins).
 </Note>
 
-## Contributing a view
+## Contributing a plugin
 
 Adding a tool needs no code, and is a welcome first contribution. To ask for one instead, open a [Support a tool](https://github.com/Lumovi/Lumovi/issues/new?template=tool_request.yml) issue. The [contributing guide](https://github.com/Lumovi/Lumovi/blob/main/CONTRIBUTING.md#adding-a-tool) has the details; in short:
 
 <Steps>
   <Step title="Pin the tool's CRDs">
-    Add its release to `tests/views/crds/sources.json`, under the add-on's name, with the URLs of its CRD manifests, and run `npm run crds -- <name>`. That keeps what the check needs of them in `tests/views/crds/<name>.json`. A chart's templates work too, and for a tool whose operator creates its CRDs itself, the JSON Schema of each kind will do.
+    Add its release to `tests/plugins/crds/sources.json`, under the plugin's name, with the URLs of its CRD manifests, and run `npm run crds -- <name>`. That keeps what the check needs of them in `tests/plugins/crds/<name>.json`. A chart's templates work too, and for a tool whose operator creates its CRDs itself, the JSON Schema of each kind will do.
   </Step>
-  <Step title="Write its add-on and views">
-    Write `src/renderer/src/views/<name>.yaml`, with a comment linking to the tool: the `AddOn`, then a `View` for each kind (or group of kinds) worth more than the generic columns. Status rules are where views help most: say what healthy, in progress, failing and paused look like for this tool.
+  <Step title="Write its plugin">
+    Write `plugins/<name>.yaml`, with a comment linking to the tool: one `kind: Plugin`, with its label and kinds, and under `views:` a view for each kind (or group of kinds) worth more than the generic columns. Status rules are where views help most: say what healthy, in progress, failing and paused look like for this tool.
   </Step>
   <Step title="Check it">
-    Run `npm run views:check`. It checks every kind, path, template, link, related list and action against the CRDs you pinned, so a misremembered field fails there rather than showing nothing. Labels and annotations aren't in schemas, so check those against the tool's documentation, or a real cluster.
+    Run `npm run plugins:check`. It checks every kind, path, template, link, related list and action against the CRDs you pinned, so a misremembered field fails there rather than showing nothing. Labels and annotations aren't in schemas, so check those against the tool's documentation, or a real cluster.
   </Step>
   <Step title="Look at it">
-    Put the file in `~/.lumovi/views` while running `npm run dev` against a cluster with the tool installed, and press <kbd>⌘</kbd><kbd>R</kbd> after each change.
+    Put the file in `~/.lumovi/plugins` while running `npm run dev` against a cluster with the tool installed, and press <kbd>⌘</kbd><kbd>R</kbd> after each change.
   </Step>
 </Steps>
 
-To check the views against a newer release of a tool, change its version in `sources.json`, and run `npm run crds -- <name>` and `npm run views:check`.
+To check a plugin against a newer release of a tool, change its version in `sources.json`, and run `npm run crds -- <name>` and `npm run plugins:check`.
 
 <Columns cols={2}>
-  <Card title="Add-ons" icon="package" href="/custom-resources/add-ons">
+  <Card title="Plugins" icon="package" href="/custom-resources/plugins">
     A tool's entry in the sidebar, and its page.
   </Card>
-  <Card title="View format" icon="braces" href="/reference/view-format">
-    Every field a view or an add-on can have.
+  <Card title="Plugin format" icon="braces" href="/reference/plugin-format">
+    Every field a plugin can have.
   </Card>
 </Columns>

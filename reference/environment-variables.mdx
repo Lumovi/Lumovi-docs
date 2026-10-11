@@ -51,8 +51,8 @@ Lumovi reads them once, when it starts. Restart it after changing one.
   How long the API server has to answer a request. Raise it for a slow or distant API server that shows **The cluster isn't responding**. A value that isn't a number leaves the default.
 </ResponseField>
 
-<ResponseField name="LUMOVI_VIEWS_DIR" type="path" default="~/.lumovi/views">
-  Where your own [views](/custom-resources/write-a-view) and [add-ons](/custom-resources/add-ons) are. Every `.yaml` and `.yml` file directly in it is read, up to 200 files of at most 256 KB each. Folders inside it aren't.
+<ResponseField name="LUMOVI_PLUGINS_DIR" type="path" default="~/.lumovi/plugins">
+  Where your own [plugins](/custom-resources/write-a-plugin) are. Every `.yaml` and `.yml` file directly in it is read, up to 200 files of at most 256 KB each. Folders inside it aren't.
 </ResponseField>
 
 <ResponseField name="LUMOVI_HELM" type="path" default="the helm Lumovi ships with">

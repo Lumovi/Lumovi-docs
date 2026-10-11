@@ -147,9 +147,9 @@
             "group": "Custom resources",
             "pages": [
               "custom-resources/overview",
-              "custom-resources/add-ons",
-              "custom-resources/built-in-views",
-              "custom-resources/write-a-view"
+              "custom-resources/plugins",
+              "custom-resources/included-plugins",
+              "custom-resources/write-a-plugin"
             ]
           },
           {
@@ -218,7 +218,7 @@
               "server/security",
               "server/hardening",
               "server/network",
-              "server/views",
+              "server/plugins",
               "server/assistants",
               "server/audit-log",
               "server/docker"
@@ -241,7 +241,7 @@
             "group": "Reference",
             "pages": [
               "reference/keyboard-shortcuts",
-              "reference/view-format",
+              "reference/plugin-format",
               "reference/environment-variables",
               "reference/resource-kinds",
               "reference/privacy-and-security"
@@ -311,5 +311,12 @@
       "title": "Nothing here",
       "description": "This page doesn't exist, or it moved. Try the search, or start from the [introduction](/)."
     }
-  }
+  },
+  "redirects": [
+    { "source": "/custom-resources/add-ons", "destination": "/custom-resources/plugins" },
+    { "source": "/custom-resources/built-in-views", "destination": "/custom-resources/included-plugins" },
+    { "source": "/custom-resources/write-a-view", "destination": "/custom-resources/write-a-plugin" },
+    { "source": "/server/views", "destination": "/server/plugins" },
+    { "source": "/reference/view-format", "destination": "/reference/plugin-format" }
+  ]
 }

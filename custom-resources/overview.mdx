@@ -21,19 +21,19 @@ Lumovi has a page of its own for Kubernetes' common kinds. Every other kind the 
     An entry for each tool the cluster runs, the kinds you opened last in this cluster, and the ones you pinned.
   </Card>
   <Card title="Command palette" icon="command">
-    <kbd>⌘</kbd><kbd>K</kbd> finds any kind by name, short name or group, and add-ons by name.
+    <kbd>⌘</kbd><kbd>K</kbd> finds any kind by name, short name or group, and plugins by name.
   </Card>
 </Columns>
 
-⌘ is Ctrl on Windows and Linux. The palette's search also knows "CRDs", so typing it finds **API resources**. It finds an add-on by the name of any of its kinds too: `certificates` offers **cert-manager**.
+⌘ is Ctrl on Windows and Linux. The palette's search also knows "CRDs", so typing it finds **API resources**. It finds a plugin by the name of any of its kinds too: `certificates` offers **cert-manager**.
 
 ### API resources
 
-**API resources** lists every kind the cluster serves in two tables: **Custom resources**, grouped by API group, and **Kubernetes**. For each kind you see its short names, **API version**, **Scope** (namespaced or cluster-wide) and which **View** it uses, if any. **Filter kinds** matches names, short names, plurals and groups.
+**API resources** lists every kind the cluster serves in two tables: **Custom resources**, grouped by API group, and **Kubernetes**. For each kind you see its short names, **API version**, **Scope** (namespaced or cluster-wide) and, under **Shown by**, what shows it: a plugin, a file of yours, **Lumovi**, or nothing in particular. **Filter kinds** matches names, short names, plurals and groups.
 
 <Frame caption="Every kind the cluster serves, custom resources included.">
-  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/api-resources-light-1x.webp" alt="The API resources page: 43 kinds, the custom resources first, grouped by API group, each with its short names, API version, scope and view." />
-  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/api-resources-dark-1x.webp" alt="The API resources page: 43 kinds, the custom resources first, grouped by API group, each with its short names, API version, scope and view." />
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/api-resources-light-1x.webp" alt="The API resources page: 43 kinds, the custom resources first, grouped by API group, each with its short names, API version, scope and what shows it." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/api-resources-dark-1x.webp" alt="The API resources page: 43 kinds, the custom resources first, grouped by API group, each with its short names, API version, scope and what shows it." />
 </Frame>
 
 Lumovi looks at what the cluster serves again every minute, so a CRD you just installed shows up on its own.
@@ -42,8 +42,8 @@ Lumovi looks at what the cluster serves again every minute, so a CRD you just in
 
 A cluster can have hundreds of custom resource definitions, so the sidebar doesn't list them all:
 
-- **Add-ons.** Each tool the cluster runs, like Flux or cert-manager, gets an entry that leads to all its kinds. Most are under **Add-ons**; a few that extend Kubernetes' own, like Gateway API, sit in **Network**, **Configuration** or **Storage**. See [Add-ons](/custom-resources/add-ons).
-- **Custom resources.** The kinds you opened most recently in this cluster, up to five, and **API resources**, with a count of every custom kind the cluster serves. Kinds that belong to an add-on are left out, since its entry is a click away already.
+- **Plugins.** Each tool the cluster runs, like Flux or cert-manager, gets an entry that leads to all its kinds. Most are under **Plugins**; a few that extend Kubernetes' own, like Gateway API, sit in **Network**, **Configuration** or **Storage**. See [Plugins](/custom-resources/plugins).
+- **Custom resources.** The kinds you opened most recently in this cluster, up to five, and **API resources**, with a count of every custom kind the cluster serves. Kinds that belong to a plugin are left out, since its entry is a click away already.
 
 To keep a kind at hand, **pin** it: use the pin button on its list, or next to it in **API resources**. Pinned kinds get a **Pinned** section in the sidebar, in every cluster that serves them.
 
@@ -103,24 +103,24 @@ Custom resources are first-class:
 
 Every change checks your permissions first, and shows the equivalent `kubectl` command, written like `kubectl delete certificate.cert-manager.io/api-tls -n shop --context production`.
 
-## Views
+## Plugins
 
-A **view** tells Lumovi more about a kind: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it links to and which belong to it, and which changes people make to it. Views are YAML and data only, so they can't run code.
+A **plugin** tells Lumovi about the kinds of one tool. It can give the tool a place in the sidebar: one entry, leading to a page that lists everything of its kinds together, what's failing first, with a tab for each kind. And it holds the tool's [views](#views).
 
-Lumovi ships views for popular projects, and you can write your own. **API resources** shows which view each kind uses, and lists any problem with your views at the top: a view with a problem isn't used at all, and the message says where it is.
+Lumovi comes with plugins for 32 tools and shows the ones your cluster runs. You can write your own, or change Lumovi's. **API resources** says what shows each kind, and lists anything wrong with your plugins at the top: a plugin with a problem isn't used at all, and each message says where the problem is.
 
-## Add-ons
+### Views
 
-An **add-on** gathers the kinds of one tool under one entry in the sidebar. Its page lists everything of those kinds together, what's failing first, with a tab for each kind. Lumovi ships add-ons for 32 tools, shows the ones your cluster runs, and you can write your own or replace Lumovi's.
+A **view** is the part of a plugin that says how one kind is shown: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it links to and which belong to it, and which changes people make to it. Plugins are YAML and data only, so they can't run code.
 
 <Columns cols={3}>
-  <Card title="Add-ons" icon="package" href="/custom-resources/add-ons">
+  <Card title="Plugins" icon="package" href="/custom-resources/plugins">
     Each tool's entry in the sidebar, and its page.
   </Card>
-  <Card title="Built-in views" icon="blocks" href="/custom-resources/built-in-views">
+  <Card title="Included plugins" icon="blocks" href="/custom-resources/included-plugins">
     cert-manager, Argo CD, Flux, Karpenter and 28 more.
   </Card>
-  <Card title="Write a view" icon="file-pen-line" href="/custom-resources/write-a-view">
+  <Card title="Write a plugin" icon="file-pen-line" href="/custom-resources/write-a-plugin">
     Better columns, status and actions for your own kinds, in a few lines.
   </Card>
 </Columns>
