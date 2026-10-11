@@ -65,7 +65,7 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
           icon: database
     ```
 
-    A plugin says what it is before what it shows: its own `version`, the oldest Lumovi it works with under `needs`, and the API `groups` its kinds are in. Its name is lowercase letters, digits and hyphens.
+    A plugin says what it is before what it shows: its own `version`, the oldest Lumovi it works with under `needs`, and the API `groups` its kinds are in. Every kind it names is in one of those groups. Its name is lowercase letters, digits and hyphens.
 
     In Lumovi, press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** now shows `databases.yaml` under **Shown by** for the kind, and Lumovi uses the database icon for it. Everything in the next steps goes into that view, beside its `kinds`.
   </Step>
@@ -369,8 +369,9 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
 ## Good to know
 
 - **Quote templates and filters in YAML.** A value that starts with `{{` must be in quotes, or YAML reads it as a map. Quote paths with brackets or double quotes in them too, like `'.status.conditions[?(@.type=="Ready")].status'`.
-- **Your view wins, kind by kind.** If one of your plugins has a view for a kind Lumovi already has one for, yours replaces it for that kind; Lumovi's view still covers its other kinds. To tweak one of Lumovi's, copy it from [Lumovi's plugins](https://github.com/Lumovi/Lumovi/tree/main/plugins) and edit it.
-- **Every kind of a group.** `kind: '*'` with a `group` covers every kind of that group. A view for a kind itself wins over one for its group, and yours win over Lumovi's. See [Which view a kind uses](/reference/plugin-format#which-view-a-kind-uses).
+- **A kind is one plugin's.** A plugin of yours shows kinds no other plugin has. To change how one of Lumovi's plugins shows its kinds, copy its file from [Lumovi's plugins](https://github.com/Lumovi/Lumovi/tree/main/plugins), keep its `metadata.name`, and edit it: yours is used in its place, all of it.
+- **Every kind of a group.** `kind: '*'` with a `group` covers every kind of that group, and the plugin then has that group to itself. A view for a kind itself wins over one for its group. See [Whose a kind is](/reference/plugin-format#whose-a-kind-is).
+- **A tool's kinds, not Kubernetes'.** Pods, Secrets and the other kinds Lumovi has pages for can't be in a plugin. One it has no page for, like a Lease, a plugin can show without actions, named under [`shows`](/reference/plugin-format#kubernetes’-own-kinds).
 - **Another folder.** Set `LUMOVI_PLUGINS_DIR` to read plugins from somewhere else, like a folder your team shares in a Git repository.
 - **Links work too.** A link in the folder, named with `.yaml` or `.yml` at the end, is read like the file it points to, so you can link a plugin from elsewhere. A link to a file that's gone can't be read: **API resources** lists it as a problem, with why, like `databases.yaml: It couldn’t be read: ENOENT: no such file or directory, …`, and the other files still load.
 - **Limits.** Lumovi reads up to 200 files from the folder (not its subfolders), each up to 256 KB.

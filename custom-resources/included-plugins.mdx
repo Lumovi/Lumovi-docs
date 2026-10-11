@@ -559,9 +559,9 @@ CustomResourceDefinitions themselves get a view too: their list shows each one's
 
 ## Changing one of Lumovi's
 
-A view of yours for a kind replaces Lumovi's for that kind, and a place in the sidebar of yours replaces that of Lumovi's plugin with the same name: the one each section above gives after the plugin's label, like `flux`. Copy the file you want to change from [Lumovi's plugins](https://github.com/Lumovi/Lumovi/tree/main/plugins) into `~/.lumovi/plugins`, edit it, and press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** then names your file under **Shown by** for its kinds. If your copy has a problem, none of it is used, and the page says that Lumovi's is shown instead.
+A plugin of yours with the name of one of Lumovi's is used in its place, all of it. The name is the one each section above gives after the plugin's label, like `flux`. Copy the file you want to change from [Lumovi's plugins](https://github.com/Lumovi/Lumovi/tree/main/plugins) into `~/.lumovi/plugins`, edit it, and press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** then names your file under **Shown by** for its kinds, and says at its foot that it's in use in place of Lumovi's. If your copy has a problem, none of it is used, and the page says that Lumovi's is shown instead.
 
-Views replace each other kind by kind: a view of yours for one of a tool's kinds leaves Lumovi's views of its other kinds in place. See [Which view a kind uses](/reference/plugin-format#which-view-a-kind-uses).
+It's the whole plugin or none of it: a kind is one plugin's, so a plugin of yours under another name can't show a kind one of Lumovi's has. See [Whose a kind is](/reference/plugin-format#whose-a-kind-is).
 
 <Note>
   **In your cluster:** put your plugins in the chart's `plugins` value. See [Plugins for everyone](/server/plugins).

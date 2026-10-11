@@ -80,7 +80,7 @@ On a Lumovi server, [your access](/clusters/your-access) applies here as everywh
 
 ## Plugins of your own
 
-These five kinds have pages of their own, like Pods and Secrets. A view for one of them, in a [plugin of your own](/custom-resources/write-a-plugin), adds its actions and nothing else: Lumovi keeps its own columns, details and tabs. A plugin of your own that names one of them among its kinds is refused, and the **API resources** page says which.
+These five kinds have pages of their own, like Pods and Secrets, so they can't be in a [plugin](/custom-resources/write-a-plugin): one that names any of them, in a view or among its kinds, isn't used, and the **API resources** page says which.
 
 <Columns cols={2}>
   <Card title="Permissions" icon="lock-keyhole" href="/clusters/permissions">
