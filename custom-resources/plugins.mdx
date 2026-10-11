@@ -144,13 +144,13 @@ Press <kbd>⌘</kbd><kbd>R</kbd>, and **Platform** appears under **Plugins**, wi
 - **`label`** is its name in the sidebar, and needed with `kinds`.
 - **`icon`** is one of the [icons](/reference/plugin-format#icons).
 - **`category`** puts it at the end of one of Kubernetes' sections instead: `cluster`, `network`, `config` or `storage`.
-- Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be in a plugin.
+- **`groups`** hold every kind it names. A plugin is for a tool's kinds: Kubernetes' own can't be under its place, and a plugin can only [show](/reference/plugin-format#kubernetes’-own-kinds) the ones Lumovi has no page for.
 
-A place in the sidebar only groups kinds. How each kind looks, its columns, status and actions, comes from a view, which a plugin holds under `views:`. See [Write a plugin](/custom-resources/write-a-plugin).
+A place in the sidebar only groups kinds. How each kind looks, its columns, status and actions, comes from a view, which the plugin holds under `views:`. See [Write a plugin](/custom-resources/write-a-plugin).
 
 ### Replacing one of Lumovi's
 
-Give yours the same `metadata.name` as Lumovi's, like `flux` or `cert-manager` ([Included plugins](/custom-resources/included-plugins) gives each one's name). Yours replaces its place whole: its label, icon, section and kinds.
+A kind is one plugin's, so a plugin of yours can't show a kind one of Lumovi's has, unless it takes that plugin's place. Give yours the same `metadata.name` as Lumovi's, like `flux` or `cert-manager` ([Included plugins](/custom-resources/included-plugins) gives each one's name). Yours is then used in its place, all of it: Lumovi's place in the sidebar and every one of its views go.
 
 ```yaml flux.yaml
 apiVersion: lumovi.dev/v1beta1
@@ -169,7 +169,9 @@ spec:
     - { group: helm.toolkit.fluxcd.io, kind: HelmRelease }
 ```
 
-Views are another matter: they're matched kind by kind, whatever plugin they're in. So a view of yours for a kind replaces Lumovi's for that kind, and every other kind keeps Lumovi's. A plugin of yours with Lumovi's name and views only leaves Lumovi's place in the sidebar as it is.
+This one has no views, so its two kinds get the API server's columns, and Flux's other kinds are no longer in the sidebar. To change a little, start from all of it: copy the file from [Lumovi's plugins](https://github.com/Lumovi/Lumovi/tree/main/plugins) and edit the copy. **API resources** names your file under **Shown by**, and says at its foot that it's in use in place of Lumovi's.
+
+Under any other name, a plugin of yours that shows one of those kinds isn't used, and the problem says what to do: "certificates.yaml: Certificate.cert-manager.io is cert-manager’s kind. A plugin of yours named cert-manager takes its place, all of it".
 
 ### When something's wrong with it
 

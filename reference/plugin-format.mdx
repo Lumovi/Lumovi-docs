@@ -15,10 +15,10 @@ spec:
   version: 1.0.0
   needs:
     lumovi: 1.22.0
-  groups: [cert-manager.io]
+  groups: [pki.example.com]
   views:
     - kinds:
-        - { group: cert-manager.io, kind: Certificate }
+        - { group: pki.example.com, kind: Certificate }
       icon: shield-check
       columns:
         - { name: Hosts, path: '.spec.dnsNames[*]' }
@@ -40,7 +40,7 @@ spec:
           kind: Secret
           objectName: '{{ .spec.secretName }}'
         - name: Issuer
-          kind: '{{ .spec.issuerRef.kind ?? "Issuer" }}.cert-manager.io'
+          kind: '{{ .spec.issuerRef.kind ?? "Issuer" }}.pki.example.com'
           objectName: '{{ .spec.issuerRef.name }}'
 ```
 
@@ -54,22 +54,45 @@ spec:
 
 A file is one plugin: one document. It's used whole or not at all: if anything in it is wrong, none of it is used, and everything wrong with it is listed as a [problem](#problems). Files are read on their own: one with a problem, or one that can't be read, like a link to nothing, doesn't stop the others loading.
 
-## Which view a kind uses
+## Whose a kind is
 
-Each kind gets one view. Lumovi takes the first it finds:
+A kind is one plugin's. Each kind gets one view, from the one plugin that shows it:
 
-1. Yours, for the kind.
-2. Yours, for every kind of its group (`kind: '*'`).
-3. Lumovi's, for the kind.
-4. Lumovi's, for every kind of its group.
+- **Among Lumovi's plugins**, no two show the same kind.
+- **A plugin of yours shows the kinds no other plugin has.** If it names a kind one of Lumovi's plugins shows, it isn't used, and the problem says whose kind it is and what to do.
+- **To show one of Lumovi's kinds your way, take its plugin's place.** A plugin of yours with the same `metadata.name` as one of Lumovi's, like `flux` or `cert-manager`, is used in its place, all of it: Lumovi's place in the sidebar and every one of its views go, for the kinds yours doesn't show as well. Those get the API server's columns. [Included plugins](/custom-resources/included-plugins) gives each plugin's name.
+- **Among your own**, the first by file name is used. A second file with the same name, or one that shows a kind another of yours does, isn't.
 
-So your views replace Lumovi's one kind at a time, whichever of your plugins they're in. If Lumovi's view covers five kinds and yours covers one of them, the other four keep Lumovi's.
+A group can be shared: three of Lumovi's plugins have kinds in `argoproj.io`. What is one plugin's is the kind. A plugin that shows every kind of a group (`kind: '*'`) has that group to itself, and within a plugin a view for a kind itself wins over one for its whole group.
 
-Among your own, a kind is one plugin's. Two views of the same kind in one file are a problem. Of two files that show the same kind, the first by file name is used and the other isn't, and the problem says whose kind it is. A plugin that shows every kind of a group (`kind: '*'`) has that group to itself.
+**API resources** says what shows each kind, under **Shown by**: the plugin's name as the sidebar has it, the name of your file, **Lumovi**, or a dash for a kind nothing shows specially. At its foot it counts the plugins, and says when one of yours is in use in place of one of Lumovi's: *32 plugins from Lumovi, 2 of yours. flux.yaml is in use in place of Lumovi’s Flux.*
 
-A place in the sidebar is matched by name instead: a plugin of yours with the same `metadata.name` as one of Lumovi's replaces its place whole. See [spec](#spec).
+### Kubernetes’ own kinds
 
-**API resources** says what shows each kind, under **Shown by**: the plugin's name as the sidebar has it, the name of your file, **Lumovi**, or a dash for a kind nothing shows specially. Lumovi has views of its own for a few of Kubernetes' kinds that have no page, like CustomResourceDefinitions. They aren't plugins and aren't among the [included ones](/custom-resources/included-plugins); **Shown by** says **Lumovi** for them.
+A plugin is for a tool's kinds, not Kubernetes' own:
+
+- **A kind Lumovi has a page for**, like Pods, Deployments, Secrets or Roles (see [Resource kinds](/reference/resource-kinds)), can't be in a plugin at all.
+- **A kind Lumovi shows itself**, like CustomResourceDefinitions, can't either. Lumovi has views of its own for a few of Kubernetes' kinds that have no page. They aren't plugins and aren't among the [included ones](/custom-resources/included-plugins); **Shown by** says **Lumovi** for them.
+- **Any other kind of Kubernetes'**, like a Lease or a LimitRange, a plugin can show, and only show. It names the kind under [`shows`](#spec), and its view of it has columns, status, details, links and related lists, but no actions. Such a kind can't be under the plugin's place in the sidebar.
+
+```yaml limits.yaml
+apiVersion: lumovi.dev/v1beta1
+kind: Plugin
+metadata:
+  name: limits
+spec:
+  version: 1.0.0
+  needs:
+    lumovi: 1.22.0
+  groups: []
+  shows:
+    - { kind: LimitRange }
+  views:
+    - kinds:
+        - { kind: LimitRange }
+      columns:
+        - { name: Limits, path: '.spec.limits[*].type' }
+```
 
 ## The document
 
@@ -82,7 +105,7 @@ A place in the sidebar is matched by name instead: a plugin of yours with the sa
 </ResponseField>
 
 <ResponseField name="metadata.name" type="string" required>
-  The plugin's name: lowercase letters, digits and hyphens, starting with a letter and ending with a letter or a digit, at most 63 characters. It's the address of its page (`plugins/platform`), and what decides which of Lumovi's places in the sidebar yours replaces. A name is one plugin's: of two files with the same name, the first by file name is used. `lumovi`, a name starting with `lumovi-`, and `kubernetes` can't be a plugin's.
+  The plugin's name: lowercase letters, digits and hyphens, starting with a letter and ending with a letter or a digit, at most 63 characters. It's the address of its page (`plugins/platform`). A name is one plugin's: of two files of yours with the same name, the first by file name is used, and a plugin of yours with the name of one of Lumovi's is used [in its place](#whose-a-kind-is). `lumovi`, a name starting with `lumovi-`, and `kubernetes` can't be a plugin's.
 </ResponseField>
 
 <ResponseField name="spec" type="object" required>
@@ -123,12 +146,16 @@ spec:
   The oldest Lumovi the plugin works with, as three numbers, like `1.22.0`. A plugin that needs a newer Lumovi than the one reading it isn't used, and the problem says both versions.
 </ResponseField>
 
-<ResponseField name="groups" type="list of strings">
-  The API groups its kinds are in, like `[platform.example.com]`. Kubernetes' own groups, like `apps`, and `lumovi.dev` can't be among them.
+<ResponseField name="groups" type="list of strings" required>
+  The API groups its kinds are in, like `[platform.example.com]`. Every kind of a tool's that the plugin names, in its place in the sidebar or in a view, is in one of them. A group is written as Kubernetes writes it: lowercase letters, digits, hyphens and dots. Kubernetes' own groups, like `apps`, and `lumovi.dev` can't be among them. A plugin that only [shows Kubernetes' kinds](#kubernetes’-own-kinds) has an empty list.
+</ResponseField>
+
+<ResponseField name="shows" type="list of kinds">
+  Kinds of [Kubernetes' own](#kubernetes’-own-kinds) that Lumovi has no page for, which the plugin shows and only shows. Each is written out as a view's [kinds](#a-view) are, with its `group` unless it's of the core group, and each is shown by one of the plugin's views.
 </ResponseField>
 
 <ResponseField name="kinds" type="list">
-  The kinds of its place in the sidebar, in the order of their tabs: an entry in the sidebar leads to a page with all of them, everything in one list and a tab for each. Written as a view's [kinds](#a-view): `kind: '*'` is every kind of a group, each with a tab, in order of their names. Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be among them. See [Plugins](/custom-resources/plugins).
+  The kinds of its place in the sidebar, in the order of their tabs: an entry in the sidebar leads to a page with all of them, everything in one list and a tab for each. Written as a view's [kinds](#a-view): `kind: '*'` is every kind of a group, each with a tab, in order of their names. Kubernetes' own kinds can't be among them. See [Plugins](/custom-resources/plugins).
 </ResponseField>
 
 <ResponseField name="label" type="string">
@@ -147,9 +174,9 @@ spec:
   How its kinds are shown: see [A view](#a-view). A plugin needs views, or `kinds` for a place in the sidebar.
 </ResponseField>
 
-A label, an icon and a category are for a place in the sidebar, so they need `kinds`. A place only groups kinds: how each kind looks, its columns, status and actions, comes from a view, matched by kind, in this plugin or another.
+A label, an icon and a category are for a place in the sidebar, so they need `kinds`. A place only groups kinds: how each kind looks, its columns, status and actions, comes from a view of this plugin's.
 
-One of yours with the same `metadata.name` as one of Lumovi's replaces its place whole: its label, icon, section and kinds. One with that name and views only leaves Lumovi's place as it is, and replaces views kind by kind. [Included plugins](/custom-resources/included-plugins) lists Lumovi's plugins and their names.
+One of yours with the same `metadata.name` as one of Lumovi's is used in its place, all of it: see [Whose a kind is](#whose-a-kind-is).
 
 ## A view
 
@@ -160,7 +187,7 @@ Each item under `views:`:
 </ResponseField>
 
 <ResponseField name="kinds" type="list" required>
-  The kinds it's for, at least one. Each is a `kind` and its API `group`. Leave out `group` for the core group's kinds.
+  The kinds it's for, at least one. Each is a `kind` and its API `group`, and the group is one of the plugin's [`groups`](#spec). A kind's name is its own, like `GitRepository`: letters and digits, starting with a capital, with its group beside it and never in it.
 
   ```yaml
   kinds:
@@ -175,7 +202,7 @@ Each item under `views:`:
     - { group: constraints.gatekeeper.sh, kind: '*' }
   ```
 
-  Kinds Lumovi has a page of its own for, like Pods, Deployments and Secrets (see [Resource kinds](/reference/resource-kinds)), keep their own icon, columns, status, details and tabs. A view of one only adds its actions.
+  A kind of Kubernetes' own is left without `group` if it's of the core group, and has to be under the plugin's `shows`: see [Kubernetes' own kinds](#kubernetes’-own-kinds).
 </ResponseField>
 
 <ResponseField name="icon" type="string">
@@ -553,7 +580,7 @@ A choice has `options` or `from`, not both, and other inputs have neither. Every
 
 ### Creating objects
 
-`create` is an object to create, written as you'd write its YAML, with templates in it. It needs an `apiVersion`, a `kind`, and a `metadata.name` or `metadata.generateName` as text.
+`create` is an object to create, written as you'd write its YAML, with templates in it. It needs an `apiVersion`, a `kind`, and a `metadata.name` or `metadata.generateName` as text. What it creates is one of the plugin's own kinds: one under its place in the sidebar, or one a view of it shows. So its `apiVersion` and `kind` are written out, not templates.
 
 ```yaml
 - name: Back up now
@@ -616,12 +643,23 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `platform.yaml: spec.version: "1.0" should be three numbers, like 1.0.0` | A version that isn't three numbers |
 | `platform.yaml: spec.needs.lumovi: is required` | A plugin that doesn't say which Lumovi it needs |
 | `platform.yaml: needs Lumovi 1.30.0 or newer; this is 1.22.0` | A plugin for a newer Lumovi than this one |
+| `platform.yaml: spec.groups: is required: the API groups its kinds are in, like [example.com]` | A plugin without `groups` |
+| `platform.yaml: spec.groups[0]: "Platform/x" should be an API group’s name, like cert-manager.io` | A group that isn't written as one |
+| `platform.yaml: spec.views[0].kinds[0]: "Database.platform.example.com" should be a kind’s own name, like Certificate: its group goes under group` | A kind with more than its name in `kind` |
+| `platform.yaml: spec.views[0].kinds[0]: Widget.example.com isn’t in one of its groups: add example.com to spec.groups` | A kind outside the plugin's `groups` |
 | `platform.yaml: spec.groups[0]: apps is Kubernetes’ own, so a plugin can’t have it` | One of Kubernetes' groups among `groups` |
 | `platform.yaml: spec.groups[0]: lumovi.dev is Lumovi’s own, so a plugin can’t have it` | Lumovi's group among `groups` |
 | `platform.yaml: spec: needs views, or kinds for a place in the sidebar` | A plugin with neither |
 | `platform.yaml: spec: needs a label for its place in the sidebar` | `kinds` without a `label` |
 | `platform.yaml: spec: a label, an icon or a category is for a place in the sidebar, and that needs kinds` | One of them without `kinds` |
-| `platform.yaml: spec: Pod has a page of its own, so it can’t be in a plugin` | One of Lumovi's own kinds among a plugin's `kinds` |
+| `platform.yaml: spec: Pod has a page of its own, so it can’t be in a plugin` | A kind Lumovi has a page for, among a plugin's `kinds` |
+| `platform.yaml: spec.views[0].kinds[0]: Pod has a page of its own, so it can’t be in a plugin` | The same, in a view |
+| `platform.yaml: spec.views[0].kinds[0]: CustomResourceDefinition.apiextensions.k8s.io is shown by Lumovi itself, so it can’t be in a plugin` | A kind Lumovi has a view of its own for |
+| `platform.yaml: spec.views[0].kinds[0]: Lease.coordination.k8s.io is Kubernetes’ own: to show it, name it under spec.shows` | A view of one of Kubernetes' kinds that isn't under `shows` |
+| `platform.yaml: spec.views[0].actions: a view of Kubernetes’ own kind only shows it, so it can’t have actions` | Actions on a view of one of Kubernetes' kinds |
+| `platform.yaml: spec.kinds[1]: Lease.coordination.k8s.io is Kubernetes’ own, so it can’t be under a plugin’s place in the sidebar` | One of Kubernetes' kinds among a plugin's `kinds` |
+| `platform.yaml: spec.shows[0]: Database.platform.example.com isn’t Kubernetes’ own: a view names it once platform.example.com is in spec.groups` | A tool's kind under `shows` |
+| `platform.yaml: spec.shows[0]: LimitRange isn’t shown by any of its views` | A kind under `shows` that no view shows |
 | `platform.yaml: spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section plugins can't sit in |
 | `platform.yaml: spec.colour: isn’t something a plugin has` | A misspelled field of the plugin's |
 | `platform.yaml: spec.views[0].colums: isn’t something a view has` | A misspelled field of a view's |
@@ -636,6 +674,8 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `platform.yaml: spec.views[0].actions[0]: needs a patch, or an object to create (not both)` | An action with neither, or both |
 | `platform.yaml: spec.views[0].actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |
 | `platform.yaml: spec.views[0].actions[0]: what it creates needs an apiVersion, a kind, and a metadata.name or generateName` | An incomplete object to create |
+| `platform.yaml: spec.views[0].actions[0]: what it creates: "platform.example.com/v1/x" should be an API version, like cert-manager.io/v1` | An `apiVersion` that isn't a group and a version |
+| `platform.yaml: spec.views[0].actions[0].create: makes a Job, which isn’t one of this plugin’s kinds` | An action that creates a kind the plugin doesn't show |
 | `platform.yaml: spec.views[0].actions[0]: can’t undo creating something` | An `undo` on an action that creates |
 | `platform.yaml: spec.views[0].actions[0]: {{ input.size }} isn’t one of its inputs` | A template naming an input the action doesn't have |
 | `platform.yaml: spec.views[0].actions[0]: runs at once, so it has to say so: runs: at-once` | An action that asks nothing first, without `runs: at-once` |
@@ -652,17 +692,20 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `platform.yaml: It’s larger than 256 KB.` | A file over the limit, which isn't read |
 | `platform.yaml: It couldn’t be read: ENOENT: no such file or directory, open '…'` | A file that can't be read, like a link to nothing or to a folder. What follows says why, in the operating system's words. |
 
-Two more are about a file beside another of yours, and each is followed by a line of its own, `platform-2.yaml: isn’t in use`:
+The rest are about a file beside another plugin, and each is followed by a line of its own, `platform-2.yaml: isn’t in use`:
 
 | Message | Cause |
 | --- | --- |
 | `platform-2.yaml: platform is platform.yaml’s name too` | A second file with a name another has. The first by file name is used |
 | `platform-2.yaml: Database.platform.example.com is already platform’s kind` | A second plugin of yours that shows a kind another does. The first by file name is used |
+| `certificates.yaml: Certificate.cert-manager.io is cert-manager’s kind. A plugin of yours named cert-manager takes its place, all of it` | A plugin of yours that shows a kind one of Lumovi's has, under another name |
+| `policies.yaml: constraints.gatekeeper.sh is all gatekeeper’s. A plugin of yours named gatekeeper takes its place, all of it` | A plugin of yours with a kind in a group one of Lumovi's has whole |
+| `policies.yaml: argoproj.io is in argo-cd’s groups too, so this plugin can’t have every kind of it` | `kind: '*'` for a group another plugin has kinds in |
 
 What a problem quotes from a file is cut at 40 characters, and a character that can't be seen in it is shown as its code point.
 
 A file that isn't valid YAML shows the parser's message, after the file's name. One that can't be read as YAML for any other reason is listed as one that couldn't be read, with the reason, and the others load.
 
-When a plugin of yours with a problem has the name of one of Lumovi's, Lumovi's is what's shown, and one more line says so, last among that file's: `my-flux.yaml: isn’t in use, so Lumovi’s Flux is shown instead`. It's said only where the file's name for itself could be read. A plugin of yours under another name falls back the same way, kind by kind, and **Shown by** is where that shows.
+When a plugin of yours with a problem has the name of one of Lumovi's, Lumovi's is what's shown, and the last line says so: `my-flux.yaml: isn’t in use, so Lumovi’s Flux is shown instead`. It's said only where the file's name for itself could be read.
 
-Below the list, **API resources** says how many plugins are Lumovi's and how many are yours, and where yours go, with **How to write a plugin**.
+Below the list, **API resources** says how many plugins are Lumovi's and how many are yours, which of yours is in use in place of one of Lumovi's, and where yours go, with **How to write a plugin**.

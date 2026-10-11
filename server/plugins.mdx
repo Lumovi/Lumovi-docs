@@ -11,18 +11,18 @@ In your cluster, the plugins everyone sees go in the chart's `plugins` value, on
 
 ```yaml values.yaml
 plugins:
-  team-certificates.yaml: |
+  queues.yaml: |
     apiVersion: lumovi.dev/v1beta1
     kind: Plugin
-    metadata: { name: team-certificates }
+    metadata: { name: queues }
     spec:
       version: 1.0.0
       needs:
         lumovi: 1.22.0
-      groups: [cert-manager.io]
+      groups: [messaging.example.com]
       views:
-        - kinds: [{ group: cert-manager.io, kind: Certificate }]
-          columns: [{ name: Issuer, path: .spec.issuerRef.name }]
+        - kinds: [{ group: messaging.example.com, kind: Queue }]
+          columns: [{ name: Depth, path: .status.depth, type: number }]
   platform.yaml: |
     apiVersion: lumovi.dev/v1beta1
     kind: Plugin
@@ -41,8 +41,8 @@ Each entry is a file, named with `.yaml` or `.yml` at the end, holding one plugi
 ## How it works
 
 - The chart puts the files in a ConfigMap, and mounts it at `/etc/lumovi/plugins`, where Lumovi reads them (`LUMOVI_PLUGINS_DIR`). Kubernetes mounts each file as a link, which Lumovi follows.
-- A view of a kind, in any of these plugins, replaces Lumovi's own view of that kind, one kind at a time.
-- A plugin's place in the sidebar replaces that of Lumovi's plugin with the same name, like `flux` or `cert-manager`.
+- A kind is one plugin's. These plugins show kinds no other plugin has; one with the name of one of Lumovi's, like `flux` or `cert-manager`, is used in its place, all of it, and **API resources** says so to everyone at its foot.
+- They're held as Lumovi's own are: a tool's kinds in the groups the plugin names, none of Kubernetes' own but the few it may [show](/reference/plugin-format#kubernetes’-own-kinds), and nothing created but the plugin's own kinds.
 - A change to `plugins` rolls out a new pod, which reads them. People stay signed in, as across any restart, and open pages reconnect.
 - Without the chart, put the files in the folder `LUMOVI_PLUGINS_DIR` names. Lumovi reads it again whenever a page loads, so people see a change when they reload.
 - These plugins are the server's, for everyone. What goes here is described, never code. People can't add their own from a browser.
