@@ -7,11 +7,15 @@ icon: "braces"
 A plugin is a YAML file with one document of kind `Plugin`. Its `spec` can hold a place in the sidebar, for a tool whose kinds belong together on one page, and views: under `views:`, a view tells Lumovi how to show a kind. This page lists everything a plugin can say. For a guided introduction, see [Write a plugin](/custom-resources/write-a-plugin) and [Plugins](/custom-resources/plugins).
 
 ```yaml certificates.yaml
-apiVersion: lumovi.dev/v1alpha1
+apiVersion: lumovi.dev/v1beta1
 kind: Plugin
 metadata:
   name: certificates
 spec:
+  version: 1.0.0
+  needs:
+    lumovi: 1.22.0
+  groups: [cert-manager.io]
   views:
     - kinds:
         - { group: cert-manager.io, kind: Certificate }
@@ -59,7 +63,9 @@ Each kind gets one view. Lumovi takes the first it finds:
 3. Lumovi's, for the kind.
 4. Lumovi's, for every kind of its group.
 
-So your views replace Lumovi's one kind at a time, whichever of your plugins they're in. If Lumovi's view covers five kinds and yours covers one of them, the other four keep Lumovi's. If two of your views name the same kind, the one read last wins: files are read in order of their names, and a plugin's views in the order they come in.
+So your views replace Lumovi's one kind at a time, whichever of your plugins they're in. If Lumovi's view covers five kinds and yours covers one of them, the other four keep Lumovi's.
+
+Among your own, a kind is one plugin's. Two views of the same kind in one file are a problem. Of two files that show the same kind, the first by file name is used and the other isn't, and the problem says whose kind it is. A plugin that shows every kind of a group (`kind: '*'`) has that group to itself.
 
 A place in the sidebar is matched by name instead: a plugin of yours with the same `metadata.name` as one of Lumovi's replaces its place whole. See [spec](#spec).
 
@@ -68,7 +74,7 @@ A place in the sidebar is matched by name instead: a plugin of yours with the sa
 ## The document
 
 <ResponseField name="apiVersion" type="string" required>
-  Always `lumovi.dev/v1alpha1`.
+  Always `lumovi.dev/v1beta1`.
 </ResponseField>
 
 <ResponseField name="kind" type="string" required>
@@ -76,7 +82,7 @@ A place in the sidebar is matched by name instead: a plugin of yours with the sa
 </ResponseField>
 
 <ResponseField name="metadata.name" type="string" required>
-  The plugin's name. It's the address of its page (`plugins/platform`), and what decides which of Lumovi's places in the sidebar yours replaces.
+  The plugin's name: lowercase letters, digits and hyphens, starting with a letter and ending with a letter or a digit, at most 63 characters. It's the address of its page (`plugins/platform`), and what decides which of Lumovi's places in the sidebar yours replaces. A name is one plugin's: of two files with the same name, the first by file name is used. `lumovi`, a name starting with `lumovi-`, and `kubernetes` can't be a plugin's.
 </ResponseField>
 
 <ResponseField name="spec" type="object" required>
@@ -88,11 +94,15 @@ A place in the sidebar is matched by name instead: a plugin of yours with the sa
 A plugin's `spec` holds a place in the sidebar, views, or both. A file with one view and nothing else is a plugin too, the smallest one.
 
 ```yaml platform.yaml
-apiVersion: lumovi.dev/v1alpha1
+apiVersion: lumovi.dev/v1beta1
 kind: Plugin
 metadata:
   name: platform
 spec:
+  version: 1.0.0
+  needs:
+    lumovi: 1.22.0
+  groups: [platform.example.com]
   label: Platform
   icon: database
   kinds:
@@ -104,6 +114,18 @@ spec:
       columns:
         - { name: Engine, path: .spec.engine }
 ```
+
+<ResponseField name="version" type="string" required>
+  The plugin's own version: three numbers, like `1.0.0`, with no leading zeros and nothing before or after them. `1.0` and `v1.0.0` are problems.
+</ResponseField>
+
+<ResponseField name="needs.lumovi" type="string" required>
+  The oldest Lumovi the plugin works with, as three numbers, like `1.22.0`. A plugin that needs a newer Lumovi than the one reading it isn't used, and the problem says both versions.
+</ResponseField>
+
+<ResponseField name="groups" type="list of strings">
+  The API groups its kinds are in, like `[platform.example.com]`. Kubernetes' own groups, like `apps`, and `lumovi.dev` can't be among them.
+</ResponseField>
 
 <ResponseField name="kinds" type="list">
   The kinds of its place in the sidebar, in the order of their tabs: an entry in the sidebar leads to a page with all of them, everything in one list and a tab for each. Written as a view's [kinds](#a-view): `kind: '*'` is every kind of a group, each with a tab, in order of their names. Kinds Lumovi has a page of its own for, like Pods, Deployments or Secrets, can't be among them. See [Plugins](/custom-resources/plugins).
@@ -379,12 +401,14 @@ actions:
     icon: refresh-cw
     primary: true                                  # a button in the detail panel, not only in its menu
     when: { path: .spec.suspend, notEquals: true } # only offered when this holds
+    runs: at-once                                  # it asks nothing first, and says so
     patch:
       metadata:
         annotations: { reconcile.fluxcd.io/requestedAt: '{{ now }}' }
     done: Asked Flux to reconcile {{ .metadata.name }} # the notification
 
   - name: Suspend
+    runs: at-once
     patch: { spec: { suspend: true } }
     undo: { spec: { suspend: null } }              # offered as Undo in the notification
     done: Suspended {{ .metadata.name }}
@@ -401,7 +425,7 @@ actions:
 </ResponseField>
 
 <ResponseField name="patch" type="object or list">
-  A merge patch (an object), or, with `type: json`, a list of JSON patch operations. Templates work inside it.
+  A merge patch (an object), or, with `type: json`, a list of JSON patch operations. Templates work inside it, within [what a patch can't change](#what-a-patch-can’t-change).
 </ResponseField>
 
 <ResponseField name="create" type="object">
@@ -428,6 +452,10 @@ actions:
   Asks first, with this text.
 </ResponseField>
 
+<ResponseField name="runs" type="string">
+  `at-once`, on an action that asks nothing first. See [When an action asks first](#when-an-action-asks-first).
+</ResponseField>
+
 <ResponseField name="done" type="template">
   The notification once it's done. Without it, the notification is the action's name and the object's.
 </ResponseField>
@@ -450,7 +478,26 @@ actions:
 
 ### When an action asks first
 
-An action runs at once, unless it has a `confirm`, `inputs` or a `create`. Then it opens a dialog first, and its name ends in "…" in menus, like **Back up now…**. The dialog shows the `confirm` text, the inputs, what it would create, and the equivalent command. Its button has the action's name.
+An action with a `confirm`, `inputs` or a `create` opens a dialog first, and its name ends in "…" in menus, like **Back up now…**. The dialog shows the `confirm` text, the inputs, what it would create, and the equivalent command. Its button has the action's name.
+
+An action with none of the three runs at once, and has to say so: `runs: at-once`. That way nobody reading the file takes a change that asks nothing for one that asks. An action that asks first can't say it.
+
+### What a patch can’t change
+
+Some of an object's `metadata` is the cluster's to set, or its owner's, and no plugin's:
+
+- **In a patch or an undo:** `ownerReferences`, `finalizers`, `managedFields`, `namespace`, `name`, `uid`, `resourceVersion`, `generation`, `creationTimestamp` and `deletionTimestamp`.
+- **In an object to create:** `ownerReferences`, `finalizers` and `managedFields`. A new object has its name, and can have a namespace.
+
+So that nothing filled in later can get round this, a few things are written out and never come from a template:
+
+- `metadata`, in a patch or an object to create, is a map written in the file, not one placeholder.
+- Each operation of a JSON patch is written out, and so are its `path` and `from`, as text with no `{{ }}` in them.
+- A JSON patch operation can't name `/metadata` itself or the whole object, and can't name one of the fields above in its `path` or `from`, whatever the operation is.
+
+Labels and annotations are yours to set, and their values can be templates.
+
+The file is checked when it's read. The change is checked again as it's sent, filled in: one that would change any of these isn't sent, and the notification says "Lumovi didn’t send this: it changes metadata.finalizers, which a plugin can’t change."
 
 ### Inputs
 
@@ -506,7 +553,7 @@ A choice has `options` or `from`, not both, and other inputs have neither. Every
 
 ### Creating objects
 
-`create` is an object to create, written as you'd write its YAML, with templates in it. It needs an `apiVersion`, a `kind`, and a `metadata.name` or `metadata.generateName`.
+`create` is an object to create, written as you'd write its YAML, with templates in it. It needs an `apiVersion`, a `kind`, and a `metadata.name` or `metadata.generateName` as text.
 
 ```yaml
 - name: Back up now
@@ -535,6 +582,16 @@ Creating something can't be undone from the notification: delete what it made in
 
 An action is enabled only when the cluster says your account may make the change: `patch` on the kind (or on its `status`, with `subresource: status`) for a patch, and `create` on the kind it creates for a `create`. Like every change, it shows the equivalent command, `kubectl patch …` or `kubectl create -f <name>.yaml`, and is refused in a [read-only](/changes/read-only) cluster.
 
+## Texts
+
+A plugin's own texts are plain text, and short enough to show:
+
+- **80 characters at most** for a `name`, a `label` and an input's `default`.
+- **500 characters at most** for a `confirm`, a `detail` and a `done`, and for a status rule's `label`, which is a template.
+- **No characters that can't be seen**, in any text or key of the file: the ones that turn a text's direction, the ones with no width, and control characters. A `name`, a `label` and a `default` can't hold a line break or a tab either. The problem names the character by its code point, like U+202E.
+
+What a patch or a created object holds is the cluster's to limit, so the two lengths don't apply inside `patch`, `undo` and `create`.
+
 ## Icons
 
 Plugins can use these [Lucide](https://lucide.dev/icons) icons, for their place in the sidebar, their views' kinds and their actions:
@@ -547,11 +604,20 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 
 | Message | Cause |
 | --- | --- |
-| `platform.yaml: should start with apiVersion: lumovi.dev/v1alpha1 and kind: Plugin` | The file isn't a plugin |
+| `platform.yaml: holds nothing` | An empty file, or one with only comments |
+| `platform.yaml: should start with apiVersion: lumovi.dev/v1beta1 and kind: Plugin` | The file isn't a plugin |
 | `platform.yaml: a view goes inside a plugin: start with kind: Plugin and put this under its views.` | A document of kind `View` |
 | `platform.yaml: holds 2 documents, and a file is one plugin` | More than one document in a file |
 | `platform.yaml: needs metadata.name` | A plugin without a name |
+| `platform.yaml: metadata.name: "My Platform" should be lowercase letters, digits and hyphens, starting with a letter and ending with a letter or a digit, at most 63 characters` | A name that can't be a plugin's |
+| `platform.yaml: metadata.name: "lumovi-tools" starts with Lumovi’s own name, which a plugin can’t have` | A name that reads as Lumovi's. `lumovi` and `kubernetes` are refused the same way |
 | `platform.yaml: needs spec` | A plugin with no `spec` |
+| `platform.yaml: spec.version: is required` | A plugin without a version |
+| `platform.yaml: spec.version: "1.0" should be three numbers, like 1.0.0` | A version that isn't three numbers |
+| `platform.yaml: spec.needs.lumovi: is required` | A plugin that doesn't say which Lumovi it needs |
+| `platform.yaml: needs Lumovi 1.30.0 or newer; this is 1.22.0` | A plugin for a newer Lumovi than this one |
+| `platform.yaml: spec.groups[0]: apps is Kubernetes’ own, so a plugin can’t have it` | One of Kubernetes' groups among `groups` |
+| `platform.yaml: spec.groups[0]: lumovi.dev is Lumovi’s own, so a plugin can’t have it` | Lumovi's group among `groups` |
 | `platform.yaml: spec: needs views, or kinds for a place in the sidebar` | A plugin with neither |
 | `platform.yaml: spec: needs a label for its place in the sidebar` | `kinds` without a `label` |
 | `platform.yaml: spec: a label, an icon or a category is for a place in the sidebar, and that needs kinds` | One of them without `kinds` |
@@ -563,16 +629,37 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `platform.yaml: spec.views[0].icon: should be one of activity, archive, …` | An icon that isn't on the list |
 | `platform.yaml: spec.views[0].columns[1].path: “spec.ready” should start with a dot, like .spec.replicas` | A path that isn't one |
 | `platform.yaml: spec.views[0].kinds[0]: every kind (*) is of a group: name it` | `kind: '*'` without a `group` |
+| `platform.yaml: spec.views[1].kinds[0]: Database.platform.example.com is already shown by spec.views[0]` | Two views of one kind in a file |
+| `platform.yaml: spec.label: is longer than 80 characters` | A [text](#texts) over its length |
+| `platform.yaml: spec.label: holds a character that can’t be seen (U+202E)` | A text or a key with a character nobody can see |
 | `platform.yaml: spec.views[0].related[0]: needs labels or a fieldSelector to find them` | A related list that would be every object of its kind |
 | `platform.yaml: spec.views[0].actions[0]: needs a patch, or an object to create (not both)` | An action with neither, or both |
 | `platform.yaml: spec.views[0].actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |
 | `platform.yaml: spec.views[0].actions[0]: what it creates needs an apiVersion, a kind, and a metadata.name or generateName` | An incomplete object to create |
 | `platform.yaml: spec.views[0].actions[0]: can’t undo creating something` | An `undo` on an action that creates |
 | `platform.yaml: spec.views[0].actions[0]: {{ input.size }} isn’t one of its inputs` | A template naming an input the action doesn't have |
+| `platform.yaml: spec.views[0].actions[0]: runs at once, so it has to say so: runs: at-once` | An action that asks nothing first, without `runs: at-once` |
+| `platform.yaml: spec.views[0].actions[0]: asks first, so it can’t say runs: at-once` | `runs: at-once` on an action with a `confirm`, `inputs` or a `create` |
+| `platform.yaml: spec.views[0].actions[0]: changes metadata.finalizers, which a plugin can’t change` | A patch or a new object that sets [what isn't a plugin's](#what-a-patch-can’t-change) |
+| `platform.yaml: spec.views[0].actions[0]: fills in an object’s metadata whole, which a plugin can’t: write it out` | `metadata` as one placeholder |
+| `platform.yaml: spec.views[0].actions[0]: fills in an operation whole, which a plugin can’t: write it out` | A JSON patch operation as one placeholder |
+| `platform.yaml: spec.views[0].actions[0]: needs each operation’s path written out, as text` | A JSON patch operation without a `path` that's text |
+| `platform.yaml: spec.views[0].actions[0]: fills in where an operation changes, which a plugin can’t: write its path out` | A `path` or `from` with a template in it |
+| `platform.yaml: spec.views[0].actions[0]: replaces all of an object’s metadata, which a plugin can’t change` | A JSON patch operation on `/metadata` |
+| `platform.yaml: spec.views[0].actions[0]: replaces the object whole, which a plugin can’t` | A JSON patch operation on the whole object |
 | `platform.yaml: spec.views[0].actions[0].inputs[0]: a choice needs options, or a path to read them from` | A choice without `options` or `from`, or with both |
 | `platform.yaml: spec.views[0].actions[0].inputs[0]: only a choice has options` | `options` or `from` on a text or number input |
 | `platform.yaml: It’s larger than 256 KB.` | A file over the limit, which isn't read |
 | `platform.yaml: It couldn’t be read: ENOENT: no such file or directory, open '…'` | A file that can't be read, like a link to nothing or to a folder. What follows says why, in the operating system's words. |
+
+Two more are about a file beside another of yours, and each is followed by a line of its own, `platform-2.yaml: isn’t in use`:
+
+| Message | Cause |
+| --- | --- |
+| `platform-2.yaml: platform is platform.yaml’s name too` | A second file with a name another has. The first by file name is used |
+| `platform-2.yaml: Database.platform.example.com is already platform’s kind` | A second plugin of yours that shows a kind another does. The first by file name is used |
+
+What a problem quotes from a file is cut at 40 characters, and a character that can't be seen in it is shown as its code point.
 
 A file that isn't valid YAML shows the parser's message, after the file's name. One that can't be read as YAML for any other reason is listed as one that couldn't be read, with the reason, and the others load.
 

@@ -121,11 +121,15 @@ The overview reads node pools, node claims and nodes, and pods in every namespac
 A plugin is one short YAML file, a document of kind `Plugin`, in `~/.lumovi/plugins`. This one gives two kinds of your own a place in the sidebar:
 
 ```yaml platform.yaml
-apiVersion: lumovi.dev/v1alpha1
+apiVersion: lumovi.dev/v1beta1
 kind: Plugin
 metadata:
   name: platform
 spec:
+  version: 1.0.0
+  needs:
+    lumovi: 1.22.0
+  groups: [platform.example.com]
   label: Platform
   icon: database
   kinds:
@@ -135,6 +139,7 @@ spec:
 
 Press <kbd>⌘</kbd><kbd>R</kbd>, and **Platform** appears under **Plugins**, with a tab for each kind.
 
+- **`version`**, **`needs`** and **`groups`** say what it is: its own version, the oldest Lumovi it works with, and the API groups its kinds are in.
 - **`kinds`** are the tabs, in order. `kind: '*'` with a `group` is every kind of that group, each with a tab.
 - **`label`** is its name in the sidebar, and needed with `kinds`.
 - **`icon`** is one of the [icons](/reference/plugin-format#icons).
@@ -148,11 +153,15 @@ A place in the sidebar only groups kinds. How each kind looks, its columns, stat
 Give yours the same `metadata.name` as Lumovi's, like `flux` or `cert-manager` ([Included plugins](/custom-resources/included-plugins) gives each one's name). Yours replaces its place whole: its label, icon, section and kinds.
 
 ```yaml flux.yaml
-apiVersion: lumovi.dev/v1alpha1
+apiVersion: lumovi.dev/v1beta1
 kind: Plugin
 metadata:
   name: flux
 spec:
+  version: 1.0.0
+  needs:
+    lumovi: 1.22.0
+  groups: [kustomize.toolkit.fluxcd.io, helm.toolkit.fluxcd.io]
   label: GitOps
   icon: git-branch
   kinds:

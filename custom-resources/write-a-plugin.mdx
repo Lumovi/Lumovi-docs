@@ -50,16 +50,22 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
     Create `~/.lumovi/plugins/databases.yaml` with the smallest plugin there is, one view of one kind:
 
     ```yaml databases.yaml
-    apiVersion: lumovi.dev/v1alpha1
+    apiVersion: lumovi.dev/v1beta1
     kind: Plugin
     metadata:
       name: databases
     spec:
+      version: 1.0.0
+      needs:
+        lumovi: 1.22.0
+      groups: [platform.example.com]
       views:
         - kinds:
             - { group: platform.example.com, kind: Database }
           icon: database
     ```
+
+    A plugin says what it is before what it shows: its own `version`, the oldest Lumovi it works with under `needs`, and the API `groups` its kinds are in. Its name is lowercase letters, digits and hyphens.
 
     In Lumovi, press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux). **API resources** now shows `databases.yaml` under **Shown by** for the kind, and Lumovi uses the database icon for it. Everything in the next steps goes into that view, beside its `kinds`.
   </Step>
@@ -154,6 +160,7 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
           actions:
             - name: Pause
               when: { path: .spec.paused, notEquals: true }
+              runs: at-once
               patch: { spec: { paused: true } }
               undo: { spec: { paused: false } }
               done: Paused {{ .metadata.name }}
@@ -161,6 +168,7 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
             - name: Resume
               primary: true
               when: { path: .spec.paused, equals: true }
+              runs: at-once
               patch: { spec: { paused: false } }
               undo: { spec: { paused: true } }
               done: Resumed {{ .metadata.name }}
@@ -177,7 +185,8 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
 
     - `when` offers an action only when it makes sense.
     - `undo` is a patch offered as **Undo** in the notification.
-    - `confirm` asks first, with this text. Without it (and without inputs, or an object to create), the action runs at once.
+    - `confirm` asks first, with this text. Without it (and without inputs, or an object to create), the action runs at once, and has to say so: `runs: at-once`.
+    - A patch can't change what's the cluster's to set, like an object's owners, finalizers, name or namespace. See [what a patch can't change](/reference/plugin-format#what-a-patch-can’t-change).
     - `{{ now }}` is the current time, as Kubernetes writes times: handy for annotations a controller watches.
   </Step>
 
@@ -253,11 +262,15 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
 
 <Accordion title="databases.yaml" icon="file-code">
   ```yaml databases.yaml
-  apiVersion: lumovi.dev/v1alpha1
+  apiVersion: lumovi.dev/v1beta1
   kind: Plugin
   metadata:
     name: databases
   spec:
+    version: 1.0.0
+    needs:
+      lumovi: 1.22.0
+    groups: [platform.example.com]
     label: Platform
     icon: database
     kinds:
@@ -311,12 +324,14 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
         actions:
           - name: Pause
             when: { path: .spec.paused, notEquals: true }
+            runs: at-once
             patch: { spec: { paused: true } }
             undo: { spec: { paused: false } }
             done: Paused {{ .metadata.name }}
           - name: Resume
             primary: true
             when: { path: .spec.paused, equals: true }
+            runs: at-once
             patch: { spec: { paused: false } }
             undo: { spec: { paused: true } }
             done: Resumed {{ .metadata.name }}
