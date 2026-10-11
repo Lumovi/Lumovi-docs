@@ -61,7 +61,7 @@ A kind is one plugin's. Each kind gets one view, from the one plugin that shows 
 - **Among Lumovi's plugins**, no two show the same kind.
 - **A plugin of yours shows the kinds no other plugin has.** If it names a kind one of Lumovi's plugins shows, it isn't used, and the problem says whose kind it is and what to do.
 - **To show one of Lumovi's kinds your way, take its plugin's place.** A plugin of yours with the same `metadata.name` as one of Lumovi's, like `flux` or `cert-manager`, is used in its place, all of it: Lumovi's place in the sidebar and every one of its views go, for the kinds yours doesn't show as well. Those get the API server's columns. [Included plugins](/custom-resources/included-plugins) gives each plugin's name.
-- **Among your own**, the first by file name is used. A second file with the same name, or one that shows a kind another of yours does, isn't.
+- **Among your own**, the first by file name is used. A second file with the same name isn't, whatever becomes of the first. Of two that show the same kind, the later isn't: files with the name of one of Lumovi's plugins are settled first, among themselves and against Lumovi's others, and then the rest, each once, in order of their file names.
 
 A group can be shared: three of Lumovi's plugins have kinds in `argoproj.io`. What is one plugin's is the kind. A plugin that shows every kind of a group (`kind: '*'`) has that group to itself, and within a plugin a view for a kind itself wins over one for its whole group.
 
@@ -111,6 +111,8 @@ spec:
 <ResponseField name="spec" type="object" required>
   What it says: see [spec](#spec). Any field it doesn't know is a problem, so typos don't go unnoticed.
 </ResponseField>
+
+These four are all a document has, and `name` is all its `metadata` has. A key Lumovi doesn't know is a problem wherever it is in the file, so a `metadata.labels` or a stray key at the top isn't passed over in silence.
 
 ## spec
 
@@ -662,6 +664,7 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `platform.yaml: spec.shows[0]: LimitRange isn’t shown by any of its views` | A kind under `shows` that no view shows |
 | `platform.yaml: spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section plugins can't sit in |
 | `platform.yaml: spec.colour: isn’t something a plugin has` | A misspelled field of the plugin's |
+| `platform.yaml: metadata.labels: isn’t something a plugin has` | A key under `metadata` other than `name`, or one at the top beside `apiVersion`, `kind`, `metadata` and `spec` (`platform.yaml: status: isn’t …`) |
 | `platform.yaml: spec.views[0].colums: isn’t something a view has` | A misspelled field of a view's |
 | `platform.yaml: spec.views[0].columns[0].path: is required` | A column without a path |
 | `platform.yaml: spec.views[0].icon: should be one of activity, archive, …` | An icon that isn't on the list |
