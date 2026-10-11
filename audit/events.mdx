@@ -182,7 +182,7 @@ On a server, a cluster's read-only switch, metrics source and node shells are th
 | Action | On the page | When |
 | --- | --- | --- |
 | `server.started` | Lumovi started | A server started: its version, how people sign in, and where its events go. |
-| `server.stopped` | Lumovi stopped | A server stopped. |
+| `server.stopped` | Lumovi stopped | A server stopped. A failure, with why in `error`, when it stopped by itself because another Lumovi took its audit history over. |
 | `audit.dropped` | Audit events lost | Events couldn't be kept in the history, or sent: how many, where, and why. See [When events are lost](/server/audit-log#when-events-are-lost). |
 | `agent.joined` | An agent joined | A cluster's agent joined with its join token, and Lumovi gave it a token of its own: "edge-ap-south's agent joined the fleet, with the credential made for its join token". |
 | `agent.join-refused` | Refused a join token | An agent tried a join token that was used already, or expired: "Refused a join token for edge-ap-south: its agent used it at …". At most once a minute for each cluster. |
