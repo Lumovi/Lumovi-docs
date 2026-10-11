@@ -124,7 +124,7 @@ icon: "circle-question-mark"
 
     - **Installed copies don't update into Lumovi.** [Download Lumovi](https://lumovi.dev/#download) and install it. It's a separate app, so KubeStacks stays until you remove it.
     - **Settings start over.** Your theme, read-only clusters, usage history sources and the rest stay in KubeStacks' own folder, which Lumovi doesn't read. Your kubeconfig is read as before.
-    - **Your own plugins** go in `~/.lumovi/plugins` instead of `~/.kubestacks/views`, and start with `apiVersion: lumovi.dev/v1alpha1` instead of `kubestacks.dev/v1alpha1`. Lumovi doesn't use a file with the old `apiVersion`, and lists it under **API resources**.
+    - **Your own plugins** go in `~/.lumovi/plugins` instead of `~/.kubestacks/views`, and start with `apiVersion: lumovi.dev/v1beta1` instead of `kubestacks.dev/v1alpha1`. Lumovi doesn't use a file with the old `apiVersion`, and lists it under **API resources**.
     - **Environment variables** start with `LUMOVI_` instead of `KUBESTACKS_`.
     - **In your cluster**, the image is `ghcr.io/lumovi/lumovi` and the chart `oci://ghcr.io/lumovi/charts/lumovi`, and the server's settings are `LUMOVI_*` variables. See [Install Lumovi in your cluster](/server/install).
   </Accordion>
