@@ -99,6 +99,10 @@ In one entry, both have to match: the proxy's pods, in that namespace. As two en
   Where signing out of the proxy is, like `https://lumovi.example.com/oauth2/sign_out`. Lumovi has no session of its own behind a proxy, so signing out means signing out of the proxy.
 </ResponseField>
 
+<ResponseField name="auth.proxy.secFetchSite" type="string" default="off">
+  Whether your proxy passes the browser's `Sec-Fetch-Site` header through to Lumovi unchanged. On: every request must say it comes from Lumovi's own page, and one without the header gets a page that says **Lumovi refused a request from this browser**, since the browser may be too old to send it, or the proxy may not pass it on. Off, the default: plugins that run code aren't offered on this server, and Lumovi says so in its log as it starts. Turn it on only after checking that the header reaches Lumovi: a proxy that drops it locks everyone out, and one that sets it itself makes the check mean nothing. See [Requests from Lumovi's own page](/server/security#requests-from-lumovi’s-own-page).
+</ResponseField>
+
 Lumovi never acts as one of Kubernetes' own users or groups (`system:…`), whatever the proxy says. It leaves out groups whose names start with `system:`, and refuses a user whose name does.
 
 ## AI assistants

@@ -79,6 +79,17 @@ Lumovi sets three cookies, all `SameSite=Lax` and limited to the base path:
 
 The first two are `HttpOnly`, so scripts can't read them, and `Secure` when `url` starts with `https:` or the proxy in front sends `X-Forwarded-Proto: https`. The page sets `lumovi-theme` itself, and it holds nothing else.
 
+## Requests from Lumovi's own page
+
+A session's cookie is sent with every request its browser makes to Lumovi, whatever page made it. So Lumovi acts for someone signed in only on requests that say they come from Lumovi's own page:
+
+- **Where the browser sends `Sec-Fetch-Site` as the person signs in**, every later request of that session must send it as `same-origin`. Any other is refused with a 403, `This request didn’t say it came from Lumovi’s own page (Sec-Fetch-Site), so Lumovi didn’t act on it.`, and nothing of the session changes. The sign-in page then says so. A browser that doesn't send the header as the person signs in isn't held to it.
+- **A session whose browser stops sending it** is said once in Lumovi's log, since something between the browser and Lumovi may be removing it.
+- **Behind a sign-in proxy**, Lumovi holds every request to it only where `auth.proxy.secFetchSite` says the proxy passes the header through. See [The headers](/server/auth/proxy#the-headers).
+- **Off** (`auth.secFetchSite: off`), or where a session isn't held to it, plugins that run code aren't offered.
+
+The live connection a page keeps open is checked by its origin instead, as [above](#sessions-and-cookies).
+
 ## Across restarts
 
 A restart, as an upgrade does, signs nobody out. Lumovi keeps what it needs for that, as it happens:
