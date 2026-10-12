@@ -33,6 +33,8 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
   The address people open it at, like `https://lumovi.example.com`: an `http` or `https` URL. Single sign-on needs it. With `https:`, cookies are sent over HTTPS only.
 
   It's also an origin Lumovi accepts sign-ins, sign-outs and pages' connections from, besides the host each request is sent to. Set it when a proxy in front of Lumovi changes the `Host` header. See [Security](/server/security#sessions-and-cookies).
+
+  It names one host: letters, digits, hyphens and dots, or an IPv6 address in brackets, and no user or password. Lumovi doesn't start with anything else, and says why: `LUMOVI_URL must name one host (letters, digits, hyphens and dots, or an address), not "…"`, or `LUMOVI_URL can’t carry a user and password.`
 </ResponseField>
 
 <ResponseField name="LUMOVI_BASE_PATH" type="string" default="/">
