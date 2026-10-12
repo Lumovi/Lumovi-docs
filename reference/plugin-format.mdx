@@ -65,7 +65,7 @@ A kind is one plugin's. Each kind gets one view, from the one plugin that shows 
 
 A group can be shared: three of Lumovi's plugins have kinds in `argoproj.io`. What is one plugin's is the kind. A plugin that shows every kind of a group (`kind: '*'`) has that group to itself, and within a plugin a view for a kind itself wins over one for its whole group.
 
-**API resources** says what shows each kind, under **Shown by**: the plugin's name as the sidebar has it, the name of your file, **Lumovi**, or a dash for a kind nothing shows specially. At its foot it counts the plugins, and says when one of yours is in use in place of one of Lumovi's: *32 plugins from Lumovi, 2 of yours. flux.yaml is in use in place of Lumovi’s Flux.*
+**API resources** says what shows each kind, under **Shown by**: the plugin's name as the sidebar has it, the name of your file, **Lumovi**, or a dash for a kind nothing shows specially. [All plugins](/custom-resources/plugins#every-plugin-on-one-page) lists every plugin, and says on its row when one of yours is in use in place of one of Lumovi's: **In use in place of Lumovi’s Flux**.
 
 ### Kubernetes’ own kinds
 
@@ -629,86 +629,86 @@ Plugins can use these [Lucide](https://lucide.dev/icons) icons, for their place 
 
 ## Problems
 
-Lumovi checks every plugin before using it. One with a problem isn't used at all, and **API resources** lists everything wrong with it at the top, under **A plugin couldn't be used** (or how many problems there are), each saying where it is: the file, then the place in it, from the top.
+Lumovi checks every plugin before using it. One with a problem isn't used at all. [All plugins](/custom-resources/plugins#when-a-file-isn’t-in-use) lists its file as a row, **Not in use. 2 problems to fix in the file.**, with everything wrong with it underneath, each line saying where in the file it is, from the top.
 
 | Message | Cause |
 | --- | --- |
-| `platform.yaml: holds nothing` | An empty file, or one with only comments |
-| `platform.yaml: should start with apiVersion: lumovi.dev/v1beta1 and kind: Plugin` | The file isn't a plugin |
-| `platform.yaml: a view goes inside a plugin: start with kind: Plugin and put this under its views.` | A document of kind `View` |
-| `platform.yaml: holds 2 documents, and a file is one plugin` | More than one document in a file |
-| `platform.yaml: needs metadata.name` | A plugin without a name |
-| `platform.yaml: metadata.name: "My Platform" should be lowercase letters, digits and hyphens, starting with a letter and ending with a letter or a digit, at most 63 characters` | A name that can't be a plugin's |
-| `platform.yaml: metadata.name: "lumovi-tools" starts with Lumovi’s own name, which a plugin can’t have` | A name that reads as Lumovi's. `lumovi` and `kubernetes` are refused the same way |
-| `platform.yaml: needs spec` | A plugin with no `spec` |
-| `platform.yaml: spec.version: is required` | A plugin without a version |
-| `platform.yaml: spec.version: "1.0" should be three numbers, like 1.0.0` | A version that isn't three numbers |
-| `platform.yaml: spec.needs.lumovi: is required` | A plugin that doesn't say which Lumovi it needs |
-| `platform.yaml: needs Lumovi 1.30.0 or newer; this is 1.22.0` | A plugin for a newer Lumovi than this one |
-| `platform.yaml: spec.groups: is required: the API groups its kinds are in, like [example.com]` | A plugin without `groups` |
-| `platform.yaml: spec.groups[0]: "Platform/x" should be an API group’s name, like cert-manager.io` | A group that isn't written as one |
-| `platform.yaml: spec.views[0].kinds[0]: "Database.platform.example.com" should be a kind’s own name, like Certificate: its group goes under group` | A kind with more than its name in `kind` |
-| `platform.yaml: spec.views[0].kinds[0]: Widget.example.com isn’t in one of its groups: add example.com to spec.groups` | A kind outside the plugin's `groups` |
-| `platform.yaml: spec.groups[0]: apps is Kubernetes’ own, so a plugin can’t have it` | One of Kubernetes' groups among `groups` |
-| `platform.yaml: spec.groups[0]: lumovi.dev is Lumovi’s own, so a plugin can’t have it` | Lumovi's group among `groups` |
-| `platform.yaml: spec: needs views, or kinds for a place in the sidebar` | A plugin with neither |
-| `platform.yaml: spec: needs a label for its place in the sidebar` | `kinds` without a `label` |
-| `platform.yaml: spec: a label, an icon or a category is for a place in the sidebar, and that needs kinds` | One of them without `kinds` |
-| `platform.yaml: spec: Pod has a page of its own, so it can’t be in a plugin` | A kind Lumovi has a page for, among a plugin's `kinds` |
-| `platform.yaml: spec.views[0].kinds[0]: Pod has a page of its own, so it can’t be in a plugin` | The same, in a view |
-| `platform.yaml: spec.views[0].kinds[0]: CustomResourceDefinition.apiextensions.k8s.io is shown by Lumovi itself, so it can’t be in a plugin` | A kind Lumovi has a view of its own for |
-| `platform.yaml: spec.views[0].kinds[0]: Lease.coordination.k8s.io is Kubernetes’ own: to show it, name it under spec.shows` | A view of one of Kubernetes' kinds that isn't under `shows` |
-| `platform.yaml: spec.views[0].actions: a view of Kubernetes’ own kind only shows it, so it can’t have actions` | Actions on a view of one of Kubernetes' kinds |
-| `platform.yaml: spec.kinds[1]: Lease.coordination.k8s.io is Kubernetes’ own, so it can’t be under a plugin’s place in the sidebar` | One of Kubernetes' kinds among a plugin's `kinds` |
-| `platform.yaml: spec.shows[0]: Database.platform.example.com isn’t Kubernetes’ own: a view names it once platform.example.com is in spec.groups` | A tool's kind under `shows` |
-| `platform.yaml: spec.shows[0]: LimitRange isn’t shown by any of its views` | A kind under `shows` that no view shows |
-| `platform.yaml: spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section plugins can't sit in |
-| `platform.yaml: spec.colour: isn’t something a plugin has` | A misspelled field of the plugin's |
-| `platform.yaml: metadata.labels: isn’t something a plugin has` | A key under `metadata` other than `name`, or one at the top beside `apiVersion`, `kind`, `metadata` and `spec` (`platform.yaml: status: isn’t …`) |
-| `platform.yaml: spec.views[0].colums: isn’t something a view has` | A misspelled field of a view's |
-| `platform.yaml: spec.views[0].columns[0].path: is required` | A column without a path |
-| `platform.yaml: spec.views[0].icon: should be one of activity, archive, …` | An icon that isn't on the list |
-| `platform.yaml: spec.views[0].columns[1].path: “spec.ready” should start with a dot, like .spec.replicas` | A path that isn't one |
-| `platform.yaml: spec.views[0].kinds[0]: every kind (*) is of a group: name it` | `kind: '*'` without a `group` |
-| `platform.yaml: spec.views[1].kinds[0]: Database.platform.example.com is already shown by spec.views[0]` | Two views of one kind in a file |
-| `platform.yaml: spec.label: is longer than 80 characters` | A [text](#texts) over its length |
-| `platform.yaml: spec.label: holds a character that can’t be seen (U+202E)` | A text or a key with a character nobody can see |
-| `platform.yaml: spec.views[0].related[0]: needs labels or a fieldSelector to find them` | A related list that would be every object of its kind |
-| `platform.yaml: spec.views[0].actions[0]: needs a patch, or an object to create (not both)` | An action with neither, or both |
-| `platform.yaml: spec.views[0].actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |
-| `platform.yaml: spec.views[0].actions[0]: what it creates needs an apiVersion, a kind, and a metadata.name or generateName` | An incomplete object to create |
-| `platform.yaml: spec.views[0].actions[0]: what it creates: "platform.example.com/v1/x" should be an API version, like cert-manager.io/v1` | An `apiVersion` that isn't a group and a version |
-| `platform.yaml: spec.views[0].actions[0].create: makes a Job, which isn’t one of this plugin’s kinds` | An action that creates a kind the plugin doesn't show |
-| `platform.yaml: spec.views[0].actions[0]: can’t undo creating something` | An `undo` on an action that creates |
-| `platform.yaml: spec.views[0].actions[0]: {{ input.size }} isn’t one of its inputs` | A template naming an input the action doesn't have |
-| `platform.yaml: spec.views[0].actions[0]: runs at once, so it has to say so: runs: at-once` | An action that asks nothing first, without `runs: at-once` |
-| `platform.yaml: spec.views[0].actions[0]: asks first, so it can’t say runs: at-once` | `runs: at-once` on an action with a `confirm`, `inputs` or a `create` |
-| `platform.yaml: spec.views[0].actions[0]: changes metadata.finalizers, which a plugin can’t change` | A patch or a new object that sets [what isn't a plugin's](#what-a-patch-can’t-change) |
-| `platform.yaml: spec.views[0].actions[0]: fills in an object’s metadata whole, which a plugin can’t: write it out` | `metadata` as one placeholder |
-| `platform.yaml: spec.views[0].actions[0]: fills in an operation whole, which a plugin can’t: write it out` | A JSON patch operation as one placeholder |
-| `platform.yaml: spec.views[0].actions[0]: needs each operation’s path written out, as text` | A JSON patch operation without a `path` that's text |
-| `platform.yaml: spec.views[0].actions[0]: fills in where an operation changes, which a plugin can’t: write its path out` | A `path` or `from` with a template in it |
-| `platform.yaml: spec.views[0].actions[0]: replaces all of an object’s metadata, which a plugin can’t change` | A JSON patch operation on `/metadata` |
-| `platform.yaml: spec.views[0].actions[0]: replaces the object whole, which a plugin can’t` | A JSON patch operation on the whole object |
-| `platform.yaml: spec.views[0].actions[0].inputs[0]: a choice needs options, or a path to read them from` | A choice without `options` or `from`, or with both |
-| `platform.yaml: spec.views[0].actions[0].inputs[0]: only a choice has options` | `options` or `from` on a text or number input |
-| `platform.yaml: It’s larger than 256 KB.` | A file over the limit, which isn't read |
-| `platform.yaml: It couldn’t be read: ENOENT: no such file or directory, open '…'` | A file that can't be read, like a link to nothing or to a folder. What follows says why, in the operating system's words. |
+| `holds nothing` | An empty file, or one with only comments |
+| `should start with apiVersion: lumovi.dev/v1beta1 and kind: Plugin` | The file isn't a plugin |
+| `a view goes inside a plugin: start with kind: Plugin and put this under its views.` | A document of kind `View` |
+| `holds 2 documents, and a file is one plugin` | More than one document in a file |
+| `needs metadata.name` | A plugin without a name |
+| `metadata.name: "My Platform" should be lowercase letters, digits and hyphens, starting with a letter and ending with a letter or a digit, at most 63 characters` | A name that can't be a plugin's |
+| `metadata.name: "lumovi-tools" starts with Lumovi’s own name, which a plugin can’t have` | A name that reads as Lumovi's. `lumovi` and `kubernetes` are refused the same way |
+| `needs spec` | A plugin with no `spec` |
+| `spec.version: is required` | A plugin without a version |
+| `spec.version: "1.0" should be three numbers, like 1.0.0` | A version that isn't three numbers |
+| `spec.needs.lumovi: is required` | A plugin that doesn't say which Lumovi it needs |
+| `needs Lumovi 1.30.0 or newer; this is 1.22.0` | A plugin for a newer Lumovi than this one |
+| `spec.groups: is required: the API groups its kinds are in, like [example.com]` | A plugin without `groups` |
+| `spec.groups[0]: "Platform/x" should be an API group’s name, like cert-manager.io` | A group that isn't written as one |
+| `spec.views[0].kinds[0]: "Database.platform.example.com" should be a kind’s own name, like Certificate: its group goes under group` | A kind with more than its name in `kind` |
+| `spec.views[0].kinds[0]: Widget.example.com isn’t in one of its groups: add example.com to spec.groups` | A kind outside the plugin's `groups` |
+| `spec.groups[0]: apps is Kubernetes’ own, so a plugin can’t have it` | One of Kubernetes' groups among `groups` |
+| `spec.groups[0]: lumovi.dev is Lumovi’s own, so a plugin can’t have it` | Lumovi's group among `groups` |
+| `spec: needs views, or kinds for a place in the sidebar` | A plugin with neither |
+| `spec: needs a label for its place in the sidebar` | `kinds` without a `label` |
+| `spec: a label, an icon or a category is for a place in the sidebar, and that needs kinds` | One of them without `kinds` |
+| `spec: Pod has a page of its own, so it can’t be in a plugin` | A kind Lumovi has a page for, among a plugin's `kinds` |
+| `spec.views[0].kinds[0]: Pod has a page of its own, so it can’t be in a plugin` | The same, in a view |
+| `spec.views[0].kinds[0]: CustomResourceDefinition.apiextensions.k8s.io is shown by Lumovi itself, so it can’t be in a plugin` | A kind Lumovi has a view of its own for |
+| `spec.views[0].kinds[0]: Lease.coordination.k8s.io is Kubernetes’ own: to show it, name it under spec.shows` | A view of one of Kubernetes' kinds that isn't under `shows` |
+| `spec.views[0].actions: a view of Kubernetes’ own kind only shows it, so it can’t have actions` | Actions on a view of one of Kubernetes' kinds |
+| `spec.kinds[1]: Lease.coordination.k8s.io is Kubernetes’ own, so it can’t be under a plugin’s place in the sidebar` | One of Kubernetes' kinds among a plugin's `kinds` |
+| `spec.shows[0]: Database.platform.example.com isn’t Kubernetes’ own: a view names it once platform.example.com is in spec.groups` | A tool's kind under `shows` |
+| `spec.shows[0]: LimitRange isn’t shown by any of its views` | A kind under `shows` that no view shows |
+| `spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section plugins can't sit in |
+| `spec.colour: isn’t something a plugin has` | A misspelled field of the plugin's |
+| `metadata.labels: isn’t something a plugin has` | A key under `metadata` other than `name`, or one at the top beside `apiVersion`, `kind`, `metadata` and `spec` (`status: isn’t …`) |
+| `spec.views[0].colums: isn’t something a view has` | A misspelled field of a view's |
+| `spec.views[0].columns[0].path: is required` | A column without a path |
+| `spec.views[0].icon: should be one of activity, archive, …` | An icon that isn't on the list |
+| `spec.views[0].columns[1].path: “spec.ready” should start with a dot, like .spec.replicas` | A path that isn't one |
+| `spec.views[0].kinds[0]: every kind (*) is of a group: name it` | `kind: '*'` without a `group` |
+| `spec.views[1].kinds[0]: Database.platform.example.com is already shown by spec.views[0]` | Two views of one kind in a file |
+| `spec.label: is longer than 80 characters` | A [text](#texts) over its length |
+| `spec.label: holds a character that can’t be seen (U+202E)` | A text or a key with a character nobody can see |
+| `spec.views[0].related[0]: needs labels or a fieldSelector to find them` | A related list that would be every object of its kind |
+| `spec.views[0].actions[0]: needs a patch, or an object to create (not both)` | An action with neither, or both |
+| `spec.views[0].actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |
+| `spec.views[0].actions[0]: what it creates needs an apiVersion, a kind, and a metadata.name or generateName` | An incomplete object to create |
+| `spec.views[0].actions[0]: what it creates: "platform.example.com/v1/x" should be an API version, like cert-manager.io/v1` | An `apiVersion` that isn't a group and a version |
+| `spec.views[0].actions[0].create: makes a Job, which isn’t one of this plugin’s kinds` | An action that creates a kind the plugin doesn't show |
+| `spec.views[0].actions[0]: can’t undo creating something` | An `undo` on an action that creates |
+| `spec.views[0].actions[0]: {{ input.size }} isn’t one of its inputs` | A template naming an input the action doesn't have |
+| `spec.views[0].actions[0]: runs at once, so it has to say so: runs: at-once` | An action that asks nothing first, without `runs: at-once` |
+| `spec.views[0].actions[0]: asks first, so it can’t say runs: at-once` | `runs: at-once` on an action with a `confirm`, `inputs` or a `create` |
+| `spec.views[0].actions[0]: changes metadata.finalizers, which a plugin can’t change` | A patch or a new object that sets [what isn't a plugin's](#what-a-patch-can’t-change) |
+| `spec.views[0].actions[0]: fills in an object’s metadata whole, which a plugin can’t: write it out` | `metadata` as one placeholder |
+| `spec.views[0].actions[0]: fills in an operation whole, which a plugin can’t: write it out` | A JSON patch operation as one placeholder |
+| `spec.views[0].actions[0]: needs each operation’s path written out, as text` | A JSON patch operation without a `path` that's text |
+| `spec.views[0].actions[0]: fills in where an operation changes, which a plugin can’t: write its path out` | A `path` or `from` with a template in it |
+| `spec.views[0].actions[0]: replaces all of an object’s metadata, which a plugin can’t change` | A JSON patch operation on `/metadata` |
+| `spec.views[0].actions[0]: replaces the object whole, which a plugin can’t` | A JSON patch operation on the whole object |
+| `spec.views[0].actions[0].inputs[0]: a choice needs options, or a path to read them from` | A choice without `options` or `from`, or with both |
+| `spec.views[0].actions[0].inputs[0]: only a choice has options` | `options` or `from` on a text or number input |
+| `It’s larger than 256 KB.` | A file over the limit, which isn't read |
+| `It couldn’t be read: ENOENT: no such file or directory, open '…'` | A file that can't be read, like a link to nothing or to a folder. What follows says why, in the operating system's words. |
 
-The rest are about a file beside another plugin, and each is followed by a line of its own, `platform-2.yaml: isn’t in use`:
+The rest are about a file beside another plugin:
 
 | Message | Cause |
 | --- | --- |
-| `platform-2.yaml: platform is platform.yaml’s name too` | A second file with a name another has. The first by file name is used |
-| `platform-2.yaml: Database.platform.example.com is already platform’s kind` | A second plugin of yours that shows a kind another does. The first by file name is used |
-| `certificates.yaml: Certificate.cert-manager.io is cert-manager’s kind. A plugin of yours named cert-manager takes its place, all of it` | A plugin of yours that shows a kind one of Lumovi's has, under another name |
-| `policies.yaml: constraints.gatekeeper.sh is all gatekeeper’s. A plugin of yours named gatekeeper takes its place, all of it` | A plugin of yours with a kind in a group one of Lumovi's has whole |
-| `policies.yaml: argoproj.io is in argo-cd’s groups too, so this plugin can’t have every kind of it` | `kind: '*'` for a group another plugin has kinds in |
+| `platform is platform.yaml’s name too` | A second file with a name another has. The first by file name is used |
+| `Database.platform.example.com is already platform’s kind` | A second plugin of yours that shows a kind another does. The first by file name is used |
+| `Certificate.cert-manager.io is cert-manager’s kind. A plugin of yours named cert-manager takes its place, all of it` | A plugin of yours that shows a kind one of Lumovi's has, under another name |
+| `constraints.gatekeeper.sh is all gatekeeper’s. A plugin of yours named gatekeeper takes its place, all of it` | A plugin of yours with a kind in a group one of Lumovi's has whole |
+| `argoproj.io is in argo-cd’s groups too, so this plugin can’t have every kind of it` | `kind: '*'` for a group another plugin has kinds in |
 
 What a problem quotes from a file is cut at 40 characters, and a character that can't be seen in it is shown as its code point.
 
-A file that isn't valid YAML shows the parser's message, after the file's name. One that can't be read as YAML for any other reason is listed as one that couldn't be read, with the reason, and the others load.
+A file that isn't valid YAML shows the parser's message. One that can't be read as YAML for any other reason is listed as one that couldn't be read, with the reason, and the others load.
 
-When a plugin of yours with a problem has the name of one of Lumovi's, Lumovi's is what's shown, and the last line says so: `my-flux.yaml: isn’t in use, so Lumovi’s Flux is shown instead`. It's said only where the file's name for itself could be read.
+When a plugin of yours with a problem has the name of one of Lumovi's, Lumovi's is what's shown, and the file's row says so: **Lumovi’s Flux is shown instead**. It's said only where the file's name for itself could be read.
 
-Below the list, **API resources** says how many plugins are Lumovi's and how many are yours, which of yours is in use in place of one of Lumovi's, and where yours go, with **How to write a plugin**.
+**API resources** says only that there are problems, **A plugin couldn’t be used.** or how many, with **See Plugins**; and at its foot how many plugins are Lumovi's and how many are yours, and where yours go, with **How to write a plugin**.

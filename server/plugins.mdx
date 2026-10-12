@@ -41,7 +41,7 @@ Each entry is a file, named with `.yaml` or `.yml` at the end, holding one plugi
 ## How it works
 
 - The chart puts the files in a ConfigMap, and mounts it at `/etc/lumovi/plugins`, where Lumovi reads them (`LUMOVI_PLUGINS_DIR`). Kubernetes mounts each file as a link, which Lumovi follows.
-- A kind is one plugin's. These plugins show kinds no other plugin has; one with the name of one of Lumovi's, like `flux` or `cert-manager`, is used in its place, all of it, and **API resources** says so to everyone at its foot.
+- A kind is one plugin's. These plugins show kinds no other plugin has; one with the name of one of Lumovi's, like `flux` or `cert-manager`, is used in its place, all of it, and **All plugins** says so to everyone on its row.
 - They're held as Lumovi's own are: a tool's kinds in the groups the plugin names, none of Kubernetes' own but the few it may [show](/reference/plugin-format#kubernetes’-own-kinds), and nothing created but the plugin's own kinds.
 - A change to `plugins` rolls out a new pod, which reads them. People stay signed in, as across any restart, and open pages reconnect.
 - Without the chart, put the files in the folder `LUMOVI_PLUGINS_DIR` names. Lumovi reads it again whenever a page loads, so people see a change when they reload.
@@ -50,7 +50,7 @@ Each entry is a file, named with `.yaml` or `.yml` at the end, holding one plugi
 
 ## Check them
 
-**API resources** (in the sidebar, or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) says what shows each kind, under **Shown by**, and lists anything wrong with the plugins. One with a problem isn't used at all, and each problem says where it is. A file that can't be read, or is larger than 256 KB, is listed as a problem too, by its name, like `team.yaml: It couldn't be read: …`, and the other files load. Lumovi reads up to 200 files, in order of name. At the bottom, it says how many plugins come from Lumovi and how many from this server, and where they are, like *32 plugins from Lumovi, 2 from this server. This server’s are in /etc/lumovi/plugins*.
+**All plugins**, under **Plugins** in the sidebar (or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux), lists [every plugin](/custom-resources/plugins#every-plugin-on-one-page): Lumovi's and this server's, each with what it asks for, and **This server’s** on the ones from the folder. One with a problem isn't used at all: its file is a row that says **Not in use**, with each problem under it and where in the file it is. A file that can't be read, or is larger than 256 KB, is a row too, like `It couldn't be read: …`, and the other files load. Lumovi reads up to 200 files, in order of name. At the foot, the page says where this server's are, like *This server’s are in /etc/lumovi/plugins*. **API resources** says what shows each kind, under **Shown by**, and how many plugins there are: *32 plugins from Lumovi, 2 from this server.*
 
 Plugins are data only. Their views read fields with JSONPath, and change objects only with the patches and new objects they spell out. Their actions go through the same checks as Lumovi's own: the cluster is asked first whether the person may make the change, the equivalent `kubectl` command is shown, and a read-only Lumovi stays read-only.
 

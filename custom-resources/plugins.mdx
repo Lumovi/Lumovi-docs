@@ -116,6 +116,32 @@ The pods the scheduler couldn't place anywhere, which Karpenter launches nodes f
 
 The overview reads node pools, node claims and nodes, and pods in every namespace, so it needs `list` on all four. A card whose list you can't read says why, and the others still show.
 
+## Every plugin on one page
+
+**All plugins**, last under **Plugins** in the sidebar, lists every plugin Lumovi has: the ones it comes with, and the files in your folder. It opens by saying what a plugin is:
+
+> A plugin teaches Lumovi a tool’s kinds: their columns, status, details and actions. Plugins are data. They can’t run code, and they change objects only with the patches and the objects they spell out, each shown here. A plugin has no access of its own: what it reads and changes, it does as you, and the cluster refuses what you may not do. Lumovi’s come inside Lumovi; yours are your own files.
+
+Each plugin is a row:
+
+- **Plugin**: its name, its version and the kinds it shows (three, then how many more), with **Yours** on one from your folder.
+- **On** the cluster: **On this cluster: in the sidebar** where the cluster serves one of its kinds and it has a place there, **On this cluster** for one with views only, or **Not on this cluster**. One of yours with the name of one of Lumovi's says **In use in place of Lumovi’s Flux**, and Lumovi's own row says **Not in use: your flux.yaml is used in its place, all of it.**
+- **From**: **Lumovi**, which came with this Lumovi, or **Yours**, with the file's path.
+
+**All**, **On this cluster**, **Yours** and **Not in use** narrow the list, and **Search plugins** finds one by its name or its file's. At the foot is where yours go, like *35 of 35 shown. Yours go in ~/.lumovi/plugins. One with the name of one of Lumovi’s is used in its place, all of it.*
+
+### What a plugin asks for
+
+Open a row to see what the plugin asks for, read from its file in Lumovi's words. Nothing there is the plugin's own account of itself.
+
+- **May change and create**: only the kinds it shows, by name, and the API groups they're all in; what its actions create, each one of its own kinds; and what no plugin can: what's the cluster's to set on an object (its owners, finalizers, name or namespace), and Kubernetes' own kinds. A plugin without actions says **Nothing. It has no actions.**
+- **May read**: its own kinds' objects, whose fields its columns, status and details show; the kinds of Kubernetes' it [shows](/reference/plugin-format#kubernetes’-own-kinds) and can't change; the kinds its related lists list beside an object, picked by their labels or fields; and the kinds it links to by name. It ends: "It reads no logs and no Secret’s value, and sends nothing anywhere but to this cluster."
+- **Its actions, and what each sends**: each action with the kinds it's on, whether it **asks first** or **runs at once**, and its patch as the file writes it, or the object it creates under **Creates**. What's filled in later is shown as what it is: `(now)`, `(what you choose)`, `(from the object)`, and `(removed)` for a field a patch takes away. An action's undo is shown under it as **Undo sends:**, and one that patches an object's status says so.
+
+### When a file isn't in use
+
+A file with a problem is a row too, by its file's name: **Not in use. 2 problems to fix in the file.**, with each problem under it, saying where in the file it is. Where the file has the name of one of Lumovi's plugins, the row adds **Lumovi’s Flux is shown instead**. **API resources** says only that there are problems, **A plugin couldn’t be used.** or how many, with **See Plugins** to come here. Every message is in the [plugin format](/reference/plugin-format#problems).
+
 ## Your own plugins
 
 A plugin is one short YAML file, a document of kind `Plugin`, in `~/.lumovi/plugins`. This one gives two kinds of your own a place in the sidebar:
@@ -169,13 +195,13 @@ spec:
     - { group: helm.toolkit.fluxcd.io, kind: HelmRelease }
 ```
 
-This one has no views, so its two kinds get the API server's columns, and Flux's other kinds are no longer in the sidebar. To change a little, start from all of it: copy the file from [Lumovi's plugins](https://github.com/Lumovi/Lumovi/tree/main/plugins) and edit the copy. **API resources** names your file under **Shown by**, and says at its foot that it's in use in place of Lumovi's.
+This one has no views, so its two kinds get the API server's columns, and Flux's other kinds are no longer in the sidebar. To change a little, start from all of it: copy the file from [Lumovi's plugins](https://github.com/Lumovi/Lumovi/tree/main/plugins) and edit the copy. **API resources** names your file under **Shown by**, and **All plugins** says on its row that it's in use in place of Lumovi's.
 
 Under any other name, a plugin of yours that shows one of those kinds isn't used, and the problem says what to do: "certificates.yaml: Certificate.cert-manager.io is cert-manager’s kind. A plugin of yours named cert-manager takes its place, all of it".
 
 ### When something's wrong with it
 
-A plugin is used whole or not at all. If anything in its file is wrong, none of it is used, and **API resources** lists everything wrong with it at the top. When that leaves one of Lumovi's in use in place of yours, one more line says so: "my-flux.yaml: isn’t in use, so Lumovi’s Flux is shown instead". Every field, and every message, is in the [plugin format](/reference/plugin-format).
+A plugin is used whole or not at all. If anything in its file is wrong, none of it is used, and [All plugins](#when-a-file-isn’t-in-use) lists everything wrong with it under the file's own row. When that leaves one of Lumovi's in use in place of yours, the row says so: "Lumovi’s Flux is shown instead". Every field, and every message, is in the [plugin format](/reference/plugin-format).
 
 <Note>
   **In your cluster:** plugins everyone sees go in the chart's `plugins` value. People can't add their own from a browser. See [Plugins for everyone](/server/plugins).
