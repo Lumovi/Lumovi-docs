@@ -149,7 +149,7 @@ Lumovi records what everyone does through it, who signed in, and from where: see
 
 Pages are served with a strict Content Security Policy (scripts only from Lumovi itself, and no embedded objects), and with headers that keep them out of other sites' frames (`X-Frame-Options: DENY`), stop content-type sniffing, and send no referrers.
 
-A page shows no frame but one. Where `LUMOVI_URL` is set, that's the box Lumovi keeps for a plugin's code, at `plugin-box/box.html` below that address: a sandbox with no network, no storage and no window of its own, which only Lumovi's page may show. Without `LUMOVI_URL`, a page shows no frame at all, and there's no box.
+A page shows no frame but one. Where `LUMOVI_URL` is set, that's the box Lumovi keeps for a plugin's code, at `plugin-box/box.html` below that address: a sandbox with no network and no window of its own, which can't reach Lumovi's cookies or storage, and which only Lumovi's page may show. Without `LUMOVI_URL`, a page shows no frame at all, and there's no box.
 
 ## Charts and private networks
 
