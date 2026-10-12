@@ -54,6 +54,21 @@ Like every change in Lumovi, a view's actions check your permissions first: `pat
 | [VictoriaMetrics](#victoriametrics) | **VictoriaMetrics**, under **Plugins** |
 | [Volume snapshots](#volume-snapshots) | **Volume Snapshots**, under **Storage** |
 
+## Where they come from
+
+The included plugins live in their own repository, [Lumovi-plugins](https://github.com/Lumovi/Lumovi-plugins). Every change there is checked by Lumovi's own checker against its tool's CRDs, and they're released together, as one bundle: built, signed and attested by the repository's release workflow, from the commit on `main` that the release's tag points at.
+
+Each Lumovi release is built with one of those releases, which it pins by its SHA-256 and names in its release notes. As Lumovi is built, the bundle is checked again: its SHA-256 and its index's, its signature by Lumovi-plugins' release workflow on `main`, its attestation that it was built from the commit the tag points at, and each plugin's file against the index. If any of it doesn't hold, Lumovi isn't built. Lumovi pins only releases that can't be changed once published. So the plugins in a Lumovi release are the bundle it names, and nothing can be swapped in or added once it's out.
+
+To check a release of the plugins yourself, with the [GitHub CLI](https://cli.github.com) (`<version>` is the one your Lumovi's release notes name):
+
+```bash
+gh release download v<version> --repo Lumovi/Lumovi-plugins
+gh attestation verify plugins-<version>.json --repo Lumovi/Lumovi-plugins \
+  --signer-workflow Lumovi/Lumovi-plugins/.github/workflows/release.yml \
+  --source-ref refs/heads/main
+```
+
 ## Argo CD and Argo Rollouts
 
 [Argo CD](https://argo-cd.readthedocs.io) applications, and [Argo Rollouts](https://argoproj.github.io/rollouts). They're two plugins:
