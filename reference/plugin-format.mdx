@@ -180,6 +180,8 @@ A label, an icon and a category are for a place in the sidebar, so they need `ki
 
 One of yours with the same `metadata.name` as one of Lumovi's is used in its place, all of it: see [Whose a kind is](#whose-a-kind-is).
 
+A few fields are only for the plugins that come with Lumovi: `pages`, `tabs` and `commands`, which add to Lumovi's pages, and `reads` and `showsSecrets`, which say what a plugin's own code may read and show. A file of yours with any of them isn't used, and its [problem](#problems) says which.
+
 ## A view
 
 Each item under `views:`:
@@ -663,6 +665,9 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `spec.shows[0]: Database.platform.example.com isn’t Kubernetes’ own: a view names it once platform.example.com is in spec.groups` | A tool's kind under `shows` |
 | `spec.shows[0]: LimitRange isn’t shown by any of its views` | A kind under `shows` that no view shows |
 | `spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section plugins can't sit in |
+| `spec.pages: adds pages, tabs or commands, and only the plugins that come with Lumovi can do that yet` | `pages`, `tabs` or `commands` in a file of yours (the line names the one it found) |
+| `spec.reads: only a plugin that comes with Lumovi has code yet, so only its file can say what that code reads` | `reads` in a file of yours |
+| `spec.showsSecrets: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they show` | `showsSecrets` in a file of yours |
 | `spec.colour: isn’t something a plugin has` | A misspelled field of the plugin's |
 | `metadata.labels: isn’t something a plugin has` | A key under `metadata` other than `name`, or one at the top beside `apiVersion`, `kind`, `metadata` and `spec` (`status: isn’t …`) |
 | `spec.views[0].colums: isn’t something a view has` | A misspelled field of a view's |
