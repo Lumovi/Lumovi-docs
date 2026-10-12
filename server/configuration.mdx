@@ -149,6 +149,12 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   Where signing out of the proxy is: an `http` or `https` URL.
 </ResponseField>
 
+<ResponseField name="LUMOVI_PROXY_SEC_FETCH_SITE" type="string" default="off">
+  With `LUMOVI_AUTH=proxy`: whether your proxy passes the browser's `Sec-Fetch-Site` header through to Lumovi unchanged, `on` or `off`. On: every request is checked as with single sign-on, and a request without the header is refused, so a browser that doesn't send it (Safari before 16.4, Firefox before 90, Chrome before 76) can't use Lumovi on this server. Off: Lumovi can't tell a request from its own page from one sent by another page, so plugins that run code aren't offered on this server. Turn it on only after checking that the header reaches Lumovi: a proxy that drops it locks everyone out, and one that sets it itself makes the check mean nothing. See [Requests from Lumovi's own page](/server/security#requests-from-lumovi’s-own-page).
+
+  Lumovi doesn't start with it on and any other `LUMOVI_AUTH`: `LUMOVI_PROXY_SEC_FETCH_SITE is for auth.mode proxy; with token the header is always checked.`, nor with it on and `LUMOVI_SEC_FETCH_SITE=off`: `LUMOVI_PROXY_SEC_FETCH_SITE is on but LUMOVI_SEC_FETCH_SITE is off: nothing is checked. Turn one off or both on.`
+</ResponseField>
+
 <ResponseField name="LUMOVI_USERNAME_PREFIX" type="string">
   Put before impersonated users' names. In a fleet, in every cluster that doesn't have its own.
 </ResponseField>
@@ -159,6 +165,10 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 
 <ResponseField name="LUMOVI_SESSION_HOURS" type="number" default="12">
   How long sessions last, in hours: more than 0, at most 168, a week. Behind a proxy, also how long an [AI assistant](/server/assistants) someone allows acts as them.
+</ResponseField>
+
+<ResponseField name="LUMOVI_SEC_FETCH_SITE" type="string" default="on">
+  Whether a signed-in person's requests must say they come from Lumovi's own page, `on` or `off`. On: where a browser sends `Sec-Fetch-Site` as it signs in, every later request of that session must send it as `same-origin`, and any other is refused. Turn it off only where something in front of Lumovi removes that header from some requests, and can't be made to keep it. Off: plugins that run code aren't offered on this server. See [Requests from Lumovi's own page](/server/security#requests-from-lumovi’s-own-page).
 </ResponseField>
 
 <ResponseField name="LUMOVI_STATE_SECRET" type="string">
