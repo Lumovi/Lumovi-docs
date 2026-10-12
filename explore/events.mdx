@@ -32,6 +32,8 @@ The filter (<kbd>/</kbd>) matches an event's reason, message and object name as 
 
 Every object's detail panel has an **Events** tab with the events about it, newest first. It's often the fastest way to see why a pod won't start or a volume won't bind. The overview lists the latest warnings across the namespace, too.
 
+When an object has more than 200 events, **Filter events** appears above the list. It finds events by their reason, their message or what reported them, and says how many match, like *12 of 3,000*. Your browser's own find reaches only the events on screen then, since a long list is drawn as you scroll.
+
 <Note>
   Kubernetes keeps events for a limited time (an hour, unless the cluster is set up otherwise), so old ones disappear. For a longer view of what a workload did, see [Usage history](/metrics/usage-history) and its logs.
 </Note>
