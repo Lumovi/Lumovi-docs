@@ -116,7 +116,7 @@ Its code runs in Lumovi's sealed box, where it has:
 
 - no network: nothing reaches out, whatever it tries;
 - no WebAssembly, and no more code: no workers, no `import()`, no `eval`;
-- no `crypto.subtle`, in any browser or on the desktop: hashing, signing and verifying are Lumovi's;
+- no `crypto.subtle`, in any browser or on the desktop: hashing, signing and verifying are Lumovi's. Random numbers are there, from `crypto.getRandomValues`;
 - no storage that another plugin, another of its pages, or Lumovi can reach;
 - nothing of Lumovi's page, its cookies or its credentials.
 
