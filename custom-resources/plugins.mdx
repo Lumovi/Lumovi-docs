@@ -184,9 +184,9 @@ The overview reads node pools, node claims and nodes, and pods in every namespac
 
 **All plugins**, last under **Plugins** in the sidebar, lists every plugin Lumovi has: the ones it comes with, and the files in your folder. It opens by saying what a plugin is:
 
-> A plugin teaches Lumovi a tool’s kinds: their columns, status, details and actions. Its actions change objects only with the patches and the objects they spell out, each shown here. A plugin of yours is data, and runs no code. The ones Lumovi comes with may also add pages drawn by their own code, in a sealed box: it reads only what its file says it may, and any change it proposes waits for you in Lumovi’s own dialog. A plugin has no access of its own: what it reads and changes, it does as you, and the cluster refuses what you may not do. Lumovi’s come inside Lumovi; yours are your own files.
+> A plugin teaches Lumovi a tool’s kinds: their columns, status, details and actions. Its actions change objects only with the patches and the objects they spell out, each shown here. Some plugins also add pages drawn by their own code, in a sealed box: it reads only what its file says it may, and any change it proposes waits for you in Lumovi’s own dialog. Those are the plugins from Lumovi-plugins, the ones Lumovi comes with and the ones you install, and yours only while Developer mode is on. A plugin has no access of its own: what it reads and changes, it does as you, and the cluster refuses what you may not do. Lumovi’s come inside Lumovi, and the ones you install from Lumovi-plugins’ signed releases; yours are your own files.
 
-On a server, it says "A plugin this server’s administrator added" in place of "A plugin of yours", and ends "this server’s are files its administrator put there." Where your organization's [policy](/desktop/policy#pluginsallowed) allows only some plugins, it adds: "Your organization’s policy allows only some plugins here: the others aren’t shown."
+With [Developer mode](#your-own-plugins-with-code) on, the fourth sentence ends "and yours, each once you’ve agreed to what it may do"; where your organization's policy keeps it off, "but none of yours: your organization’s policy keeps Developer mode off". On a server, the opening says "A plugin this server’s administrator added is data, and runs no code" in place of that sentence, and ends "this server’s are files its administrator put there." Where your organization's [policy](/desktop/policy#pluginsallowed) allows only some plugins, it adds: "Your organization’s policy allows only some plugins here: the others aren’t shown."
 
 Each plugin is a row:
 
@@ -282,6 +282,21 @@ Press <kbd>⌘</kbd><kbd>R</kbd>, and **Platform** appears under **Plugins**, wi
 - **`groups`** hold every kind it names. A plugin is for a tool's kinds: Kubernetes' own can't be under its place, and a plugin can only [show](/reference/plugin-format#kubernetes’-own-kinds) the ones Lumovi has no page for.
 
 A place in the sidebar only groups kinds. How each kind looks, its columns, status and actions, comes from a view, which the plugin holds under `views:`. See [Write a plugin](/custom-resources/write-a-plugin).
+
+### Your own plugins with code
+
+In the desktop app, a plugin of your own can draw pages with its own code, as the ones from Lumovi-plugins do, in the same sealed box, through the same checks, with nothing looser. Its code runs only with **Developer mode** on, and only once you've seen what it may do and agreed.
+
+- **Its folder.** A plugin with code is a folder of its own in your plugins folder, named as the plugin is (its `metadata.name`), with its file and its code: `my-plugin/plugin.yaml` and `my-plugin/plugin.js`. Nothing else in the folder is read. A folder named otherwise isn't used: "my-plugin/plugin.yaml: the plugin is named platform, so its folder should be too". A plugin without code stays one file, as above.
+- **Developer mode.** At the foot of **All plugins**, beside where yours go: "Run code from plugins in your own folder. Only turn this on for plugins you wrote or trust as much as Lumovi." It's off as Lumovi starts for the first time, and while it's off, no `plugin.js` is opened at all: a plugin with code says "Its pages don’t run: Developer mode is off.", and its pages say "Developer mode is off." with **Open Plugins**.
+- **Agreeing to what it may do.** With Developer mode on, a plugin with code says "Its code waits for you to agree to what it may do." with **See what it may do…**, and so do its pages. That opens **Run my-plugin’s code?**: "From your own folder, ~/.lumovi/plugins/my-plugin/plugin.yaml. Nobody but you vouches for it: what it reads and changes, it does as you.", then everything it may do, in the same lines as [What a plugin asks for](#what-a-plugin-asks-for), its code first. "Its code doesn’t run until you press Run its code." **Not now** leaves it waiting.
+- **What runs is what you agreed to.** Lumovi keeps what you agreed to: what its file asked, and its code's SHA-256. It reads the code once, checks it against that, and hands that same code to its box. While Developer mode is on, Lumovi watches the folder. New code waits again, as **my-plugin’s code changed**, with one press to run it: "Its code changed since you agreed. It waits for you." A file that asks for more waits again, showing what's new: "It asks for more than when you agreed. It waits for you."
+- **Turning it off.** Off, its pages close at once, and what you agreed to is kept. On again, it runs without asking, unless its file or its code changed.
+- **What Lumovi can't say.** A plugin whose file has something this Lumovi can't say in its words isn't used: "my-plugin/plugin.yaml: this Lumovi can’t say all that it asks for (…), so it isn’t used", naming what it can't say.
+
+Agreeing is in the [audit log](/audit/events#settings-settings), as `plugin.code-agreed`. Your organization's [policy](/desktop/policy#plugindevelopermode) can keep Developer mode off. Then the switch is locked, with "Turned off by your organization’s policy.", and what you agreed to is let go as Lumovi starts: once it's allowed again, each plugin waits for you from the start.
+
+What you agree to is kept with your settings, which are yours to change, as everything Lumovi keeps on your computer is: it's what Lumovi does, not a wall against you. To start one, use the template in [Lumovi-plugins](https://github.com/Lumovi/Lumovi-plugins/tree/main/template): its README has the steps, and `npm run folder` puts a plugin where Developer mode reads it.
 
 ### Replacing one of Lumovi's
 

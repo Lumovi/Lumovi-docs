@@ -144,6 +144,10 @@ A name with a version, like `"argo-cd@1.2.0"`, allows only that version of it. A
 
 `"off"`: no plugin may talk to a server in the cluster. Where one would, its page is told "Your organization’s policy doesn’t let plugins talk to servers in the cluster.", and Lumovi asks no server for it. **All plugins** says so under the plugin's server line: "Turned off by your organization’s policy (`pluginServers: off`): Lumovi asks no server for it." A plugin that would isn't installed or updated.
 
+### pluginDeveloperMode
+
+`"off"`: [Developer mode](/custom-resources/plugins#your-own-plugins-with-code) stays off, so no plugin of a person's own runs code. Its switch is locked, with "Turned off by your organization’s policy.", and as Lumovi starts, it lets go of what the person agreed to run: once Developer mode is allowed again, each plugin waits for them from the start. `plugins` set to `"bundled"`, `"off"` or `"no-code"` keep it off too, and so does a policy that can't be used.
+
 ### pluginStore
 
 `"off"`: Lumovi doesn't check [Lumovi-plugins](/custom-resources/plugins#newer-plugins) for newer plugins, asks GitHub nothing for it, and so installs and updates none. **All plugins** says "Your organization’s policy turns off checking for newer plugins."
@@ -217,7 +221,7 @@ The file needn't be `root`'s. Where IT's policy is set, that one is used, and `L
 A policy Lumovi can't use locks the most it could, until it's put right: every cluster read-only, AI assistants off, no kubectl got to match a cluster (terminals use the one installed, and **View → Match kubectl to Each Cluster** is off, and locked), the kubeconfig kept to the files in `KUBECONFIG`, or `~/.kube/config`, as [`kubeconfigFiles`](#kubeconfigfiles) keeps it, and no plugins. As Lumovi starts, a notice says so, titled "Lumovi started without something it was given", and the **Read-only** badge says why too, like:
 
 ```text
-Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, kubeconfigFiles, metricsStack, fileCopy, plugins, pluginsAllowed, pluginProposals, pluginSecrets, pluginLogs, pluginServers, pluginStore, network.), so it changes no cluster until it’s put right.
+Lumovi can’t use your organization’s policy (/etc/lumovi/policy.json can’t be used: it has colour, which Lumovi doesn’t know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, kubeconfigFiles, metricsStack, fileCopy, plugins, pluginsAllowed, pluginProposals, pluginSecrets, pluginLogs, pluginServers, pluginStore, pluginDeveloperMode, network.), so it changes no cluster until it’s put right.
 ```
 
 What it can say after `can't be used:`:
@@ -232,7 +236,7 @@ What it can say after `can't be used:`:
 | “it isn't JSON (at line 3 column 1).” | It isn't JSON: a comma after the last item, say. It says where when it can, and otherwise just "it isn't JSON.", but never what's there, which could be a proxy's credentials. |
 | “a key is given twice: Map keys must be unique at line 1, column 21:” | A key appears twice, and only one would count. |
 | “it must be a JSON object.” | It's JSON, but not `{ … }`. |
-| “it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, kubeconfigFiles, metricsStack, fileCopy, plugins, pluginsAllowed, pluginProposals, pluginSecrets, pluginLogs, pluginServers, pluginStore, network.” | A key it doesn't know, misspelt maybe. |
+| “it has colour, which Lumovi doesn't know: readOnly, assistants, assistantRules, updates, kubectl, kubectlSignatures, kubeconfigFiles, metricsStack, fileCopy, plugins, pluginsAllowed, pluginProposals, pluginSecrets, pluginLogs, pluginServers, pluginStore, pluginDeveloperMode, network.” | A key it doesn't know, misspelt maybe. |
 | “readOnly must be true, false, or a list of cluster names (with * for any).” | |
 | “assistants must be true or false.”, "updates must be true or false." | |
 | “kubectl must be true, false, or the https URL of a mirror of dl.k8s.io, or an http one on this computer (over plain http elsewhere, what it downloads could be changed on the way).” | A mirror over plain `http`, elsewhere than on this computer, or what isn't a URL. |
@@ -241,7 +245,7 @@ What it can say after `can't be used:`:
 | “assistantRules[0] (Production) limits nothing: give it visibility, changes, secrets, env or logs.” | A rule that doesn't make sense, said as for a server's [rules](/server/assistants#limits-for-everyone). |
 | “plugins must be "off", "bundled" or "no-code", or a list of the last two.” | `"on"`, an empty list, or `"off"` in a list. |
 | “pluginsAllowed must be a list of plugins’ names, each with a version if it says one (argo-cd@1.2.0).” | A name with capitals or spaces, a version that isn't three numbers, or a name alone, not in a list. |
-| “pluginProposals must be "off".”, “pluginSecrets must be "off".”, “pluginLogs must be "off".”, “pluginServers must be "off".”, “pluginStore must be "off".” | `false`, `"on"` or anything else: leave the key out instead. |
+| “pluginProposals must be "off".”, “pluginSecrets must be "off".”, “pluginLogs must be "off".”, “pluginServers must be "off".”, “pluginStore must be "off".”, “pluginDeveloperMode must be "off".” | `false`, `"on"` or anything else: leave the key out instead. |
 | “network has proxyUrl: it takes proxy, noProxy, caFiles.” | |
 | “network.proxy must be the proxy's http or https URL.” | |
 | “network.noProxy must be text, as NO_PROXY is: names and addresses.” | |

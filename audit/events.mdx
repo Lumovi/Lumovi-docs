@@ -184,6 +184,7 @@ On a server, a cluster's read-only switch, metrics source and node shells are th
 | `plugin.installed`, `plugin.updated` | Installed a plugin, Updated a plugin | In the desktop app, a plugin [installed or updated](/custom-resources/plugins#install-and-update-plugins) from Lumovi-plugins: "Installed the plugin Argo CD 1.3.0", "Updated the plugin Argo CD from 1.2.0 to 1.3.0". |
 | `plugin.went-back` | Went back to an earlier plugin | “Went back to the plugin Argo CD 1.2.0”, or “Went back to Lumovi’s own Argo CD”. |
 | `plugin.removed` | Removed a plugin | “Removed the plugin Toys 1.0.0”. |
+| `plugin.code-agreed` | Agreed to run a plugin’s code | In the desktop app, the person agreed to run [a plugin of their own's code](/custom-resources/plugins#your-own-plugins-with-code): “Agreed to run the code of the plugin my-plugin 1.0.0, from ~/.lumovi/plugins/my-plugin/plugin.yaml”, with the digests of its file and code, and `changed: code` or `asks` on a second agreement. Recorded by Lumovi itself, as **Cancelled**, where the organization's policy keeps Developer mode off and it let go of what was agreed: “Let go of what you agreed to run of your own plugins’ code: your organization’s policy turns Developer mode off”. |
 | `plugin.code-switch` | Turned a plugin’s code on or off | Someone turned a plugin's [code](/custom-resources/plugins#turn-a-plugin’s-code-off) on or off for themselves: "Turned off the Karpenter plugin’s code". |
 
 ### Server (`server`)
