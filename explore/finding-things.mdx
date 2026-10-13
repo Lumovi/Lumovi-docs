@@ -53,7 +53,7 @@ From top to bottom, the sidebar has:
 - **The cluster switcher**: the cluster you're in, its Kubernetes version, and a lock when it's [read-only](/changes/read-only). Open it to switch clusters, in the desktop app or a [fleet](/clusters/fleet). See [Connect your clusters](/clusters/connect#switching-clusters).
 - **Overview**, **Workloads**, **Pods**, **Metrics** (with its **Right-sizing** tab) and **Helm releases**. Workloads stays highlighted on the list of each workload kind.
 - **Cluster**, **Network**, **Configuration**, **Storage** and **Access control**: Kubernetes' own kinds, like **Nodes**, **Services**, **Secrets**, **Volume Claims** and **Roles**. [Plugins](/custom-resources/plugins) that extend them sit with them when the cluster has them: **Cilium**, **Gateway API**, **Linkerd** and **Traefik** under Network, **Sealed Secrets** under Configuration, **Longhorn**, **Rook Ceph** and **Volume Snapshots** under Storage.
-- **Pinned**: the kinds you pinned, in every cluster that serves them. Pin a custom kind from the pin button above its list, or from **API resources**.
+- **Pinned**: the kinds you pinned, in every cluster that serves them, then the [objects you pinned](#pin-an-object) in this cluster, each with its status. Pin a custom kind from the pin button above its list, or from **API resources**.
 - **Plugins**: a page for each of the other tools the cluster runs, like **Argo CD**, **cert-manager** or **Karpenter**.
 - **Custom resources**: the custom kinds you opened last in this cluster (up to five), then **API resources**, with how many custom kinds the cluster serves. Kinds you pinned, and kinds that belong to a plugin, aren't repeated here.
 
@@ -120,6 +120,31 @@ On Windows and Linux, <kbd>⌥</kbd> is <kbd>Alt</kbd>. What you choose is kept 
 - In both, a value that a spreadsheet would read as a formula (one starting with `=`, `+`, `-`, `@`, a tab or a carriage return) starts with `'`, so it's shown as text and never run.
 
 In the desktop app you choose where the file goes, and then **Show in Finder** (**Show in Explorer** on Windows, **Show in folder** on Linux) opens its folder. On a server, the browser downloads it.
+
+## Pin an object
+
+To keep an object at hand, pin it: **Pin** on its page, or <kbd>⌥</kbd><kbd>P</kbd>; the pin at the end of its row in a list; or **Pin** in the command palette while it's open. Up to 20 in a cluster. An Event can't be pinned: it's gone within the hour.
+
+Pinned objects stand in the sidebar under **Pinned**, after the kinds you pinned, each with its name and its status, in the order you pinned them. <kbd>⌥</kbd><kbd>1</kbd> to <kbd>⌥</kbd><kbd>9</kbd> open the first nine. (On Windows and Linux, <kbd>⌥</kbd> is <kbd>Alt</kbd>. A browser on Linux keeps <kbd>Alt</kbd> and a number for its own tabs: open them from the sidebar or the palette there.)
+
+- **Move one** by dragging it in the sidebar, or with <kbd>⌥</kbd><kbd>↑</kbd> <kbd>⌥</kbd><kbd>↓</kbd> in the palette's **Pinned** group.
+- **Unpin one** with **Pinned** on its page, the pin in its row, or <kbd>⌫</kbd> in the palette's **Pinned** group. **Undo** puts it back where it was.
+- **One that's gone** says "Deployment cart in shop isn’t in the cluster any more.", and **one you can't read** any more says so. Either opens its kind's list, filtered to its name, and has its own unpin button in the sidebar.
+
+On a phone, the menu's drawer holds the pins, and a long press opens a pin's sheet, to open or unpin it.
+
+## Saved views
+
+A list's filter, health, labels, sort, columns and namespaces can be saved as a view, with a name, to come back to it. **Views**, in the list's toolbar, saves what the list shows now (**Save view…**), and lists the kind's saved views to open. The palette has them too: the views of the list you're on, then the others.
+
+A view opened and then changed says so on the button, like **Ready · changed**, and **Save changes to “Ready”** keeps the change. Rename, move and delete views in the **Views** menu; a delete has **Undo**. Names are a kind's own: two views of Deployments can't have the same name. Up to 20 views of one kind, and 50 in a cluster. A view of a kind the cluster doesn't serve any more says so.
+
+## Where pins and views are kept
+
+- **In the desktop app**, on your computer, for each cluster.
+- **On a server**, with who's signed in, wherever Lumovi keeps its state: the chart's Secret (`auth.keepSessions`), `LUMOVI_DATA_DIR`, or memory, where a restart loses them. So they're the same in any browser you sign in from. Everyone who signs in with the same token shares one set.
+
+A server keeps up to 32 kB of a person's in one cluster, 96 kB of theirs in all, and 400 kB for everyone. A person's are let go after 180 days without use. When everyone's would pass 400 kB, those of clusters the server doesn't show now go first, the longest unread first. Past a limit, a pin or a view isn't saved, and Lumovi says which, like "This server keeps no more of your pins and views in this cluster. Unpin or delete some to save this."
 
 ## Moving through a list
 
