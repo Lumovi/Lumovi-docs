@@ -116,7 +116,7 @@ It decides which files Lumovi reads, not what's in them: `~/.kube/config` is sti
 What [plugins](/custom-resources/plugins) there are:
 
 - **`"off"`**: none. Neither the plugins Lumovi comes with nor anyone's own: the sidebar has Lumovi's own pages only.
-- **`"bundled"`**: only the plugins Lumovi comes with. A person's own, in `~/.lumovi/plugins`, aren't read.
+- **`"bundled"`**: only the plugins Lumovi comes with. A person's own, in `~/.lumovi/plugins`, aren't read, and none is installed from Lumovi-plugins: "Your organization’s policy allows only the plugins that come with Lumovi."
 - **`"no-code"`**: plugins as data, their kinds, views and actions, with none of their code. Pages a plugin's [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code) draws say "Your organization’s policy doesn’t let plugins run code.", and each plugin's **Run its code** is off and locked, with **Turned off by your organization’s policy.** Where Lumovi has an overview of its own, as for Karpenter, that's shown instead.
 - **`["bundled", "no-code"]`**: both.
 
@@ -124,23 +124,25 @@ Leaving it out leaves plugins to each person. `"off"` and `"bundled"` also turn 
 
 ### pluginsAllowed
 
-A list of plugins' names, like `["karpenter", "argo-cd"]`: only these are there, whether Lumovi's own or a person's. Any other isn't listed, nor used, and **All plugins** says "Your organization’s policy allows only some plugins here: the others aren’t shown." Each plugin's name is in [Included plugins](/custom-resources/included-plugins), after its label.
+A list of plugins' names, like `["karpenter", "argo-cd"]`: only these are there, whether Lumovi's own, installed, or a person's. Any other isn't listed, nor used, and **All plugins** says "Your organization’s policy allows only some plugins here: the others aren’t shown." Each plugin's name is in [Included plugins](/custom-resources/included-plugins), after its label.
+
+A name with a version, like `"argo-cd@1.2.0"`, allows only that version of it. Any other version of it, Lumovi's own included, isn't there, and [installing or updating](/custom-resources/plugins#install-and-update-plugins) to one is refused: "Your organization’s policy doesn’t allow this version."
 
 ### pluginProposals
 
-`"off"`: no plugin's page may [propose a change](/custom-resources/plugins#changes-a-page-proposes). Where one does, no dialog opens, and a note says "Your organization’s policy doesn’t let plugins propose changes." The actions a plugin's file spells out stay, with their usual confirmations.
+`"off"`: no plugin's page may [propose a change](/custom-resources/plugins#changes-a-page-proposes). Where one does, no dialog opens, and a note says "Your organization’s policy doesn’t let plugins propose changes." A plugin whose pages would isn't installed or updated. The actions a plugin's file spells out stay, with their usual confirmations.
 
 ### pluginSecrets
 
-`"off"`: no plugin shows what's in a Secret, even where its file names the keys it shows: Lumovi reads nothing of the Secret for it, and says "Your organization’s policy doesn’t let plugins show what’s in Secrets."
+`"off"`: no plugin shows what's in a Secret, even where its file names the keys it shows: Lumovi reads nothing of the Secret for it, and says "Your organization’s policy doesn’t let plugins show what’s in Secrets." A plugin that would isn't installed or updated.
 
 ### pluginLogs
 
-`"off"`: no plugin's page may show containers' logs. Where one would, it says "Your organization’s policy doesn’t let plugins show containers’ logs.", and Lumovi reads none for it. **All plugins** says so under the plugin's logs line: "Turned off by your organization’s policy (`pluginLogs: off`): Lumovi reads no logs for it."
+`"off"`: no plugin's page may show containers' logs. Where one would, it says "Your organization’s policy doesn’t let plugins show containers’ logs.", and Lumovi reads none for it. A plugin whose pages show logs isn't installed or updated: "Your organization’s policy doesn’t let plugins show or read containers’ logs, and this one would." **All plugins** says so under the plugin's logs line: "Turned off by your organization’s policy (`pluginLogs: off`): Lumovi reads no logs for it."
 
 ### pluginStore
 
-`"off"`: Lumovi doesn't check [Lumovi-plugins](/custom-resources/plugins#newer-plugins) for newer plugins, and asks GitHub nothing for it. **All plugins** says "Your organization’s policy turns off checking for newer plugins."
+`"off"`: Lumovi doesn't check [Lumovi-plugins](/custom-resources/plugins#newer-plugins) for newer plugins, asks GitHub nothing for it, and so installs and updates none. **All plugins** says "Your organization’s policy turns off checking for newer plugins."
 
 ### network
 
@@ -234,7 +236,7 @@ What it can say after `can't be used:`:
 | “kubeconfigFiles must be "locked": only KUBECONFIG's kubeconfig, or ~/.kube/config, none chosen in Lumovi.” | `true`, `false` or anything else: leave the key out instead. |
 | “assistantRules[0] (Production) limits nothing: give it visibility, changes, secrets, env or logs.” | A rule that doesn't make sense, said as for a server's [rules](/server/assistants#limits-for-everyone). |
 | “plugins must be "off", "bundled" or "no-code", or a list of the last two.” | `"on"`, an empty list, or `"off"` in a list. |
-| “pluginsAllowed must be a list of plugins’ names.” | A name with capitals or spaces, or a name alone, not in a list. |
+| “pluginsAllowed must be a list of plugins’ names, each with a version if it says one (argo-cd@1.2.0).” | A name with capitals or spaces, a version that isn't three numbers, or a name alone, not in a list. |
 | “pluginProposals must be "off".”, “pluginSecrets must be "off".”, “pluginLogs must be "off".”, “pluginStore must be "off".” | `false`, `"on"` or anything else: leave the key out instead. |
 | “network has proxyUrl: it takes proxy, noProxy, caFiles.” | |
 | “network.proxy must be the proxy's http or https URL.” | |
