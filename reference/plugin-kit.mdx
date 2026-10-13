@@ -39,6 +39,23 @@ And the parts they hold:
 | `Counts` | Up to 6 `groups`, each a `title` and up to 50 `rows` of a `value` and a `count` | Shares of a whole, as bars, the largest first |
 | `Logs` | `title`, `pod`, `container` | A pod's logs in Lumovi's own log view, where the file says [`logs`](/custom-resources/plugins#logs-on-a-plugin’s-page). The plugin's code never sees a line |
 
+### Every part, exactly
+
+What each part takes, as Lumovi's door checks it. A property not listed here stops the page, as a part Lumovi doesn't have does. Properties starting with `on` are what the page is told: a row opened, a button pressed, a pick.
+
+| Part | Holds | Takes | Needs | Tells the page |
+| --- | --- | --- | --- | --- |
+| `Table` | nothing | `columns`, `cut`, `headings`, `leadHeading`, `nameSorts`, `onOpen`, `onRetry`, `rows`, `shows`, `state`, `title` | `columns`, `headings`, `rows`, `title` | `open`, `retry` |
+| `Graph` | nothing | `columns`, `edges`, `legend`, `nodes`, `onOpen`, `onRetry`, `state`, `title` | `columns`, `edges`, `nodes`, `title` | `open`, `retry` |
+| `Tiles` | nothing | `onOpen`, `tiles` | `tiles` | `open` |
+| `Header` | nothing | `buttons`, `name`, `onPress`, `status` | `name` | `press` |
+| `Split` | `Stack` | `list`, `onPick` | `list` | `pick` |
+| `Card` | `Table`, `Graph`, `Counts` | `about`, `note`, `title` | `title` | nothing |
+| `Pair` | `Card` | `first` | nothing | nothing |
+| `Counts` | nothing | `groups` | `groups` | nothing |
+| `Stack` | `Tiles`, `Header`, `Card`, `Pair`, `Table`, `Graph`, `Counts`, `Logs` | nothing | nothing | nothing |
+| `Logs` | nothing | `container`, `pod`, `title` | `title` | nothing |
+
 ### A table's cells
 
 A column has a `name`, a `kind`, a `width` (`narrow`, `normal`, `wide` or `text`) and whether it `sorts`. A cell's kind is its column's:
