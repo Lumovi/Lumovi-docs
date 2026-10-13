@@ -117,6 +117,9 @@ const LIMITS = {
   'server.bytes': ['custom-resources/plugins', () => 'at most 1 MiB'],
   'server.depth': 'how deep an answer nests: a server past it is said to answer something other than JSON',
   'server.waitingAPage': ['reference/plugin-kit', (v) => `| Asks of its server not yet answered | ${v} by a page; `],
+  'shown.keys': ['reference/plugin-kit', (v) => `with ${v} keys in one`],
+  'shown.parts': ['reference/plugin-kit', (v) => `${v} \`Secret\` parts on a page`],
+  'shown.text': 'a title is as long as a name: said once',
   'server.waitingAPlugin': ['reference/plugin-kit', (v) => `${v} by a plugin, and more wait`],
 }
 const leaves = (value, at = []) =>
