@@ -161,13 +161,13 @@ Lumovi records what everyone does through it, who signed in, and from where: see
 
 Pages are served with a strict Content Security Policy (scripts only from Lumovi itself, and no embedded objects), and with headers that keep them out of other sites' frames (`X-Frame-Options: DENY`), stop content-type sniffing, and send no referrers.
 
-A page shows no frame but one. Where `LUMOVI_URL` is set, that's the box Lumovi keeps for a plugin's code, at `plugin-box/box.html` below that address: a sandbox with no network and no window of its own, which can't reach Lumovi's cookies or storage, and which only Lumovi's page may show. Without `LUMOVI_URL`, a page shows no frame at all, and there's no box.
+A page shows no frame but one. Where `LUMOVI_URL` is set, that's the box Lumovi keeps for a plugin's code, at `plugin-box/box.html` below that address: a sandbox with no window of its own, whose code has no network and can't reach Lumovi's cookies or storage, and which only Lumovi's page may show. Without `LUMOVI_URL`, a page shows no frame at all, and there's no box.
 
 ## Plugins' code
 
 Four of the plugins Lumovi comes with [draw pages with their own code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code). On a server, that code runs in each person's browser, in the box:
 
-- **Its own frame, at an origin that's nobody's**, sandboxed by attribute and by header, with a Content Security Policy that lets it reach no address at all, and its code in a worker inside it. It can't reach Lumovi's page, its cookies or storage, another plugin's box, or the network. Its storage is its own, shared with nothing.
+- **Its own frame, at an origin that's nobody's**, sandboxed by attribute and by header, with a Content Security Policy that names no address it may reach, and the plugin's code in a worker inside it. That code can't reach Lumovi's page, its cookies or storage, another plugin's box, or the network. Its storage is its own, shared with nothing.
 - **Handed only what its file says.** Lumovi reads for it, on the server, as the person and within their access in Lumovi, and hands it only the fields its file names. Of a Secret, it's handed nothing: Lumovi shows the keys its file names itself, on the person's press. Each read is in the audit log, as `plugin.read`.
 - **It draws with Lumovi's parts**, never its own markup, and a strip at the top of its page says whose it is.
 - **It can't change anything.** It can propose a change, which Lumovi shows in its own dialog, and makes only once the person presses its button there, after Lumovi checks it again on the server: only the plugin's own kinds, as its file says, at most 16 KiB, and never an object's status.
@@ -179,6 +179,7 @@ Four of the plugins Lumovi comes with [draw pages with their own code](/custom-r
 What the box doesn't do in a browser, said plainly:
 
 - **A plugin's box may share a process with Lumovi's own page, and with other plugins', in any browser.** A browser keeps sites apart in processes, and a path of the server's isn't a site of its own. Reading across would need a fault in the browser's engine, and a way to send what was read, which the box doesn't give. A plugin's worker lives only while its page is showing, and a Secret's value is never handed to it. In the desktop app, each plugin's box is a process of its own.
+- **The box's own page isn't held against everything a browser does by itself.** In Chromium, a link that hints at another address (a prefetch, a preconnect, a prerender), or a navigation the browser then refuses, can make it look a name up, connect to it, or ask it for a page. Nothing Lumovi sends turns that off. A plugin's code can't make any of them: it runs in a worker, with no page, and from there nothing gets out and no name is looked up. The box's page runs only Lumovi's own lines, and puts nothing of a plugin's into its document. In the desktop app, these are held too.
 - **Its processor and memory use can't be measured in a browser.** A plugin that keeps a core busy is stopped only by the limits on what it sends, and by going quiet. In Firefox and Safari, one that uses up memory on purpose can close the tab: it loses its own page, and gains nothing. In the desktop app, Lumovi measures each plugin's process, and stops one over its memory, or over half a processor core for 30 seconds.
 
 To run none of it, set `pluginCode: false`.
