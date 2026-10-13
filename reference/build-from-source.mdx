@@ -174,22 +174,11 @@ Bug reports, ideas and pull requests are welcome. The [contributing guide](https
 
 ### Adding a tool
 
-Lumovi shows what popular operators run through [plugins](/custom-resources/included-plugins), written as YAML in `plugins/<tool>.yaml`, in the [plugin format](/reference/plugin-format). A plugin gives a tool its entry in the sidebar and lists its kinds, and its views say how each kind is shown. Adding a tool needs no code, and is a welcome first contribution.
+Lumovi shows what popular operators run through [plugins](/custom-resources/included-plugins), written as YAML in the [plugin format](/reference/plugin-format). A plugin gives a tool its entry in the sidebar and lists its kinds, and its views say how each kind is shown. Adding a tool needs no code, and is a welcome first contribution.
 
-<Steps>
-  <Step title="Pin the tool's CRDs">
-    Add its release to `tests/plugins/crds/sources.json`, under the plugin's name, with the URLs of its CRD manifests, and run `npm run crds -- <name>`. That keeps what the check needs in `tests/plugins/crds/<name>.json`.
-  </Step>
-  <Step title="Write the plugin">
-    In `plugins/<name>.yaml`, write one `kind: Plugin`, with its label and kinds, and under `views:` a view for each kind worth more than the generic columns. Status rules help most: say what healthy, in progress, failing and paused look like for this tool.
-  </Step>
-  <Step title="Check it">
-    Run `npm run plugins:check`. Labels and annotations aren't in schemas, so check those against the tool's documentation, or a real cluster.
-  </Step>
-  <Step title="Look at it">
-    Put the file in `~/.lumovi/plugins` while running `npm run dev` against a cluster with the tool installed. Plugins are read again when you refresh (<kbd>⌘</kbd><kbd>R</kbd>; <kbd>Ctrl</kbd><kbd>R</kbd> on Windows and Linux).
-  </Step>
-</Steps>
+The plugins Lumovi comes with live in their own repository, [Lumovi-plugins](https://github.com/Lumovi/Lumovi-plugins): a tool is added there, checked by Lumovi's own checker against its pinned CRDs, and released as one signed bundle. See [Contributing a plugin](/custom-resources/included-plugins#contributing-a-plugin). Lumovi is built with the release `plugins.lock.json` names, and checks it again as it's built.
+
+To try a plugin while you write it, put its file in `~/.lumovi/plugins` while running `npm run dev` against a cluster with the tool installed. Plugins are read again when you refresh (<kbd>⌘</kbd><kbd>R</kbd>; <kbd>Ctrl</kbd><kbd>R</kbd> on Windows and Linux).
 
 To ask for a tool instead, open a [Support a tool](https://github.com/Lumovi/Lumovi/issues/new?template=tool_request.yml) issue.
 

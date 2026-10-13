@@ -600,24 +600,29 @@ It's the whole plugin or none of it: a kind is one plugin's, so a plugin of your
 
 ## Contributing a plugin
 
-Adding a tool needs no code, and is a welcome first contribution. To ask for one instead, open a [Support a tool](https://github.com/Lumovi/Lumovi/issues/new?template=tool_request.yml) issue. The [contributing guide](https://github.com/Lumovi/Lumovi/blob/main/CONTRIBUTING.md#adding-a-tool) has the details; in short:
+Adding a tool needs no code, and is a welcome first contribution. To ask for one instead, open a [Support a tool](https://github.com/Lumovi/Lumovi/issues/new?template=tool_request.yml) issue.
+
+The plugins live in [Lumovi-plugins](https://github.com/Lumovi/Lumovi-plugins), a folder each under `plugins/`. Its [contributing guide](https://github.com/Lumovi/Lumovi-plugins/blob/main/CONTRIBUTING.md) has the details, and how to set up the checks; in short:
 
 <Steps>
+  <Step title="Make its folder">
+    Make `plugins/<name>/`, named as the plugin is, with its four files: `plugin.yaml`, `README.md` (what it's for, in a line), `crd-sources.json`, and `crds.json`, which the next step writes.
+  </Step>
   <Step title="Pin the tool's CRDs">
-    Add its release to `tests/plugins/crds/sources.json`, under the plugin's name, with the URLs of its CRD manifests, and run `npm run crds -- <name>`. That keeps what the check needs of them in `tests/plugins/crds/<name>.json`. A chart's templates work too, and for a tool whose operator creates its CRDs itself, the JSON Schema of each kind will do.
+    In `crd-sources.json`, name the tool's release and the URLs of its CRD manifests, and run `npm run crds -- <name>`. That keeps what the check needs of them in `crds.json`.
   </Step>
   <Step title="Write its plugin">
-    Write `plugins/<name>.yaml`, with a comment linking to the tool: one `kind: Plugin`, with its label and kinds, and under `views:` a view for each kind (or group of kinds) worth more than the generic columns. Status rules are where views help most: say what healthy, in progress, failing and paused look like for this tool.
+    In `plugin.yaml`, with a comment linking to the tool: one `kind: Plugin`, with its label and kinds, and under `views:` a view for each kind (or group of kinds) worth more than the generic columns. Status rules are where views help most: say what healthy, in progress, failing and paused look like for this tool.
   </Step>
   <Step title="Check it">
-    Run `npm run plugins:check`. It checks every kind, path, template, link, related list and action against the CRDs you pinned, so a misremembered field fails there rather than showing nothing. Labels and annotations aren't in schemas, so check those against the tool's documentation, or a real cluster.
+    Run `npm run check`. It runs Lumovi's own checker, which checks every kind, path, template, link, related list and action against the CRDs you pinned, so a misremembered field fails there rather than showing nothing. Labels and annotations aren't in schemas, so check those against the tool's documentation, or a real cluster.
   </Step>
   <Step title="Look at it">
-    Put the file in `~/.lumovi/plugins` while running `npm run dev` against a cluster with the tool installed, and press <kbd>⌘</kbd><kbd>R</kbd> after each change.
+    Put `plugin.yaml` in `~/.lumovi/plugins`, under the plugin's name (`<name>.yaml`), while Lumovi runs against a cluster with the tool installed, and press <kbd>⌘</kbd><kbd>R</kbd> after each change. It's read as one of yours, held to the same checks.
   </Step>
 </Steps>
 
-To check a plugin against a newer release of a tool, change its version in `sources.json`, and run `npm run crds -- <name>` and `npm run plugins:check`.
+To check a plugin against a newer release of a tool, raise its version in `crd-sources.json`, run `npm run crds -- <name>` and `npm run check`, and raise the plugin's `spec.version`.
 
 <Columns cols={2}>
   <Card title="Plugins" icon="package" href="/custom-resources/plugins">
