@@ -138,7 +138,7 @@ A name with a version, like `"argo-cd@1.2.0"`, allows only that version of it. A
 
 ### pluginLogs
 
-`"off"`: no plugin's page may show containers' logs. Where one would, it says "Your organization’s policy doesn’t let plugins show containers’ logs.", and Lumovi reads none for it. A plugin whose pages show logs isn't installed or updated: "Your organization’s policy doesn’t let plugins show or read containers’ logs, and this one would." **All plugins** says so under the plugin's logs line: "Turned off by your organization’s policy (`pluginLogs: off`): Lumovi reads no logs for it."
+`"off"`: no plugin's page may show containers' logs, and no plugin's code may read them. Where one would, it says "Your organization’s policy doesn’t let plugins show or read containers’ logs.", and Lumovi reads none for it. A plugin whose pages show logs isn't installed or updated: "Your organization’s policy doesn’t let plugins show or read containers’ logs, and this one would." **All plugins** says so under the plugin's logs line: "Turned off by your organization’s policy (`pluginLogs: off`): Lumovi reads no logs for it."
 
 ### pluginStore
 
