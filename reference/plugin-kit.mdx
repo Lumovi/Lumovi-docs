@@ -56,7 +56,7 @@ In place of rows, a table (or a graph, or a pick list) can give a `state`: `busy
 
 ### A card's `about`
 
-A card can say where its data comes from, when its title and note can't say it: up to 240 characters, shown quietly under the title, two lines at most, the rest in its tooltip.
+A card can say where its data comes from, when its title and note can't say it: up to 240 characters, shown quietly under the title, two lines at most, the rest in its tooltip. Under a finger, where there's no tooltip, it wraps whole. Put what matters most first: on a narrow card, two lines hold about 60 characters.
 
 ### A header's buttons
 
@@ -65,7 +65,7 @@ A button has a `key` and a `name`, and may say:
 - **`changes: true`**: the button changes something. Only its press lets the page propose a change, which waits for the person in Lumovi's dialog. A proposal after any other press is refused. Of a header's buttons, the last that changes something is drawn last, filled; one that only reads or goes never is. A phone doesn't draw a button that changes something, and says where it is.
 - **`asks: true`**: it asks before it does anything, so its name ends in "…".
 - **`note`**: what it does, up to 120 characters, under the buttons.
-- **`off`**: why it can't be pressed now, up to 80 characters. It's drawn off, with this as its tooltip.
+- **`off`**: why it can't be pressed now, up to 80 characters. It's drawn off, with this as its tooltip. Under a finger, the reason stands under the buttons, before the note, as "Back up now is off: A backup is running."
 - **`goes`**: where it goes, in place of telling the page it was pressed: one of Lumovi's own places for an object the page was handed (a pod's **Logs** or **Shell** tab, **Port forward**), where the file's [`links`](/custom-resources/plugins#links-to-lumovi’s-own-places) say so, or a list of Lumovi's own. It changes nothing and asks nothing first.
 
 ## What a page can ask for
