@@ -38,6 +38,7 @@ And the parts they hold:
 | `Graph` | `title`, `legend`, `columns`, `nodes`, `edges`, `state` | Cards with lines from one to another, solid or dashed. Past 300 cards or 600 lines, it's shown as its table, and says why |
 | `Counts` | Up to 6 `groups`, each a `title` and up to 50 `rows` of a `value` and a `count` | Shares of a whole, as bars, the largest first |
 | `Logs` | `title`, `pod`, `container` | A pod's logs in Lumovi's own log view, where the file says [`logs`](/custom-resources/plugins#logs-on-a-plugin’s-page). The plugin's code never sees a line |
+| `Secret` | `title`, `secret`, `keys` | A Secret's keys, each hidden until **Reveal**, with **Copy**, in Lumovi's own card, where the file says [`showsSecrets`](/reference/plugin-format#spec). The plugin's code never sees a value |
 
 ### Every part, exactly
 
@@ -53,8 +54,9 @@ What each part takes, as Lumovi's door checks it. A property not listed here sto
 | `Card` | `Table`, `Graph`, `Counts` | `about`, `note`, `title` | `title` | nothing |
 | `Pair` | `Card` | `first` | nothing | nothing |
 | `Counts` | nothing | `groups` | `groups` | nothing |
-| `Stack` | `Tiles`, `Header`, `Card`, `Pair`, `Table`, `Graph`, `Counts`, `Logs` | nothing | nothing | nothing |
+| `Stack` | `Tiles`, `Header`, `Card`, `Pair`, `Table`, `Graph`, `Counts`, `Logs`, `Secret` | nothing | nothing | nothing |
 | `Logs` | nothing | `container`, `pod`, `title` | `title` | nothing |
+| `Secret` | nothing | `keys`, `secret`, `title` | `title` | nothing |
 
 ### A table's cells
 
@@ -70,6 +72,18 @@ A column has a `name`, a `kind`, a `width` (`narrow`, `normal`, `wide` or `text`
 | `none` | Nothing to say: a dash |
 
 In place of rows, a table (or a graph, or a pick list) can give a `state`: `busy` while it reads, `failed` with a title and what the cluster said, and **Try again**, `empty` with a title and a line, or `quiet`, one calm line. Where a table's rows come from a read Lumovi cut at its limit, the table names that read's `cut`, and Lumovi says so above the rows, from its own numbers.
+
+### A Secret, shown and not held
+
+Where a plugin's file says its pages show a Secret that its own kind names ([`showsSecrets`](/reference/plugin-format#spec)), a `Secret` part shows it: Lumovi's own card, captioned "Shown by Lumovi. Toys can’t see it." for a plugin named Toys, with a row for each key, hidden until **Reveal**, and **Copy** without revealing.
+
+- **It takes a token, never a Secret.** `secret` is the token Lumovi handed the page with the object that names the Secret, at the path the file declares. `keys` can only narrow the keys the file names: one outside them stops the page. A token the page doesn't hold shows a card that says "This object names no Secret.", and nothing is read.
+- **Lumovi reads it as you, on your press, and never before.** Each read is in the [audit log](/audit/events#access-access) as `secret.read`, naming the plugin.
+- **Nothing goes back to the plugin's code.** The part holds nothing and tells the page nothing: not a value, its length, or that it was revealed, copied or refused.
+- **Only on a page whose code Lumovi handed over.** Anywhere else, the same part shows its title and no Secret.
+- Where your organization's [policy](/desktop/policy#pluginsecrets) says `pluginSecrets: off`, the card says "Your organization’s policy doesn’t let plugins show what’s in Secrets.", and nothing is read.
+
+A page has at most 20 of them, each with at most 20 keys. None of the plugins Lumovi comes with shows a Secret yet.
 
 ### A card's `about`
 
@@ -124,6 +138,7 @@ A page past any of these is stopped, and says why in its place. The rest of Lumo
 | A pick list | 1,000 rows |
 | Lists kept up to date | 8 by a page, 16 by all of a plugin's pages |
 | Reads going at once | 50 by a page, 100 by a plugin, 20 not yet answered |
+| Secrets shown | 20 `Secret` parts on a page, with 20 keys in one |
 | Logs shown at once | 4 by a page, 8 by a plugin: more wait their turn |
 | Asks of its server not yet answered | 2 by a page; 4 by a plugin, and more wait their turn |
 | A refresh | Once in 10 seconds: one asked sooner isn't made |
