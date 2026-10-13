@@ -56,7 +56,7 @@ Plugins in files are data only. Their views read fields with JSONPath, and chang
 
 ## Plugins' code
 
-Three of the plugins Lumovi comes with, Karpenter, Argo CD and CloudNativePG, draw [pages of their own](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code) with their code, in a sealed box. On a server, their code is handed to a person's browser only where all of these hold:
+Four of the plugins Lumovi comes with, Karpenter, Argo CD, CloudNativePG and Prometheus Operator, draw [pages of their own](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code) with their code, in a sealed box. On a server, their code is handed to a person's browser only where all of these hold:
 
 - **`LUMOVI_URL` is set**, so the box has an address of its own, at `plugin-box/box.html` below it. See [The page](/server/security#the-page).
 - **The browser's requests are held to Lumovi's own page**, as [`auth.secFetchSite`](/server/security#requests-from-lumovi’s-own-page) does by default. Behind a sign-in proxy, only where `auth.proxy.secFetchSite` says the proxy passes the header through.

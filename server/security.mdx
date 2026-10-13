@@ -165,7 +165,7 @@ A page shows no frame but one. Where `LUMOVI_URL` is set, that's the box Lumovi 
 
 ## Plugins' code
 
-Three of the plugins Lumovi comes with [draw pages with their own code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code). On a server, that code runs in each person's browser, in the box:
+Four of the plugins Lumovi comes with [draw pages with their own code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code). On a server, that code runs in each person's browser, in the box:
 
 - **Its own frame, at an origin that's nobody's**, sandboxed by attribute and by header, with a Content Security Policy that lets it reach no address at all, and its code in a worker inside it. It can't reach Lumovi's page, its cookies or storage, another plugin's box, or the network. Its storage is its own, shared with nothing.
 - **Handed only what its file says.** Lumovi reads for it, on the server, as the person and within their access in Lumovi, and hands it only the fields its file names. Of a Secret, it's handed nothing: Lumovi shows the keys its file names itself, on the person's press. Each read is in the audit log, as `plugin.read`.

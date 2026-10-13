@@ -61,7 +61,7 @@ Click a row to open its details, with what its kind's view adds: details, links,
 
 ## Pages drawn by a plugin's code
 
-Three of the plugins Lumovi comes with add pages of their own, drawn by their own code: **Karpenter** an [overview](#karpenter), **Argo CD** an overview and a tab on each Application, and **CloudNativePG** an **Overview** and **Backup health**. See [Included plugins](/custom-resources/included-plugins) for what each shows.
+Four of the plugins Lumovi comes with add pages of their own, drawn by their own code: **Karpenter** an [overview](#karpenter), **Argo CD** an overview and a tab on each Application, **CloudNativePG** an **Overview** and **Backup health**, and **Prometheus Operator** a **Target health** page. See [Included plugins](/custom-resources/included-plugins) for what each shows.
 
 That code comes inside Lumovi, from the same [signed release](/custom-resources/included-plugins#where-they-come-from) as the plugins' files, and runs in a sealed box: a place of its own, apart from Lumovi's page, with no network, which can't reach Lumovi's cookies, storage or credentials. It's handed only what its file says it may read, read by Lumovi as you, and it draws with [Lumovi's own parts](/reference/plugin-kit), so it looks like the rest of Lumovi and can't draw anything else. Lumovi stops a page that sends what a plugin can't, or more at once than it may, or stops answering, and in the desktop app one that uses more memory than a plugin may, or more than half of a processor core for half a minute.
 
@@ -90,7 +90,7 @@ A plugin's code can also read a pod's logs itself, where its file says so (`logs
 
 `pluginLogs: off` turns this off too.
 
-None of the plugins Lumovi comes with shows or reads logs yet.
+Of the plugins Lumovi comes with, [CloudNativePG](/custom-resources/included-plugins#cloudnativepg) shows the primary's log of the cluster you pick. None reads logs with its code.
 
 ### A plugin's own server
 
@@ -102,13 +102,15 @@ What the server answers reaches the plugin's code, so its entry under **All plug
 
 The server gets none of your credentials: see [Plugins' code](/server/security#plugins’-code).
 
+Of the plugins Lumovi comes with, [Prometheus Operator](/custom-resources/included-plugins#prometheus-operator) asks its server: the `prometheus-operated` Service, for `/api/v1/targets?state=active`.
+
 ### Links to Lumovi's own places
 
 A plugin's page can link to a pod's **Logs** or **Shell** tab, or to **Port forward** for a pod or a service, where its file says it may, and only for an object it was handed. The link opens Lumovi's own tab or dialog, at the container or port it names. What happens there is what you do: a plugin's page can bring you to a shell, never start one.
 
 A Shell tab opened from a plugin's page says so, like "Opened from Toys’ page" for a plugin named Toys, and waits: "Toys’ page opened this tab. A shell starts only when you press Start: as you, within your access." **Start shell** isn't focused, and <kbd>↵</kbd> doesn't press it. Where the pod has no container by the name the page asked for, the tab says so, "Toys’ page asked for a container named envoy, which this pod doesn’t have.", and opens on its first, as it would anyway. A shell opened this way is in the audit log as any other, its summary ending "from the plugin Toys’ page".
 
-None of the plugins Lumovi comes with links anywhere yet. A plugin's [`links`](/reference/plugin-format#spec) say where it may.
+Of the plugins Lumovi comes with, [CloudNativePG](/custom-resources/included-plugins#cloudnativepg) links this way: **Shell into primary** and **Forward 5432** on its Overview, and each instance's row to that pod's logs. A plugin's [`links`](/reference/plugin-format#spec) say where it may.
 
 ### Turn a plugin's code off
 

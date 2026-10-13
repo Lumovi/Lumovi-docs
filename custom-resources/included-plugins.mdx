@@ -175,8 +175,9 @@ A cluster is <span className="lumovi-status healthy">Healthy</span>, critical wi
 
 CloudNativePG's plugin draws two pages of its own, with its [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code):
 
-- **Overview**: every PostgreSQL cluster, what's failing first, and the one you pick, with its status and why, how many instances are ready, its primary, its last backup, and its PostgreSQL version; then its instances with their role, status, node and restarts, its backups, latest first, its schedules, said in words, and its poolers. A row opens the object in Lumovi.
+- **Overview**: every PostgreSQL cluster, what's failing first, and the one you pick, with its status and why, how many instances are ready, its primary, its last backup, and its PostgreSQL version; then its instances with their role, status, node and restarts, its backups, latest first, its schedules, said in words, and its poolers. A backup's row opens it in Lumovi, and an instance's row opens that pod at its **Logs** tab. Under them is the primary's log, which Lumovi reads and draws: the plugin's code never holds a line of it.
 - **Backup health**: how many backups ran in the last day and how many failed, which clusters have had no backup in a day, and the next one scheduled; then every cluster's backups, latest first, a cluster with a failed or missing backup above the rest.
+- **Shell into primary** and **Forward 5432**, beside it, [link to Lumovi's own places](/custom-resources/plugins#links-to-lumovi’s-own-places) for the primary's pod: its **Shell** tab, and **Port forward** at PostgreSQL's port. A link only says where to go: a shell or a forward still starts only when you start it there.
 - **Back up now…** on the cluster you pick is a [change it proposes](/custom-resources/plugins#changes-a-page-proposes): a Backup of that cluster, by the method you pick where it has more than one, which you confirm in Lumovi's own dialog. It can't be pressed while a backup of the cluster runs, or where the cluster has no backup method. Where Lumovi can't read its backups, it says "Couldn’t read its backups, so one may be running."
 
 Its pages read its own kinds and, of pods, only its instances' (labeled `cnpg.io/cluster`): their names, namespaces, labels, ages, nodes, conditions and restarts. Wherever they don't run, the view's **Back up now…**, **Switch over…** and **Restart…** stay on Lumovi's list of clusters.
@@ -435,6 +436,17 @@ Prometheus and Alertmanager are <span className="lumovi-status healthy">Availabl
 | Prometheus, Alertmanager | Version, Replicas, Available, Retention | **Pods** |
 | ServiceMonitor, PodMonitor | Ports, Pod ports, Intervals | |
 | PrometheusRule | Groups, Rules, Alerts | |
+
+Prometheus Operator's plugin draws a page of its own, with its [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code):
+
+- **Target health**: how many scrape targets are up, down and not scraped yet; the targets that are down, in one list, each with its last error; then a card for each namespace's Prometheus, with its scrape pools, worst first, named for the ServiceMonitor, PodMonitor or Probe they come from, and each pool's targets.
+
+It's the one plugin Lumovi comes with that [asks its tool's own server](/custom-resources/plugins#a-plugin’s-own-server). In each namespace with a Prometheus, Lumovi asks the `prometheus-operated` Service the operator makes there, on its port `web`, for `/api/v1/targets?state=active`, as you, so you need `get` on `services/proxy` in that namespace. Its entry under **All plugins** says so first, in red.
+
+- **What reaches its code.** Prometheus answers with every active target it discovered, each with the labels and annotations of the Services and Pods behind it, from every namespace it watches. The page shows each target's pool, instance, health, last scrape and last error.
+- **Who sees what.** A Prometheus scrapes across namespaces: whoever may reach its server sees all its targets, whatever else they may see in the cluster. Each card says so under its title: "Whoever may reach it sees its targets in every namespace."
+- **Several in a namespace.** The `prometheus-operated` Service sends each ask to one of their pods, so the card shows whichever answered, and says so.
+- **Turning it off.** **Run its code** on its entry, or `pluginServers: off` in an organization's [policy](/desktop/policy#pluginservers).
 
 ## Rook Ceph
 
