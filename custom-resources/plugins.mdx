@@ -90,6 +90,16 @@ A plugin's code can also read a pod's logs itself, where its file says so (`logs
 
 None of the plugins Lumovi comes with shows or reads logs yet.
 
+### A plugin's own server
+
+A plugin's code can ask its tool's own server in the cluster for what that server knows, like a Prometheus server for its scrape targets, where its file says so (`server`). It asks only for the paths its file lists, of the one Service its file names, by its name or by labels exactly one Service has, on the port it names, in the namespace of an object of the plugin's own kind that its page shows. A part of a path, like `{widget}`, is filled only with the name of such an object.
+
+Lumovi makes the request, not the page: a `GET` through the cluster's API server, as you, so it needs `get` on `services/proxy` there. It follows no redirect, waits at most 5 seconds, and takes at most 1 MiB. Only JSON reaches the plugin's code. Any other answer is a sentence of Lumovi's, like "prometheus-operated answered with more than 1 MiB.", never the server's own text or headers. A page may have two asks waiting for an answer, and a plugin four at once across its pages.
+
+What the server answers reaches the plugin's code, so its entry under **All plugins** says so first, in red: "Asks the server prometheus-operated in this cluster, through Lumovi, and its code reads what it answers:", then the Service, its port and where it's found, and each path. Installing or updating a plugin from Lumovi-plugins asks again when a release names another server or a new path. Each ask is in the [audit log](/audit/events#access-access) as `plugin.server`, and your organization's [policy](/desktop/policy#pluginservers) can turn it off (`pluginServers: off`).
+
+The server gets none of your credentials: see [Plugins' code](/server/security#plugins’-code).
+
 ### Links to Lumovi's own places
 
 A plugin's page can link to a pod's **Logs** or **Shell** tab, or to **Port forward** for a pod or a service, where its file says it may, and only for an object it was handed. The link opens Lumovi's own tab or dialog, at the container or port it names. What happens there is what you do: a plugin's page can bring you to a shell, never start one.
