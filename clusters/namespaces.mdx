@@ -1,6 +1,6 @@
 ---
 title: "Namespaces"
-description: "One namespace menu scopes every list, and each cluster remembers your choice."
+description: "One namespace menu scopes every list, to one namespace, several or all of them, and each cluster remembers your choice."
 icon: "layout-grid"
 ---
 
@@ -12,7 +12,19 @@ Open the menu and pick one, or **All namespaces**. Type to find a namespace in a
 
 You can also switch from the command palette: press <kbd>⌘</kbd><kbd>K</kbd> (<kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux) and type the namespace's name. Its **Namespace** group lists **All namespaces** and every namespace.
 
-With **All namespaces**, each row shows its namespace under its name, so you can tell `web` in `shop` from `web` in `staging`. Events are the exception: their list has no name column, so it doesn't show their namespace. Pick a namespace to see its events alone.
+## Pick several
+
+To look at a few namespaces together, pick each one's box, or press <kbd>⌘</kbd><kbd>↵</kbd> on a namespace (<kbd>Ctrl</kbd><kbd>↵</kbd> on Windows and Linux): it's added, and the menu stays open. <kbd>↵</kbd>, or a click on a name, picks that one alone. The menu then says the two names, like **shop, staging**, where they fit, or how many, like **3 namespaces**.
+
+Lists, Workloads, Events, Metrics and Helm releases show the picked namespaces together, up to 20. With 20 picked, the menu says "20 namespaces at most. Take one away to add another." A namespace you can't list can be typed and added like any other: <kbd>⌘</kbd><kbd>↵</kbd> on **Use namespace "shop"**.
+
+Where some of them can't be read, the others still show, and a line above the list says which can't, and why: "Pods in shop aren’t shown: your account isn’t allowed to list them there.", or that a namespace isn't there any more.
+
+The address carries them, like `?namespaces=shop,staging`, so a link opens on the same namespaces. A link that names more than 20 picks the first 20 in name order, and the menu says so.
+
+## Rows from several namespaces
+
+With more than one namespace, each row shows its namespace under its name, so you can tell `web` in `shop` from `web` in `staging`. Events are the exception: their list has no name column, so it doesn't show their namespace. Pick a namespace to see its events alone.
 
 ## Where it starts
 
