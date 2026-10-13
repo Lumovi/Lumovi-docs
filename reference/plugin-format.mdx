@@ -191,6 +191,7 @@ A few fields are only for the plugins that come with Lumovi, whose [code draws p
 | `showsSecrets` | The keys of a Secret its pages may show, and where its own kind names that Secret: `[{ group: example.com, kind: Widget, path: spec.secretName, keys: [token] }]`. Lumovi reads them itself when the person presses **Reveal** or **Copy**: the code never sees them. |
 | `changes` | What its pages may propose, of its own kinds only: `[{ group: argoproj.io, kind: Application, actions: [patch, delete] }]`, of `patch`, `create`, `delete` and `scale`. See [Changes a page proposes](/custom-resources/plugins#changes-a-page-proposes). |
 | `opens` | Which of Lumovi's own lists its pages may open, at one object: `[{ group: apps, kind: Deployment }]`. Opening reads nothing for the plugin. |
+| `logs` | `shown`: its pages may show a pod's logs, which Lumovi reads, as the person, and draws in its own log view. Its code never sees a line. See [Logs on a plugin's page](/custom-resources/plugins#logs-on-a-plugin’s-page). |
 | `links` | Which of Lumovi's own places its pages may [link to](/custom-resources/plugins#links-to-lumovi’s-own-places), for an object it was handed: `logs` and `shell` for a pod, `port-forward` for a pod or a service. |
 
 ## A view
@@ -714,6 +715,8 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `spec.changes: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they propose` | `changes` in a file of yours |
 | `spec.opens: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they open` | `opens` in a file of yours |
 | `spec.links: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say where they link` | `links` in a file of yours |
+| `spec.logs: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say they show logs` | `logs` in a file of yours |
+| `spec.logs: should be shown, not "all"` | A value of `logs` that isn't one |
 | `spec.colour: isn’t something a plugin has` | A misspelled field of the plugin's |
 | `metadata.labels: isn’t something a plugin has` | A key under `metadata` other than `name`, or one at the top beside `apiVersion`, `kind`, `metadata` and `spec` (`status: isn’t …`) |
 | `spec.views[0].colums: isn’t something a view has` | A misspelled field of a view's |
