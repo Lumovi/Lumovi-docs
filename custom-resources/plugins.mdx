@@ -77,9 +77,18 @@ What it may propose is in its file, and its entry says it, like *Its pages may p
 
 A plugin's page can show a pod's logs, where its file says it may (`logs: shown`). Lumovi reads them, as you, and draws them in its own log view, the same as a pod's **Logs** tab: the plugin's code never sees a line. The card says so, like "Shown by Lumovi: Toys’ code never sees them." for a plugin named Toys.
 
-A page shows four logs at once, and a plugin eight, across its pages and tabs. One past that waits, and says why: "Not shown: a plugin’s page shows 4 logs at once. This one starts when another closes." Reading them follows your access to logs, and each read is in the [audit log](/audit/events#access-access) as `logs.read`, its summary ending "shown on the plugin Toys’ page". Where your organization's [policy](/desktop/policy#pluginlogs) says `pluginLogs: off`, the card says "Your organization’s policy doesn’t let plugins show containers’ logs.", and none are read.
+A page shows four logs at once, and a plugin eight, across its pages and tabs. One past that waits, and says why: "Not shown: a plugin’s page shows 4 logs at once. This one starts when another closes." Reading them follows your access to logs, and each read is in the [audit log](/audit/events#access-access) as `logs.read`, its summary ending "shown on the plugin Toys’ page". Where your organization's [policy](/desktop/policy#pluginlogs) says `pluginLogs: off`, the card says "Your organization’s policy doesn’t let plugins show or read containers’ logs.", and none are read.
 
-None of the plugins Lumovi comes with shows logs yet.
+A plugin's code can also read a pod's logs itself, where its file says so (`logs: read`, with Pods among what it reads). That's heavier: what containers print can hold tokens and personal data, and it reaches the plugin's code. So its entry under **All plugins** says it first, in red: "Its code reads containers’ logs: what they print, which can hold tokens and personal data, reaches its code.", and under it, "Of pods its page shows, one container at a time: at most its last 500 lines or hour, as you, within your access."
+
+- **Only pods its page shows**: its code asks by the token Lumovi handed it for a pod, for one of its containers.
+- **Once, never a follow**: the last 500 lines at most, or those of the last hour, or its previous instance's. Lumovi hands it at most 500 lines and 64 KiB, the newest, never part of a line, and says where the oldest were cut.
+- **As you**: within your access to logs. Each read, or refusal, is in the [audit log](/audit/events#access-access) as `logs.read`: "Read the logs of Pod checkout-7d9f (envoy), for the plugin Toys’ code".
+- **Asked again** when an update starts reading them: it's under **New in**, in red.
+
+`pluginLogs: off` turns this off too.
+
+None of the plugins Lumovi comes with shows or reads logs yet.
 
 ### Links to Lumovi's own places
 
