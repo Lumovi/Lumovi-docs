@@ -244,7 +244,7 @@ What to set for a production installation, with a values file that has it all an
 
 Every release's installers, image and chart are built by Lumovi's [release workflow](https://github.com/Lumovi/Lumovi/blob/main/.github/workflows/release.yml) on GitHub, from the release's commit on `main`:
 
-- **Approved**: a release made by Lumovi's workflow is signed and published only after the maintainer approves that run from his own account. Until then a run has built, signed and pushed nothing.
+- **Approved**: a release made by Lumovi's workflow is signed and published only after Lumovi's maintainer approves that run from their own account. Until then a run has built, signed and pushed nothing.
 - **Attested**: each carries a signed build provenance attestation, which says where and from what it was built.
 - **Signed with cosign**, keyless, by the release workflow's identity, and recorded in Sigstore's public log: as a Sigstore bundle (an OCI referrer), and with the `.sig` tag older admission controllers look for. An admission controller can require it: see [Require the signature](/server/hardening#require-the-signature).
 - **Released immutably**: once a release is published on GitHub, its installers and its tag can't be changed or replaced, and `gh release verify-asset` checks that a file is the one it was published with. The image and the chart on ghcr.io aren't part of the GitHub release: check them by their attestations and signatures, below.
