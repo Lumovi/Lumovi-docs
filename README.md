@@ -58,11 +58,13 @@ docs always show the app as it is.
 You need [Node.js](https://nodejs.org) 20 or later.
 
 ```sh
-npx mint dev                    # the docs at http://localhost:3000, reloading as you edit
-npx mint validate               # fails on any build warning or error
-npx mint broken-links           # every link between pages
+npx mint@4.2.1021 dev           # the docs at http://localhost:3000, reloading as you edit
+npx mint@4.2.1021 validate      # fails on any build warning or error
+npx mint@4.2.1021 broken-links  # every link between pages
 node .github/scripts/check.mjs  # screenshots, icons, page metadata and variables
 ```
+
+The CLI's version is the one CI installs (`.github/workflows/ci.yml`): the two move together, on purpose.
 
 CI runs the last three on every pull request. What's merged to `main` goes live at
 [docs.lumovi.dev](https://docs.lumovi.dev).
