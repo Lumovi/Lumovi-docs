@@ -1,0 +1,126 @@
+---
+title: "The kit: a plugin's pages"
+sidebarTitle: "Plugin kit"
+description: "What a plugin's code can make a page of: Lumovi's own parts, what each one takes, what a page can ask Lumovi for, and the limits it runs within."
+icon: "blocks"
+---
+
+A plugin with code doesn't draw its page. It describes it, as parts Lumovi has, and Lumovi draws them: the same tables, tiles and cards its own pages are made of, in its own type, colors and spacing, on the desktop and on a phone. Its code runs in a [sealed box](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code), and everything it says passes through Lumovi's door, which checks each part against what's on this page.
+
+This is the reference for the parts, for what a page can ask of Lumovi, and for its limits. To start a plugin of your own with code, use the [template](https://github.com/Lumovi/Lumovi-plugins/tree/main/template) in Lumovi-plugins, and see [Your own plugins with code](/custom-resources/plugins#your-own-plugins-with-code). What a plugin's file can say is in the [plugin format](/reference/plugin-format).
+
+## What a page is
+
+- **A page is made only of Lumovi's parts.** Where you need one Lumovi doesn't have, ask for it in an [issue](https://github.com/Lumovi/Lumovi/issues): a plugin can't draw its own. There's no HTML, no CSS and no canvas, and no width, gap or position is a plugin's to give.
+- **Every text is drawn as text.** A name, a word, a line or a server's error is the plugin's, and Lumovi draws it as its characters: never as a link, a class or markup, and a character that can't be seen, or that would turn a line round, shows as a placeholder.
+- **Levels and icons are Lumovi's.** A status is one of `healthy`, `progressing`, `warning`, `critical` and `neutral`, with the plugin's word beside it. An icon is one of the [icons](/reference/plugin-format#icons) a view picks from.
+- **Times are said by Lumovi.** A moment is given as RFC 3339 text, and Lumovi says how long ago or how soon, and keeps it current.
+- **What's pressed opens Lumovi's own.** A row, a card or a tile that opens something names an object Lumovi handed the page, or a list of a kind its file says its pages [open](/reference/plugin-format#spec), and Lumovi opens it.
+
+## The parts
+
+Three arrangements hold the rest, and nothing else does:
+
+| Part | Holds | Is |
+| --- | --- | --- |
+| `Stack` | Any part but a `Split` | One under another: what a page is when nothing else is said |
+| `Pair` | Exactly two `Card`s | Two cards side by side, `even` unless `first: wider` (seven parts of twelve). One under the other on a narrow page |
+| `Split` | One `Stack` | A pick list at its side, then a stack that follows what's picked. A page has one at most, and nothing holds it. Narrower than 640 pixels, it's two pages: the list, or **Back** above the picked one's |
+
+And the parts they hold:
+
+| Part | Takes | Is |
+| --- | --- | --- |
+| `Header` | `name`, `status` (a level, a word, a `detail` line), up to 8 `buttons` | What's picked, its status, and what can be done with it. Three buttons show, the rest behind **…** |
+| `Tiles` | 2 to 4 `tiles`: a `key`, a `label`, an `icon`, a `value`, a `detail` line with a `level`, `opens` | A row of headlines, of equal width. A value is a `figure` ("2/3"), `words` ("Never") or a `time` |
+| `Card` | `title`, `note`, `about`; holds one `Table`, `Graph` or `Counts` | One part under a title, with a quiet note at its right |
+| `Table` | `title`, up to 8 `columns`, `headings`, `rows`, `shows`, `state` | Rows with a lead (a name, a word beside, a line under, a level) and a cell for each column. Rows may hold rows, one level, and stand in groups |
+| `Graph` | `title`, `legend`, `columns`, `nodes`, `edges`, `state` | Cards with lines from one to another, solid or dashed. Past 300 cards or 600 lines, it's shown as its table, and says why |
+| `Counts` | Up to 6 `groups`, each a `title` and up to 50 `rows` of a `value` and a `count` | Shares of a whole, as bars, the largest first |
+| `Logs` | `title`, `pod`, `container` | A pod's logs in Lumovi's own log view, where the file says [`logs`](/custom-resources/plugins#logs-on-a-plugin’s-page). The plugin's code never sees a line |
+
+### A table's cells
+
+A column has a `name`, a `kind`, a `width` (`narrow`, `normal`, `wide` or `text`) and whether it `sorts`. A cell's kind is its column's:
+
+| Kind | Holds |
+| --- | --- |
+| `text` | Words. `mono` sets them in fixed-width type, and `full` is the whole of what they stand for (a commit's whole hash behind its first seven), said in the tooltip |
+| `number` | A number, or one with its unit as text ("7 nodes") |
+| `age` | A moment, which Lumovi says as how long ago |
+| `status` | A level and its word. Sorts worst first |
+| `meter` | `used` of `of`, with its text ("24 of 64 cores"). Without `of`, there's no limit |
+| `none` | Nothing to say: a dash |
+
+In place of rows, a table (or a graph, or a pick list) can give a `state`: `busy` while it reads, `failed` with a title and what the cluster said, and **Try again**, `empty` with a title and a line, or `quiet`, one calm line. Where a table's rows come from a read Lumovi cut at its limit, the table names that read's `cut`, and Lumovi says so above the rows, from its own numbers.
+
+### A card's `about`
+
+A card can say where its data comes from, when its title and note can't say it: up to 240 characters, shown quietly under the title, two lines at most, the rest in its tooltip.
+
+### A header's buttons
+
+A button has a `key` and a `name`, and may say:
+
+- **`changes: true`**: the button changes something. Only its press lets the page propose a change, which waits for the person in Lumovi's dialog. A proposal after any other press is refused. Of a header's buttons, the last that changes something is drawn last, filled; one that only reads or goes never is. A phone doesn't draw a button that changes something, and says where it is.
+- **`asks: true`**: it asks before it does anything, so its name ends in "…".
+- **`note`**: what it does, up to 120 characters, under the buttons.
+- **`off`**: why it can't be pressed now, up to 80 characters. It's drawn off, with this as its tooltip.
+- **`goes`**: where it goes, in place of telling the page it was pressed: one of Lumovi's own places for an object the page was handed (a pod's **Logs** or **Shell** tab, **Port forward**), where the file's [`links`](/custom-resources/plugins#links-to-lumovi’s-own-places) say so, or a list of Lumovi's own. It changes nothing and asks nothing first.
+
+## What a page can ask for
+
+A page's code asks Lumovi, and Lumovi reads as the person, within their access:
+
+- **A list of a kind, or one object**: its own kinds whole, and of Kubernetes' own only the kinds Lumovi lets a plugin read (Pods and Nodes), each only the fields its file's [`reads`](/reference/plugin-format#spec) names. A list can be picked by labels and by the fields Lumovi picks a kind by, and can ask for each object's live usage. Lumovi keeps a list up to date, and hands each object with a token: what the page names when a row opens it.
+- **A pod's last log lines**, once, where its file says `logs: read`. See [Logs on a plugin's page](/custom-resources/plugins#logs-on-a-plugin’s-page).
+- **A path of its tool's own server**, once, where its file says `server`. See [A plugin's own server](/custom-resources/plugins#a-plugin’s-own-server).
+- **A change**, proposed after a press of a button that says `changes: true`: of its own kinds, as its file's `changes` say. See [Changes a page proposes](/custom-resources/plugins#changes-a-page-proposes).
+
+A read Lumovi refuses is answered with why, in a word and a sentence of Lumovi's, and the page goes on. An ask that isn't written as one, or that goes past a limit, stops the page.
+
+## What a page can't do
+
+Its code runs in Lumovi's sealed box, where it has:
+
+- no network: nothing reaches out, whatever it tries;
+- no WebAssembly, and no more code: no workers, no `import()`, no `eval`;
+- no storage that another plugin, another of its pages, or Lumovi can reach;
+- nothing of Lumovi's page, its cookies or its credentials.
+
+A plugin of your own may be at most 2 MB of code.
+
+## Limits
+
+A page past any of these is stopped, and says why in its place. The rest of Lumovi goes on.
+
+| What | At most |
+| --- | --- |
+| Parts and texts a page holds | 5,000, 32 deep, 1,000 in one part |
+| A text | 4,000 characters; a name, a word or a cell 253, a line 500 |
+| Everything a page holds | 2 MB |
+| A message to the door | 1 MiB, and 2,000 steps in one commit |
+| In a second | 20,000 steps, 60 commits and 10 asks |
+| A table's rows | 5,000, with 200 inside one row, and 8 columns |
+| A graph | 5,000 cards and 10,000 lines |
+| A pick list | 1,000 rows |
+| Lists kept up to date | 8 by a page, 16 by all of a plugin's pages |
+| Reads going at once | 50 by a page, 100 by a plugin, 20 not yet answered |
+| Logs shown at once | 4 by a page, 8 by a plugin: more wait their turn |
+| Asks of its server not yet answered | 2 by a page; 4 by a plugin, and more wait their turn |
+| A refresh | Once in 10 seconds: one asked sooner isn't made |
+
+In the desktop app, Lumovi also stops a page that uses more memory than a plugin may, or more than half of a processor core over half a minute.
+
+## What needs which Lumovi
+
+Everything on this page comes with Lumovi 1.22.0, the first with plugins' pages. A plugin's `needs.lumovi` is at least the first Lumovi that carries everything it uses: the checks in Lumovi-plugins read that from the Lumovi they pin, and refuse a plugin whose file says an older one.
+
+<Columns cols={2}>
+  <Card title="Plugins" icon="package" href="/custom-resources/plugins">
+    Pages drawn by a plugin's code, and what each plugin asks for.
+  </Card>
+  <Card title="Plugin format" icon="braces" href="/reference/plugin-format">
+    Every field a plugin's file can have.
+  </Card>
+</Columns>

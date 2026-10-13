@@ -242,6 +242,7 @@
             "pages": [
               "reference/keyboard-shortcuts",
               "reference/plugin-format",
+              "reference/plugin-kit",
               "reference/environment-variables",
               "reference/resource-kinds",
               "reference/privacy-and-security"
