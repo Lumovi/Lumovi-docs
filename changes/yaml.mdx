@@ -40,6 +40,25 @@ The equivalent command is `kubectl edit`, with the object, its namespace and the
 - The editor has search and undo, and <kbd>Tab</kbd> indents.
 - <kbd>Esc</kbd> doesn't close the panel while you're editing, so you won't lose your change by accident. The panel stays on the **YAML** tab until you apply or cancel.
 - Your edit applies to the version you started from, even while the panel refreshes around you.
+- In YAML, viewed or edited, a character you can't see, or one that would turn a line round, shows as a placeholder, never as itself. The YAML is often the cluster's, and such a character in a value could make a line read as something it isn't.
+
+## Checked as you type
+
+As you type, the editor checks the YAML against the schema the cluster publishes for its kind, and a custom resource against its CRD's. It does the same in **Create…**, in its YAML and in the form's.
+
+- **Errors** are what the cluster would refuse: YAML it can't read, a value of the wrong type or not among those allowed, a required field left out.
+- **Warnings** are what it would drop without saying so: a field the kind doesn't have, with the one you probably meant where one is close.
+
+A card under the pointer says what's wrong, and a line under the editor counts the problems, like **1 error · 1 warning**. Where the cluster publishes no schema for a kind, only the YAML itself is checked, and a line above the editor says so. Nothing here stops a save: the cluster checks the YAML before anything changes.
+
+| Keys | Does |
+| --- | --- |
+| <kbd>F8</kbd>, <kbd>⇧</kbd><kbd>F8</kbd> | Go to the next or previous problem |
+| <kbd>⌥</kbd><kbd>F8</kbd> | List the problems |
+| <kbd>⌃</kbd><kbd>Space</kbd>, or <kbd>⌥</kbd><kbd>Esc</kbd> | Offer the fields that fit where you are, required ones first, and after a colon the values the field allows. Typing a key offers them too. |
+| <kbd>⌥</kbd><kbd>F1</kbd> | Show what the schema says of the field at the cursor. Pointing at a field shows it too. |
+
+On Windows and Linux, <kbd>⌥</kbd> is <kbd>Alt</kbd>.
 
 ## When someone else changed it
 
