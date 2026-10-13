@@ -229,6 +229,10 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   Where the plugins everyone sees are. The chart sets it itself, to the folder it mounts its `plugins` value at.
 </ResponseField>
 
+<ResponseField name="LUMOVI_PLUGIN_CODE" type="string" default="on">
+  Whose code runs here, of the plugins Lumovi comes with that draw pages of their own: `on`, every one's; `off`, none; or plugins' names separated by commas, like `karpenter,argo-cd`, only theirs. Anything else stops Lumovi as it starts: `LUMOVI_PLUGIN_CODE must be on, off, or plugins’ names separated by commas: …`. See [Plugins' code](/server/plugins#plugins’-code).
+</ResponseField>
+
 <ResponseField name="LUMOVI_HELM" type="string" default="helm">
   The helm to run: `helm` on the `PATH` unless set. The image sets it to `/usr/local/bin/helm`, the helm it comes with.
 </ResponseField>

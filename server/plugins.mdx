@@ -45,14 +45,37 @@ Each entry is a file, named with `.yaml` or `.yml` at the end, holding one plugi
 - They're held as Lumovi's own are: a tool's kinds in the groups the plugin names, none of Kubernetes' own but the few it may [show](/reference/plugin-format#kubernetes’-own-kinds), and nothing created but the plugin's own kinds.
 - A change to `plugins` rolls out a new pod, which reads them. People stay signed in, as across any restart, and open pages reconnect.
 - Without the chart, put the files in the folder `LUMOVI_PLUGINS_DIR` names. Lumovi reads it again whenever a page loads, so people see a change when they reload.
-- These plugins are the server's, for everyone. What goes here is described, never code. People can't add their own from a browser.
+- These plugins are the server's, for everyone. What goes here is described, never code: only the plugins Lumovi comes with have code. People can't add their own from a browser.
 - In a [fleet](/server/fleet), they're for every cluster: a view of a kind is used in each cluster that has that kind, and a plugin's place in the sidebar shows in each cluster that serves one of its kinds.
 
 ## Check them
 
 **All plugins**, under **Plugins** in the sidebar (or <kbd>⌘</kbd><kbd>K</kbd>, <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux), lists [every plugin](/custom-resources/plugins#every-plugin-on-one-page): Lumovi's and this server's, each with what it asks for, and **This server’s** on the ones from the folder. One with a problem isn't used at all: its file is a row that says **Not in use**, with each problem under it and where in the file it is. A file that can't be read, or is larger than 256 KB, is a row too, like `It couldn't be read: …`, and the other files load. Lumovi reads up to 200 files, in order of name. At the foot, the page says where this server's are, like *This server’s are in /etc/lumovi/plugins*. **API resources** says what shows each kind, under **Shown by**, and how many plugins there are: *32 plugins from Lumovi, 2 from this server.*
 
-Plugins are data only. Their views read fields with JSONPath, and change objects only with the patches and new objects they spell out. Their actions go through the same checks as Lumovi's own: the cluster is asked first whether the person may make the change, the equivalent `kubectl` command is shown, and a read-only Lumovi stays read-only.
+Plugins in files are data only. Their views read fields with JSONPath, and change objects only with the patches and new objects they spell out. Their actions go through the same checks as Lumovi's own: the cluster is asked first whether the person may make the change, the equivalent `kubectl` command is shown, and a read-only Lumovi stays read-only.
+
+## Plugins' code
+
+Three of the plugins Lumovi comes with, Karpenter, Argo CD and CloudNativePG, draw [pages of their own](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code) with their code, in a sealed box. On a server, their code is handed to a person's browser only where all of these hold:
+
+- **`LUMOVI_URL` is set**, so the box has an address of its own, at `plugin-box/box.html` below it. See [The page](/server/security#the-page).
+- **The browser's requests are held to Lumovi's own page**, as [`auth.secFetchSite`](/server/security#requests-from-lumovi’s-own-page) does by default. Behind a sign-in proxy, only where `auth.proxy.secFetchSite` says the proxy passes the header through.
+- **Lumovi has checked that browser.** The first time someone opens such a page, Lumovi checks that their browser keeps a plugin's code in its box: that it can't reach the network, Lumovi's page, cookies or storage, or another plugin's box. A browser that fails isn't handed any plugin's code, and the page says so, like "Lumovi checked this browser and it didn’t pass, so it doesn’t run plugins’ code in this browser. Another browser may pass the check." Each check is in the [audit log](/audit/events#access-access) as `plugin.box-check`.
+- **This server runs that plugin's code**, as `pluginCode` says.
+
+Wherever its code doesn't run, a plugin's kinds, lists and actions stay, and Karpenter's page is Lumovi's own overview.
+
+`pluginCode` decides whose code runs here:
+
+```yaml values.yaml
+pluginCode: true                  # every plugin's, the default
+# pluginCode: false               # none
+# pluginCode: [karpenter, argo-cd]  # only these
+```
+
+Off for a plugin, its pages and tabs say "This server doesn’t run plugins’ code. Whoever runs Lumovi can turn it on." (or "this plugin’s code"), no browser is checked for them, and each person's **Run its code** switch is off and locked, with **Turned off on this server.** Without the chart, set [`LUMOVI_PLUGIN_CODE`](/server/configuration#what-people-can-do) to `on`, `off`, or plugins' names separated by commas.
+
+Each person can also turn a plugin's code off for themselves, with **Run its code** on its entry under **All plugins**. Their switch is theirs alone, kept with their other settings.
 
 <Columns cols={2}>
   <Card title="Write a plugin" icon="layout-template" href="/custom-resources/write-a-plugin">

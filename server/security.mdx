@@ -162,6 +162,24 @@ Pages are served with a strict Content Security Policy (scripts only from Lumovi
 
 A page shows no frame but one. Where `LUMOVI_URL` is set, that's the box Lumovi keeps for a plugin's code, at `plugin-box/box.html` below that address: a sandbox with no network and no window of its own, which can't reach Lumovi's cookies or storage, and which only Lumovi's page may show. Without `LUMOVI_URL`, a page shows no frame at all, and there's no box.
 
+## Plugins' code
+
+Three of the plugins Lumovi comes with [draw pages with their own code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code). On a server, that code runs in each person's browser, in the box:
+
+- **Its own frame, at an origin that's nobody's**, sandboxed by attribute and by header, with a Content Security Policy that lets it reach no address at all, and its code in a worker inside it. It can't reach Lumovi's page, its cookies or storage, another plugin's box, or the network. Its storage is its own, shared with nothing.
+- **Handed only what its file says.** Lumovi reads for it, on the server, as the person and within their access in Lumovi, and hands it only the fields its file names. Of a Secret, it's handed nothing: Lumovi shows the keys its file names itself, on the person's press. Each read is in the audit log, as `plugin.read`.
+- **It draws with Lumovi's parts**, never its own markup, and a strip at the top of its page says whose it is.
+- **It can't change anything.** It can propose a change, which Lumovi shows in its own dialog, and makes only once the person presses its button there, after Lumovi checks it again on the server: only the plugin's own kinds, as its file says, at most 16 KiB, and never an object's status.
+- **Checked in each browser first.** Before any plugin's code is handed to a browser, Lumovi checks there that a box holds: a worker made exactly as a plugin's is tries every way out to an address of the server's, and the server, not the page, judges what arrived, against a control sent from outside the box. Silence fails. A browser that doesn't pass is handed no plugin's code, and the check is in the audit log, as `plugin.box-check`. Lumovi is tested with every release in the current Chrome, Firefox and Safari engines; in any browser, it checks that the box holds before it runs a plugin's code, and runs none where it doesn't.
+- **Only where this server lets it**: with `LUMOVI_URL` set, sessions held to [Lumovi's own page](#requests-from-lumovi’s-own-page), and `pluginCode` on for that plugin. See [Plugins' code](/server/plugins#plugins’-code).
+
+What the box doesn't do in a browser, said plainly:
+
+- **A plugin's box may share a process with Lumovi's own page, and with other plugins', in any browser.** A browser keeps sites apart in processes, and a path of the server's isn't a site of its own. Reading across would need a fault in the browser's engine, and a way to send what was read, which the box doesn't give. A plugin's worker lives only while its page is showing, and a Secret's value is never handed to it. In the desktop app, each plugin's box is a process of its own.
+- **Its processor and memory use can't be measured in a browser.** A plugin that keeps a core busy is stopped only by the limits on what it sends, and by going quiet. In Firefox and Safari, one that uses up memory on purpose can close the tab: it loses its own page, and gains nothing. In the desktop app, Lumovi measures each plugin's process, and stops one over its memory, or over half a processor core for 30 seconds.
+
+To run none of it, set `pluginCode: false`.
+
 ## Charts and private networks
 
 People choose where charts come from when they install or upgrade a Helm release, and Lumovi fetches them from inside the cluster's network, where it can reach services they can't, and cloud metadata endpoints. So it fetches charts only from public addresses. A repository, registry or chart URL whose host is, or resolves to, a private address is refused:
