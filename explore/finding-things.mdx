@@ -99,7 +99,27 @@ A list stops at 5,000 objects (or `LUMOVI_MAX_LIST_ITEMS`). When there are more,
 
 - **Sort** by clicking a column's header, and again to reverse it. Not every column sorts: the name, status and age do, and so do numbers like restarts, CPU, memory, count and last seen, and the columns custom resources get from the cluster or a view.
 - Lists start sorted by status, the most urgent first; kinds with no status by name, and events by when they were last seen. **Helm releases** starts sorted by name.
+- With every column that sorts hidden, a list keeps its own order.
 - **Pages** hold 100 rows, or 50, 250 or 500 (**Rows per page**). Use <kbd>←</kbd> <kbd>→</kbd> for the previous and next page. **Helm releases** shows every release on one page.
+
+## Columns
+
+**Columns**, at the end of a list's toolbar, chooses what the list shows. So does a heading's right-click menu: **Hide this column**, or **Columns…** for the rest.
+
+- **Show or hide** a column with its box, and **move** it by dragging, or with <kbd>⌥</kbd><kbd>↑</kbd> <kbd>⌥</kbd><kbd>↓</kbd>. A list's name column stays first.
+- **Add a column from a label or an annotation** the listed objects carry: start typing its key, and the keys they carry are offered, the most common first. kubectl's own annotations aren't offered. An object without it shows a dash, and **Remove this column** takes it away again. Its values are the cluster's text: a character that can't be seen, or would turn the text round, shows as a mark, like `U+202E`.
+- **Size a column** by dragging its heading's edge, or, with the heading focused, by 16 pixels with <kbd>⌥</kbd><kbd>←</kbd> <kbd>⌥</kbd><kbd>→</kbd>. Double-click the edge, or press <kbd>⌥</kbd><kbd>0</kbd>, to give it its own width again. A column is never narrower than 64 pixels or its heading's first word, and the name never narrower than 160 pixels.
+- **A list never scrolls sideways.** The last columns that don't fit aren't drawn: **Columns** says how many, and the menu marks each "doesn't fit".
+
+On Windows and Linux, <kbd>⌥</kbd> is <kbd>Alt</kbd>. What you choose is kept for that kind in that cluster: in the desktop app, and on a server in the browser you chose it in. **Reset** brings back Lumovi's own columns.
+
+## Copy and download
+
+- **Copy**, the first button in the bar of picked rows, or <kbd>⌘</kbd><kbd>C</kbd> in the list, copies the picked rows as the list shows them: a heading row, then a row each, with a tab between columns. Each value is whole, with its line breaks and tabs as spaces.
+- **Download CSV**, in the **Columns** menu, saves every row the filters let through, not only the page you're on, with the columns you show. Values are whole, times are in UTC (`2026-10-13T09:12:03Z`), and numbers have no units: CPU in cores and memory in bytes, as the headings say. The file is named for the kind, the namespace (or the cluster, with several picked) and the day, like `pods-shop-2026-10-13.csv`. It's UTF-8 with lines that end in CRLF, as spreadsheets read it.
+- In both, a value that a spreadsheet would read as a formula (one starting with `=`, `+`, `-`, `@`, a tab or a carriage return) starts with `'`, so it's shown as text and never run.
+
+In the desktop app you choose where the file goes, and then **Show in Finder** (**Show in Explorer** on Windows, **Show in folder** on Linux) opens its folder. On a server, the browser downloads it.
 
 ## Moving through a list
 
