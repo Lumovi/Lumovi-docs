@@ -237,6 +237,10 @@ Each item under `views:`:
   Changes people can make: a patch of the object, or a new object to create. See [Actions](#actions).
 </ResponseField>
 
+<ResponseField name="manages" type="list">
+  How an object of this kind marks the workloads it manages, so a workload says what manages it. See [What it manages](#what-it-manages).
+</ResponseField>
+
 ## Fields
 
 Columns and details are both fields.
@@ -421,6 +425,34 @@ related:
 A related list needs `labels` or a `fieldSelector`: without one, it would be every object of the kind. A list whose kind, label values or field selector values come out empty isn't shown, since it would find the wrong objects. Like any list, it needs `list` on the kind.
 
 The first list of `Pod`s is special: it becomes the panel's **Pods** tab, under the list's name (CloudNativePG's **Instances**). It brings a **Logs** tab with their logs, merged, and a **Metrics** tab with their [usage history](/metrics/usage-history).
+
+## What it manages
+
+A tool that deploys workloads, like a GitOps tool, marks each one it deployed with labels or annotations of its own. A view's `manages` says which, so Lumovi can tell a workload's manager: workloads' lists get a **Managed by** column, and a workload's **Overview** starts with a line for each manager, like "Kustomization flux-system/apps manages this deployment, and may undo changes made to it any other way.", which opens it.
+
+```yaml
+views:
+  - kinds: [{ group: kustomize.toolkit.fluxcd.io, kind: Kustomization }]
+    manages:
+      - labels:
+          kustomize.toolkit.fluxcd.io/name: '{{ .metadata.name }}'
+          kustomize.toolkit.fluxcd.io/namespace: '{{ .metadata.namespace }}'
+```
+
+Each item holds `labels`, `annotations` or both: the keys a managed workload carries, each with a [template](#templates) of the manager's. A workload is managed by an object of this kind when every key of one item is on it, with exactly the value the template gives for that object. A template may also name the managed workload itself, as `{{ object.group }}`, `{{ object.kind }}`, `{{ object.namespace }}` and `{{ object.name }}`, for a tool that writes a workload's own name into its mark:
+
+```yaml
+manages:
+  - annotations:
+      argocd.argoproj.io/tracking-id: '{{ .metadata.name }}:{{ object.group }}/{{ object.kind }}:{{ object.namespace }}/{{ object.name }}'
+```
+
+- **At most 4 items**, and 8 keys in one.
+- **Each key is under the group of the view's kinds**, or one under it: `kustomize.toolkit.fluxcd.io/name` for a Kustomization, `argocd.argoproj.io/tracking-id` for an Argo CD Application (`argoproj.io`). Never one of Kubernetes' own (`kubernetes.io`, `k8s.io` and every name under them), nor a key with no group: any chart can set those, so they can't tell one tool's workloads from another's.
+- **Only for kinds of its own**, named one by one: a view of one of Kubernetes' own kinds only shows it, and `kind: '*'` can't say what it manages.
+- The workloads are Deployments, StatefulSets, DaemonSets, Jobs and CronJobs.
+
+To find managers, Lumovi lists each such kind in the whole cluster where you may list it, or else in the namespaces you're looking at, as you. The [Plugins page](/custom-resources/plugins#what-a-plugin-asks-for) says so for each plugin. Where no plugin says what it manages, nothing more is read.
 
 ## Actions
 
