@@ -6,12 +6,17 @@
 //   has it now, or left unsaid here on purpose. A limit added to Lumovi fails this until it's said.
 //
 // The door's side is docs/plugin-kit.json in Lumovi (made from its declarations, and held to them by
-// Lumovi's own tests), read from the branch these docs describe. KIT_JSON names a file instead.
+// Lumovi's own tests), read from the Lumovi these docs describe (.github/lumovi-ref). KIT_JSON names
+// a file instead.
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROOT = new URL('../..', import.meta.url).pathname
-const KIT = 'https://raw.githubusercontent.com/Lumovi/Lumovi/main/docs/plugin-kit.json'
+// Which Lumovi these docs describe: `main` while a release is being staged, its tag (`v1.22.0`)
+// once the docs are published for it. One line in .github/lumovi-ref, changed on purpose.
+const REF = readFileSync(join(ROOT, '.github/lumovi-ref'), 'utf8').trim()
+if (!/^(main|v\d+\.\d+\.\d+)$/.test(REF)) throw new Error(`.github/lumovi-ref: should be main or a release's tag, not ${REF}`)
+const KIT = `https://raw.githubusercontent.com/Lumovi/Lumovi/${REF}/docs/plugin-kit.json`
 
 const kit = process.env.KIT_JSON
   ? JSON.parse(readFileSync(process.env.KIT_JSON, 'utf8'))
@@ -145,4 +150,4 @@ if (problems.length > 0) {
   console.error(`\n${problems.length === 1 ? '1 problem' : `${problems.length} problems`}`)
   process.exit(1)
 }
-console.log(`reference/plugin-kit: ${Object.keys(kit.parts).length} parts and ${doors.size} limits, as the door has them`)
+console.log(`reference/plugin-kit: ${Object.keys(kit.parts).length} parts and ${doors.size} limits, as the door has them (${process.env.KIT_JSON ? 'a file' : `Lumovi ${REF}`})`)
