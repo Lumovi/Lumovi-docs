@@ -710,14 +710,8 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `spec.shows[0]: Database.platform.example.com isn’t Kubernetes’ own: a view names it once platform.example.com is in spec.groups` | A tool's kind under `shows` |
 | `spec.shows[0]: LimitRange isn’t shown by any of its views` | A kind under `shows` that no view shows |
 | `spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section plugins can't sit in |
-| `spec.pages: adds pages, tabs or commands, and only the plugins that come with Lumovi can do that yet` | `pages`, `tabs` or `commands` in a file of yours (the line names the one it found) |
-| `spec.reads: only a plugin that comes with Lumovi has code yet, so only its file can say what that code reads` | `reads` in a file of yours |
-| `spec.showsSecrets: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they show` | `showsSecrets` in a file of yours |
-| `spec.changes: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they propose` | `changes` in a file of yours |
-| `spec.opens: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they open` | `opens` in a file of yours |
-| `spec.links: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say where they link` | `links` in a file of yours |
-| `spec.logs: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say they show logs` | `logs` in a file of yours |
-| `spec.server: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say they ask its server` | `server` in a file of yours |
+| `spec.pages: a plugin of yours draws pages only from a folder of its own, for Developer mode: platform/plugin.yaml, with its plugin.js` | In a file of yours on its own, a field only a plugin with code uses: `pages`, `tabs`, `commands`, `reads`, `showsSecrets`, `changes`, `opens`, `links`, `logs` or `server`. The line names the field, and the folder by the plugin's name. See [Your own plugins with code](/custom-resources/plugins#your-own-plugins-with-code). |
+| `spec.pages: this server’s plugins are data: only the plugins that come with Lumovi draw pages here` | One of those fields in a [server's](/server/plugins) file |
 | `spec.server.paths[0]: takes no fragment: Lumovi asks for the path as listed` | A `#` in a path. Others say a path should start with `/`, has an empty segment, can't step with `.` or `..`, has a %-escape, fills only a whole segment, or has a character a path can't hold, said as its code point where it can't be seen, like `U+202E`. |
 | `spec.server.paths[0]: fills nothing in its query: Lumovi asks for it as listed` | A `{name}` in a path's query. Others say it has an empty query, or a character a query can't hold. |
 | `spec.server.in: should be one of its own kinds, and …` | An `in` of a kind that isn't one of the plugin's own: the line names it |
