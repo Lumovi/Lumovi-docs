@@ -291,6 +291,10 @@ With `mode: agent`. `clusterName` is the agent's name in the fleet, as Lumovi's 
   Plugins everyone sees, by file name: each key is a file name ending in `.yaml` or `.yml`, and its value the file's contents. In a fleet, they're for every cluster. See [Plugins for everyone](/server/plugins).
 </ResponseField>
 
+<ResponseField name="pluginCode" type="boolean | list" default="true">
+  Whose code runs here, of the plugins Lumovi comes with that draw pages of their own: `true`, every one's; `false`, none; or a list of plugins' names, like `[karpenter, argo-cd]`, only theirs. Off for a plugin, its pages and tabs aren't offered, and no browser is checked for them; its kinds, lists and actions stay. Sets `LUMOVI_PLUGIN_CODE`. See [Plugins' code](/server/plugins#plugins’-code).
+</ResponseField>
+
 ## Access
 
 Who may do what through Lumovi, within what RBAC allows. See [Access for your team](/server/access).

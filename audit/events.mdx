@@ -124,6 +124,7 @@ Each action, by kind, and what the page calls it.
 | `helm.rollback` | Rolled a Helm release back | |
 | `helm.uninstall` | Uninstalled a Helm release | |
 | `files.upload` | Uploaded files to a container | A file or a folder was [copied into a container](/debug/copy-files): once when the copy begins, and once for how it ended. |
+| `plugin.change` | Made a change a plugin proposed | A change a plugin's page [proposed](/custom-resources/plugins#changes-a-page-proposes), once you pressed its button: "Changed the Application argocd/payments, as the plugin Argo CD 1.2.0 proposed", or, refused or failed, "Didn’t change … that the plugin Argo CD 1.2.0 proposed: …" with why. `details` name the plugin, its version and the digests of its file and code, and the fields changed or created, as `paths`: never the values you set, so a patch or a create has no `command`. A scale keeps its command and `replicas`. |
 
 ### Access (`access`)
 
@@ -136,6 +137,9 @@ Each action, by kind, and what the page calls it.
 | `logs.read` | Read logs | A container's logs: once for each container every ten minutes, at most, for each page or assistant. |
 | `secret.read` | Read a Secret | A Secret's values reached the page or an assistant, or reading it was refused: once for each Secret every ten minutes, at most, for each page or assistant. A dry run of a change to a Secret counts, since it answers with the Secret. |
 | `helm.values.read` | Read a release's values | A [Helm release](/helm/releases)'s values and manifests reached the page, which can hold what its Secrets do: once for each release every ten minutes, at most. Not where they're withheld. |
+| `plugin.read` | Read for a plugin’s page | What Lumovi read, as you, for a plugin's [page](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code): "Read Nodes for the plugin karpenter", with its selectors, or why it was refused. Once for each read every ten minutes, at most. |
+| `plugin.code` | Handed a plugin’s code | A plugin's code was handed to a window or a browser to run in its box: "Handed the plugin Karpenter’s code to this browser", with its version and the digests of its file and code. Once for each version. |
+| `plugin.box-check` | Checked a browser’s plugin box | On a server: Lumovi [checked a browser](/server/plugins#plugins’-code) keeps a plugin's code in its box. "Lumovi checked this browser: a plugin’s code stays in its box", or, a failure, which ways out it found, or that it couldn't look. |
 
 ### Sign-ins (`sign-in`)
 
@@ -176,6 +180,7 @@ On a server, a cluster's read-only switch, metrics source and node shells are th
 | `node-shell.changed` | Changed node shells | Where a cluster's [node shells](/debug/node-shell#settings-for-each-cluster) run, and from what image, changed: "Made node shells in production run alpine:3.22 in kube-system", or "Made node shells in production run as Lumovi's defaults". Changed by hand where the server keeps it, Lumovi puts back what it last set, and records it itself: "Changed outside Lumovi: production's node shells were changed, as an older copy of its setting was put back where Lumovi keeps it, and Lumovi put back what it last set". |
 | `access.changed` | Changed access | On a server: an admin saved changes to [who may do what](/server/access). Its summary is the first change, and how many more: `Added the grant “On-call”, and 2 more`. Changed by hand where it's kept, it's recorded by Lumovi itself, its summary starting `Changed outside Lumovi:`, or, for a change made while Lumovi wasn't running, recorded as it starts: `Changed outside Lumovi, while it wasn’t running: what it was before can’t be known`. |
 | `assistants.changed` | Changed AI assistants | In the desktop app: assistants let connect, or stopped; their port; a new token. |
+| `plugin.code-switch` | Turned a plugin’s code on or off | Someone turned a plugin's [code](/custom-resources/plugins#turn-a-plugin’s-code-off) on or off for themselves: "Turned off the Karpenter plugin’s code". |
 
 ### Server (`server`)
 

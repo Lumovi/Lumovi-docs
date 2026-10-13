@@ -59,9 +59,46 @@ Click a row to open its details, with what its kind's view adds: details, links,
 - **A long list.** Lists that are too long to load whole are cut short, and the page says some objects may be missing. Choose a namespace, or use **Filter by label**.
 - **A tool the cluster doesn't have.** A plugin's page opened from a link, in a cluster without the tool, says **This cluster doesn't have it**: none of its kinds are served there.
 
+## Pages drawn by a plugin's code
+
+Three of the plugins Lumovi comes with add pages of their own, drawn by their own code: **Karpenter** an [overview](#karpenter), **Argo CD** an overview and a tab on each Application, and **CloudNativePG** an **Overview** and **Backup health**. See [Included plugins](/custom-resources/included-plugins) for what each shows.
+
+That code comes inside Lumovi, from the same [signed release](/custom-resources/included-plugins#where-they-come-from) as the plugins' files, and runs in a sealed box: a place of its own, apart from Lumovi's page, with no network, which can't reach Lumovi's cookies, storage or credentials. It's handed only what its file says it may read, read by Lumovi as you, and it draws with Lumovi's own parts, so it looks like the rest of Lumovi and can't draw anything else. Lumovi stops a page that sends what a plugin can't, or more at once than it may, or stops answering, and in the desktop app one that uses more memory than a plugin may, or more than half of a processor core for half a minute.
+
+A strip at the top of each such page says whose it is: "This page is from the plugin **Argo CD** 1.2.0. Lumovi draws it from its own parts; what it shows and says is the plugin’s.", with **What it may do →**, which opens the plugin's entry under [All plugins](#what-a-plugin-asks-for).
+
+### Changes a page proposes
+
+A plugin's page can't change anything itself. It can propose a change, which Lumovi shows in its own dialog, over its own header where no plugin can draw: what the change does in Lumovi's words, the plugin's options, **What Lumovi will send** as the cluster says it would be (a diff, or the whole object it would create), its `kubectl` command, and whether the cluster accepts it. After every change to the options, Lumovi asks the cluster again, and its button can be pressed a moment after the cluster's answer. Nothing changes until you press it.
+
+What it may propose is in its file, and its entry says it, like *Its pages may propose to change Applications, each change one you confirm in Lumovi.* It's only ever its own kinds, never an object's status, and of its metadata only its labels and annotations, and the name of one it creates. A change comes to at most 16 KiB. A change Lumovi makes for a plugin is in the [audit log](/audit/events#changes-change) as `plugin.change`, without the values you set. Where it can't be made, no dialog opens, and a note says why: in a [read-only](/changes/read-only) cluster, "This cluster is read-only in Lumovi: Argo CD’s change isn’t made here."; where you may not make it, "You may not make Argo CD’s change here."; on a phone, "This isn’t done from a phone. Open Lumovi on a larger screen to change payments."; and where your organization's [policy](/desktop/policy#pluginproposals) says `pluginProposals: off`, "Your organization’s policy doesn’t let plugins propose changes."
+
+### Links to Lumovi's own places
+
+A plugin's page can link to a pod's **Logs** or **Shell** tab, or to **Port forward** for a pod or a service, where its file says it may, and only for an object it was handed. The link opens Lumovi's own tab or dialog, at the container or port it names. What happens there is what you do: a plugin's page can bring you to a shell, never start one.
+
+A Shell tab opened from a plugin's page says so, like "Opened from Toys’ page" for a plugin named Toys, and waits: "Toys’ page opened this tab. A shell starts only when you press Start: as you, within your access." **Start shell** isn't focused, and <kbd>↵</kbd> doesn't press it. Where the pod has no container by the name the page asked for, the tab says so, "Toys’ page asked for a container named envoy, which this pod doesn’t have.", and opens on its first, as it would anyway. A shell opened this way is in the audit log as any other, its summary ending "from the plugin Toys’ page".
+
+None of the plugins Lumovi comes with links anywhere yet. A plugin's [`links`](/reference/plugin-format#spec) say where it may.
+
+### Turn a plugin's code off
+
+Open a plugin under **All plugins**, and turn off **Run its code**. Under it is what its code does, like *Draws its overview. It reads Nodes and Pods as you, and changes nothing.* Off, its pages and tabs say "You turned off its code. Turn it on in Plugins to see this page." with **Open Plugins**, and nothing of its code is handed to Lumovi's page or run. Its kinds, their lists, and the actions its file spells out stay. It's your own switch: on a server, kept for you alone.
+
+Where Lumovi has an overview of its own for the plugin, as it has for Karpenter, that's shown instead: *Its pages don’t run: you turned off its code. Lumovi shows its own overview of Karpenter instead.*
+
+It can also be off for you:
+
+- **On a server**, where its administrator turned plugins' code off with [`pluginCode`](/server/plugins#plugins’-code): "This server doesn’t run plugins’ code." The switch is off and locked, with **Turned off on this server.**
+- **On your organization's computers**, where their [policy](/desktop/policy#plugins) says `no-code`: "Your organization’s policy doesn’t let plugins run code." The switch is off and locked, with **Turned off by your organization’s policy.**
+
+Turning it on or off is in the audit log as `plugin.code-switch`.
+
 ## Karpenter
 
 [Karpenter](https://karpenter.sh)'s plugin opens on an overview of its own instead of a list: its node pools against their limits, the nodes they launched and the ones launching, the mix of instance types, capacity types and zones, what's being disrupted, and the pods waiting for a node. Its first tab is **Overview**, and its kinds' tabs (NodePools, NodeClaims, and the node classes) follow.
+
+The overview is drawn by the plugin's [code](#pages-drawn-by-a-plugin’s-code). Wherever that doesn't run, Lumovi shows its own overview of Karpenter in its place, with the same cards.
 
 <Frame caption="Karpenter's node pools against their limits, the nodes they launched, and what's being replaced or waiting for a node.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/karpenter-light-1x.webp" alt="Karpenter's overview: tiles for node pools ready, nodes ready, launching and being replaced; three node pools with their CPU and memory against their limits; nodes grouped by node pool with their usage and one still launching; and the mix of instance types, capacity types and zones." />
@@ -112,15 +149,17 @@ When there are none, it says *Nothing is being disrupted.*
 
 The pods the scheduler couldn't place anywhere, which Karpenter launches nodes for, with the scheduler's message. When there are none: *No pods are waiting for a node.*
 
-**Nodes** (for each node pool), **Disruption** and **Waiting for a node** show six rows, with **Show all** for the rest. Click anything to open it.
+**Nodes** (for each node pool), **Disruption** and **Waiting for a node** show six rows, with **Show all** for the rest. Click anything to open it. On a cluster with thousands of nodes, **Nodes** shows as many as fit, its node pools in name order, and says so: *Shows 2,500 of 3,180: the node pools in name order, as many as fit. The tiles above count every node, and Lumovi’s Nodes list has them all.*
 
-The overview reads node pools, node claims and nodes, and pods in every namespace, so it needs `list` on all four. A card whose list you can't read says why, and the others still show.
+The overview reads node pools, node claims and nodes, and pods in every namespace, so it needs `list` on all four. A card whose list you can't read says why, and the others still show. Of nodes, its code is handed their names, labels, taints, capacity, conditions and usage; of pods, their names, namespaces, ages, nodes and conditions. It changes nothing.
 
 ## Every plugin on one page
 
 **All plugins**, last under **Plugins** in the sidebar, lists every plugin Lumovi has: the ones it comes with, and the files in your folder. It opens by saying what a plugin is:
 
-> A plugin teaches Lumovi a tool’s kinds: their columns, status, details and actions. Plugins are data. They can’t run code, and they change objects only with the patches and the objects they spell out, each shown here. A plugin has no access of its own: what it reads and changes, it does as you, and the cluster refuses what you may not do. Lumovi’s come inside Lumovi; yours are your own files.
+> A plugin teaches Lumovi a tool’s kinds: their columns, status, details and actions. Its actions change objects only with the patches and the objects they spell out, each shown here. A plugin of yours is data, and runs no code. The ones Lumovi comes with may also add pages drawn by their own code, in a sealed box: it reads only what its file says it may, and any change it proposes waits for you in Lumovi’s own dialog. A plugin has no access of its own: what it reads and changes, it does as you, and the cluster refuses what you may not do. Lumovi’s come inside Lumovi; yours are your own files.
+
+On a server, it says "A plugin this server’s administrator added" in place of "A plugin of yours", and ends "this server’s are files its administrator put there." Where your organization's [policy](/desktop/policy#pluginsallowed) allows only some plugins, it adds: "Your organization’s policy allows only some plugins here: the others aren’t shown."
 
 Each plugin is a row:
 
@@ -130,12 +169,28 @@ Each plugin is a row:
 
 **All**, **On this cluster**, **Yours** and **Not in use** narrow the list, and **Search plugins** finds one by its name or its file's. At the foot is where yours go, like *35 of 35 shown. Yours go in ~/.lumovi/plugins. One with the name of one of Lumovi’s is used in its place, all of it.*
 
+### Newer plugins
+
+In the desktop app, the page says which plugins have a newer version in the latest release of [Lumovi-plugins](https://github.com/Lumovi/Lumovi-plugins), where Lumovi's come from. It looks when you open the page, and when you press **Check now**, and at no other time. A line above the list says what it found: *Lumovi-plugins release 1.3.0 · checked 2m ago*.
+
+Lumovi takes a release only if it's signed by Lumovi-plugins' release workflow, shown to be built from its tag's commit, each file the one the release names, no older than one Lumovi has already taken, and not past the date its index says it expires. A release that fails one of these is used for nothing, and the line says which, like *Couldn’t check for newer plugins: the release isn’t signed by Lumovi-plugins’ release workflow, so Lumovi took nothing from it.* What the last good check found stays shown.
+
+- **Updates** lists the plugins with a newer version, each with **Update:** and the version under its name.
+- A newer version that needs a newer Lumovi says so at the row's end, like *1.3.0 needs Lumovi 1.23.0*.
+- **Not here yet** lists the release's plugins that this Lumovi doesn't have, **From** Lumovi-plugins, each with whether its kinds are on this cluster. Open one to see what it would ask for, in the same words as any other.
+
+These two filters show only when they'd list something. Nothing here installs a plugin: Lumovi's come inside Lumovi, and a newer one comes with a Lumovi built with its release.
+
+The check asks only GitHub, for the release and its files, and sends nothing about you or your clusters. An organization's [policy](/desktop/policy#pluginstore) can turn it off (`pluginStore: off`), and so do `plugins: bundled` and `plugins: off`: the line then says "Your organization’s policy turns off checking for newer plugins." A server doesn't check.
+
 ### What a plugin asks for
 
 Open a row to see what the plugin asks for, read from its file in Lumovi's words. Nothing there is the plugin's own account of itself.
 
-- **May change and create**: only the kinds it shows, by name, and the API groups they're all in; what its actions create, each one of its own kinds; and what no plugin can: what's the cluster's to set on an object (its owners, finalizers, name or namespace), and Kubernetes' own kinds. A plugin without actions says **Nothing. It has no actions.**
-- **May read**: its own kinds' objects, whose fields its columns, status and details show; the kinds of Kubernetes' it [shows](/reference/plugin-format#kubernetes’-own-kinds) and can't change; the kinds its related lists list beside an object, picked by their labels or fields; and the kinds it links to by name. It ends: "It reads no logs and no Secret’s value, and sends nothing anywhere but to this cluster."
+- **Run its code**, first, for a plugin with [pages of its own](#pages-drawn-by-a-plugin’s-code): its switch, and what its code does.
+- **May change and create**: only the kinds it shows, by name, and the API groups they're all in; what its actions create, each one of its own kinds; and what no plugin can: what's the cluster's to set on an object (its owners, finalizers, name or namespace), and Kubernetes' own kinds. A plugin whose pages propose changes says which, like *Its pages may propose to change Applications, each change one you confirm in Lumovi.* A plugin without actions says **Nothing. It has no actions.**
+- **May read**: its own kinds' objects, whose fields its columns, status and details show; the kinds of Kubernetes' it [shows](/reference/plugin-format#kubernetes’-own-kinds) and can't change; the kinds its related lists list beside an object, picked by their labels or fields; and the kinds it links to by name. For a plugin with code, what its code is handed of each kind of Kubernetes', field by field, like *Of Nodes, its code is handed only metadata.name, metadata.labels, spec.taints, status.allocatable and status.conditions, with their usage, as far as you may read them.* It ends: "It reads no logs and no Secret’s value, and sends nothing anywhere but to this cluster."
+- **Adds to Lumovi's pages**: its pages, its tabs and on which kinds, and its commands in the palette, each by name. Where its pages don't run, it says why, like *Its pages don’t run here: Lumovi’s check of this browser didn’t pass.* Then which of Lumovi's own lists its pages may open, like *Its pages may open Lumovi’s lists of Deployments, StatefulSets, DaemonSets, Services, ConfigMaps, Ingresses, Jobs and CronJobs.*, and which of Lumovi's own places they may [link to](#links-to-lumovi’s-own-places).
 - **Says what manages workloads**: where a view says [what it manages](/reference/plugin-format#what-it-manages), every object of those kinds in the cluster you may list (or, where you can't, in the namespaces you're looking at), to say which of them manages each workload, by labels and annotations the workload carries under the tool's own groups.
 - **Its actions, and what each sends**: each action with the kinds it's on, whether it **asks first** or **runs at once**, and its patch as the file writes it, or the object it creates under **Creates**. What's filled in later is shown as what it is: `(now)`, `(what you choose)`, `(from the object)`, and `(removed)` for a field a patch takes away. An action's undo is shown under it as **Undo sends:**, and one that patches an object's status says so.
 

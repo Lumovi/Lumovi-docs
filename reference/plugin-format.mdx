@@ -180,7 +180,18 @@ A label, an icon and a category are for a place in the sidebar, so they need `ki
 
 One of yours with the same `metadata.name` as one of Lumovi's is used in its place, all of it: see [Whose a kind is](#whose-a-kind-is).
 
-A few fields are only for the plugins that come with Lumovi: `pages`, `tabs` and `commands`, which add to Lumovi's pages, and `reads` and `showsSecrets`, which say what a plugin's own code may read and show. A file of yours with any of them isn't used, and its [problem](#problems) says which.
+A few fields are only for the plugins that come with Lumovi, whose [code draws pages](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code). A file of yours with any of them isn't used, and its [problem](#problems) says which. Each is shown in Lumovi's words on the plugin's entry under **All plugins**, and is all its code may do:
+
+| Field | What it says |
+| --- | --- |
+| `pages` | Pages of its own, each an `id` and a `title`, as tabs on its page: `[{ id: overview, title: Overview }]` |
+| `tabs` | Tabs it adds to its own kinds' details: `[{ id: application, title: Argo CD, kinds: [{ group: argoproj.io, kind: Application }] }]` |
+| `commands` | Commands in the palette, each opening one of its pages: `[{ name: Open the rollouts’ history, page: history }]` |
+| `reads` | Of Kubernetes' own kinds, what its code is handed: a kind, and the `fields` of each object, like `[metadata.name, spec.nodeName]`, and with `status: true`, `events: true` or `usage: true`, its status as Lumovi shows it, its events, or its usage. Its own kinds it's handed whole. |
+| `showsSecrets` | The keys of a Secret its pages may show, and where its own kind names that Secret: `[{ group: example.com, kind: Widget, path: spec.secretName, keys: [token] }]`. Lumovi reads them itself when the person presses **Reveal** or **Copy**: the code never sees them. |
+| `changes` | What its pages may propose, of its own kinds only: `[{ group: argoproj.io, kind: Application, actions: [patch, delete] }]`, of `patch`, `create`, `delete` and `scale`. See [Changes a page proposes](/custom-resources/plugins#changes-a-page-proposes). |
+| `opens` | Which of Lumovi's own lists its pages may open, at one object: `[{ group: apps, kind: Deployment }]`. Opening reads nothing for the plugin. |
+| `links` | Which of Lumovi's own places its pages may [link to](/custom-resources/plugins#links-to-lumovi’s-own-places), for an object it was handed: `logs` and `shell` for a pod, `port-forward` for a pod or a service. |
 
 ## A view
 
@@ -700,6 +711,9 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `spec.pages: adds pages, tabs or commands, and only the plugins that come with Lumovi can do that yet` | `pages`, `tabs` or `commands` in a file of yours (the line names the one it found) |
 | `spec.reads: only a plugin that comes with Lumovi has code yet, so only its file can say what that code reads` | `reads` in a file of yours |
 | `spec.showsSecrets: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they show` | `showsSecrets` in a file of yours |
+| `spec.changes: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they propose` | `changes` in a file of yours |
+| `spec.opens: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say what they open` | `opens` in a file of yours |
+| `spec.links: only a plugin that comes with Lumovi has pages of its own yet, so only its file can say where they link` | `links` in a file of yours |
 | `spec.colour: isn’t something a plugin has` | A misspelled field of the plugin's |
 | `metadata.labels: isn’t something a plugin has` | A key under `metadata` other than `name`, or one at the top beside `apiVersion`, `kind`, `metadata` and `spec` (`status: isn’t …`) |
 | `spec.views[0].colums: isn’t something a view has` | A misspelled field of a view's |

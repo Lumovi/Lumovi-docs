@@ -92,6 +92,14 @@ Applications and rollouts have views; the other kinds don't. Applications take t
 
 Rollouts have the scale subresource, so you can also **Scale** them like a Deployment.
 
+Argo CD's plugin draws pages of its own, with its [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code):
+
+- **Overview**, its first tab: how many applications are healthy, how many are out of sync, and whose last sync failed, then every Application by project, with its sync, repository and path, target revision, destination, and when it last synced.
+- **Argo CD**, a tab on each Application: its status and what its operation is doing, its sync, the revision it synced to, when it last synced and whether it syncs by itself, then its resources, its history and its conditions. A resource's row opens Lumovi's own list of its kind at that one object, for Deployments, StatefulSets, DaemonSets, Services, ConfigMaps, Ingresses, Jobs and CronJobs: the list is Lumovi's, and the plugin reads nothing of it.
+- **Sync…**, **Refresh…** and **Delete…** on that tab are [changes it proposes](/custom-resources/plugins#changes-a-page-proposes), which you confirm in Lumovi's own dialog: a sync with a revision, pruning and a strategy, a normal or hard refresh, and a delete. **Sync…** can't be pressed while an operation runs.
+
+Its pages read only Argo CD's own kinds. Wherever they don't run, the view's **Sync** and **Refresh** stay on Lumovi's list of Applications.
+
 ## Argo Workflows
 
 [Argo Workflows](https://argoproj.github.io/workflows): workflows, their templates and schedules.
@@ -164,6 +172,14 @@ A cluster is <span className="lumovi-status healthy">Healthy</span>, critical wi
 - **Switch over…** asks which instance is the **New primary**. The current primary becomes a replica, and connections to the primary drop for a moment. It's offered when the cluster has two instances or more, and patches the cluster's status, so it needs `patch` on its `status`.
 - **Restart…** restarts the instances one at a time, replicas first and the primary last, with a switchover. It asks first.
 - **Backups** lists the backups a scheduled backup made.
+
+CloudNativePG's plugin draws two pages of its own, with its [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code):
+
+- **Overview**: every PostgreSQL cluster, what's failing first, and the one you pick, with its status and why, how many instances are ready, its primary, its last backup, and its PostgreSQL version; then its instances with their role, status, node and restarts, its backups, latest first, its schedules, said in words, and its poolers. A row opens the object in Lumovi.
+- **Backup health**: how many backups ran in the last day and how many failed, which clusters have had no backup in a day, and the next one scheduled; then every cluster's backups, latest first, a cluster with a failed or missing backup above the rest.
+- **Back up now…** on the cluster you pick is a [change it proposes](/custom-resources/plugins#changes-a-page-proposes): a Backup of that cluster, by the method you pick where it has more than one, which you confirm in Lumovi's own dialog. It can't be pressed while a backup of the cluster runs, or where the cluster has no backup method. Where Lumovi can't read its backups, it says "Couldn’t read its backups, so one may be running."
+
+Its pages read its own kinds and, of pods, only its instances' (labeled `cnpg.io/cluster`): their names, namespaces, labels, ages, nodes, conditions and restarts. Wherever they don't run, the view's **Back up now…**, **Switch over…** and **Restart…** stay on Lumovi's list of clusters.
 
 ## Cluster API
 
@@ -293,7 +309,7 @@ A gateway is <span className="lumovi-status healthy">Programmed</span> once its 
 
 [Karpenter](https://karpenter.sh): node pools, and the nodes it launched for them.
 
-**Karpenter**, under **Plugins** (`karpenter`): NodePool, NodeClaim, EC2NodeClass, AKSNodeClass. AKS node classes have no view. Karpenter's plugin opens on an overview of its own: its node pools against their limits, the nodes they launched and the ones launching, what's being replaced, and the pods waiting for a node. See [Karpenter's overview](/custom-resources/plugins#karpenter).
+**Karpenter**, under **Plugins** (`karpenter`): NodePool, NodeClaim, EC2NodeClass, AKSNodeClass. AKS node classes have no view. Karpenter's plugin opens on an overview of its own: its node pools against their limits, the nodes they launched and the ones launching, what's being replaced, and the pods waiting for a node. It's drawn by the plugin's [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code), which reads nodes and the pods waiting for one, and changes nothing; wherever it doesn't run, Lumovi's own overview of Karpenter is shown. See [Karpenter's overview](/custom-resources/plugins#karpenter).
 
 A node pool is <span className="lumovi-status healthy">Ready</span>, or critical with Karpenter's reason. A node claim is <span className="lumovi-status healthy">Ready</span>, <span className="lumovi-status progressing">Launching</span> until its node registers, <span className="lumovi-status warning">Drifted</span> when it no longer matches its node pool or node class, <span className="lumovi-status progressing">Terminating</span>, critical with the reason when it couldn't be launched, and otherwise <span className="lumovi-status critical">Not ready</span>.
 
