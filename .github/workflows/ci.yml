@@ -31,3 +31,7 @@ jobs:
         run: mint broken-links
       - name: Screenshots, icons and pages
         run: node .github/scripts/check.mjs
+      # The kit's reference page, held to what Lumovi's door declares, at the Lumovi these docs
+      # describe (.github/lumovi-ref).
+      - name: The plugin kit's reference
+        run: node .github/scripts/kit.mjs

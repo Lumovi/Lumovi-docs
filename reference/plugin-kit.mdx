@@ -71,6 +71,8 @@ A column has a `name`, a `kind`, a `width` (`narrow`, `normal`, `wide` or `text`
 | `meter` | `used` of `of`, with its text ("24 of 64 cores"). Without `of`, there's no limit |
 | `none` | Nothing to say: a dash |
 
+A row has one tooltip, and it's Lumovi's own. It says, in this order and only what there is to say: where the row goes, if pressing it opens a place of Lumovi's; its name, the words beside it and the line under it, whole, where any of the three is cut; and what its columns cut. Beside a name, the words take the room the name leaves. Where the two don't fit, the words give way first, and only then does the name lose its middle.
+
 In place of rows, a table (or a graph, or a pick list) can give a `state`: `busy` while it reads, `failed` with a title and what the cluster said, and **Try again**, `empty` with a title and a line, or `quiet`, one calm line. Where a table's rows come from a read Lumovi cut at its limit, the table names that read's `cut`, and Lumovi says so above the rows, from its own numbers.
 
 ### A Secret, shown and not held
