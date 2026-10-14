@@ -58,9 +58,11 @@ Plugins in files are data only. Their views read fields with JSONPath, and chang
 
 Four of the plugins Lumovi comes with, Karpenter, Argo CD, CloudNativePG and Prometheus Operator, draw [pages of their own](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code) with their code, in a sealed box. On a server, their code is handed to a person's browser only where all of these hold:
 
-- **`LUMOVI_URL` is set**, so the box has an address of its own, at `plugin-box/box.html` below it. See [The page](/server/security#the-page).
+- **`LUMOVI_URL` is set**, so the box has an address of its own, at `plugin-box/box.html` below it, beside the check's own frame at `plugin-box/check.html`. See [The page](/server/security#the-page).
 - **The browser's requests are held to Lumovi's own page**, as [`auth.secFetchSite`](/server/security#requests-from-lumovi’s-own-page) does by default. Behind a sign-in proxy, only where `auth.proxy.secFetchSite` says the proxy passes the header through.
 - **Lumovi has checked that browser.** The first time someone opens such a page, Lumovi checks that their browser keeps a plugin's code in its box: that it can't reach the network, Lumovi's page, cookies or storage, or another plugin's box. A browser that fails isn't handed any plugin's code, and the page says so, like "Lumovi checked this browser and it didn’t pass, so it doesn’t run plugins’ code in this browser. Another browser may pass the check." Each check is in the [audit log](/audit/events#access-access) as `plugin.box-check`.
+
+  The check asks Lumovi at `box-check/` below `LUMOVI_URL`, from sealed frames in the browser. So whatever stands in front of Lumovi (an ingress that lists its paths, a firewall for web requests, a sign-in proxy) must pass everything there on, as it passes the rest, including these, which come from no site of their own: requests that say `Origin: null`; requests that say no origin and don't come from Lumovi's own page; and WebSocket upgrades that say `Origin: null`. None of them carries the sign-in proxy's cookie. Where they don't arrive, no plugin's code runs in that browser. The page says "Lumovi couldn’t check this browser: its own test request didn’t reach this server, so it can’t tell what a plugin’s box lets out here.", and Lumovi's log says which didn't arrive.
 - **This server runs that plugin's code**, as `pluginCode` says.
 
 Wherever its code doesn't run, a plugin's kinds, lists and actions stay, and Karpenter's page is Lumovi's own overview.
