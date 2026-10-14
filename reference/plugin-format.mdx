@@ -568,6 +568,14 @@ actions:
   One of the [icons](#icons). Without one, an action gets a lightning bolt.
 </ResponseField>
 
+<ResponseField name="bulk" type="boolean">
+  Offered in Lumovi's own bar for rows a person selects on a plugin's page, a patch done to each of them. Its inputs are asked once for all, those that say `bulk: false` filled in with their defaults. Lumovi reads each object again as it's sent, judges `when` and `same` on it, and sends it with the version it read; what's left out is said, and why. Where the patch reads anything of the object, the dialog says the command is the first's and "each is filled in from its own object". Only a patch: never a `create`.
+</ResponseField>
+
+<ResponseField name="ends" type="object">
+  How its work ends, once its `busy` no longer holds: a `path` on its own object, the `values` it ends on, each with a `word` and a `level` (`Failed`, `critical`), and where a `message` beside it is. Lumovi follows each change it sent until then, says how it ended in these words, and nothing else of the object, the message cut at 500 characters.
+</ResponseField>
+
 ### When an action asks first
 
 An action with a `confirm`, `inputs` or a `create` opens a dialog first, and its name ends in "…" in menus, like **Back up now…**. The dialog shows the `confirm` text, the inputs, what it would create, and the equivalent command. Its button has the action's name.
@@ -627,10 +635,19 @@ Inputs are values an action asks for, used in its templates as `{{ input.name }}
   - `text`: a text field.
   - `number`: a whole number from 0 to 1,000. In a patch, a template that's only this input gives a number (except under `labels` and `annotations`).
   - `choice`: one of a few options, picked from a list.
+  - `switch`: yes or no, filled in as `true` or `false`. Its `default` is `true` or `false`.
 </ResponseField>
 
 <ResponseField name="options" type="list">
   A choice's options: `[Off, Initial, Recreate]`.
+</ResponseField>
+
+<ResponseField name="choices" type="list">
+  A choice's options as labels the person picks among, each filling in its `value` as it is, any value JSON can hold: `[{ label: Apply, value: { apply: {} } }]`. Up to 20.
+</ResponseField>
+
+<ResponseField name="bulk" type="boolean">
+  `false`: not asked where the action is done to several at once; its `default` fills it in for each, so it needs one.
 </ResponseField>
 
 <ResponseField name="from" type="path">
@@ -641,7 +658,7 @@ Inputs are values an action asks for, used in its templates as `{{ input.name }}
   The value it starts with. Without one, a number starts at 0, and a choice on its first option.
 </ResponseField>
 
-A choice has `options` or `from`, not both, and other inputs have neither. Every input needs a value before the action can run. Templates in `patch`, `create`, `confirm` and `done` can only name inputs the action has.
+A choice has one of `options`, `choices` or `from`, and other inputs have none of them. Every input needs a value before the action can run. Templates in `patch`, `create`, `confirm` and `done` can only name inputs the action has.
 
 ### Creating objects
 
