@@ -18,9 +18,9 @@ Lumovi's terminals are your own shell, in a dock at the bottom of a cluster's pa
 
 ## Open the dock
 
-A thin **Terminal** bar runs along the bottom of every cluster's pages. It's always there, and shows the terminals that are running. To open the dock:
+A thin bar, **Tabs below**, runs along the bottom of every cluster's pages. It's always there, and shows the terminals that are running, and any [objects kept open below](/explore/details#keep-it-open-below). To open a terminal:
 
-- Click **Terminal** in the bar.
+- Click **Terminal** at the bar's left: **Show the terminal** when one is running, **Open a terminal** when none is.
 - Press <kbd>⌃</kbd><kbd>&#96;</kbd> anywhere in a cluster (<kbd>Ctrl</kbd><kbd>&#96;</kbd> on Windows and Linux). Press it again to hide the dock.
 - Choose **View → Terminal** (on Windows and Linux, from the **Menu** button at the window's top left).
 - Choose **New terminal** in the [command palette](/explore/finding-things) (<kbd>⌘</kbd><kbd>K</kbd>, or <kbd>Ctrl</kbd><kbd>K</kbd> on Windows and Linux).
@@ -164,7 +164,7 @@ Right-click a tab for its menu:
 | **Rename…** | Names the tab |
 | **New terminal like it** | Starts another terminal for the same cluster and namespace |
 | **Close** | Ends its shell and closes the tab |
-| **Close the others** | Ends every other terminal |
+| **Close the others** | Closes every other tab below: ends every other terminal, and lets every kept object go |
 
 ### They keep running
 
@@ -185,8 +185,8 @@ When the shell exits, its tab says **exited**, the terminal dims, and a notice s
 ## The dock
 
 - **Resize** it by dragging its top edge. Or press <kbd>Tab</kbd> until the edge has focus, and press <kbd>↑</kbd> or <kbd>↓</kbd>. Lumovi remembers the height.
-- **Maximize the terminal**, on the right of the bar, makes it as tall as it goes. **Restore the terminal** brings it back.
-- **Hide the terminal**, the arrow at the end of the bar, hides it, as <kbd>⌃</kbd><kbd>&#96;</kbd> does. Hidden from a terminal, the page has focus again.
+- **Maximize the tabs below**, on the right of the bar, makes them as tall as they go. **Restore the tabs below** brings them back.
+- **Hide the tabs below**, the arrow at the end of the bar, hides them; **Show the tabs below** shows them again, on the tab shown last. <kbd>⌃</kbd><kbd>&#96;</kbd> shows or hides the terminal. Hidden from a terminal, the page has focus again.
 
 The terminal fits the dock, and the shell learns its new size when you resize it. It uses the app's colors, in light and dark, and keeps 10,000 lines of scrollback.
 
@@ -199,7 +199,7 @@ In a terminal, keys go to the shell, as in any terminal, except the dock's own a
 | Show or hide the dock, anywhere in a cluster | <kbd>⌃</kbd><kbd>&#96;</kbd> | <kbd>Ctrl</kbd><kbd>&#96;</kbd> |
 | New terminal, anywhere in a cluster | <kbd>⌃</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>&#96;</kbd> |
 | New terminal, in a terminal | <kbd>⌘</kbd><kbd>T</kbd> or <kbd>⌘</kbd><kbd>N</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>T</kbd> |
-| Close it, in a terminal | <kbd>⌘</kbd><kbd>W</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>W</kbd> |
+| Close it, in a terminal or a kept object below | <kbd>⌘</kbd><kbd>W</kbd> | <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>W</kbd> |
 | Clear it, in a terminal | <kbd>⌘</kbd><kbd>K</kbd> | None of Lumovi's: <kbd>Ctrl</kbd><kbd>K</kbd> is the shell's |
 | Previous or next terminal | <kbd>⌘</kbd><kbd>⇧</kbd><kbd>]</kbd> and <kbd>⌘</kbd><kbd>⇧</kbd><kbd>[</kbd>, or <kbd>⌃</kbd><kbd>PgDn</kbd> and <kbd>⌃</kbd><kbd>PgUp</kbd> | <kbd>Ctrl</kbd><kbd>PgDn</kbd> and <kbd>Ctrl</kbd><kbd>PgUp</kbd> |
 | Rename the terminal | <kbd>F2</kbd>, on its tab | <kbd>F2</kbd>, on its tab |

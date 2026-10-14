@@ -20,6 +20,7 @@ At the top: the object's kind, namespace and age, its name (with a button to cop
 | --- | --- |
 | **More actions** (**⋯**) | <kbd>.</kbd> |
 | Delete | <kbd>⌘</kbd><kbd>⌫</kbd> |
+| **Keep open below** / **Show below** (desktop app) | |
 | **Expand panel** / **Restore panel** | |
 | **Close** | <kbd>Esc</kbd> |
 
@@ -91,6 +92,17 @@ Who changed the object through Lumovi, read it, or opened a shell in it, and how
 ### YAML
 
 The whole object, syntax highlighted. **Copy YAML** copies it, and **Edit** opens it for [editing](/changes/yaml), checked by the cluster and shown as a diff before it's saved. For a Secret, values stay hidden until you choose **Reveal values**, and **Hide values** hides them again.
+
+## Keep it open below
+
+In the desktop app, **Keep open below**, beside **Expand panel** (or in the [command palette](/explore/finding-things) with the object open), keeps the object open below the pages, as a tab beside the [terminals](/debug/terminal), on the tab it was showing. A pod's logs keep coming, and a Deployment's metrics keep moving, while you go elsewhere, other clusters included. Once it's kept, the button says **Show below**, and shows its tab.
+
+Its tab in the bar has the kind's icon, its name (cut in the middle when it's long), the tab it shows unless that's **Overview**, and its cluster when that isn't the window's. It's read in its own cluster, as you, as the panel would read it. Right-click it for **Open in the panel**, **Close** and **Close the others**; **Open in the panel** (↗) is also at the top of what it shows. With the focus below, <kbd>⌘</kbd><kbd>W</kbd> (<kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>W</kbd> on Windows and Linux) closes the tab shown.
+
+- **Deleted**, its tab says *deleted*, and what it last showed stays, dimmed: "Pod cart-7d9f6c5b8-x2kqp was deleted at 14:32. Its lines up to then stay here until you close this tab." (On another tab than Logs: "Its last state stays here…") Where Lumovi knows what ran it and that's still there, it says so, "It belonged to the Deployment cart, which is still there.", with **Keep cart open instead**. **Close this tab** lets it go.
+- **Unreachable**, when its cluster stops answering, its tab says *unreachable*, and a strip says "Can't reach staging since 14:30. Lumovi tries again on its own, and the lines go on from the last one here." (On another tab: "…what's here is from 14:30.") Once the cluster answers, it's as before.
+
+Each window keeps its own. A server's web page and a phone have no tabs below, so nothing is kept there.
 
 ## Right-click a row
 
