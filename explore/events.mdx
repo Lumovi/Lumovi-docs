@@ -38,6 +38,23 @@ Hover a mark, or move to it with the keyboard, to see what happened: its reason,
 
 The choice is kept in the page's address (`?as=timeline`), so a link opens the timeline too. On a phone, or where the page is too narrow for it (beside an open object, say), events stay a list.
 
+## Notifications of new warnings
+
+Lumovi can tell you of new Warning events in a cluster as they happen, through your system's notifications. It's off until you turn it on, for each cluster:
+
+- **On the desktop**, in the cluster's [settings](/clusters/connect#cluster-settings): **Notify me of new warnings**. While Lumovi is open, whatever page it shows, it checks every 30 seconds.
+- **On a server**, in the cluster switcher at the top of the sidebar: **Notify me of new warnings**. It's yours alone, kept in this browser, and works while one of Lumovi's tabs is open in it, hidden or not. Your browser asks first: **Allow notifications**, then **Send a test** to see one. A browser that blocks them says so, and the switch stays on until you allow them in its settings for the site; one that can't show notifications at all says "This browser can't show notifications." With several tabs open over HTTPS, one of them checks, and you're told once.
+
+**Namespaces to watch** is **All namespaces**, or **These namespaces**, picked from the cluster's. On the desktop, turned on, it starts with the namespace the cluster opens in. Lumovi reads their Warning events as you, so it sees only what you may read, and checks every 30 seconds.
+
+What's new is an event that wasn't there at the last check, or one whose count went up. What was there when it started is only remembered. A notification says the reason and the object, like "BackOff: Pod shop/cart-7d9f6c5b8-x2kqp", the message's first line, and the cluster's name last. The same object and reason is told once in 10 minutes. Several new in one namespace at once come as one, like "5 new warnings in shop", with "BackOff ×3, FailedScheduling, Unhealthy". Click one to open Lumovi at the object, or at that namespace's warnings.
+
+A check where any read fails tells nothing, and keeps what it saw, so an old warning is never told as new. If signing in fails, the cluster's notifications pause: one notification says "Notifications paused", and its settings say "Paused at 14:02: signing in failed. Open the cluster to sign in again, and notifications go on." Lumovi doesn't try signing in again by itself until you do. For a cluster that signs in through a [credential plugin](/clusters/connect#credential-plugins), its settings say so, like "Signing in (kubelogin) runs as it checks, as when you open the cluster.": a plugin that signs in through a browser may open one at the first check.
+
+<Warning>
+  A notification is shown wherever your system shows them, its lock screen and notification history included. An event's message can carry what only you may read, so Lumovi cuts it as it does for a [plugin's pages](/reference/plugin-kit): at the first place it could, like "Liveness probe failed: (the rest left out by Lumovi)", and at 200 characters. The reason, the object's name and the cluster's name are shown as they are. To keep them off your lock screen, turn off previews there in your system's settings.
+</Warning>
+
 ## An object's own events
 
 Every object's detail panel has an **Events** tab with the events about it, newest first. It's often the fastest way to see why a pod won't start or a volume won't bind. The overview lists the latest warnings across the namespace, too.

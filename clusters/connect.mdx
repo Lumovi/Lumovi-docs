@@ -259,6 +259,7 @@ Each cluster has settings of Lumovi's own, kept in its settings and never in you
 | **Production** | Deleting and draining ask you to type its name, and its rows say **Production**. Until you set it, Lumovi guesses from the context's name: see [Production clusters get an extra check](/changes/safely#hard-to-do-by-accident). Once you set it, it stays as you set it, until **Let Lumovi guess from its name**. |
 | **Read-only** | Lumovi changes nothing in it. See [Read-only mode](/changes/read-only). |
 | **Hidden** | Left out of the list. Show hidden clusters from its footer. |
+| **Notify me of new warnings** | Your system tells you of new Warning events in the namespaces you pick, while Lumovi is open. See [Notifications of new warnings](/explore/events#notifications-of-new-warnings). |
 
 **Connection** says where the cluster comes from. One from your kubeconfig can't be changed here: "Lumovi never changes it: to change how it connects, edit the file.", with **Show in Finder**. One you [added in Lumovi](#add-a-cluster) shows its server and how it signs in, with **Edit connection…**, **Copy for kubectl** and **Remove from Lumovi**.
 
@@ -271,6 +272,7 @@ The cluster switcher at the top of the sidebar shows the cluster you're in, by i
 - Switch to another cluster: type to filter, and pick one.
 - Go back to **All clusters**, the start screen.
 - Turn **Read-only** on or off for this cluster.
+- On a server, **Notify me of new warnings**, with what it's set to, like **On, in shop and payments**: your own, in this browser. See [Notifications of new warnings](/explore/events#notifications-of-new-warnings).
 
 You can also switch from the command palette (<kbd>⌘</kbd><kbd>K</kbd>), which lists every cluster and **All clusters**, or use **Go → All Clusters** (<kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd>) in the app's menu: the menu bar on a Mac, and the **Menu** button at the window's top left on Windows and Linux, where you use <kbd>Ctrl</kbd> instead of <kbd>⌘</kbd>.
 
