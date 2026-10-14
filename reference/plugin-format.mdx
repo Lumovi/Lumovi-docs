@@ -184,7 +184,7 @@ A few fields are only for plugins whose [code draws pages](/custom-resources/plu
 
 | Field | What it says |
 | --- | --- |
-| `pages` | Pages of its own, each an `id` and a `title`, as tabs on its page: `[{ id: overview, title: Overview }]` |
+| `pages` | Pages of its own, each an `id` and a `title`, as tabs on its page: `[{ id: overview, title: Overview }]`. A page can say it `takes` one of the plugin's own kinds: among the plugin's tabs it stands where that kind's list was, and may be titled as the kind. Lumovi's own list of the kind stays where Lumovi lists every kind. One page takes a kind |
 | `tabs` | Tabs it adds to its own kinds' details: `[{ id: application, title: Argo CD, kinds: [{ group: argoproj.io, kind: Application }] }]` |
 | `commands` | Commands in the palette, each opening one of its pages: `[{ name: Open the rollouts’ history, page: history }]` |
 | `reads` | Of Kubernetes' own kinds, what its code is handed: a kind, and the `fields` of each object, like `[metadata.name, spec.nodeName]`, and with `status: true`, `events: true` or `usage: true`, its status as Lumovi shows it, its events, or its usage. Its own kinds it's handed whole. |
