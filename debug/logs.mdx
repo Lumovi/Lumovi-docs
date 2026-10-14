@@ -35,7 +35,7 @@ The [audit log](/audit/overview) records whose logs you read, pod by pod and con
 | Control | Does |
 | --- | --- |
 | **Container** | Which container's logs to show. Init containers come first. With more than one container, **All containers** streams them all. It starts on the first container of the first pod. |
-| **Show** | How far back to start: **Last 100 lines**, **Last 500 lines** (the default), **Last 2,000 lines**, **Last 5 minutes**, **Last hour** or **Last day**. |
+| **Show** | How far back to start: **Last 100 lines**, **Last 500 lines** (the default), **Last 2,000 lines**, **Last 5 minutes**, **Last hour**, **Last day**, or **Since…** a time you type: see [From any time](#from-any-time). |
 | **Previous container** | The logs of the container's previous run, like `kubectl logs --previous`. Use it for a container that crashed and restarted: its last words are usually in the run before. These don't follow, since that run has ended. |
 
 ## Read them
@@ -43,7 +43,7 @@ The [audit log](/audit/overview) records whose logs you read, pod by pod and con
 | Toggle | Does |
 | --- | --- |
 | **Follow** | Keeps streaming new lines as they're written. On by default. |
-| **Timestamps** | Shows when each line was written, in your local time. On by default. |
+| **Timestamps** | Shows when each line was written, in your local time. On by default; on a phone it's off, under **More**. |
 | **Wrap lines** | Wraps long lines instead of scrolling sideways. |
 
 When you scroll up to read, the view stops jumping to new lines, and **Jump to latest** takes you back down.
@@ -51,11 +51,33 @@ When you scroll up to read, the view stops jumping to new lines, and **Jump to l
 - **Colors.** The colors and styles apps print with ANSI escape codes show as they would in a terminal: 16, 256 and true colors, bold, dim, italic and underline. Other escape codes are left out.
 - **JSON lines.** Structured lines show their level as a badge, then the message, then the other fields, dimmed, as `key=value`.
 
+## From any time
+
+**Show → Since…** takes a time ago, like `90m`, `2h` or `3d`, or a time of day or a date and time, like `14:30` or `2026-10-11 09:00`, in your own time. Before you choose **Show**, it reads it back to you: "From 12:58 today, 90 minutes ago, your time (UTC+2)." A time still to come, or one it can't read, says so. The picker then names it, like **Last 90 minutes** or **Since 09:00 yesterday**. On a phone, a tap fills in `15m`, `2h`, `6h` or today's `00:00`.
+
+A span keeps at most 20,000 lines. With more, it shows the last 20,000 and says so: "Showing the last 20,000 lines since 09:00 yesterday. Pick a later time to see every line from it." With several containers, each keeps its own share of them, at least 2,000, so a busy one doesn't crowd out a quiet one; a note says which were cut.
+
 ## Search and filter
 
-- **Search** finds lines that contain what you type, ignoring case. Matches are highlighted, with a count of the lines shown. <kbd>Esc</kbd> clears it.
+- **Search** finds lines that contain what you type, ignoring case. Matches are highlighted, and the field counts them: **12 matches**, or **3 of 12** once you step to one with <kbd>↵</kbd> (<kbd>⇧</kbd><kbd>↵</kbd> goes back), or the arrows beside it. <kbd>Esc</kbd> clears it.
+- **Three toggles in the field** change how it searches, each with a key that works while you're typing:
+
+  | Toggle | Key (Mac) | Key (Windows, Linux) | Does |
+  | --- | --- | --- | --- |
+  | **Regular expression** | <kbd>⌥</kbd><kbd>R</kbd> | <kbd>Alt</kbd><kbd>R</kbd> | Reads what you type as a JavaScript regular expression. Spaces at its ends count. |
+  | **Match case** | <kbd>⌥</kbd><kbd>C</kbd> | <kbd>Alt</kbd><kbd>C</kbd> | Tells capitals from small letters. |
+  | **Show lines without a match** | <kbd>⌥</kbd><kbd>X</kbd> | <kbd>Alt</kbd><kbd>X</kbd> | Shows the lines that don't match instead, and counts them. |
+
+  Where your keyboard types a letter with that key, like `ć` with <kbd>⌥</kbd><kbd>C</kbd> on a Polish Mac, the key types it, and the toggle's tooltip leaves the key out. Lumovi remembers the toggles for every Logs view; what you typed stays with the view while the page is open, never shared with another view.
+- **An expression that isn't one** says why, like "This isn't a regular expression: a ( isn't closed.", and the lines stay as the last search left them, dimmed. So does **a search that takes too long**: one that takes more than a second over the lines is stopped, with "This expression took too long on 20,000 lines, so Lumovi stopped it. Try a simpler one." It runs apart from the page, so the page never stops answering while it does.
 - **Errors** and **Warnings** appear when there are such lines, with a count. Press one to show only those lines; with neither pressed, every line shows.
 - **A chip per pod** appears when there are several pods, with the part of the names they share left out. Press one to leave that pod's lines out; it shows crossed out until you press it again.
+
+On a phone, the toggles and the arrows get a row of their own under the field while you search.
+
+### Lines over time
+
+Wider than a phone, a strip under the search shows how many lines were written over time, errors and warnings marked in each bar; hover a bar for its time and counts. Drag across it to show only the lines of that stretch: a chip says which, like **14:02–14:09**, and its **×** shows all times again. Picking a stretch stops **Follow**, so new lines don't pass it by. With the keyboard, move along the bars with the arrow keys, hold <kbd>⇧</kbd> to make a stretch, and press <kbd>↵</kbd>; <kbd>Esc</kbd> lets it go. It's drawn once the lines span at least two minutes.
 
 Lumovi reads a line's level from its `level` field when it has one (`"level":"warn"` in JSON, or `level=WARN`). Otherwise it looks for words in the line:
 
@@ -72,11 +94,11 @@ Lumovi reads a line's level from its `level` field when it has one (`"level":"wa
 2026-10-02T09:14:03.512345678Z checkout-7d9f8-hqnnn/app payment provider timed out
 ```
 
-Downloads are named after the object, like `checkout.log`. The desktop app asks where to save them, starting in your Downloads folder; in a browser, they download like any other file.
+Downloads are named after the object, like `checkout.log`, and end in `-filtered`, like `checkout-filtered.log`, when they're only part of the log: a search, a level, a pod left out, or a stretch of time. The desktop app asks where to save them, starting in your Downloads folder; in a browser, they download like any other file.
 
 ## Limits
 
-- **20,000 lines.** The view keeps the latest 20,000 lines, and drops the oldest. It says so when it does.
+- **20,000 lines.** The view keeps the latest 20,000 lines, and drops the oldest. It says so when it does: "Showing the latest 20,000 lines." A span from **Show** is cut the same way: see [From any time](#from-any-time).
 - **30 streams.** A workload's logs stream from at most 30 containers at once. With more, a note says so: pick a container, or open a single pod, to see the rest.
 
 ## When the stream drops
