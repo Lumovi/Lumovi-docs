@@ -189,7 +189,7 @@ A few fields are only for plugins whose [code draws pages](/custom-resources/plu
 | `commands` | Commands in the palette, each opening one of its pages: `[{ name: Open the rollouts’ history, page: history }]` |
 | `reads` | Of Kubernetes' own kinds, what its code is handed: a kind, and the `fields` of each object, like `[metadata.name, spec.nodeName]`, and with `status: true`, `events: true` or `usage: true`, its status as Lumovi shows it, its events, or its usage. Its own kinds it's handed whole. |
 | `showsSecrets` | The keys of a Secret its pages may show, and where its own kind names that Secret: `[{ group: example.com, kind: Widget, path: spec.secretName, keys: [token] }]`. Lumovi reads them itself when the person presses **Reveal** or **Copy**: the code never sees them. |
-| `changes` | What its pages may propose, of its own kinds only: `[{ group: argoproj.io, kind: Application, actions: [patch, delete] }]`, of `patch`, `create`, `delete` and `scale`. See [Changes a page proposes](/custom-resources/plugins#changes-a-page-proposes). |
+| `changes` | What its pages may propose, of its own kinds only: `[{ group: argoproj.io, kind: Application, actions: [patch, delete] }]`, of `patch`, `create`, `delete` and `scale`. Each kind may say what in a change of it does `harm`: see [What a change harms](#what-a-change-harms). See [Changes a page proposes](/custom-resources/plugins#changes-a-page-proposes). |
 | `opens` | Which of Lumovi's own lists its pages may open, at one object: `[{ group: apps, kind: Deployment }]`. Opening reads nothing for the plugin. |
 | `logs` | `shown`: its pages may show a pod's logs, which Lumovi reads, as the person, and draws in its own log view: its code never sees a line. `read`: its code may also read a pod's last lines itself, once, of pods it was handed, which needs Pods in `reads`. See [Logs on a plugin's page](/custom-resources/plugins#logs-on-a-plugin’s-page). |
 | `server` | Its tool's own server in the cluster, which its code may ask: `{ service: { name: prometheus-operated }, in: { group: monitoring.coreos.com, kind: Prometheus }, port: web, paths: [/api/v1/targets] }`. The Service by its `name`, or by up to 8 `labels` exactly one Service has; `in`, one of its own kinds, in whose objects' namespace the Service is; a `port` the Service declares, by name or number; and up to 20 `paths`, each up to 200 characters, written as they read, with a whole segment like `{name}` that Lumovi fills with the name of an object the page shows. A path may end in a fixed query, like `/api/v1/targets?state=active`, asked exactly as listed: Lumovi fills nothing in it, and a page can neither add one nor change it. See [A plugin's own server](/custom-resources/plugins#a-plugin’s-own-server). |
@@ -580,7 +580,36 @@ actions:
 
 An action with a `confirm`, `inputs` or a `create` opens a dialog first, and its name ends in "…" in menus, like **Back up now…**. The dialog shows the `confirm` text, the inputs, what it would create, and the equivalent command. Its button has the action's name.
 
-An action with none of the three runs at once, and has to say so: `runs: at-once`. That way nobody reading the file takes a change that asks nothing for one that asks. An action that asks first can't say it.
+An action with none of the three runs at once, and has to say so: `runs: at-once`. That way nobody reading the file takes a change that asks nothing for one that asks. An action that asks first can't say it. One done to several (`bulk`) may still say `runs: at-once` with inputs: pressed for one object it runs at once, filled in with its inputs' defaults (each needs one), and for several its inputs are asked once.
+
+### What a change harms
+
+A kind under `changes` may list what in a change of it does harm, up to 8. Lumovi checks every change of that kind against it as it's sent, the page's proposals and the file's own actions alike, and for several objects each one's own: each harm that holds is drawn in red in Lumovi's dialog, and its verb is named on the button, like **Sync, prune and force**, whatever the plugin's code says.
+
+```yaml
+changes:
+  - group: argoproj.io
+    kind: Application
+    actions: [patch, delete]
+    harm:
+      - path: operation.sync.prune
+        is: true
+        unless: { path: operation.sync.dryRun, is: true }
+        says: Deletes what’s no longer in its source.
+        verb: prune
+      - path: operation.sync.syncOptions
+        contains: Replace=true
+        unless: { path: operation.sync.dryRun, is: true }
+        says: Writes each resource whole, dropping what anything else set on it.
+        verb: replace
+```
+
+- **`path`**: where in the change, as names with dots between.
+- **One of `is`, `set` or `contains`**: the value that harms, `set: true` for its being there at all, or a value a list there holds.
+- **`says`**: what it does, up to 160 characters, and **`verb`**: the word on the button, up to 24.
+- **`unless`**: a `path` and the value at it that makes the change harmless, like a dry run. It quiets the harm only where the person set that value with a switch or a check of their own: never a value the plugin wrote, one read off the object, or a default filled in where it isn't asked.
+
+A JSON patch is judged failing closed: an operation that copies, moves, adds or replaces onto or into a harm's path counts as harming, whatever it carries. An action whose patch may write a harm's path has to ask first.
 
 ### What a patch can’t change
 
