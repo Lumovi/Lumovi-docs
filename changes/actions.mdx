@@ -46,7 +46,7 @@ Each action's dialog shows its **Equivalent command**, the `kubectl` command tha
 | Pods | Shell, Debug, Download files, Upload files, Forward a port (desktop app), Restart, Evict, Delete (or force-delete) |
 | Jobs | Suspend, Resume |
 | CronJobs | Run now, Suspend, Resume, Change image |
-| Nodes | Shell, Cordon, Uncordon, Drain |
+| Nodes | Shell, Cordon, Uncordon, Drain, Taints |
 | Autoscalers | Edit replica range |
 | Volume claims | Expand volume |
 | Services | Forward a port (desktop app) |
@@ -173,14 +173,17 @@ Anything with no button of its own, like a Service, a Secret, or a Job that isn'
     | Keeps data in an `emptyDir` volume | Needs **Delete local data**: the data is lost |
     | Has no controller | Needs **Evict pods without a controller**: nothing restarts it elsewhere |
 
-    **Drain** stays disabled until you've ticked the options the node's pods need. The two options add `--delete-emptydir-data` and `--force` to the command.
+    **Drain** stays disabled until you've ticked the options the node's pods need. Its options are `kubectl drain`'s: a grace period (`--grace-period`, each pod's own by default), how long to keep trying (`--timeout`), **Delete emptyDir data** (`--delete-emptydir-data`), **Leave DaemonSet pods** (`--ignore-daemonsets`, on by default) and **Evict pods without a controller** (`--force`). See [Take a node out of service](/explore/nodes#take-a-node-out-of-service).
 
-    Evictions run four at a time, respect PodDisruptionBudgets, and show their progress per pod. A pod whose eviction fails says why, and can be retried. In a cluster named like production, you type the node's name first.
+    Evictions run four at a time, respect PodDisruptionBudgets, and show their progress per pod. A pod a budget holds is tried again when its budgets allow it, its row saying which budget and why, until the drain gives up or you stop it; the node then stays cordoned. A pod whose eviction fails otherwise says why, and can be retried. In a cluster named like production, you type the node's name first.
 
     <Frame caption="Draining a node under memory pressure: the pods it evicts, those that stay, and what has to be allowed first.">
       <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-light-1x.webp" alt="The Drain worker-2? dialog, on production: the node is cordoned, then its pods are evicted, PodDisruptionBudgets respected. Delete local data and Evict pods without a controller are unticked, and 2 pods need one of them before the node can be drained: 8 pods to evict, 4 staying, kube-proxy among them as a DaemonSet pod." />
       <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-dark-1x.webp" alt="The Drain worker-2? dialog, on production: the node is cordoned, then its pods are evicted, PodDisruptionBudgets respected. Delete local data and Evict pods without a controller are unticked, and 2 pods need one of them before the node can be drained: 8 pods to evict, 4 staying, kube-proxy among them as a DaemonSet pod." />
     </Frame>
+  </Accordion>
+  <Accordion title="Taints…" icon="tag">
+    Adds and removes a node's taints, like `kubectl taint`. Nothing changes until **Apply**, which touches only the taints you added or removed, each removal checked against the taint as Lumovi read it. A `NoExecute` taint says first which pods it evicts at once, and **Undo** in the notification puts the taints back, though not the pods it evicted. See [Taints](/explore/nodes#taints).
   </Accordion>
 </AccordionGroup>
 

@@ -52,13 +52,33 @@ A node's status is one of:
 | **Cordon** | Marks the node unschedulable. Pods on it keep running, and no new ones arrive. Undo it from the notification. |
 | **Uncordon** | Makes it schedulable again. |
 | **Drain…** | Cordons it, then evicts its pods so they're rescheduled elsewhere. |
+| **Taints…** | Adds and removes its taints, which keep pods off it unless they tolerate them. |
 
-A drain, like `kubectl drain --ignore-daemonsets`, leaves DaemonSet pods and static pods where they are. Two options cover the pods that would otherwise stop it:
+A drain takes `kubectl drain`'s options:
 
-- **Delete local data**, for pods with `emptyDir` volumes, whose data is lost (`--delete-emptydir-data`).
+- **Grace period**: how long each pod has to stop before it's killed, at least 1 second. By default, each pod's own `terminationGracePeriodSeconds` (`--grace-period`).
+- **Give up after**: how long to keep trying pods a PodDisruptionBudget holds. Then those pods stay, and so does the cordon (`--timeout`).
+- **Delete emptyDir data**, for pods with `emptyDir` volumes, whose data is lost (`--delete-emptydir-data`).
+- **Leave DaemonSet pods**, on by default: their DaemonSet would start them here again anyway. Off, a DaemonSet pod stops the drain (`--ignore-daemonsets`).
 - **Evict pods without a controller**, for pods that nothing will recreate (`--force`).
 
-**Drain** stays disabled until the options the node's pods need are ticked. Evictions respect PodDisruptionBudgets, and the dialog shows each pod's progress, with **Retry** for any a budget refused. In a cluster named like production, you type the node's name first.
+Static pods stay where they are: the kubelet manages them. **Drain** stays disabled until the options the node's pods need are ticked. Evictions respect PodDisruptionBudgets: a pod a budget holds is tried again whenever its budgets allow, its row saying which budget and why, until the drain gives up or you stop it. Then the dialog says which pods it stopped on, like "Stopped after 5:00: 2 pods are still on worker-2, held by PodDisruptionBudgets. It stays cordoned." In a cluster named like production, you type the node's name first.
+
+## Taints
+
+**Taints…** lists the node's taints, and adds and removes them. A taint keeps pods off the node unless they tolerate it, by its effect:
+
+| Effect | What it does |
+| --- | --- |
+| `NoSchedule` | No new pod lands here unless it tolerates the taint. Pods already running stay |
+| `PreferNoSchedule` | The scheduler avoids the node, but may still use it |
+| `NoExecute` | As `NoSchedule`, and pods already running that don't tolerate it are evicted at once |
+
+Remove a taint with its **Remove** button, and **Keep** to take that back; add one with a key, an optional value and an effect. Nothing changes until **Apply**. Taints Kubernetes sets itself, like a node that isn't ready, say **Set by Kubernetes**, and removing the control plane's says that pods will then be scheduled on it.
+
+Where a `NoExecute` taint is staged, the dialog says first which pods it evicts at once, like "Applying this evicts 3 pods from worker-2 at once.", and its button says so: **Apply and evict 3 pods**. Undo, in the notification, puts the taints back; pods it evicted don't come back.
+
+Apply sends one change that touches only the taints you added or removed, each removal checked against the taint as Lumovi read it. If the node's taints changed while the dialog was open, nothing is changed, and it shows them as they are now, with your changes still staged. The command beside it does the same with `kubectl taint`, and the [audit log](/audit/events) records it as `resource.patch`, like "Tainted worker-2 with dedicated=gpu:NoSchedule" or "Changed worker-2’s taints: dedicated=gpu:NoSchedule added, maintenance:NoExecute removed".
 
 <Frame caption="Draining a node under memory pressure: the pods it evicts, those that stay, and what has to be allowed first.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/node-light-1x.webp" alt="The Drain worker-2? dialog, on production: the node is cordoned, then its pods are evicted, PodDisruptionBudgets respected. Delete local data and Evict pods without a controller are unticked, and 2 pods need one of them before the node can be drained: 8 pods to evict, 4 staying, kube-proxy among them as a DaemonSet pod." />
