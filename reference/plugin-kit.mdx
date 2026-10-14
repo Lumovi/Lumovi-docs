@@ -37,7 +37,7 @@ And the parts they hold:
 | `Table` | `title`, up to 8 `columns`, `headings`, `rows`, `shows`, `state` | Rows with a lead (a name, a word beside, a line under, a level) and a cell for each column. Rows may hold rows, one level, and stand in groups |
 | `Graph` | `title`, `legend`, `columns`, `nodes`, `edges`, `state` | Cards with lines from one to another, solid or dashed. Past 300 cards or 600 lines, it's shown as its table, and says why |
 | `Steps` | 2 to 12 `steps`, each a `key`, a `name` and a state (done, running, to come or failed); `waiting` | Where a run is: its steps in order on one line, never by colour alone. Under them, what the running step waits on (`waiting`: a lead, what it says, and an object Lumovi opens). On a phone, one sentence, "Step 3 of 5, Wave 1, running: after Wave 0, before Wave 2.", and a card |
-| `Counts` | Up to 6 `groups`, each a `title` and up to 50 `rows` of a `value` and a `count` | Shares of a whole, as bars, the largest first |
+| `Counts` | Up to 6 `groups`, each a `title` and up to 50 `rows` of a `value` and a `count`, which may say where it `opens` | Shares of a whole, as bars, the largest first |
 | `Logs` | `title`, `pod`, `container` | A pod's logs in Lumovi's own log view, where the file says [`logs`](/custom-resources/plugins#logs-on-a-plugin’s-page). The plugin's code never sees a line |
 | `Secret` | `title`, `secret`, `keys` | A Secret's keys, each hidden until **Reveal**, with **Copy**, in Lumovi's own card, where the file says [`showsSecrets`](/reference/plugin-format#spec). The plugin's code never sees a value |
 
@@ -47,7 +47,7 @@ What each part takes, as Lumovi's door checks it. A property not listed here sto
 
 | Part | Holds | Takes | Needs | Tells the page |
 | --- | --- | --- | --- | --- |
-| `Table` | nothing | `columns`, `cut`, `headings`, `leadHeading`, `nameSorts`, `onOpen`, `onPress`, `onRetry`, `rows`, `shows`, `state`, `title` | `columns`, `headings`, `rows`, `title` | `open`, `press`, `retry` |
+| `Table` | nothing | `columns`, `cut`, `filters`, `headings`, `leadHeading`, `nameSorts`, `onOpen`, `onPress`, `onRetry`, `rows`, `search`, `shows`, `state`, `title` | `columns`, `headings`, `rows`, `title` | `open`, `press`, `retry` |
 | `Graph` | nothing | `columns`, `edges`, `legend`, `nodes`, `onOpen`, `onRetry`, `state`, `title` | `columns`, `edges`, `nodes`, `title` | `open`, `retry` |
 | `Tiles` | nothing | `onOpen`, `tiles` | `tiles` | `open` |
 | `Header` | nothing | `buttons`, `name`, `onPress`, `secondStatus`, `status` | `name` | `press` |
@@ -77,6 +77,12 @@ A column has a `name`, a `kind`, a `width` (`narrow`, `normal`, `wide` or `text`
 A row has one tooltip, and it's Lumovi's own, under the pointer and on the row the keyboard is on. It says, in this order and only what there is to say: where the row goes, if it goes to an object's **Logs** tab, its **Shell** tab or **Port forward**, and Lumovi offers that place here; its name, the words beside it and the line under it, whole, where any of the three is cut; and the columns that gave way, each with its heading and its value. Where a table is too narrow for its columns, some give way whole, so none is squeezed. A cell that's only cut by its column's width has a tooltip of its own under the pointer; on the keyboard's row, the row's tooltip says it too. A screen reader is read where the row goes, and the columns that gave way, after the row. Under a finger there's no tooltip.
 
 Beside a name, the words take the room the name leaves. Where the two don't fit, the words give way first, down to about five characters, and only then does the name lose its middle.
+
+A table can have a filter bar, Lumovi's own: `search`, a field that keeps the rows whose name, or the words beside it, has what's typed, and up to 8 `filters`, each with a `key` of up to 40 characters. A filter is a menu of the values the rows give it in their `facets` (up to 32 a row), with how many have each, or of the rows' own levels: Failing, Warning, In progress, Healthy, Inactive. Values in one filter are either; filters together are all. The bar says how many rows show, like "2 of 5", and each filter that's set as a chip, "Take off Status: Failing". On a phone, the filters are behind **Filters**. Nothing typed, picked or ticked there reaches the plugin: Lumovi picks the rows.
+
+A link to one of the plugin's own pages, `{ page }`, can set that page's filters and search, as a row, a tile or a count's row opens it: `{ page: applications, filters: { status: [Failing] } }`. It names a page by its id under the file's [`pages`](/reference/plugin-format#spec), and a link to any other goes nowhere. A count's row that `opens` is pressed whole, and Lumovi opens where it says, as a tile does.
+
+A table's status cell can say `since`, and Lumovi counts how long, "Syncing 1m 05s", as a header's second status does.
 
 A graph's card can be `marked`, drawn with an edge in the warning colour and said in the legend's `marked` words, which it then has to give. It can be shown for `context`, dashed and quiet, opening nothing. And where the page holds no token for its object, it can say where it `goes`, a list or place of Lumovi's own as a table's row does, with its kind's own icon. A card opens an object or goes somewhere, not both.
 
