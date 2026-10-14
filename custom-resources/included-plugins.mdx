@@ -80,12 +80,14 @@ Applications and rollouts have views; the other kinds don't. Applications take t
 
 | Kind | Columns | Links | Actions |
 | --- | --- | --- | --- |
-| Application | Sync, Repository, Path, Destination | Destination | **Sync**, **Refresh** |
+| Application | Sync, Repository, Path, Namespace | Namespace | **Sync…**, **Terminate sync…**, **Refresh** |
 | Rollout | Desired, Ready, Updated, Steps | | **Promote**, **Resume** (undo), **Restart…**, **Abort…** |
 
-- **Sync** starts a sync, like the Sync button in Argo CD. It's offered when no operation is running.
+- **Sync…** asks first, then has Argo CD bring the application in line with its source: at a **Revision** you give (empty: the one it tracks), with **Prune** and a **Strategy**. Pruning is drawn in red and named on the button, **Sync and prune**. It sends the application's own sync options too, as Argo CD's own sync does, so `CreateNamespace=true` and the rest hold; where they include `Replace=true` or `Force=true`, that's drawn in red too. While a sync runs, **Sync** stays where it was, busy, and says how long it has run.
+- **Terminate sync…**, while a sync runs or waits to start, asks first, then stops it as Argo CD's own Terminate does, or takes back one Argo CD hasn't started. Lumovi reads the application again as it's sent: if the sync you saw has started, ended or been replaced since, nothing is sent.
 - **Refresh** asks Argo CD to compare the application with its source again.
-- An application's **Destination** link opens the namespace it deploys to.
+- **Sync…** and **Refresh** are also offered for the applications you select on the plugin's Applications page, asked once for all, without a revision: each syncs to the one it tracks. Lumovi follows each sync to how it ended.
+- An application's **Namespace** link opens the namespace it deploys to; its details say its cluster too.
 - **Promote** moves a paused rollout past its pause. **Resume** unpauses one that was paused by hand.
 - **Restart…** replaces the rollout's pods a few at a time, as its strategy says. It asks first.
 - **Abort…** stops a rollout in progress and sends traffic back to the stable version. It's destructive, so it asks first.
@@ -94,11 +96,12 @@ Rollouts have the scale subresource, so you can also **Scale** them like a Deplo
 
 Argo CD's plugin draws pages of its own, with its [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code):
 
-- **Overview**, its first tab: how many applications are healthy, how many are out of sync, and whose last sync failed, then every Application by project, with its sync, repository and path, target revision, destination, and when it last synced.
-- **Argo CD**, a tab on each Application: its status and what its operation is doing, its sync, the revision it synced to, when it last synced and whether it syncs by itself, then its resources, its history and its conditions. A resource's row opens Lumovi's own list of its kind at that one object, for Deployments, StatefulSets, DaemonSets, Services, ConfigMaps, Ingresses, Jobs and CronJobs: the list is Lumovi's, and the plugin reads nothing of it.
-- **Sync…**, **Refresh…** and **Delete…** on that tab are [changes it proposes](/custom-resources/plugins#changes-a-page-proposes), which you confirm in Lumovi's own dialog: a sync with a revision, pruning and a strategy, a normal or hard refresh, and a delete. **Sync…** can't be pressed while an operation runs.
+- **Overview**, its first tab: four tiles (healthy, synced, syncing now, last sync failed), then what wants a look, worst first; the syncs running now, where each is and what it waits on; health and sync broken down; the syncs that ended last; projects and where the applications run; and ApplicationSets, with what each makes its applications from. Its tiles and counts open the Applications page, filtered to what they count.
+- **Applications**, which is also the tab Lumovi shows for the Application kind: every application in one table, searched by name and filtered by health, sync, operation, project, cluster, namespace and auto-sync in Lumovi's own bar, the plugin told nothing of what's typed or set there. Its rows can be selected, for **Sync…** and **Refresh**.
+- **Argo CD**, a tab on each Application: its health and, beside it, what's happening to it; while a sync runs, where it is, hook phase by phase and wave by wave, and what it waits on, a hook by its name; its revision, last sync (the last one that finished) and auto-sync; its resources as a graph, those out of sync marked; its sync's result, resource by resource; its problems in one place; and its history. Where it deploys to the cluster Lumovi is connected to, the graph goes down to its Deployments' ReplicaSets and their Pods, each card opens what it is, and its problems include the warning events of those that aren't well. A resource's row opens Lumovi's own list of its kind at that one object, for Deployments, StatefulSets, DaemonSets, Services, ConfigMaps, Ingresses, Jobs and CronJobs: the list is Lumovi's, and the plugin reads nothing of it.
+- On that tab, [changes it proposes](/custom-resources/plugins#changes-a-page-proposes), each confirmed in Lumovi's own dialog: **Sync…**, with every option Argo CD's own sync has (a revision; prune, dry run, apply only and force; its sync options; retry; and only some resources); **Refresh** (normal or hard); **Delete…**, saying what happens to what it deployed; auto-sync turned on (prune and self-heal asked first) or off; and **Roll back…** to an entry of its history, as Argo CD's own Rollback does, off while auto-sync is on, a sync runs, or it's being deleted. What does harm, as its file says (prune, force, replace, and syncing only some resources), is drawn in red and named on the button; a dry run changes nothing, and its button says **Dry run**.
 
-Its pages read only Argo CD's own kinds. Wherever they don't run, the view's **Sync** and **Refresh** stay on Lumovi's list of Applications.
+Besides Argo CD's own kinds, its pages read ReplicaSets and Pods: who made each and how ready it is, never what they run, and the warning events of those that aren't well, each message cut where it could carry something only you may read. Wherever its pages don't run, the view's **Sync…**, **Terminate sync…** and **Refresh** stay on Lumovi's list of Applications.
 
 ## Argo Workflows
 
