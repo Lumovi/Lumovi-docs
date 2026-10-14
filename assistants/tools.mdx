@@ -22,6 +22,8 @@ Every tool keeps to your [permissions](/assistants/permissions), as they are at 
 | `get_events` | Get events | Events, the latest first |
 | `get_logs` | Get logs | A container's latest log lines |
 | `find_problems` | Find problems | What's wrong in a cluster or namespace, in one answer |
+| `get_rollout_history` | Get rollout history | A workload's rollouts, with the images its pods pulled |
+| `find_in_clusters` | Find in every cluster | Where something is, in every cluster at once |
 | `apply_manifest` | Apply a manifest | Asks to create or change an object |
 | `scale` | Scale | Asks to set a workload's replicas |
 | `restart` | Restart | Asks to restart a workload's pods |
@@ -30,7 +32,7 @@ Every tool keeps to your [permissions](/assistants/permissions), as they are at 
 
 No answer of any tool holds more than about 64,000 characters. Past that, it's cut at a line, and says how much it left out and how to ask for less.
 
-When an assistant connects, Lumovi also tells it how to go about it: start with `list_clusters`; to see what's wrong, `find_problems` first, then `get_resource`, `get_events` and `get_logs` on what it finds. Changes wait for your approval, so it should say why in `reason`, tell you to look at Lumovi, and follow the note of a change you reject. A call waits for your answer up to a minute: if it says it's still waiting, the assistant calls `wait_for_change` with the id it gives, until you answer.
+When an assistant connects, Lumovi also tells it how to go about it: start with `list_clusters`; to see what's wrong, `find_problems` first, then `get_resource`, `get_events` and `get_logs` on what it finds, and `get_rollout_history` for what changed; `find_in_clusters` says which cluster has something. Changes wait for your approval, so it should say why in `reason`, tell you to look at Lumovi, and follow the note of a change you reject. A call waits for your answer up to a minute: if it says it's still waiting, the assistant calls `wait_for_change` with the id it gives, until you answer.
 
 ## Parameters they share
 
@@ -166,14 +168,53 @@ What's wrong in a cluster, or in one namespace, in one call. It's where Lumovi t
 - **`problems`**: the nodes, pods, Deployments, StatefulSets, DaemonSets, Jobs and PersistentVolumeClaims whose [health](/explore/health) is a warning or critical, the critical ones first, each with Lumovi's reason and its age, up to 100, and then how many more. Nodes only for the whole cluster: they aren't in a namespace.
 - **For a failing pod, each failing container**: how often it has restarted, why it isn't running now, and how its last run ended (`lastRun`: its exit code, reason, message, and when). And that run's last error lines (`lastLines`), where your [permissions](/assistants/permissions) let assistants read logs, or why not. That's for 10 containers at most; it says how many more it didn't read, which `get_logs` with `previous` reads. Each read is in the [audit log](/audit/events), as `get_logs`'s are.
 - **`warningsInTheLastHour`**: the last hour's warning events, one for each object and reason, the most frequent first, up to 20, with how many times and how long ago.
+- **`riskyConfig`**: a Deployment, StatefulSet or DaemonSet that keeps data in volume claims while its image's tag can move (`latest`, no tag, or a major version alone) and is pulled whenever a pod starts, with the containers that do, healthy as it may be. A restart can then run a newer version on the same data. So while one is there, it never answers that nothing is wrong.
 - **`couldNotCheck`**: the kinds it couldn't list, and why, like your account not being allowed to.
 
-When there's nothing, it says so: "Nothing is wrong in shop in demo: no unhealthy objects, and no warnings in the last hour." What's in namespaces your permissions hide isn't counted.
+When there's nothing, it says so: "Nothing is wrong in shop in demo: no unhealthy objects, no warnings in the last hour, and no risky config." What's in namespaces your permissions hide isn't counted.
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="namespace" type="string">
   Only this namespace. The whole cluster unless given.
 </ResponseField>
+
+### get_rollout_history
+
+A Deployment's, StatefulSet's or DaemonSet's rollouts, the newest first. For each: when it was made and why (its change cause), whether it's the one running now, how many of its pods are left, and each container's image with the digest its pods pulled. Where none of its pods is left, it says `no pod of it is left to say`, since an old rollout's digests went with its pods. Where its pods pulled different digests for one tag, it lists them all: the tag moved between pulls. Where its pods can't be listed, it gives the images without digests, and says why: `digestsUnknown: its pods can’t be listed: …`. It shows no env, nor anything else of the pods' template.
+
+<ResponseField name="cluster" type="string" required />
+<ResponseField name="kind" type="string" required>
+  `Deployment`, `StatefulSet` or `DaemonSet`.
+</ResponseField>
+<ResponseField name="namespace" type="string" required />
+<ResponseField name="name" type="string" required />
+<ResponseField name="limit" type="number" default="10">
+  The newest so many, up to 100. Where there are more, it says how many it left out.
+</ResponseField>
+
+### find_in_clusters
+
+Where something is, in every cluster at once: objects whose name has a text in it, or with labels, or in a namespace. It looks through namespaces, Deployments, StatefulSets, DaemonSets, CronJobs and Services, or one kind. For each, its kind, name, namespace, health and age, and nothing else.
+
+It asks every cluster you may see at once, and gives each 5 seconds. It says which had nothing (`nothingIn`), which couldn't be looked in and why (`couldNotLook`), and which it didn't ask (`notAsked`): one you sign in to through a credential plugin, as with `list_clusters`. Hidden clusters, namespaces, and Secrets where your permissions hide them, aren't there.
+
+<ResponseField name="match" type="string">
+  Only objects whose name has this text in it, in any case.
+</ResponseField>
+<ResponseField name="labelSelector" type="string">
+  As `kubectl -l` takes it: `app=web,tier!=db`.
+</ResponseField>
+<ResponseField name="namespace" type="string">
+  Only in this namespace, in each cluster that has it.
+</ResponseField>
+<ResponseField name="kind" type="string">
+  Only this kind, in each cluster that serves it, a custom resource's too.
+</ResponseField>
+<ResponseField name="limit" type="number" default="20">
+  At most this many in each cluster, up to 100. Where there are more, it says so: `More than 20 here: ask for less, or a larger limit.`
+</ResponseField>
+
+It needs one of `match`, `labelSelector` or `namespace`.
 
 ## Changing
 
