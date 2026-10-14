@@ -96,7 +96,7 @@ The desktop app reads clusters from the same place `kubectl` does, and keeps you
 
 ## Open your first cluster
 
-Lumovi starts on a list of every cluster in your kubeconfig, each with a status: its Kubernetes version and how fast it answered, or why it can't be reached.
+Lumovi starts on a list of every cluster in your kubeconfig, each with a status: its Kubernetes version and how fast it answered, or why it can't be reached. A cluster that signs in through a program, like `aws`, `gke-gcloud-auth-plugin` or `kubelogin`, says **Signs in when opened** instead, and signs in when you open it.
 
 <Frame caption="The start screen: every context in your kubeconfig, checked as it opens.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/clusters-light-1x.webp" alt="The Lumovi start screen: the Platform and Shop groups, each cluster a colored tile with its name, server and user, and its version and response time; production has a Production badge, and edge is marked Unreachable." />
@@ -113,7 +113,13 @@ On a Mac, Lumovi's menus are in the menu bar. On Windows and Linux, its window h
 
 **File → New Window** (<kbd>⌘</kbd><kbd>⇧</kbd><kbd>N</kbd>, <kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>N</kbd> on Windows and Linux), or **New window** in the command palette, opens another window on the start screen, so two clusters can be open side by side. Each window has its own pages. What a window starts, a terminal, a pod's logs, a copy or a port forward, is its own: it goes on whatever the other windows do, and ends when its window closes. The menu's commands go to the window in front.
 
-Lumovi's windows open again where they were on the screen the next time it starts, each on the start screen.
+### Opened again as it was
+
+The next time Lumovi starts, each window opens again where it was on the screen, on its page, with the panel's object and what it had below:
+
+- A window that was on a cluster that signs in through a program opens the start screen instead, and that cluster is read when you open it. So does one whose cluster has gone from your kubeconfig.
+- A [terminal](/debug/terminal) comes back ended: "The shell ended when Lumovi quit.", with "A terminal's shell can't outlive Lumovi. Its name, cluster and namespace are kept for a new one." Nothing runs until you choose **Start a new shell**: a shell runs your profile.
+- An object [kept below](/explore/details#keep-it-open-below) reads again as if just opened, on its overview if it was on its Shell, so no shell starts by itself. One on a cluster that signs in through a program waits, its tab saying *not read yet*, with a card: **Not read yet**, "production signs in through kubelogin, so Lumovi reads this when you ask.", and **Read it now**. It's read when you choose that, pick its tab, or open its cluster in that window.
 
 <Columns cols={2}>
   <Card title="Take the tour" icon="map" href="/get-started/tour">
