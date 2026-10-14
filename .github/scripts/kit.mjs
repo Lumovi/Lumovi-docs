@@ -95,6 +95,8 @@ const LIMITS = {
   'reads.asksASecond': ['reference/plugin-kit', (v) => `${v} asks`],
   'reads.waiting': ['reference/plugin-kit', (v) => `${v} not yet answered`],
   'reads.refreshEveryMs': ['reference/plugin-kit', (v) => `Once in ${v / 1000} seconds`],
+  'reads.differentAWhile': ['reference/plugin-kit', (v) => `read at most ${v} different things`],
+  'reads.whileMs': ['reference/plugin-kit', (v) => `in ${v / 60000} minutes in one cluster`],
   'reads.logLines': ['custom-resources/plugins', (v) => `last ${v} lines`],
   'reads.logSeconds': ['custom-resources/plugins', (v) => (v === 3600 ? 'the last hour' : `the last ${v} seconds`)],
   'reads.logBytes': ['custom-resources/plugins', (v) => `${v / 1024} KiB`],

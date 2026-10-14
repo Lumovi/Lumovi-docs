@@ -147,6 +147,8 @@ A page past any of these is stopped, and says why in its place. The rest of Lumo
 | Asks of its server not yet answered | 2 by a page; 4 by a plugin, and more wait their turn |
 | A refresh | Once in 10 seconds: one asked sooner isn't made |
 
+One more isn't a stop. A plugin's pages read at most 200 different things in 10 minutes in one cluster: objects, logs and asks of its server together. The same read again doesn't count. Past that, a new read is refused as `too-many-reads` until the ten minutes end, and the answer says how many minutes are left; what the page already reads goes on. So everything a plugin's code reads as you is in the [audit history](/audit/events), or it isn't read.
+
 In the desktop app, Lumovi also stops a page that uses more memory than a plugin may, or more than half of a processor core over half a minute.
 
 ## What needs which Lumovi
