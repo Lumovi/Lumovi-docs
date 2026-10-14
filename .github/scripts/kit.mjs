@@ -29,10 +29,23 @@ const problems = []
 
 // What the description holds, and this check knows of: `parts` and `limits`, held to the page
 // below; `kinds` (what each property takes, kind for kind), which makes the file change when a
-// property changes under its name, and which the page isn't held to yet. Anything else is new.
+// property changes under its name, and which the page isn't held to yet; `eventMessageCuts`, where
+// Lumovi cuts a warning's message before a plugin's code is handed it, each on the page as
+// written. Anything else is new.
 for (const key of Object.keys(kit)) {
-  if (!['parts', 'limits', 'kinds'].includes(key)) {
+  if (!['parts', 'limits', 'kinds', 'eventMessageCuts'].includes(key)) {
     problems.push(`the door's description has ${key}, which this check doesn't know: say here what holds the docs to it`)
+  }
+}
+
+// --- Where a warning's message is cut ---
+if (kit.eventMessageCuts !== undefined) {
+  const said = page('reference/plugin-kit')
+  if (!Array.isArray(kit.eventMessageCuts)) problems.push('eventMessageCuts: should be a list')
+  for (const mark of kit.eventMessageCuts ?? []) {
+    if (!said.includes(`\`${mark.trimEnd()}\``)) {
+      problems.push(`reference/plugin-kit doesn't say that a warning's message is cut at \`${mark.trimEnd()}\``)
+    }
   }
 }
 
