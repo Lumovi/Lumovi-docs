@@ -1,6 +1,6 @@
 ---
 title: "Events"
-description: "What happened in the cluster, newest first, with a link from each event to the object it's about."
+description: "What happened in the cluster, newest first or on a timeline, with a link from each event to the object it's about."
 icon: "activity"
 ---
 
@@ -28,14 +28,26 @@ The chips above the list count each type. Pick **Warning** to hide the routine e
 
 The filter (<kbd>/</kbd>) matches an event's reason, message and object name as well as its labels, so typing `OOMKilled` or a pod's name finds what you're after.
 
+## On a timeline
+
+**List** | **Timeline**, in the list's bar, shows the same events where they fell in time. The timeline has a row for each object, with its kind and name; click the name to open the object. A **Normal** event is a hollow circle and a **Warning** a triangle. One that repeated is a bar from its first time to its last, with how many times. Marks too close to tell apart are drawn as one, with how many, and so are repeated events too many to stack in a row; click one to zoom in and part them. A key under it says what each mark means.
+
+It shows the events the page's filter and chips leave, so pick **Warning** to see only the warnings in time. Above it, choose **15m**, **1h** or **All** (every event the cluster keeps), and drag across the times to zoom in; **Reset zoom** goes back. A stretch with no events says so, with **Reset zoom**.
+
+Hover a mark, or move to it with the keyboard, to see what happened: its reason, type and message, and when, with its first and last time and how many times for one that repeated. Click a mark, or press <kbd>Enter</kbd> on it, to open the event. With the timeline focused, the arrow keys move between rows and along a row's marks, <kbd>Home</kbd> and <kbd>End</kbd> go to a row's first and last, and <kbd>Escape</kbd> lets go.
+
+The choice is kept in the page's address (`?as=timeline`), so a link opens the timeline too. On a phone, or where the page is too narrow for it (beside an open object, say), events stay a list.
+
 ## An object's own events
 
 Every object's detail panel has an **Events** tab with the events about it, newest first. It's often the fastest way to see why a pod won't start or a volume won't bind. The overview lists the latest warnings across the namespace, too.
 
 When an object has more than 200 events, **Filter events** appears above the list. It finds events by their reason, their message or what reported them, and says how many match, like *12 of 3,000*. Your browser's own find reaches only the events on screen then, since a long list is drawn as you scroll.
 
+Where the panel is wide enough, the tab has **List** | **Timeline** too: its timeline has a row for each reason, like `BackOff` or `Pulled`, and works as the page's does. Lumovi keeps your choice for every object's tab.
+
 <Note>
-  Kubernetes keeps events for a limited time (an hour, unless the cluster is set up otherwise), so old ones disappear. For a longer view of what a workload did, see [Usage history](/metrics/usage-history) and its logs.
+  Kubernetes keeps events for a limited time (an hour, unless the cluster is set up otherwise), so old ones disappear. The timeline says so under it: **All** is only what's still kept. For a longer view of what a workload did, see [Usage history](/metrics/usage-history) and its logs.
 </Note>
 
 <Columns cols={2}>
