@@ -95,6 +95,7 @@
               "explore/config-and-storage",
               "explore/access-control",
               "explore/events",
+              "explore/alerts",
               "explore/details",
               "explore/map",
               "explore/health",
