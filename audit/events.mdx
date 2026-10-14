@@ -131,6 +131,7 @@ Each action, by kind, and what the page calls it.
 | Action | On the page | When |
 | --- | --- | --- |
 | `shell.open`, `shell.close` | Opened a shell, Closed a shell | A shell in a container. Closing says how long it ran, and the exit code. |
+| `attach.open`, `attach.close` | Attached to a container, Detached from a container | [Attached](/debug/shell#attach-to-its-main-process) to a container's main process: its `command` (`kubectl attach -it`, or without `-it` where it takes no input), and `input`, whether what was typed went to it. Detaching says how long it was attached. |
 | `node-shell.open`, `node-shell.close` | Opened a node shell, Closed a node shell | A [shell on a node](/debug/node-shell), and the pod Lumovi started for it. |
 | `port-forward.open`, `port-forward.close` | Forwarded a port, Stopped forwarding a port | A [port forward](/debug/port-forwarding), in the desktop app. |
 | `files.download` | Downloaded files from a container | A file or a folder was [copied out of a container](/debug/copy-files): once when the copy begins, and once for how it ended. |

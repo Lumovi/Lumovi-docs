@@ -79,6 +79,7 @@ Each action checks one permission first:
 | Delete, restart a pod | `delete` on the kind |
 | Evict a pod | `create` on `pods/eviction` |
 | Open a shell | `create` on `pods/exec` |
+| Attach to a container's main process | `create` on `pods/attach` (and `get` on the pod) |
 | Open a shell on a node | `create` and `get` on `pods`, `create` on `pods/exec`, and `delete` on `pods`, in the node shells' namespace (`kube-system` unless set otherwise) |
 | Add a debug container | `patch` on `pods/ephemeralcontainers` |
 | Forward a port | `create` on `pods/portforward` |

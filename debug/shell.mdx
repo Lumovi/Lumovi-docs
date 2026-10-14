@@ -1,7 +1,7 @@
 ---
 title: "Shells and debug containers"
 sidebarTitle: "Shells and debugging"
-description: "Open a terminal in any running container, or add a debug container with tools to a pod that has none, distroless included."
+description: "Open a terminal in any running container, attach to its main process, or add a debug container with tools to a pod that has none, distroless included."
 icon: "square-terminal"
 ---
 
@@ -54,6 +54,24 @@ The session ends when the shell exits, when the connection to the container clos
 **Reconnect** starts again either way.
 
 The [audit log](/audit/overview) records each shell you open and close, how long it ran, and how it ended: not what you typed.
+
+## Attach to its main process
+
+A shell is a new process beside the container's own. To reach the container's own process instead, as `kubectl attach -it` does, choose **Attach** in a pod's actions, or **Shell | Attach** on its Shell tab. What the process prints shows in the terminal, and, where its input is open, what you type goes to it. Close the tab to leave: that detaches, and the process goes on.
+
+Lumovi reads the container's spec first, and says at the top of the terminal what attaching does there:
+
+| The container | The terminal says | What you type |
+| --- | --- | --- |
+| `stdin: true` | “What you type goes to _c_'s main process, Ctrl+C and Ctrl+D included, which can end it. To leave it running, close this.” | Goes to the process |
+| `stdin: true` and `stdinOnce: true` | “_c_'s input closes when one session ends, which would end its process: this shows what it prints, and sends it nothing.” | Goes nowhere |
+| No `stdin` | “_c_ takes no input (its stdin isn't open): this shows what it prints.” | Goes nowhere |
+
+<Warning>
+  Attached, <kbd>Ctrl</kbd><kbd>C</kbd> is the process's, not the terminal's: it stops what's running in the container, and the container may restart. <kbd>Ctrl</kbd><kbd>D</kbd> ends the input of most programs that read it. To leave, close the tab.
+</Warning>
+
+Attaching is allowed where shells are: your [access](/clusters/your-access) on a server, `create` on `pods/attach` in the namespace, and not on a [read-only](/changes/read-only) cluster ("production is read-only in Lumovi, so attaching, which sends what you type to a container's process, is turned off."). Where it isn't, the tab says **You can't attach to containers here**, **Attaching is off** or **No attach access**, as a shell's does, and a container that isn't running says "You can attach once the container runs." The [audit log](/audit/events) records each attach and detach, with the command and whether what you typed went to the process: "Attached to Pod console (repl)", "Detached from Pod console (repl), after 2m". Never what you typed.
 
 ## When a shell isn't offered
 
