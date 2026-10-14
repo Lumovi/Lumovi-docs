@@ -392,7 +392,7 @@ All of these are below the base path. Whatever stands in front of Lumovi must pa
 | `api/socket` | Each page's WebSocket. Proxies in front of Lumovi must pass WebSockets here. |
 | `api/agent` | Where a fleet's [agents](/server/fleet/agents) connect, with a WebSocket. Only a fleet takes them. |
 | `GET plugin-box/box.html`, `GET plugin-box/check.html` | A [plugin's sealed box](/server/plugins#plugins’-code), and the frame Lumovi checks a browser's box from. The same for whoever asks, without signing in. Only with `LUMOVI_URL` set. |
-| `box-check/` | Where Lumovi's check of a browser's box asks, as requests and as a WebSocket, from frames that say they come from no site (`Origin: null`, or no origin), without the session's cookie or a sign-in proxy's. Proxies in front of Lumovi must pass all of it, WebSockets included, or no plugin's code runs. Only with `LUMOVI_URL` set. |
+| `box-check/` | Where Lumovi's check of a browser's box asks, as requests and as a WebSocket, from frames that say they come from no site (`Origin: null`, or no origin), without the session's cookie or a sign-in proxy's. Proxies in front of Lumovi must pass all of it, WebSockets included, or no plugin's code runs. It answers whatever reaches it at once, and nothing else; without `LUMOVI_URL` set it counts nothing. |
 | `mcp` | Where [AI assistants](/server/assistants) connect (`GET`, `POST` and `DELETE`), with a token Lumovi gave them. |
 | `POST oauth/register`, `POST oauth/token`, `POST oauth/revoke` | Where assistants register, get and renew their tokens, and sign out. |
 | `GET .well-known/oauth-authorization-server`, `GET .well-known/oauth-protected-resource`, `GET .well-known/oauth-protected-resource/mcp` | How assistants sign in. |
