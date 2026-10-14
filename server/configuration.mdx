@@ -76,7 +76,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_FLEET_KUBECONFIG_FILE" type="string">
-  Kubeconfig files, separated by `:`, each of whose contexts is a cluster. Read when Lumovi starts, and again every `LUMOVI_FLEET_REFRESH_SECONDS`. A file that can't be read keeps the clusters it had, and the log says why.
+  Kubeconfig files, separated by `:`, each of whose contexts is a cluster. Read when Lumovi starts, again when one changes, and every `LUMOVI_FLEET_REFRESH_SECONDS`. A file that can't be read keeps the clusters it had, and the log says why.
 </ResponseField>
 
 <ResponseField name="LUMOVI_FLEET_SECRETS" type="string">

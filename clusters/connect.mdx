@@ -18,7 +18,7 @@ Lumovi finds your kubeconfig the same way `kubectl` does:
 - The files listed in the `KUBECONFIG` environment variable, separated by `:` (`;` on Windows).
 - Otherwise, `~/.kube/config`.
 
-Or [choose the files](#choose-your-kubeconfig-files) in Lumovi, which keeps them. Clusters you [add in Lumovi](#add-a-cluster) come after the rest, each in a file of its own.
+Or [choose the files](#choose-your-kubeconfig-files) in Lumovi, which keeps them. Clusters you [add in Lumovi](#add-a-cluster) come after those, each in a file of its own, and the kubeconfigs in [folders you add](#a-folder-of-kubeconfigs) come last.
 
 Several files are merged with kubectl's rules:
 
@@ -39,10 +39,16 @@ When there's nothing to show, the start screen says why, with **Choose a kubecon
 - **No clusters yet**: no file has a context. Choose the file you use with kubectl, or **Add a cluster**.
 - **The kubeconfig you chose is gone**: a file you chose in Lumovi was moved or deleted. Choose another, or go **Back to KUBECONFIG and ~/.kube/config**.
 
-The kubeconfig is read again each time you choose **Reload**, so you don't need to restart the app after changing it.
+### It notices a change
+
+Lumovi watches the files it reads, and the folders you added, for a change made elsewhere: a context your cloud's CLI adds, a file an editor saves. The start screen shows it within a second or so, without **Reload**. That works for a file replaced in one go, as editors and CLIs write them, and on a network drive, where the system can't watch: Lumovi looks at each file every few seconds as well.
+
+A file caught half-written isn't taken as it is. Lumovi waits until a change looks the same twice, a moment apart. If the file still can't be read, it keeps the contexts it read last, and the file says so in the kubeconfig files list: "Couldn't be read at 14:02: It isn't YAML: …. Its 3 contexts are as they were at 13:58, and still connect with the credentials it held then." Once the file reads again, its contexts are as it now says.
+
+**Reload** still reads everything again at once.
 
 <Tip>
-  Lumovi never writes your kubeconfig files. [Add a cluster](#add-a-cluster) in Lumovi, or add contexts with your cloud's CLI or `kubectl config`, then choose **Reload** on the start screen.
+  Lumovi never writes your kubeconfig files. [Add a cluster](#add-a-cluster) in Lumovi, or add contexts with your cloud's CLI or `kubectl config`: the start screen shows them as they're written.
 </Tip>
 
 ### Choose your kubeconfig files
@@ -51,13 +57,39 @@ The button at the bottom of the start screen names the first file Lumovi reads, 
 
 - **Choose a kubeconfig…** reads only the files you pick, in place of `KUBECONFIG`'s or `~/.kube/config`.
 - **Add another file…** reads one more, after the rest.
-- **Back to KUBECONFIG and ~/.kube/config** undoes both.
+- **Add a folder…** reads every kubeconfig in a folder, after everything else: see [A folder of kubeconfigs](#a-folder-of-kubeconfigs).
+- **Back to KUBECONFIG and ~/.kube/config** undoes them all: files chosen and added, and folders.
 
 Lumovi keeps your choice. Files you chose are read whatever `KUBECONFIG` says; files you added come after `KUBECONFIG`'s, whatever it is when Lumovi starts. [Terminals](/debug/terminal#kubectl-points-at-the-cluster) get the same files.
 
 Each file has **Show in Finder** (**Show in Explorer** on Windows), and one you chose or added in Lumovi has **Remove**: "Lumovi reads these files and never writes to them. Removing one only stops Lumovi reading it." `KUBECONFIG`'s own files can't be removed here: change `KUBECONFIG`. A file you chose or added that's been moved or deleted says "Missing: it was moved or deleted", with **Choose it again…**.
 
 Your organization's [policy](/desktop/policy#kubeconfigfiles) can keep Lumovi to `KUBECONFIG`'s files and `~/.kube/config`. The list then says "Your organization's policy keeps Lumovi to these files.", and nothing in it can be changed.
+
+### A folder of kubeconfigs
+
+Some tools write a kubeconfig for each cluster into one folder. **Add a folder…** in **Kubeconfig files** reads every kubeconfig in it, and keeps up as files come and go. Each folder is listed with how many kubeconfigs and contexts it has, and its kubeconfigs under it, each with its contexts. **Remove** stops Lumovi reading the folder. Lumovi never writes to it or to anything in it.
+
+Lumovi reads only the files directly in the folder, not the folders inside it. A file is read when it's YAML or JSON with `kind: Config`, or with clusters, contexts or users. The rest are listed as skipped, each with why:
+
+- A folder: only the files directly in this one are read
+- A link to somewhere outside this folder
+- Hidden, or an editor's temporary file (a name that starts with `.`, or ends in `~`, `.swp` or `.tmp`)
+- Larger than 1 MB
+- Not a kubeconfig
+- Lumovi isn't allowed to read it
+
+A link to a file in the same folder is read. A folder that's gone, or that Lumovi can't read, says so: "This folder isn't there any more.", or "Lumovi isn't allowed to read this folder."
+
+Each kubeconfig in a folder is used whole: its contexts use its own clusters and users, never another file's, and no other file's context uses its parts. A context that would isn't used, and says why, like "“dev” uses a cluster from another kubeconfig. A kubeconfig in a folder can only use its own." That includes a cluster or user its own file defines under a name a file read earlier already has, since kubectl's rules give the name to the first.
+
+#### Credentials that ask first
+
+A folder's kubeconfigs are used as [clusters you add](#credentials-that-run-a-program-send-a-file-or-go-unverified) are. A context whose credentials use a token or a certificate opens at once. One whose credentials run a program, send a file, or go to a server Lumovi can't verify, says **Asks before it runs** on the start screen: "It's from a folder of kubeconfigs, and its credentials do something on this computer you haven't allowed yet." Choose it, and **Allow “dev” to sign in** shows exactly what they'd do, in the same words as adding a cluster: the command and its environment, the file and the server it goes to, or the server. Nothing of it is used until you choose **Allow and continue**; **Don't use it** leaves it as it is.
+
+You agree to that very thing. Change any of it, the command, an argument, a variable, a file or the server, and Lumovi asks again. What you agreed to is kept for each file, and still holds after a restart, but not in settings copied from another computer.
+
+[Terminals](/debug/terminal#kubectl-points-at-the-cluster) don't get a folder's kubeconfigs: kubectl would run what their credentials run, agreed to or not. A terminal for one of its clusters says "“dev” is from a folder of kubeconfigs, and Lumovi's terminals don't hand those to kubectl. Open one for a cluster from a kubeconfig file instead."
 
 ### Credential plugins
 
@@ -145,6 +177,7 @@ The label says what kind of problem it is. Hover it for the full message. If you
 | **Forbidden** | Access denied. | Your account isn't allowed to read this. If you only have access to some namespaces, pick one from the namespace menu. |
 | **Not found** | Not found. | It may have been deleted, or this API isn't available on the cluster. |
 | **Server error** | The API server returned an error. | This is usually temporary. Retry in a moment. |
+| **Asks before it runs** | It's from a folder of kubeconfigs, and its credentials do something on this computer you haven't allowed yet. | Choose it to see what, and allow it: see [Credentials that ask first](#credentials-that-ask-first). |
 | **Misconfigured** | The context can't be used as it is. Opened, its error screen says **Invalid request**. | Hover the label for the reason, like *Context "dev" points at cluster "dev-eu", which isn't defined*. Fix the context in your kubeconfig, then choose **Reload**. |
 
 Expired credentials show up as **Unauthorized**, or as **Credentials failed** when the plugin that gets them fails. On the start screen, both read **Couldn't sign in**: hover it for which. Signing in again with your cloud's CLI usually fixes both.

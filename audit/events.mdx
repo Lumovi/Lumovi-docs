@@ -207,7 +207,7 @@ With the `changes` level, a server records everything but the **Access** kind an
 | --- | --- | --- |
 | `success` | Done | It was done. |
 | `failure` | Failed | The cluster, or Lumovi, couldn't do it. |
-| `refused` | Refused | It wasn't allowed: by the cluster's RBAC, read-only mode, someone's [access](/server/access), an assistant's permissions, or the person who rejected it. |
+| `refused` | Refused | It wasn't allowed: by the cluster's RBAC, read-only mode, someone's [access](/server/access), an assistant's permissions, the person who rejected it, or a [folder's kubeconfig](/clusters/connect#credentials-that-ask-first) whose credentials they haven't allowed yet. |
 | `cancelled` | Cancelled | Nobody answered an assistant's change in time, or it was withdrawn: by the assistant, as it was let go, or as assistants were turned off. Its tool call too. A node shell closed before its pod started. |
 
 ## Approvals
