@@ -371,6 +371,10 @@ These work the same as in the desktop app, and the chart has no values for them:
   How long the API server has to answer, in milliseconds.
 </ResponseField>
 
+<ResponseField name="LUMOVI_WATCHES_PER_PERSON" type="number" default="200">
+  A server's alone, not the desktop app's. The most lists and objects one person's pages [watch](/clusters/permissions#looking-around) at once, counted across all their tabs. Past it, a list is read every few seconds instead. A whole number above 0; anything else is 200.
+</ResponseField>
+
 ```yaml values.yaml
 extraEnv:
   - name: LUMOVI_MAX_LIST_ITEMS
