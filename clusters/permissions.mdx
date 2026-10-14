@@ -24,7 +24,7 @@ A cluster made [read-only](/changes/read-only) disables every change regardless,
 
 ## Looking around
 
-Lists and details need `list` and `get` on the kinds you look at. Lumovi refreshes lists by asking again every few seconds (less often for long lists), so it doesn't need `watch`.
+Lists and details need `list` and `get` on the kinds you look at. With `watch` on a kind too, a list or an opened object updates within a second of a change, and while nothing changes it's read again only once a minute. Without it, Lumovi asks again every few seconds (less often for long lists), as it does for Secrets on a server and for a fleet's clusters reached through their agent. A watch tells Lumovi only that something changed: what's shown is always read with `list` and `get`.
 
 | To see | Needs |
 | --- | --- |
