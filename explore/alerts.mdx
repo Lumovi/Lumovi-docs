@@ -1,0 +1,62 @@
+---
+title: "Alerts"
+description: "What the cluster's Prometheus is firing and has pending, worst first, each with the object it's about and its runbook."
+icon: "bell"
+---
+
+When the cluster has a Prometheus, its alerting rules say what's wrong: a pod crash-looping, a volume filling up, a node not ready. **Alerts** lists the alerts it's firing and those pending, worst first. Open it from the sidebar under **Cluster**, below **Events**, with <kbd>G</kbd> then <kbd>Z</kbd>, or by typing "alerts" into <kbd>⌘</kbd><kbd>K</kbd>.
+
+Lumovi reads them from the Prometheus the [Metrics page](/metrics/usage-history) uses, through the cluster's API server as you, and again every 30 seconds while the page is open. Without one, the page says "Lumovi found no Prometheus in this cluster.", with **Metrics source…** to [choose one](/metrics/usage-history#choosing-the-source). A line above the list names the source, like "From prometheus-operated in monitoring, the Metrics page's source · 42 alerting rules".
+
+## The list
+
+Each row is one alert: one instance of a rule, so two pods crash-looping are two rows.
+
+| Column | Shows |
+| --- | --- |
+| **Alert** | The rule's name, like `KubePodCrashLooping` |
+| **Severity** | **Critical**, **Warning**, **Info** or **None**, from its `severity` label |
+| **State** | **Firing**, with how long ("for 11m"), or **Pending**, with when it fires "if it holds": its condition has been true, but not yet for as long as its rule waits |
+| **Object** | The pod, workload, job, volume claim, service or node its labels name, as a link to it |
+| **Active** | How long since its condition first held |
+
+Critical comes first, then Warning, Info and None; within each, firing before pending, then the one that began first. Click a column's header to sort by it instead.
+
+An alert of severity **None**, like `Watchdog`, fires all the time on purpose, to show the alerting works. It's listed, but never counted as firing. With nothing else firing, the page says "No alerts are firing. 38 alerting rules are quiet.", how many of severity none it left out, and **Show None** to list them.
+
+The chips above the list filter by severity, and by firing or pending; the filter (<kbd>/</kbd>) matches an alert's name, its summary and its labels' values. The header's namespaces filter it too: an alert whose labels name one of them, or every alert when all are shown.
+
+## One alert
+
+Click a row to open it beside the list, as an object opens:
+
+- **Summary** and **Description**, as its rule writes them.
+- **Object**: what it's about, with a link.
+- **Labels**: every one.
+- **Rule**: how long it waits pending before it fires, or "Fires at once"; its group; and the value that set it off.
+- **Runbook**, where its rule gives one: a link named by its host and the last part of its address, like "runbooks.prometheus-operator.dev › kubepodcrashlooping", the whole address in its tooltip. A rule's runbook is whatever its author wrote, so where it goes is said before you open it. Lumovi opens only `https://` links (and `http://localhost`); any other is shown as text, to copy.
+
+An alert that stops firing while it's open says "This alert isn't firing or pending any more."
+
+Nothing on the page changes anything: it only reads what Prometheus holds.
+
+## On the overview
+
+The overview's **Warnings** tile counts warning events in the last hour. Where alerts fire under the namespaces shown, it says how many too, like "3 alerts firing", as a link to the Alerts page, and takes the color of the worst of them. Alerts of severity none aren't counted there either.
+
+## Who sees what
+
+<Warning>
+  Prometheus doesn't know about namespaces' RBAC. Whoever may reach it through the cluster (`get` on `services/proxy` where it runs) sees every alert it holds, from every namespace, with their labels and annotations. The header's namespaces only narrow what's shown. See [Who can read what it collects](/metrics/metrics-stack#who-can-read-what-it-collects).
+</Warning>
+
+Reaching it needs the same permission the Metrics page does: see [Permissions](/clusters/permissions#usage-history). Without it, the page says "Lumovi couldn't read Prometheus's alerts:", with why and **Try again**.
+
+<Columns cols={2}>
+  <Card title="Events" icon="activity" href="/explore/events">
+    What happened in the cluster, newest first or on a timeline.
+  </Card>
+  <Card title="Usage history" icon="chart-line" href="/metrics/usage-history">
+    The Prometheus Lumovi reads, and how it finds it.
+  </Card>
+</Columns>
