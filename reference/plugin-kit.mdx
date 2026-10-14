@@ -31,7 +31,7 @@ And the parts they hold:
 
 | Part | Takes | Is |
 | --- | --- | --- |
-| `Header` | `name`, `status` (a level, a word, a `detail` line), up to 8 `buttons` | What's picked, its status, and what can be done with it. Three buttons show, the rest behind **…** |
+| `Header` | `name`, `status` (a level, a word, a `detail` line), a `secondStatus` beside it, up to 8 `buttons` | What's picked, its status, and what can be done with it. Three buttons show, the rest behind **…** |
 | `Tiles` | 2 to 4 `tiles`: a `key`, a `label`, an `icon`, a `value`, a `detail` line with a `level`, `opens` | A row of headlines, of equal width. A value is a `figure` ("2/3"), `words` ("Never") or a `time` |
 | `Card` | `title`, `note`, `about`; holds one `Table`, `Graph` or `Counts` | One part under a title, with a quiet note at its right |
 | `Table` | `title`, up to 8 `columns`, `headings`, `rows`, `shows`, `state` | Rows with a lead (a name, a word beside, a line under, a level) and a cell for each column. Rows may hold rows, one level, and stand in groups |
@@ -49,7 +49,7 @@ What each part takes, as Lumovi's door checks it. A property not listed here sto
 | `Table` | nothing | `columns`, `cut`, `headings`, `leadHeading`, `nameSorts`, `onOpen`, `onRetry`, `rows`, `shows`, `state`, `title` | `columns`, `headings`, `rows`, `title` | `open`, `retry` |
 | `Graph` | nothing | `columns`, `edges`, `legend`, `nodes`, `onOpen`, `onRetry`, `state`, `title` | `columns`, `edges`, `nodes`, `title` | `open`, `retry` |
 | `Tiles` | nothing | `onOpen`, `tiles` | `tiles` | `open` |
-| `Header` | nothing | `buttons`, `name`, `onPress`, `status` | `name` | `press` |
+| `Header` | nothing | `buttons`, `name`, `onPress`, `secondStatus`, `status` | `name` | `press` |
 | `Split` | `Stack` | `list`, `onPick` | `list` | `pick` |
 | `Card` | `Table`, `Graph`, `Counts` | `about`, `note`, `title` | `title` | nothing |
 | `Pair` | `Card` | `first` | nothing | nothing |
@@ -101,7 +101,12 @@ A button has a `key` and a `name`, and may say:
 - **`asks: true`**: it asks before it does anything, so its name ends in "…".
 - **`note`**: what it does, up to 120 characters, under the buttons.
 - **`off`**: why it can't be pressed now, up to 80 characters. It's drawn off, with this as its tooltip. Under a finger, the reason stands under the buttons, before the note, as "Back up now is off: A backup is running."
+- **`busy`**: what it's busy with, `{ word, since }`: drawn where it was, with Lumovi's turning mark, the word, and how long since `since` where it's given, counted by Lumovi. It can't be pressed, its tooltip says "Syncing for 1m 05s. Sync can be pressed again when it’s done.", and a screen reader hears "Sync, busy: syncing, 1 minute 5 seconds". A busy button can't also be `off` or `goes`.
 - **`goes`**: where it goes, in place of telling the page it was pressed: one of Lumovi's own places for an object the page was handed (a pod's **Logs** or **Shell** tab, **Port forward**), where the file's [`links`](/custom-resources/plugins#links-to-lumovi’s-own-places) say so, or a list of Lumovi's own. It changes nothing and asks nothing first.
+
+### A header's second status
+
+Beside its status, a header can say a second one, `secondStatus`: a level and a word for what's happening to it now, with how long since `since`, where it's given, counted by Lumovi. Its `detail`, where it has one, is the line under the header, in place of the first's: "Sync running: waiting for healthy state of apps/Deployment/storefront".
 
 ## What a page can ask for
 

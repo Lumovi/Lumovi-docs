@@ -528,6 +528,14 @@ actions:
   Asks first, with this text.
 </ResponseField>
 
+<ResponseField name="confirmTitle" type="template">
+  The dialog's question, in place of Lumovi's "{action} {name}?": `Terminate {{ .metadata.name }}’s sync?`. One line, 80 characters at most, and only on an action that asks first. Lumovi still names the object under it.
+</ResponseField>
+
+<ResponseField name="confirmButton" type="template">
+  The dialog's button, in place of the action's name. One line, 24 characters at most, and only on an action that asks first.
+</ResponseField>
+
 <ResponseField name="runs" type="string">
   `at-once`, on an action that asks nothing first. See [When an action asks first](#when-an-action-asks-first).
 </ResponseField>
@@ -537,7 +545,15 @@ actions:
 </ResponseField>
 
 <ResponseField name="when" type="condition">
-  Offer the action only when this holds.
+  Offer the action only when this holds. Just before it's sent, Lumovi reads the object again and judges this on it again, and sends what you read with the version it read then (`metadata.resourceVersion`, or a JSON patch's first `test`), so a change in between is refused by the cluster. Where it no longer holds, nothing is sent: "storefront has changed since you looked at it, so Terminate sync wasn’t sent and nothing changed. Look at it again." Where what's sent would come out different from what you read, or the cluster refuses the version: "storefront changed while you looked at it, so nothing was changed. Look at it again."
+</ResponseField>
+
+<ResponseField name="same" type="list of paths">
+  Up to four paths that must hold, as it's sent, what they held in the object you were shown, or nothing is sent, with the line above. Argo CD's Terminate sync names `.status.operationState.startedAt`, so it never stops a sync other than the one you saw.
+</ResponseField>
+
+<ResponseField name="busy" type="list">
+  Up to four `{ when, word, since }`: while one holds (the first that does), the action is drawn busy where it was, in place of being offered or hidden, with Lumovi's turning mark, `word` (24 characters at most), and how long since the date at the path `since`, where it's given. It can't be pressed. Argo CD's Sync says `Syncing` while a sync runs.
 </ResponseField>
 
 <ResponseField name="primary" type="boolean">
@@ -672,7 +688,7 @@ What a patch or a created object holds is the cluster's to limit, so the two len
 
 Plugins can use these [Lucide](https://lucide.dev/icons) icons, for their place in the sidebar, their views' kinds and their actions:
 
-`activity`, `archive`, `bell`, `box`, `boxes`, `bug`, `camera`, `cloud`, `database`, `file-check`, `flame`, `gauge`, `git-branch`, `git-merge`, `globe`, `hexagon`, `key-round`, `layers`, `lock`, `network`, `package`, `play`, `puzzle`, `radar`, `refresh-cw`, `rocket`, `route`, `scaling`, `server`, `server-cog`, `shield-check`, `signpost`, `timer`, `waves`, `waypoints`, `workflow`
+`activity`, `archive`, `bell`, `box`, `boxes`, `bug`, `camera`, `cloud`, `database`, `file-check`, `flame`, `gauge`, `git-branch`, `git-merge`, `globe`, `hexagon`, `key-round`, `layers`, `lock`, `network`, `package`, `play`, `puzzle`, `radar`, `refresh-cw`, `rocket`, `route`, `scaling`, `server`, `server-cog`, `shield-check`, `signpost`, `square`, `timer`, `waves`, `waypoints`, `workflow`
 
 ## Problems
 
@@ -737,6 +753,8 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `spec.views[0].actions[0]: {{ input.size }} isn’t one of its inputs` | A template naming an input the action doesn't have |
 | `spec.views[0].actions[0]: runs at once, so it has to say so: runs: at-once` | An action that asks nothing first, without `runs: at-once` |
 | `spec.views[0].actions[0]: asks first, so it can’t say runs: at-once` | `runs: at-once` on an action with a `confirm`, `inputs` or a `create` |
+| `spec.views[0].actions[0]: writes the object’s status, so it has to ask first: give it confirm` | An action that writes `status` on the object itself, not through `subresource: status`, and asks nothing first |
+| `spec.views[0].actions[0]: confirmTitle: only an action that asks first (with confirm or inputs) has one` | A `confirmTitle` or `confirmButton` on an action that runs at once |
 | `spec.views[0].actions[0]: changes metadata.finalizers, which a plugin can’t change` | A patch or a new object that sets [what isn't a plugin's](#what-a-patch-can’t-change) |
 | `spec.views[0].actions[0]: fills in an object’s metadata whole, which a plugin can’t: write it out` | `metadata` as one placeholder |
 | `spec.views[0].actions[0]: fills in an operation whole, which a plugin can’t: write it out` | A JSON patch operation as one placeholder |
