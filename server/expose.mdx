@@ -44,6 +44,8 @@ Each page keeps one WebSocket open to Lumovi, at `api/socket` below the base pat
 
 When the connection drops, pages say **Reconnecting to Lumovi…** and try again. If that goes on, a proxy in front of Lumovi may not be passing WebSockets.
 
+Lumovi's check of a browser's plugin box opens a WebSocket too, briefly, at `box-check/` below the base path. An ingress that passes WebSockets only on the paths it names must name that one as well, or the check can't finish and [plugins' code](/server/plugins#plugins’-code) doesn't run in anyone's browser.
+
 A [fleet's](/server/fleet) agents keep a WebSocket open too, at `api/agent` below the base path, through the same ingress or proxy: the same goes for theirs. Lumovi pings them as it pings pages, and an agent that hears nothing for two heartbeats and a second connects again. See [Private clusters](/server/fleet/agents#in-front-of-lumovi).
 
 ```yaml values.yaml
