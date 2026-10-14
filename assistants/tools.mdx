@@ -28,6 +28,8 @@ Every tool keeps to your [permissions](/assistants/permissions), as they are at 
 | `delete_resource` | Delete a resource | Asks to delete an object |
 | `wait_for_change` | Wait for a change | Waits for your answer to a change it asked for |
 
+No answer of any tool holds more than about 64,000 characters. Past that, it's cut at a line, and says how much it left out and how to ask for less.
+
 When an assistant connects, Lumovi also tells it how to go about it: start with `list_clusters`; to see what's wrong, `find_problems` first, then `get_resource`, `get_events` and `get_logs` on what it finds. Changes wait for your approval, so it should say why in `reason`, tell you to look at Lumovi, and follow the note of a change you reject. A call waits for your answer up to a minute: if it says it's still waiting, the assistant calls `wait_for_change` with the id it gives, until you answer.
 
 ## Parameters they share
@@ -59,6 +61,8 @@ The clusters in your kubeconfig that your permissions don't hide, and which is t
 - **`inSomeNamespaces`**: the rules that say otherwise in some of its namespaces, each with the namespaces it names and what it says; an administrator's with `at most`, like `logs: at most off`. Rules that hide aren't told.
 
 See [What they're told as they start](/assistants/permissions#what-they’re-told-as-they-start).
+
+And whether each cluster answered just now: `yes, in 42 ms (Kubernetes v1.34.1)`, or `no:` and why. It asks every cluster at once, and waits 3 seconds for each: past that, `no answer within 3 s`. So an assistant leaves one that's down alone. A cluster you sign in to through a credential plugin isn't asked at all, since that could open a browser or ask you in a terminal: it says `not asked: it needs sign-in through a credential plugin (kubelogin), which a check of every cluster doesn’t start`. That doesn't mean it's down.
 
 It takes no parameters.
 
@@ -95,7 +99,7 @@ It says how many there are (`total`), and how many it shows when that's fewer (`
 
 ### get_resource
 
-One object as YAML, with its health on the first line, like `# Health: Running (healthy)`. It leaves out what's long and says little, and what your permissions hide: a Secret's values unless they show them, and env values that look sensitive, or all. See [What's hidden](#what’s-hidden).
+One object as YAML, with its health on the first line, like `# Health: Running (healthy)`. It leaves out what's long and says little: its managed fields, the last applied configuration, and any annotation over 1,000 characters, saying how long it was and how to have it. And it leaves out what your permissions hide: a Secret's values unless they show them, and env values that look sensitive, or all. See [What's hidden](#what’s-hidden).
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="kind" type="string" required />
@@ -103,10 +107,13 @@ One object as YAML, with its health on the first line, like `# Health: Running (
 <ResponseField name="namespace" type="string">
   Its namespace, for namespaced kinds.
 </ResponseField>
+<ResponseField name="fields" type="string[]">
+  Only these fields, as dotted paths, like `status`, `spec.replicas` or `spec.template.spec.containers.image`: a list on the way is followed into each of its items. Its kind, name and namespace come with them, and a path that leads nowhere says `(not in this object)`.
+</ResponseField>
 
 ### get_events
 
-What Kubernetes reported, the latest first: about one object, a namespace, or the whole cluster. Each event says how long ago it last happened, its type and reason, the object it's about, its message, and how many times it happened when that's more than once. With none, it says "No events." Events in, or about, a namespace your permissions hide aren't there.
+What Kubernetes reported, the latest first: about one object, a namespace, or the whole cluster. Each event says how long ago it last happened, and, where it happened more than once, how many times and when it began; its type and reason, the object it's about, and its message. A pod's back-off says how many times the pod has restarted. A warning that a later event says is over (the pod was scheduled, its image pulled after a pull failed, its container created, its volume attached or mounted, its node ready again) is marked resolved, with that event and when. A back-off is never marked resolved. With none, it says "No events." Events in, or about, a namespace your permissions hide aren't there.
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="namespace" type="string">
@@ -125,7 +132,7 @@ What Kubernetes reported, the latest first: about one object, a namespace, or th
 
 ### get_logs
 
-A container's latest log lines, as `kubectl logs` shows them, up to 256 KB of them. It doesn't follow the log. With none, it says "(No log lines.)" Where your permissions say **Don't read**, it's refused: "Lumovi doesn't let AI assistants read logs in shop: the person's AI permissions say so ("Shop")."
+A container's latest log lines, as `kubectl logs` shows them, up to 256 KB of them. It doesn't follow the log. It can keep only the lines with a text in them, or of a level and above. Where the lines are more than an answer holds, it gives the first and the last, with how many it left out, and to ask again with `from` and the same `tailLines`, `match` and `level` for them; never an error. A log that has grown since numbers its lines anew. With none, it says "(No log lines.)" Where your permissions say **Don't read**, it's refused: "Lumovi doesn't let AI assistants read logs in shop: the person's AI permissions say so ("Shop")."
 
 <ResponseField name="cluster" type="string" required />
 <ResponseField name="namespace" type="string" required />
@@ -142,12 +149,22 @@ A container's latest log lines, as `kubectl logs` shows them, up to 256 KB of th
 <ResponseField name="sinceSeconds" type="number">
   Only lines this recent.
 </ResponseField>
+<ResponseField name="match" type="string">
+  Only the lines with this text in them, in any case.
+</ResponseField>
+<ResponseField name="level" type="string">
+  Only lines of this level and above: `debug`, `info`, `warn` or `error`, as the log says it (a JSON or logfmt level, or a word at a line's start). A line that says none goes with the one before it, so a stack's lines stay with their error. With none left, it says so: "(None of its last 200 lines is error or above.)"
+</ResponseField>
+<ResponseField name="from" type="number">
+  Its lines from this one on: an answer that left lines out says which to ask for.
+</ResponseField>
 
 ### find_problems
 
 What's wrong in a cluster, or in one namespace, in one call. It's where Lumovi tells assistants to start.
 
-- **`problems`**: the nodes, pods, Deployments, StatefulSets, DaemonSets, Jobs and PersistentVolumeClaims whose [health](/explore/health) is a warning or critical, the critical ones first, each with Lumovi's reason and its age. Nodes only for the whole cluster: they aren't in a namespace.
+- **`problems`**: the nodes, pods, Deployments, StatefulSets, DaemonSets, Jobs and PersistentVolumeClaims whose [health](/explore/health) is a warning or critical, the critical ones first, each with Lumovi's reason and its age, up to 100, and then how many more. Nodes only for the whole cluster: they aren't in a namespace.
+- **For a failing pod, each failing container**: how often it has restarted, why it isn't running now, and how its last run ended (`lastRun`: its exit code, reason, message, and when). And that run's last error lines (`lastLines`), where your [permissions](/assistants/permissions) let assistants read logs, or why not. That's for 10 containers at most; it says how many more it didn't read, which `get_logs` with `previous` reads. Each read is in the [audit log](/audit/events), as `get_logs`'s are.
 - **`warningsInTheLastHour`**: the last hour's warning events, one for each object and reason, the most frequent first, up to 20, with how many times and how long ago.
 - **`couldNotCheck`**: the kinds it couldn't list, and why, like your account not being allowed to.
 
