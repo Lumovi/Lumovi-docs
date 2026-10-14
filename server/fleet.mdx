@@ -116,7 +116,7 @@ contexts:
 Give it to Lumovi in one of two settings:
 
 - **`LUMOVI_FLEET_KUBECONFIG`**: the kubeconfig itself, as YAML or JSON, or that encoded in base64 on one line, for platforms whose settings take one line. Lumovi reads it when it starts, and one that isn't a kubeconfig stops it. To change it, change the setting and restart Lumovi.
-- **`LUMOVI_FLEET_KUBECONFIG_FILE`**: one or more files, separated by `:`. Lumovi reads them when it starts, and again every 30 seconds (`LUMOVI_FLEET_REFRESH_SECONDS`), so you can add and remove clusters without restarting it. Relative paths in a file are read from that file's folder.
+- **`LUMOVI_FLEET_KUBECONFIG_FILE`**: one or more files, separated by `:`. Lumovi reads them when it starts, again within a second or so of one changing, and every 30 seconds (`LUMOVI_FLEET_REFRESH_SECONDS`) whatever happens, so you can add and remove clusters without restarting it. Relative paths in a file are read from that file's folder.
 
 You can use both. A file that can't be read, or isn't a kubeconfig, keeps the clusters it had (none, if it couldn't be read when Lumovi started), and the log says why, once:
 
