@@ -143,6 +143,8 @@ Each row shows:
 - Under it, the API server's host and the user, like `api.example.com · admin`, or the context's name if you gave the cluster a [name of its own](#cluster-settings).
 - **Its version and how long it took to answer** (`v1.34.1 · 18 ms`), or what went wrong.
 
+A cluster that signs in through a [credential plugin](#credential-plugins) isn't asked: asking would start its program, which can open a browser or ask in a terminal, for a cluster nobody picked. Its row says **Signs in when opened**, without a dot, and hovering it names the program from the kubeconfig, never run: "Signs in through kubelogin, so Lumovi checks it when you open it." The cluster switcher says the same. Once you've opened it and it has answered, the switcher shows its status like any other's. So nothing signs in by itself as Lumovi starts.
+
 The clusters you opened last, up to three, come first, under **Recent**. Then each is in the [group](#cluster-settings) you put it in, with **Other clusters** last. **Group by** groups them by a label's values instead, like `env=production`, or not at all, and Lumovi remembers which.
 
 Type to search, by name, context, server or label: `env=production` finds the clusters with that label, and each row shows the label it matched. Move with <kbd>↑</kbd> <kbd>↓</kbd>, and press <kbd>↵</kbd> to open one.
@@ -180,7 +182,7 @@ The label says what kind of problem it is. Hover it for the full message. If you
 | **Asks before it runs** | It's from a folder of kubeconfigs, and its credentials do something on this computer you haven't allowed yet. | Choose it to see what, and allow it: see [Credentials that ask first](#credentials-that-ask-first). |
 | **Misconfigured** | The context can't be used as it is. Opened, its error screen says **Invalid request**. | Hover the label for the reason, like *Context "dev" points at cluster "dev-eu", which isn't defined*. Fix the context in your kubeconfig, then choose **Reload**. |
 
-Expired credentials show up as **Unauthorized**, or as **Credentials failed** when the plugin that gets them fails. On the start screen, both read **Couldn't sign in**: hover it for which. Signing in again with your cloud's CLI usually fixes both.
+Expired credentials show up as **Unauthorized**, or as **Credentials failed** when the plugin that gets them fails. On the start screen, both read **Couldn't sign in**: hover it for which. A cluster that signs in through a plugin says so once it's opened: its page says **Couldn't get credentials**, with the plugin's words. Signing in again with your cloud's CLI usually fixes both.
 
 <Frame caption="A cluster that doesn't answer, and what to try.">
   <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/unreachable-light-1x.webp" alt="A cluster that can't be reached, with an explanation of what to check and a Try again button." />
@@ -209,7 +211,7 @@ Some credentials do more than sign in, so the check stops before them, and shows
 
 Nothing runs, no file is read, and no credentials go to such a server, until you choose **Allow and continue**: not to check the cluster, and not to keep it. Until then, the check asks the server only for its version, with no credentials. You agree to that command, that file going to that server, or that server, exactly: change any of it, even an argument, a variable or the server, and Lumovi asks again.
 
-Once it's kept, it's used as any kubeconfig's is, each time Lumovi signs in to that cluster, the start screen's check included.
+Once it's kept, it's used as any kubeconfig's is, each time Lumovi signs in to that cluster. A plugin's runs only when you open it: the start screen doesn't check it.
 
 This protects you from a kubeconfig that does more than it says. It's Lumovi asking you, not a wall against the page itself: see [Your credentials](/reference/privacy-and-security#your-credentials).
 
