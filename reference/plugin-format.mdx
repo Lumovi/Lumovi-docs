@@ -49,7 +49,7 @@ spec:
 | | Desktop app | In your cluster |
 | --- | --- | --- |
 | **Where** | `~/.lumovi/plugins`, or the folder in `LUMOVI_PLUGINS_DIR` | The chart's `plugins` value, mounted at `/etc/lumovi/plugins` |
-| **Which files** | Files and links whose names end in `.yaml` or `.yml`, in the folder itself, not in subfolders. A link is followed to the file it points to. Lumovi reads them in order of their names, up to 200, each up to 256 KB. | The same. Kubernetes mounts each entry as a link, which Lumovi follows. |
+| **Which files** | Files and links whose names end in `.yaml` or `.yml`, in the folder itself, not in subfolders, except, in the desktop app, a [plugin with code](/custom-resources/plugins#your-own-plugins-with-code) in a folder of its own. A link is followed to the file it points to. Lumovi reads them in order of their names, up to 200, each up to 256 KB. | The same. Kubernetes mounts each entry as a link, which Lumovi follows. |
 | **Reloading** | Press <kbd>⌘</kbd><kbd>R</kbd> (Ctrl+R on Windows and Linux) | Change the chart's `plugins` value and upgrade the release |
 
 A file is one plugin: one document. It's used whole or not at all: if anything in it is wrong, none of it is used, and everything wrong with it is listed as a [problem](#problems). Files are read on their own: one with a problem, or one that can't be read, like a link to nothing, doesn't stop the others loading.

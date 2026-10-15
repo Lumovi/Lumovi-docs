@@ -21,7 +21,7 @@ Lumovi isn't the only way to look at a cluster, and for some work it isn't the b
 | **Signing in, in a cluster** | [Single sign-on](/server/auth/single-sign-on) (OIDC), a [proxy](/server/auth/proxy), or [tokens](/server/auth/tokens) | It doesn't run there | It doesn't run there | [OIDC](https://headlamp.dev/docs/latest/installation/in-cluster/oidc/), or an [identity-aware proxy](https://headlamp.dev/docs/latest/installation/in-cluster/identity-aware-proxy/) | It doesn't run there | A [bearer token](https://github.com/kubernetes-retired/dashboard/blob/master/docs/user/access-control/README.md), typed in or sent by a proxy |
 | **Team rules on top of RBAC** | [Profiles, grants and limits](/server/access), in your cluster | [Teamwork](https://docs.lenshq.io/k8slens/lens-teamwork/rbac/): spaces, teams and roles for shared clusters, on a [paid plan](https://lenshq.io/pricing/) | None in its docs | None: it [shows what your RBAC allows](https://headlamp.dev/docs/latest/faq/) | A [read-only setting](https://k9scli.io/topics/config/) of your own | None: the [API server decides](https://github.com/kubernetes-retired/dashboard/blob/master/docs/user/access-control/README.md) |
 | **A log of what's done through it** | [Yes](/audit/overview), and you can [check it hasn't changed](/audit/verify) | “Audit logs” on the [Enterprise plan](https://lenshq.io/pricing/); its docs don't say what they record | None in its docs | None in its docs | None in its docs | None in its docs |
-| **AI assistants** | It's an [MCP server](/assistants/overview): agents read through it, and each change [waits for your approval](/assistants/approvals) | An [MCP server](https://docs.lenshq.io/k8slens/mcp-server/how-it-works/) that's read-only, and [Ask AI](https://docs.lenshq.io/k8slens/ask-ai/), which starts your coding agent in a terminal; both on a [paid plan](https://lenshq.io/pricing/) | Extensions: a [chat agent](https://github.com/freelensapp/freelens-ai-extension) whose changes wait for approval, and [others](https://github.com/freelensapp/freelens-agentbridge-extension) that start your coding agent | An [AI Assistant plugin](https://github.com/headlamp-k8s/plugins/tree/main/ai-assistant), in alpha, which can use [MCP servers](https://headlamp.dev/docs/latest/learn/mcp-support/) in the desktop app | None in its docs | None in its docs |
+| **AI assistants** | It's an [MCP server](/assistants/overview): agents read through it, and each change [waits for your approval](/assistants/approvals) unless you've [let them go ahead](/assistants/permissions) | An [MCP server](https://docs.lenshq.io/k8slens/mcp-server/how-it-works/) that's read-only, and [Ask AI](https://docs.lenshq.io/k8slens/ask-ai/), which starts your coding agent in a terminal; both on a [paid plan](https://lenshq.io/pricing/) | Extensions: a [chat agent](https://github.com/freelensapp/freelens-ai-extension) whose changes wait for approval, and [others](https://github.com/freelensapp/freelens-agentbridge-extension) that start your coding agent | An [AI Assistant plugin](https://github.com/headlamp-k8s/plugins/tree/main/ai-assistant), in alpha, which can use [MCP servers](https://headlamp.dev/docs/latest/learn/mcp-support/) in the desktop app | None in its docs | None in its docs |
 
 “None in its docs” means we found no mention of it in the project's documentation or repository on the day we checked. It isn't the project's own statement.
 
@@ -31,7 +31,7 @@ Most of what Lumovi does, at least one of these tools does too: Headlamp also ru
 
 - **An audit log of what's done through it.** Changes, shells, port forwards, Secrets and logs read, and Helm releases, each with who did it and the `kubectl` or `helm` command that does the same. It's [chained with hashes](/audit/verify), so you can check it against a copy you keep elsewhere. See [The audit log](/audit/overview).
 - **Team rules in an open-source tool.** On a server, [Access](/server/access) says who may do what through Lumovi, by group, cluster and namespace: never more than Kubernetes RBAC allows, and often less.
-- **An MCP server that agents can make changes through, with approval.** An assistant's change is checked by the cluster, then [waits with its diff](/assistants/approvals) until you approve it, within the [permissions](/assistants/permissions) you've set, and the audit log records it.
+- **An MCP server that agents can make changes through, with approval.** An assistant's change is checked by the cluster, then [waits with its diff](/assistants/approvals) until you approve it, unless your [permissions](/assistants/permissions) let it go ahead without asking, and the audit log records it.
 
 Lumovi is also the newest tool on this page, and a small project. The others have been used by far more people, for far longer.
 
@@ -51,7 +51,7 @@ Headlamp and Lumovi overlap more than any other pair here: desktop and in-cluste
 
 **Pick Headlamp when** you want a project under Kubernetes' own governance, when you need its plugins or want to write your own, or when you're replacing the Dashboard and want what Kubernetes points to.
 
-**Pick Lumovi when** you want rules on top of RBAC for what people may do through the tool, an audit log of what they did, or AI agents that work through the tool and ask before each change.
+**Pick Lumovi when** you want rules on top of RBAC for what people may do through the tool, an audit log of what they did, or AI agents that work through the tool and ask before a change, as long as you want them to.
 
 ## Lens
 
@@ -59,7 +59,7 @@ Headlamp and Lumovi overlap more than any other pair here: desktop and in-cluste
 
 **Pick Lens when** your organization wants a vendor behind the tool, with support, managed accounts and the features above, and a paid plan suits it.
 
-**Pick Lumovi when** you want an open-source tool with no account, one that also runs in your cluster for the whole team, or AI agents that can make changes, with your approval, rather than only read.
+**Pick Lumovi when** you want an open-source tool with no account, one that also runs in your cluster for the whole team, or AI agents that can make changes, asking you first unless you say otherwise, rather than only read.
 
 ## Freelens
 

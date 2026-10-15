@@ -185,7 +185,7 @@ Lumovi keeps what you change a moment after you stop: the tab says **Keeping…*
 
 ## Where they're kept
 
-In the desktop app, with Lumovi's other settings, in `settings.json`, which only your account can read on macOS and Linux. Upgrading from Lumovi 1.4 or before, each context's **Ask**, **Allow** or **Never** becomes a rule named after the context: **Allow** as **Without asking**, and **Never** as **Never**. **Ask** needs none: it's the default. A context named like a pattern, with a `*`, keeps its **Never**, as a pattern, but not its **Allow**, and one whose name has a space or `=` isn't kept: set it again.
+In the desktop app, with Lumovi's other settings, in `settings.json`, which only your account can read on macOS and Linux.
 
 When what's kept can't be read, edited by hand into something that doesn't make sense, say, assistants get nothing until you set your permissions again: no changes, no Secrets, no env values and no logs. The **Permissions** tab says so: "Your AI permissions couldn't be read (Lumovi's settings were edited into something that doesn't make sense): assistants may do nothing until you set them again." Lumovi leaves what it couldn't read in `settings.json` as it was, so this lasts across restarts, until you change a permission.
 

@@ -97,7 +97,7 @@ Contexts that get their credentials from a plugin (an `exec` entry in the kubeco
 
 On macOS and Linux, apps opened from the Dock or a launcher don't get the `PATH` your shell sets up. So when Lumovi starts, it asks your login shell for its `PATH`, and finds plugins wherever your shell would. It asks for your proxy too: see [Behind a proxy](#behind-a-proxy). If the shell takes longer than five seconds or fails, Lumovi keeps the `PATH` it started with. Windows apps already get the full `PATH`.
 
-If a plugin isn't found, the cluster shows **Credentials failed**, with the message: *The credential plugin "gke-gcloud-auth-plugin" wasn't found. Install it, or make sure it's on your PATH.*
+If a plugin isn't found, the start screen says **Couldn’t sign in**, and the cluster, opened, **Couldn’t get credentials**, with the message: *The credential plugin “gke-gcloud-auth-plugin” wasn’t found. Install it, or make sure it’s on your PATH.*
 
 ### Clusters on plain HTTP
 

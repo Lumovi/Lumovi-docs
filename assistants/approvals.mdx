@@ -168,8 +168,6 @@ Whatever your permissions say:
 - **Your RBAC applies.** Lumovi makes the change with your credentials, and the dry run fails for one your account can't make. See [Permissions](/clusters/permissions#ai-assistants).
 - **Assistants know.** `list_clusters` tells them each cluster's `changes`, `ask`, `allow`, `never` or `read-only`, and where some namespaces say otherwise, so they don't ask for what won't be made.
 
-Upgrading from Lumovi 1.4 or before, the desktop app's **Ask**, **Allow** or **Never** for each cluster becomes a rule for that context, so its changes are decided as they were.
-
 ## On a server
 
 On your team's Lumovi, approving works as above, with a few differences. See [AI assistants on a server](/assistants/server).

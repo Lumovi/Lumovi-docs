@@ -52,7 +52,7 @@ Lumovi reads them once, when it starts. Restart it after changing one.
 </ResponseField>
 
 <ResponseField name="LUMOVI_PLUGINS_DIR" type="path" default="~/.lumovi/plugins">
-  Where your own [plugins](/custom-resources/write-a-plugin) are. Every `.yaml` and `.yml` file directly in it is read, up to 200 files of at most 256 KB each. Folders inside it aren't.
+  Where your own [plugins](/custom-resources/write-a-plugin) are. Every `.yaml` and `.yml` file directly in it is read, up to 200 files of at most 256 KB each. Folders inside it aren't, except, in the desktop app, a [plugin with code](/custom-resources/plugins#your-own-plugins-with-code): `<name>/plugin.yaml` and its `plugin.js`.
 </ResponseField>
 
 <ResponseField name="LUMOVI_HELM" type="path" default="the helm Lumovi ships with">

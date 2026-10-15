@@ -405,7 +405,7 @@ On the start screen, **Credentials failed** and **Unauthorized** both read **Cou
   <Accordion title="Everyone was signed out" icon="log-out">
     A restart, as an upgrade does, signs nobody out, unless Lumovi had nowhere to keep sessions, couldn't, or can't open what it kept:
 
-    - **`auth.keepSessions: false`**, or without the chart, neither `LUMOVI_STATE_SECRET` nor `LUMOVI_DATA_DIR`. The log says, as Lumovi starts: `Who’s signed in and the AI assistants they allowed are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`, and `Run a single replica so: …`
+    - **`auth.keepSessions: false`**, or without the chart, neither `LUMOVI_STATE_SECRET` nor `LUMOVI_DATA_DIR`. The log says, as Lumovi starts: `Who’s signed in, the AI assistants they allowed, and people’s pins and saved views are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`, and `Run a single replica so: …`
     - **The key changed, or was lost**: `12 of what Lumovi kept doesn’t open with its key (it changed, they were, or another replica uses another): left as they are, unused, until they’ve been so for 15 minutes, then let go.` With Argo CD, or anything else that renders the chart with `helm template`, each render makes a new key: give your own, in `auth.stateKeySecret`. See [Sessions across restarts](/server/hardening#sessions-across-restarts).
     - **Writing it failed**, before the restart: `Lumovi can’t keep who’s signed in (…): if it restarts now, what changed since is lost.`, then `Lumovi keeps who’s signed in again.` once it can.
     - **It didn't all fit** in a megabyte: `What Lumovi keeps would be more than the 1000 kB it may hold: the 40 sessions that end soonest aren’t kept (they sign in again after a restart).`
@@ -416,7 +416,7 @@ On the start screen, **Credentials failed** and **Unauthorized** both read **Cou
     Sessions also end after 12 hours, unless you set it otherwise. See [Across restarts](/server/security#across-restarts).
   </Accordion>
   <Accordion title="Lumovi doesn't start: its sessions' Secret or key" icon="key-round">
-    - `Lumovi can’t read Secret lumovi/lumovi-state, where it keeps who’s signed in and the AI assistants they allowed: …`. The Secret isn't there, or Lumovi may not `get` it: with `rbac.create: false`, give its service account `get` and `patch` on `<release>-state`.
+    - `Lumovi can’t read Secret lumovi/lumovi-state, where it keeps who’s signed in, the AI assistants they allowed, and people’s pins and saved views: …`. The Secret isn't there, or Lumovi may not `get` it: with `rbac.create: false`, give its service account `get` and `patch` on `<release>-state`.
     - `LUMOVI_STATE_SECRET needs LUMOVI_STATE_KEY: the key what’s kept is sealed with, from a Secret of its own (the chart makes one).` Without the chart, set both.
     - `LUMOVI_STATE_KEY must be at least 32 characters, random ones.` The key in `auth.stateKeySecret`'s Secret is too short: make one with `openssl rand -base64 48`.
 

@@ -1,7 +1,7 @@
 ---
 title: "Assistant tools"
 sidebarTitle: "Assistant tools"
-description: "The twelve tools Lumovi gives AI assistants: seven that read your clusters, four that ask to change them, and one that waits for your answer."
+description: "The fourteen tools Lumovi gives AI assistants: nine that read your clusters, four that ask to change them, and one that waits for your answer."
 icon: "wrench"
 ---
 
@@ -248,7 +248,7 @@ Creates an object, or changes one, from a manifest, as `kubectl apply --server-s
 - **One object a call**, in YAML or JSON, with its namespace in its `metadata`.
 - **Lumovi applies it as the field manager `lumovi`, and forces conflicts**, as `--force-conflicts` does. Fields the manifest sets become Lumovi's, even when something else manages them, like a Helm release, Argo CD or an autoscaler.
 - **It tries it without forcing first.** When that fails because something else manages fields the manifest sets, the approval dialog says whose and which: "It takes fields over from what manages them (Helm, Argo CD, an autoscaler…), which may change them back: …". Such a change asks you even where the cluster allows assistants' changes.
-- **What's refused before the dry run**: "Apply one object at a time: this has 2.", "The manifest isn't valid YAML: …", and "A manifest needs apiVersion, kind and metadata.name."
+- **What's refused before the dry run**: "Apply one object at a time: this has 2.", "The manifest isn't valid YAML (line 3, column 5): …", and "A manifest needs apiVersion, kind and metadata.name."
 
 The approval dialog shows the manifest as the assistant gave it, under **The manifest Claude Code gave**.
 

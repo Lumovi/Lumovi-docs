@@ -114,6 +114,8 @@ Lumovi doesn't ask the cluster up front for an assistant. It sends each change a
 | `get_events` | `list` on `events` |
 | `get_logs` | `get` on `pods/log` |
 | `find_problems` | `list` on nodes, pods, Deployments, StatefulSets, DaemonSets, Jobs, PersistentVolumeClaims and events, in the namespace or across the cluster. It names the kinds it couldn't list, and sums up the rest. |
+| `get_rollout_history` | `get` on the workload, and `list` on its ReplicaSets (a Deployment's) or ControllerRevisions (a StatefulSet's or DaemonSet's). `list` on pods adds what each image resolved to |
+| `find_in_clusters` | `list` on what it looks for, in each cluster: namespaces, Deployments, StatefulSets, DaemonSets, CronJobs and Services, or the one kind asked. A cluster it couldn't look in says why |
 | `apply_manifest` | `get` and `patch` on the kind, and `create` when it creates the object |
 | `scale` | `get` and `patch` on the kind, or on its `scale` subresource for custom kinds |
 | `restart` | `get` and `patch` on the workload |

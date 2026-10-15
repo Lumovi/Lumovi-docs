@@ -374,7 +374,7 @@ This guide builds a plugin for an in-house `Database` kind, step by step. Swap i
 - **A tool's kinds, not Kubernetes'.** Pods, Secrets and the other kinds Lumovi has pages for can't be in a plugin. One it has no page for, like a Lease, a plugin can show without actions, named under [`shows`](/reference/plugin-format#kubernetes’-own-kinds).
 - **Another folder.** Set `LUMOVI_PLUGINS_DIR` to read plugins from somewhere else, like a folder your team shares in a Git repository.
 - **Links work too.** A link in the folder, named with `.yaml` or `.yml` at the end, is read like the file it points to, so you can link a plugin from elsewhere. A link to a file that's gone can't be read: **All plugins** lists it as not in use, with why, like `It couldn’t be read: ENOENT: no such file or directory, …`, and the other files still load.
-- **Limits.** Lumovi reads up to 200 files from the folder (not its subfolders), each up to 256 KB.
+- **Limits.** Lumovi reads up to 200 files from the folder, each up to 256 KB. Its subfolders aren't read, except a [plugin with code](/custom-resources/plugins#your-own-plugins-with-code), in the desktop app.
 
 <Note>
   **In your cluster:** plugins everyone sees come from the chart's `plugins` value, one entry per file. People can't add their own from the browser. See [Plugins for everyone](/server/plugins).
