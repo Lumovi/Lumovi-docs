@@ -7,6 +7,61 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 15, 2026" description="1.22.0" tags={["Desktop app", "In your cluster"]}>
+  ## Plugins
+
+  - **Add-ons are plugins.** A plugin is one file: its place in the sidebar and a view for each kind it shows. **All plugins** lists every one, with what each asks for, read from its file. See [Plugins](/custom-resources/plugins).
+  - **Installed and updated from Lumovi-plugins**, in the desktop app: what a plugin may do is shown first, in Lumovi's words, and nothing changes until you agree. **Back to** returns to the version before. See [Install and update plugins](/custom-resources/plugins#install-and-update-plugins).
+  - **Pages drawn by a plugin's code**, in a sealed box that reads only what its file says, as you: Argo CD's, CloudNativePG's, Karpenter's and Prometheus Operator's. A change a page proposes is confirmed in Lumovi's own dialog, with what it would harm in red. See [Pages drawn by a plugin's code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code) and [Included plugins](/custom-resources/included-plugins).
+  - **Your own plugins**, in `~/.lumovi/plugins`, are held as Lumovi's are, and **Developer mode** runs their code once you've agreed. See [Your own plugins](/custom-resources/plugins#your-own-plugins).
+  - **An organization's policy** can hold plugins to what it allows, keep their code off, and turn off the store. See [Policy](/desktop/policy).
+
+  ## Lists, pins and views
+
+  - **Lists choose their columns**, add one from a label or an annotation, never scroll sideways, and copy or download what they show. See [Columns](/explore/finding-things#columns).
+  - **The namespace picker picks several**, up to 20, and the address carries them. See [Pick several](/clusters/namespaces#pick-several).
+  - **Pins and saved views**: an object in the sidebar, ⌥1 to ⌥9, and a list's columns, sort and filters kept by name. See [Pin an object](/explore/finding-things#pin-an-object).
+  - **Lists and opened objects update as the cluster changes**, within a second, where you may `watch`; an idle one is read once a minute. See [Permissions](/clusters/permissions#looking-around).
+  - **Access control** has pages of its own: roles, cluster roles, their bindings and service accounts, linked both ways. See [Access control](/explore/access-control).
+
+  ## Create and YAML
+
+  - **Create has a form beside its YAML**, for nine kinds, each side following the other, a Secret's values hidden until asked for. See [The Create form](/changes/create-form).
+  - **YAML is checked against the cluster's schema as you type**, with fields offered as you write. See [Checked as you type](/changes/yaml#checked-as-you-type).
+
+  ## Events, alerts and logs
+
+  - **Events as a timeline**, on the Events page and an object's Events tab. See [On a timeline](/explore/events#on-a-timeline).
+  - **Alerts**, a page of what the cluster's Prometheus fires and has pending, worst first, each with its object and runbook. See [Alerts](/explore/alerts).
+  - **Notifications of new warnings**, off until you turn them on for a cluster, each message cut where it could carry what only you may read. See [Notifications of new warnings](/explore/events#notifications-of-new-warnings).
+  - **Log search** by regular expression, case, or the lines without a match, from any time, over a strip of the lines. See [Logs](/debug/logs#search-and-filter).
+  - **Attach to a container's main process**, as `kubectl attach -it` does. See [Attach to its main process](/debug/shell#attach-to-its-main-process).
+
+  ## The desktop app
+
+  - **More than one window**: File → New Window (⇧⌘N), each with its own pages and what it starts. See [More than one window](/get-started/desktop#more-than-one-window).
+  - **Keep open below**: an object stays open beside the terminals while the pages go elsewhere. See [Keep it open below](/explore/details#keep-it-open-below).
+  - **Opened again as it was**: each window, with what it had below. Terminals come back ended, and nothing signs in by itself as Lumovi starts: a cluster that signs in through a program says **Signs in when opened**. See [Opened again as it was](/get-started/desktop#opened-again-as-it-was).
+  - **Lumovi notices your kubeconfig changing**, and **Add a folder…** reads every kubeconfig in one; a folder's credentials that run a program ask first. See [It notices a change](/clusters/connect#it-notices-a-change) and [A folder of kubeconfigs](/clusters/connect#a-folder-of-kubeconfigs).
+  - **Node taints**, added and removed without YAML, and a drain with kubectl's options. See [Taints](/explore/nodes#taints).
+  - **AI assistants find a cause in fewer steps**, with two new tools. See [Tools](/assistants/tools).
+
+  ## In your cluster
+
+  - **A server's web UI works on a phone and a tablet.** See [On a phone](/server/phone).
+  - **A server acts only on requests from Lumovi's own page**, by `Sec-Fetch-Site`, and `LUMOVI_URL` names one host. See [Requests from Lumovi's own page](/server/security#requests-from-lumovi’s-own-page).
+
+  ## Fixed
+
+  - Create answers for YAML whose alias names no anchor set before it.
+  - What you type while a terminal is still opening reaches the shell once it's open.
+  - On a phone, tabs are big enough to tap, and a failed refresh's notice shows its whole reason.
+  - On Windows, a name with room for all of it is shown whole.
+  - An equivalent command breaks between its words.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.22.0)
+</Update>
+
 <Update label="October 10, 2026" description="1.21.0" tags={["Desktop app", "In your cluster"]}>
   ## Files, to and from a pod
 
