@@ -442,7 +442,9 @@ Prometheus and Alertmanager are <span className="lumovi-status healthy">Availabl
 
 Prometheus Operator's plugin draws a page of its own, with its [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code):
 
-- **Target health**: how many scrape targets are up, down and not scraped yet; the targets that are down, in one list, each with its last error; then a card for each namespace's Prometheus, with its scrape pools, worst first, named for the ServiceMonitor, PodMonitor or Probe they come from, and each pool's targets.
+- **Target health**: how many scrape targets are up, down and not scraped yet; the targets that are down, in one list, each with its last error; then a card for each namespace’s Prometheus, with its scrape pools, worst first, named for the ServiceMonitor, PodMonitor or Probe they come from, and each pool’s targets.
+
+  The counts are of what was read. Until one namespace’s server answers there are none, and each card says why its server didn’t. Where only some answered, they say so: "of 12 targets, from 1 of 2 namespaces", and a Down or Unknown of zero isn’t green. **Up** is green only where a target is up.
 
 It's the one plugin Lumovi comes with that [asks its tool's own server](/custom-resources/plugins#a-plugin’s-own-server). In each namespace with a Prometheus, Lumovi asks the `prometheus-operated` Service the operator makes there, on its port `web`, for `/api/v1/targets?state=active`, as you, so you need `get` on `services/proxy` in that namespace. Its entry under **All plugins** says so first, in red.
 
