@@ -28,7 +28,23 @@ This page gets it running in a few minutes, signed in with a token. When you're 
       --namespace lumovi --create-namespace
     ```
 
-    The chart runs one Lumovi pod. In the default token mode, its service account needs no permissions at all: everyone acts with their own.
+    The chart runs one Lumovi pod. In the default token mode, its service account needs nothing in the cluster: everyone acts with their own.
+  </Step>
+  <Step title="Live usage, if your cluster has none">
+    The overview's CPU and memory, and the usage on lists, come from [metrics-server](/metrics/live-usage). Many clusters have it: if `kubectl top nodes` answers, yours does, and you can skip this. Everything else works without it. To add it:
+
+    ```bash
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    ```
+
+    On kind, each kubelet's certificate is its own, not signed by the cluster's authority, so metrics-server can't check it and reads nothing. There, tell it not to check, which is fine for a cluster you're trying things on:
+
+    ```bash
+    kubectl patch deployment metrics-server --namespace kube-system --type json \
+      -p '[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+    ```
+
+    Usage shows a minute or so later.
   </Step>
   <Step title="Open it">
     Forward a port to it, and open [http://localhost:8080](http://localhost:8080).
