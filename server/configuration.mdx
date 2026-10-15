@@ -69,7 +69,7 @@ The chart puts `extraEnv` after its own variables. When two have the same name, 
 
 ## A fleet
 
-Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi shows a fleet when any of `LUMOVI_FLEET_KUBECONFIG`, `LUMOVI_FLEET_KUBECONFIG_FILE`, `LUMOVI_FLEET_SECRETS` and `LUMOVI_FLEET_AGENTS` is set, or `LUMOVI_FLEET_LOCAL` is `true`. It then needs `LUMOVI_AUTH` to be `oidc` or `proxy`, and doesn't use `KUBECONFIG` or `LUMOVI_CONTEXT`. The settings of a fleet's agents are on [Private clusters](/server/fleet/agents#run-it-another-way).
+Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi shows a fleet when any of `LUMOVI_FLEET_KUBECONFIG`, `LUMOVI_FLEET_KUBECONFIG_FILE`, `LUMOVI_FLEET_SECRETS` and `LUMOVI_FLEET_AGENTS` is set, or `LUMOVI_FLEET_LOCAL` or `LUMOVI_FLEET_ADD_FROM_PAGE` is `true`. It then needs `LUMOVI_AUTH` to be `oidc` or `proxy`, and doesn't use `KUBECONFIG` or `LUMOVI_CONTEXT`. The settings of a fleet's agents are on [Private clusters](/server/fleet/agents#run-it-another-way).
 
 <ResponseField name="LUMOVI_FLEET_KUBECONFIG" type="string">
   A kubeconfig, each of whose contexts is a cluster: YAML or JSON, or that encoded in base64 on one line. Read when Lumovi starts. One that isn't a kubeconfig stops it, saying `LUMOVI_FLEET_KUBECONFIG isn't a kubeconfig: …`, and base64 that isn't YAML says `LUMOVI_FLEET_KUBECONFIG must be YAML, or YAML encoded in base64.`
@@ -93,6 +93,14 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 
 <ResponseField name="LUMOVI_FLEET_LOCAL" type="boolean">
   `true` or `false`: whether the cluster Lumovi runs in is one of the fleet's. Unless set, it is whenever Lumovi runs in a cluster and shows a fleet. `true` outside a cluster stops Lumovi, and `true` on its own makes a fleet of just that cluster.
+</ResponseField>
+
+<ResponseField name="LUMOVI_FLEET_ADD_FROM_PAGE" type="boolean" default="false">
+  `true` or `false`: whether Lumovi's admins may add clusters on the Fleet page, kept as Secrets in `LUMOVI_FLEET_ADD_NAMESPACE`. It needs Lumovi to run in a cluster: `true` outside one stops it. See [From the Fleet page](/server/fleet/members#from-the-fleet-page).
+</ResponseField>
+
+<ResponseField name="LUMOVI_FLEET_ADD_NAMESPACE" type="string">
+  The namespace the clusters added on the Fleet page are kept in, as Secrets. Unless set, Lumovi's own namespace followed by `-clusters`. Keep it to the administrators of every cluster in the fleet: see [A fleet](/server/security#a-fleet).
 </ResponseField>
 
 <ResponseField name="LUMOVI_FLEET_REFRESH_SECONDS" type="number" default="30">
@@ -172,9 +180,9 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_STATE_SECRET" type="string">
-  A Secret in the namespace Lumovi runs in, where it keeps sessions, the AI assistants people allowed, and each cluster's settings (read-only, metrics source, node shells), so a restart signs nobody out: see [Across restarts](/server/security#across-restarts). The chart sets it to `<release>-state`, which it makes, with `auth.keepSessions`. Lumovi needs `get` and `patch` on it. Lumovi must run in a cluster for it: outside one, it doesn't start, saying `LUMOVI_STATE_SECRET keeps who’s signed in in the cluster Lumovi runs in, and it isn’t running in one (KUBERNETES_SERVICE_HOST isn’t set).` Nor does it start without `LUMOVI_STATE_KEY`: `LUMOVI_STATE_SECRET needs LUMOVI_STATE_KEY: the key what’s kept is sealed with, from a Secret of its own (the chart makes one).`, or when it can't read the Secret: `Lumovi can’t read Secret lumovi/lumovi-state, where it keeps who’s signed in and the AI assistants they allowed: …`, with why.
+  A Secret in the namespace Lumovi runs in, where it keeps sessions, the AI assistants people allowed, and each cluster's settings (read-only, metrics source, node shells), so a restart signs nobody out: see [Across restarts](/server/security#across-restarts). The chart sets it to `<release>-state`, which it makes, with `auth.keepSessions`. Lumovi needs `get` and `patch` on it. Lumovi must run in a cluster for it: outside one, it doesn't start, saying `LUMOVI_STATE_SECRET keeps who’s signed in in the cluster Lumovi runs in, and it isn’t running in one (KUBERNETES_SERVICE_HOST isn’t set).` Nor does it start without `LUMOVI_STATE_KEY`: `LUMOVI_STATE_SECRET needs LUMOVI_STATE_KEY: the key what’s kept is sealed with, from a Secret of its own (the chart makes one).`, or when it can't read the Secret: `Lumovi can’t read Secret lumovi/lumovi-state, where it keeps who’s signed in, the AI assistants they allowed, and people’s pins and saved views: …`, with why.
 
-  Without it, Lumovi keeps them in `state.json` in `LUMOVI_DATA_DIR`, which only its user can read, sealed with a key in `state.key` beside it, which it makes as it first starts. Without either, in memory, and its log says so, as it starts: `Who’s signed in and the AI assistants they allowed are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`, or outside one, `Set LUMOVI_DATA_DIR to keep them.`, and `Run a single replica so: each would keep its own, and what’s set for everyone (the clusters made read-only, say) would differ between them.` A restart then signs everyone out.
+  Without it, Lumovi keeps them in `state.json` in `LUMOVI_DATA_DIR`, which only its user can read, sealed with a key in `state.key` beside it, which it makes as it first starts. Without either, in memory, and its log says so, as it starts: `Who’s signed in, the AI assistants they allowed, and people’s pins and saved views are kept in memory: they’re lost when Lumovi stops.`, then, in a cluster, `The Helm chart’s auth.keepSessions keeps them (LUMOVI_STATE_SECRET).`, or outside one, `Set LUMOVI_DATA_DIR to keep them.`, and `Run a single replica so: each would keep its own, and what’s set for everyone (the clusters made read-only, say) would differ between them.` A restart then signs everyone out.
 </ResponseField>
 
 <ResponseField name="LUMOVI_STATE_KEY" type="string">

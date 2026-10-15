@@ -36,7 +36,6 @@ The chart refuses settings that can't work, before anything is installed, saying
 A fleet needs single sign-on or a proxy (auth.mode oidc or proxy): a pasted token only says who someone is to one cluster
 url must be set for single sign-on (auth.mode oidc): the provider sends people back there
 agent.hubUrl must be set: the address of the fleet's Lumovi, like https://lumovi.example.com
-agent.tokenSecret must name a Secret with the agent's token under token
 ```
 
 ## The cluster and its address
@@ -145,7 +144,7 @@ agent.tokenSecret must name a Secret with the agent's token under token
 
 ## A fleet
 
-Lumovi shows a fleet when `fleet.kubeconfigSecret`, `fleet.secrets` or `fleet.agentsSecret` is set. A fleet needs `auth.mode` `oidc` or `proxy`: with `token`, the chart refuses to install. See [A fleet of clusters](/server/fleet).
+Lumovi shows a fleet when `fleet.kubeconfigSecret`, `fleet.secrets`, `fleet.agentsSecret` or `fleet.addFromPage` is set. A fleet needs `auth.mode` `oidc` or `proxy`: with `token`, the chart refuses to install. See [A fleet of clusters](/server/fleet).
 
 <ResponseField name="fleet.kubeconfigSecret" type="string">
   A Secret in Lumovi's namespace with a kubeconfig under the key `kubeconfig`, each of whose contexts is a cluster. The chart mounts it at `/etc/lumovi/fleet`, so the pod doesn't start until it's there, and Lumovi reads it again as it changes.

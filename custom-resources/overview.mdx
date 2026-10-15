@@ -111,7 +111,7 @@ Lumovi comes with plugins for 32 tools and shows the ones your cluster runs. You
 
 ### Views
 
-A **view** is the part of a plugin that says how one kind is shown: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it links to and which belong to it, and which changes people make to it. Plugins are YAML and data only, so they can't run code.
+A **view** is the part of a plugin that says how one kind is shown: which columns matter, how to tell whether an object is healthy, which facts to show, which objects it links to and which belong to it, and which changes people make to it. A view is data: it reads fields, and runs no code. Four of Lumovi's plugins also draw [pages with code of their own](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code), in a sandbox.
 
 <Columns cols={3}>
   <Card title="Plugins" icon="package" href="/custom-resources/plugins">

@@ -20,7 +20,7 @@ You need [Helm](https://helm.sh) and `kubectl` on your computer, and an account 
       --namespace lumovi --create-namespace
     ```
 
-    This creates a deployment with one Lumovi pod, a `lumovi` Service on port 80, a service account, and a 2 GiB volume for the [audit log](/server/audit-log), from the cluster's default storage class. A cluster without a default storage class needs `--set audit.persistence.storageClass=<class>`, or `--set audit.persistence.enabled=false`. With the default sign-in (tokens), that service account needs no permissions, and the chart gives it none.
+    This creates a deployment with one Lumovi pod, a `lumovi` Service on port 80, a service account, and a 2 GiB volume for the [audit log](/server/audit-log), from the cluster's default storage class. A cluster without a default storage class needs `--set audit.persistence.storageClass=<class>`, or `--set audit.persistence.enabled=false`. With the default sign-in (tokens), that service account needs nothing in the cluster: the chart gives it only `get` and `patch` on Lumovi's own Secret and ConfigMap, where it keeps sessions and people's rules for their assistants.
 
     The history on that volume is one Lumovi's at a time, so the chart runs one pod, and an upgrade stops the old one before it starts the new one. See [Where it's kept](/server/audit-log#where-it’s-kept).
   </Step>

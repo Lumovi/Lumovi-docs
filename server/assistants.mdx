@@ -83,7 +83,7 @@ Whatever your rules and theirs say, each person's RBAC applies, and `readOnly: t
 
 ## What their changes do
 
-Before rules, Lumovi 1.4 said what assistants' changes do, cluster by cluster, with `LUMOVI_ASSISTANT_CHANGES` (the chart's `assistants.changes` and `assistants.clusters`). They still work, as limits:
+`LUMOVI_ASSISTANT_CHANGES` (the chart's `assistants.changes` and `assistants.clusters`) sets a limit on what assistants' changes do, cluster by cluster:
 
 <CodeGroup>
   ```yaml values.yaml
@@ -108,7 +108,7 @@ Before rules, Lumovi 1.4 said what assistants' changes do, cluster by cluster, w
 Lumovi makes them into rules, which people see on their **Permissions** tab: `Changes (LUMOVI_ASSISTANT_CHANGES)` for every cluster but those named, and `Changes to production (LUMOVI_ASSISTANT_CHANGES)` for each one named.
 
 <Warning>
-  Since this version, `allow` no longer makes changes without asking by itself: each person chooses **Without asking** for their own. And the chart sets `assistants.changes` only when you do, so after upgrading, people may let their assistants change things without asking, or read Secrets' values, unless you set limits. See [Upgrading](/server/upgrade).
+  `allow` doesn't make changes without asking by itself: each person chooses **Without asking** for their own. The chart sets `assistants.changes` only when you do, so unless you set limits, people may let their assistants change things without asking, or read Secrets' values. See [Limits for everyone](#limits-for-everyone).
 </Warning>
 
 In `LUMOVI_ASSISTANT_CHANGES`, an entry without a name is every cluster's, and `name=…` entries are those clusters' own, separated by commas. Spaces around them don't matter. Anything else stops Lumovi:
