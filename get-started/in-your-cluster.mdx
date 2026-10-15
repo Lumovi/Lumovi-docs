@@ -36,19 +36,24 @@ This page gets it running in a few minutes, signed in with a token. When you're 
     ```bash
     kubectl port-forward --namespace lumovi service/lumovi 8080:80
     ```
+
+    If something else has port 8080, choose another, like `8081:80`, and open that port instead.
   </Step>
   <Step title="Get a token to sign in with">
-    Lumovi asks for a bearer token the cluster accepts, and sends your requests with it. For a quick look, make a service account that can view everything, and a token for it that's valid for an hour:
+    Lumovi asks for a bearer token the cluster accepts, and sends your requests with it. For a quick look, make a service account that can view everything, and a token for it that's valid for an hour. Kubernetes’ own `view` role leaves out nodes, which the overview reads, so it gets those too:
 
     ```bash
     kubectl create serviceaccount alice --namespace lumovi
     kubectl create clusterrolebinding alice-view --clusterrole view \
       --serviceaccount lumovi:alice
+    kubectl create clusterrole nodes-view --verb get,list,watch --resource nodes
+    kubectl create clusterrolebinding alice-nodes --clusterrole nodes-view \
+      --serviceaccount lumovi:alice
     kubectl create token alice --namespace lumovi
     ```
   </Step>
   <Step title="Sign in">
-    Paste the token and choose **Sign in**. You're on the cluster's overview, with exactly the access the `view` role gives.
+    Paste the token and choose **Sign in**. You're on the cluster's overview, with exactly the access those two roles give.
 
     <Frame>
       <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/server-sign-in-light-1x.webp" alt="Lumovi served from a cluster: signing in with a token." />
