@@ -24,9 +24,19 @@ Wherever the page is used by touch, whatever you press is at least 44 pixels hig
 - **Search** in the top bar opens the command palette.
 - There are no back and forward buttons of Lumovi’s own: the browser’s do that.
 
+<Frame caption="The overview on a phone.">
+  <img className="block dark:hidden mx-auto" style={{ maxWidth: "320px" }} loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/phone-overview-light-1x.webp" alt="Lumovi from a cluster, on a phone: the overview of production, in all namespaces. Nodes ready 3/4 with 1 not ready, 28 pods running with 8 unhealthy, workloads healthy 8/12 with 4 degraded, and 12 warnings in the last hour; then CPU at 41%, 11.4 of 27.5 cores in use, and memory at 52%." />
+  <img className="hidden dark:block mx-auto" style={{ maxWidth: "320px" }} loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/phone-overview-dark-1x.webp" alt="Lumovi from a cluster, on a phone: the overview of production, in all namespaces. Nodes ready 3/4 with 1 not ready, 28 pods running with 8 unhealthy, workloads healthy 8/12 with 4 degraded, and 12 warnings in the last hour; then CPU at 41%, 11.4 of 27.5 cores in use, and memory at 52%." />
+</Frame>
+
 ## Lists
 
 Under 640 pixels a list has no table. Each object is two lines: its name and status, then the first facts of its kind and its age. A pod’s second line says "2/2 ready · 0 restarts", a Job’s how many completed, a CronJob’s when it runs next. With every namespace listed, each row starts with its own.
+
+<Frame caption="A list on a phone: each row takes two lines.">
+  <img className="block dark:hidden mx-auto" style={{ maxWidth: "320px" }} loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/phone-pods-light-1x.webp" alt="Pods on a phone, in production across all namespaces: 38, with chips for Failing 5, Warning 3, Running 28 and Completed 2. Each pod takes two lines, its name and status, then its namespace, containers ready, restarts and age; failing pods come first, two of them in CrashLoopBackOff." />
+  <img className="hidden dark:block mx-auto" style={{ maxWidth: "320px" }} loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/phone-pods-dark-1x.webp" alt="Pods on a phone, in production across all namespaces: 38, with chips for Failing 5, Warning 3, Running 28 and Completed 2. Each pod takes two lines, its name and status, then its namespace, containers ready, restarts and age; failing pods come first, two of them in CrashLoopBackOff." />
+</Frame>
 
 - **Sort** opens a sheet of what the list can be sorted by. Choose one again to turn it around; the sheet says which way in the column’s own words, like "A to Z" or "Worst first".
 - **Filters** open as sheets too.
@@ -36,6 +46,11 @@ Under 640 pixels a list has no table. Each object is two lines: its name and sta
 ## An object’s page
 
 A tap on a row opens the object as a page, with **Back** to return to the list. Under its name it says its kind, namespace and cluster. Its facts are stacked, and its tables are cards.
+
+<Frame caption="A pod’s page on a phone.">
+  <img className="block dark:hidden mx-auto" style={{ maxWidth: "320px" }} loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/phone-pod-light-1x.webp" alt="A pod’s page on a phone: storefront-cjt7gd2jtx-75pbc in shop, Running, with Restart and the tabs Overview, Logs, Metrics, Events, Audit and YAML. Its details (when it was created, its ReplicaSet, node, IPs, QoS class, service account and restart policy), then its containers, first the init container migrate, completed." />
+  <img className="hidden dark:block mx-auto" style={{ maxWidth: "320px" }} loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/phone-pod-dark-1x.webp" alt="A pod’s page on a phone: storefront-cjt7gd2jtx-75pbc in shop, Running, with Restart and the tabs Overview, Logs, Metrics, Events, Audit and YAML. Its details (when it was created, its ReplicaSet, node, IPs, QoS class, service account and restart policy), then its containers, first the init container migrate, completed." />
+</Frame>
 
 Its tabs are the ones a larger screen has, except **Shell** and **Map**: a shell needs a keyboard, and a map more room. As you scroll, the top bar takes the object’s name and the tabs stay in view.
 
@@ -64,6 +79,11 @@ It is a rule of the phone’s interface, not a security boundary. A server can�
 ## Approving an assistant’s change
 
 Under 640 pixels, a change an [AI assistant](/assistants/approvals) asks for doesn’t open over what you’re doing. It arrives as a line at the bottom of the page that says a change waits for you. A tap on it opens the change as a sheet, with everything the dialog shows on a larger screen: who asks and why, the cluster and its **Production** mark, the diff, the command that does the same, and how long it waits. Its title takes up to three lines; a name too long for them is shortened in its middle, with its end kept, and is whole in the change below. The line under it that says where, the kind, namespace and cluster with the **Production** mark, is always whole. Lumovi’s own dialogs, like Scale, do the same.
+
+<Frame caption="An assistant’s change, waiting for an answer on a phone.">
+  <img className="block dark:hidden mx-auto" style={{ maxWidth: "320px" }} loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/phone-approval-light-1x.webp" alt="An AI assistant’s change waiting on a phone, in a sheet over the overview: it asks to scale Deployment storefront to 5 replicas, in shop on production, with its reason (checkout latency has doubled and the pods are at 95% CPU). The cluster accepts it; the diff turns replicas: 3 into 5, with the equivalent kubectl command below. It waits 6:00 more, with Reject… and Approve." />
+  <img className="hidden dark:block mx-auto" style={{ maxWidth: "320px" }} loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/phone-approval-dark-1x.webp" alt="An AI assistant’s change waiting on a phone, in a sheet over the overview: it asks to scale Deployment storefront to 5 replicas, in shop on production, with its reason (checkout latency has doubled and the pods are at 95% CPU). The cluster accepts it; the diff turns replicas: 3 into 5, with the equivalent kubectl command below. It waits 6:00 more, with Reject… and Approve." />
+</Frame>
 
 - **Approve** can’t be pressed for a moment after the sheet opens, or after it moves on to the next change that waits. A tap meant for something else, or a second tap, approves nothing.
 - **Reject…** is at the left edge and **Approve** at the right.

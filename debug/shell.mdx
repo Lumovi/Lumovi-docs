@@ -59,6 +59,11 @@ The [audit log](/audit/overview) records each shell you open and close, how long
 
 A shell is a new process beside the container's own. To reach the container's own process instead, as `kubectl attach -it` does, choose **Attach** in a pod's actions, or **Shell | Attach** on its Shell tab. What the process prints shows in the terminal, and, where its input is open, what you type goes to it. Close the tab to leave: that detaches, and the process goes on.
 
+<Frame caption="Attached to a container’s main process.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/attach-light-1x.webp" alt="Attached to a container's main process, as kubectl attach -it: what it prints, and what you type where it takes input." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/attach-dark-1x.webp" alt="Attached to a container's main process, as kubectl attach -it: what it prints, and what you type where it takes input." />
+</Frame>
+
 Lumovi reads the container's spec first, and says at the top of the terminal what attaching does there:
 
 | The container | The terminal says | What you type |

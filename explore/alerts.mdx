@@ -12,6 +12,11 @@ Lumovi reads them from the Prometheus the [Metrics page](/metrics/usage-history)
 
 Each row is one alert: one instance of a rule, so two pods crash-looping are two rows.
 
+<Frame caption="Alerts, firing and pending, with one opened beside the list.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/alerts-light-1x.webp" alt="Prometheus's alerts, firing and pending, with one opened beside the list: what it says, since when, and its runbook." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/alerts-dark-1x.webp" alt="Prometheus's alerts, firing and pending, with one opened beside the list: what it says, since when, and its runbook." />
+</Frame>
+
 | Column | Shows |
 | --- | --- |
 | **Alert** | The rule's name, like `KubePodCrashLooping` |

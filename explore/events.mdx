@@ -32,6 +32,11 @@ The filter (<kbd>/</kbd>) matches an event's reason, message and object name as 
 
 **List** | **Timeline**, in the list's bar, shows the same events where they fell in time. The timeline has a row for each object, with its kind and name; click the name to open the object. A **Normal** event is a hollow circle and a **Warning** a triangle. One that repeated is a bar from its first time to its last, with how many times. Marks too close to tell apart are drawn as one, with how many, and so are repeated events too many to stack in a row; click one to zoom in and part them. A key under it says what each mark means.
 
+<Frame caption="Events on a timeline: each a bar from when it began to when it was last seen.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/events-timeline-light-1x.webp" alt="The cluster's events on a timeline, warnings first: each a bar from when it began to when it was last seen." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/events-timeline-dark-1x.webp" alt="The cluster's events on a timeline, warnings first: each a bar from when it began to when it was last seen." />
+</Frame>
+
 It shows the events the page's filter and chips leave, so pick **Warning** to see only the warnings in time. Above it, choose **15m**, **1h** or **All** (every event the cluster keeps), and drag across the times to zoom in; **Reset zoom** goes back. A stretch with no events says so, with **Reset zoom**.
 
 Hover a mark, or move to it with the keyboard, to see what happened: its reason, type and message, and when, with its first and last time and how many times for one that repeated. Click a mark, or press <kbd>Enter</kbd> on it, to open the event. With the timeline focused, the arrow keys move between rows and along a row's marks, <kbd>Home</kbd> and <kbd>End</kbd> go to a row's first and last, and <kbd>Escape</kbd> lets go.
@@ -41,6 +46,11 @@ The choice is kept in the page's address (`?as=timeline`), so a link opens the t
 ## Notifications of new warnings
 
 Lumovi can tell you of new Warning events in a cluster as they happen, through your system's notifications. It's off until you turn it on, for each cluster:
+
+<Frame caption="Notifications of new warnings, in a cluster’s settings.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/warning-notifications-light-1x.webp" alt="A cluster's settings: new warnings told while Lumovi runs, in the namespaces it watches." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/warning-notifications-dark-1x.webp" alt="A cluster's settings: new warnings told while Lumovi runs, in the namespaces it watches." />
+</Frame>
 
 - **On the desktop**, in the cluster's [settings](/clusters/connect#cluster-settings): **Notify me of new warnings**. While Lumovi is open, whatever page it shows, it checks every 30 seconds.
 - **On a server**, in the cluster switcher at the top of the sidebar: **Notify me of new warnings**. It's yours alone, kept in this browser, and works while one of Lumovi's tabs is open in it, hidden or not. Your browser asks first: **Allow notifications**, then **Send a test** to see one. A browser that blocks them says so, and the switch stays on until you allow them in its settings for the site; one that can't show notifications at all says "This browser can't show notifications." With several tabs open over HTTPS, one of them checks, and you're told once.

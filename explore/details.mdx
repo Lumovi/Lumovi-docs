@@ -97,6 +97,11 @@ The whole object, syntax highlighted. **Copy YAML** copies it, and **Edit** open
 
 In the desktop app, **Keep open below**, beside **Expand panel** (or in the [command palette](/explore/finding-things) with the object open), keeps the object open below the pages, as a tab beside the [terminals](/debug/terminal), on the tab it was showing. A pod's logs keep coming, and a Deployment's metrics keep moving, while you go elsewhere, other clusters included. Once it's kept, the button says **Show below**, and shows its tab.
 
+<Frame caption="A pod’s logs kept open below, while the pages above show something else.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/tabs-below-light-1x.webp" alt="A pod's logs kept open below the cluster's pages, beside the terminals, going on while the pages above show something else." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/tabs-below-dark-1x.webp" alt="A pod's logs kept open below the cluster's pages, beside the terminals, going on while the pages above show something else." />
+</Frame>
+
 Its tab in the bar has the kind's icon, its name (cut in the middle when it's long), the tab it shows unless that's **Overview**, and its cluster when that isn't the window's. It's read in its own cluster, as you, as the panel would read it. Right-click it for **Open in the panel**, **Close** and **Close the others**; **Open in the panel** (↗) is also at the top of what it shows. With the focus below, <kbd>⌘</kbd><kbd>W</kbd> (<kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>W</kbd> on Windows and Linux) closes the tab shown.
 
 - **Deleted**, its tab says *deleted*, and what it last showed stays, dimmed: "Pod cart-7d9f6c5b8-x2kqp was deleted at 14:32. Its lines up to then stay here until you close this tab." (On another tab than Logs: "Its last state stays here…") Where Lumovi knows what ran it and that's still there, it says so, "It belonged to the Deployment cart, which is still there.", with **Keep cart open instead**. **Close this tab** lets it go.

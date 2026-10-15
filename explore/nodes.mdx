@@ -68,6 +68,11 @@ Static pods stay where they are: the kubelet manages them. **Drain** stays disab
 
 **Taints…** lists the node's taints, and adds and removes them. A taint keeps pods off the node unless they tolerate it, by its effect:
 
+<Frame caption="A node’s taints: one to add and one to remove, with the kubectl commands they are.">
+  <img className="block dark:hidden" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/taints-light-1x.webp" alt="A node's taints without YAML: one to add and one to remove, staged, with the kubectl commands they are." />
+  <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/taints-dark-1x.webp" alt="A node's taints without YAML: one to add and one to remove, staged, with the kubectl commands they are." />
+</Frame>
+
 | Effect | What it does |
 | --- | --- |
 | `NoSchedule` | No new pod lands here unless it tolerates the taint. Pods already running stay |
