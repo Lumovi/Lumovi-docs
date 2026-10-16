@@ -163,8 +163,17 @@ Right-click a tab for its menu:
 | --- | --- |
 | **Rename…** | Names the tab |
 | **New terminal like it** | Starts another terminal for the same cluster and namespace |
+| **Move to a new window** | Moves the terminal into a window of its own, its shell still running. Not for one whose shell has ended |
 | **Close** | Ends its shell and closes the tab |
 | **Close the others** | Closes every other tab below: ends every other terminal, and lets every kept object go |
+
+### In a window of its own
+
+In the desktop app, **Move to a new window** opens the terminal alone in a smaller window, over the one it came from, under a band that names it with its namespace and cluster. Its shell goes on running there, with what it showed.
+
+- **Put back below**, in the band, returns it below in the window it came from, else in the one in front on its cluster, else the one in front, its shell still running. With no other Lumovi window open, its own becomes one, with the terminal below. It's there only while the shell runs.
+- **Closing the window** closes the tab, and ends its shell.
+- **After a quit**, the window opens again where it was, its terminal ended, as below.
 
 ### They keep running
 
