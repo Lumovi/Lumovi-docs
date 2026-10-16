@@ -167,6 +167,33 @@ The filter, health chips, label selector, sort, page and the open object are all
   **In your cluster:** these addresses are real links. Copy one from the address bar to share a filtered list, or an open pod, with a teammate.
 </Note>
 
+## Links
+
+**Copy link** copies a link to what you're looking at, for a teammate to open in their own Lumovi. It's first in an open object's **More actions**, and **Copy link to this view** is in the bar's **More** (⋯). The [command palette](#the-command-palette) has whichever fits. In the desktop app, the link is a `lumovi://` one, and Lumovi says "Link copied. It names the cluster, not how to reach it." On a server, it's the page's own address.
+
+A `lumovi://` link opens the same object or view in the desktop app of anyone who has that cluster in their kubeconfig, under whatever name. It carries:
+
+- **Where to go**: the page, the open object and its tab, and how the list is filtered and sorted.
+- **Which cluster**: its name in the kubeconfig it was copied from, and a short fingerprint of the cluster's address and its certificate authority. Lumovi finds the cluster by the fingerprint, so a colleague's other name for it doesn't matter. The fingerprint doesn't give the address away, but where a cluster has no authority of its own, someone who can guess its address can check a guess against it.
+
+It never carries a credential, a user, a file, a command or a form, and it only shows. Every page and tab it can open only reads, and it never opens a shell, an attach or a port forward: a link to an object's **Shell** opens it on its overview. A link to a plugin's page carries the page alone.
+
+### Every link asks
+
+A link never opens anything by itself. It asks first, in a card at the top of the window in front, named for your own name for the cluster:
+
+- **"Open checkout-7d9f in production?"**, with **Cancel**, **New window** and **Open**, or **"Go to … ?"** with **Go** where a window already shows that cluster, which then asks there. Where the link calls the cluster something else, the card says "the link calls it …". Where opening it signs in through a program, it says "Opening it signs in with aws." Nothing connects, reads or signs in until you choose. Where the window has an edit that isn't saved, **New window** comes first: "This window has an edit that isn't saved, so it opens in a new one."
+- **Several of your clusters** match: "Open … in which context?", and you pick one.
+- **Yours has the link's name, but another address**: "You have a cluster called production, but at another address than the link's.", with **Open production anyway**.
+- **None of yours**: "This link is to a cluster called production that isn't in your kubeconfig. Ask whoever sent it which one it is, then add it.", with **Add a cluster**.
+- **A link that can't be read** isn't opened: "This link can't be opened: …", with why. A part of it Lumovi doesn't take is left out, and the card says what: "Some of the link was left out: the time range."
+
+**Cancel** has the keyboard, and for the first half second <kbd>↵</kbd>, <kbd>Space</kbd> and <kbd>Esc</kbd> do nothing, so keys meant for something else don't answer it; after that, <kbd>Esc</kbd> is **Cancel**. While you type in a terminal or a field, the card shows without taking the keyboard: <kbd>⌘</kbd><kbd>L</kbd> goes to it (<kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>L</kbd> on Windows and Linux). A link that brings Lumovi forward from another app takes no keys until you stop typing.
+
+One link asks at a time, and a newer one takes its place. For two seconds after you answer one, links that come are let go, and Lumovi says once "Lumovi skipped a link that came right after the last one. Open it again if you meant to." If a dialog is open, the link waits until you close it: "A link is waiting. Lumovi asks about it when this dialog closes." A link that starts Lumovi asks once its windows are back where they were.
+
+Your organization can turn links off with the [policy](/desktop/policy#links) key `links`: Lumovi then opens none, and **Copy link** isn't there.
+
 <Columns cols={2}>
   <Card title="Keyboard shortcuts" icon="command" href="/reference/keyboard-shortcuts">
     Every shortcut, in one place.

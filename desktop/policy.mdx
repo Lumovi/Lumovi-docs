@@ -103,6 +103,10 @@ Files and folders someone chose or added before the policy came, and clusters th
 
 It decides which files Lumovi reads, not what's in them: `~/.kube/config` is still each person's to change, and so is a `KUBECONFIG` they start Lumovi with.
 
+### links
+
+`"off"`: Lumovi opens no [`lumovi://` link](/explore/finding-things#links), and **Copy link** isn't offered. A link handed to Lumovi is let go, with no card, and on Windows Lumovi doesn't register itself for them. Leaving it out leaves links on.
+
 ### metricsStack
 
 `false` turns [Lumovi’s metrics stack](/metrics/metrics-stack) off: where a cluster has no usage history, Lumovi doesn’t offer to install one, and it refuses to install or remove one. A stack that’s already installed keeps running, and Lumovi keeps charting from it. `true`, or leaving it out, leaves it to each person and their cluster’s RBAC.
