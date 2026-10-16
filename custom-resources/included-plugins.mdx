@@ -558,6 +558,8 @@ Reports are <span className="lumovi-status critical">2 critical</span> when they
 | ConfigAuditReport, ExposedSecretReport, RbacAssessmentReport, ClusterRbacAssessmentReport | Resource, Critical, High, Medium, Low | Resource |
 | ClusterComplianceReport | Standard, Failing, Passing, Schedule | |
 
+An ExposedSecretReport's line where Trivy found each secret (`report.secrets.match`) is never shown or handed on: Trivy stars the secret, not what's around it. Its file [withholds](/reference/plugin-format#param-withholds) it, so it's out of the YAML tab, lists and AI assistants' reads, and Lumovi doesn't edit such a report whole. See the plugin's own words on the report's YAML tab.
+
 ## Velero
 
 [Velero](https://velero.io): backups of cluster resources and volumes.
