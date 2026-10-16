@@ -254,6 +254,23 @@ Each item under `views:`:
   How an object of this kind marks the workloads it manages, so a workload says what manages it. See [What it manages](#what-it-manages).
 </ResponseField>
 
+<ResponseField name="withholds" type="list">
+  Fields of its kinds that Lumovi never shows or hands on, like the line around a secret a scanner found: up to 20, each a `path` and, if you like, `why`.
+
+  ```yaml
+  withholds:
+    - path: report.secrets.match
+      why: The line around a secret Trivy found.
+  ```
+
+  - **Where.** They're taken out before anything leaves Lumovi's backend, or the desktop app's own process: lists and their CSV, an object's YAML and its copy, its Map and Audit tabs, a plugin's code, and AI assistants' tools. Kubectl's `last-applied-configuration` annotation goes too, since it holds every field. Such a kind's list has the view's own columns only, never the API server's. The YAML tab says each one: "Lumovi doesn't show report.secrets[].match here: trivy-operator's file withholds it.", then "It says:" and the file's `why`, cut at 120 characters.
+  - **Changes.** An object of such a kind isn't written whole: Edit YAML and Apply are off, saying "Lumovi can't edit this here: it holds fields Lumovi doesn't show. Edit it with kubectl." A patch may add, replace or remove other fields, like labels and annotations, but not one of these or what holds them, nor the last-applied annotation; a JSON patch's `copy`, `move` and `test` are refused. A failed change says why in Lumovi's words, never the cluster's, which can quote the object.
+  - **Paths** are field names, as in `reads`: a step into a list is taken of each item. Where a step finds something of another shape, that whole value is taken out. A field that isn't there leaves the object as it is.
+  - **Never** of Kubernetes' own kinds, nor of a `kind: '*'` view; never `metadata`, `apiVersion` or `kind`; and nothing under `status`, which says how the object is: Lumovi always shows it.
+  - **Every file counts.** What's withheld of a kind is what every plugin file Lumovi has says of it, together, whether its plugin is shown, allowed or turned off: a file can add to it, never take away. While a file doesn't read, the custom kinds of the groups it names aren't shown at all ("This can't be shown: my-scans.yaml doesn't read, and it may withhold fields of it."), and every custom kind, where it names none.
+  - A file that withholds needs Lumovi 1.23.0 or later in [`needs.lumovi`](#spec). An older Lumovi doesn't know the key, and refuses the whole file.
+</ResponseField>
+
 ## Fields
 
 Columns and details are both fields.
