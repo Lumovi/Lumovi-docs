@@ -148,6 +148,8 @@ On the start screen, **Credentials failed** and **Unauthorized** both read **Cou
   <Accordion title="A terminal won't start, or kubectl points elsewhere" icon="terminal">
     **Your shell, … isn't there: set SHELL to one that is.** `SHELL` names a shell that isn't on your computer. Set it to one that is, and start Lumovi again. Without `SHELL`, terminals start zsh on macOS and bash on Linux. On Windows, they start Windows PowerShell.
 
+    **PowerShell is still starting.** On Windows, a terminal says so when PowerShell has drawn nothing for 5 seconds; the line goes once it draws. Two things usually hold it up. Your profile: `Measure-Command { . $PROFILE }`, in PowerShell, says how long it takes, and moving slow work out of it helps every terminal. A virus scanner that checks PowerShell as it starts: your IT can tell you whether it does, and whether that can be eased.
+
     **kubectl uses another cluster.** Your shell's startup files probably set `KUBECONFIG`, which replaces the terminal's own. Have them add to it instead, so the terminal's file stays first. See [Terminals](/debug/terminal#kubectl-points-at-the-cluster).
   </Accordion>
   <Accordion title="A terminal says it uses the kubectl on your PATH" icon="terminal">
