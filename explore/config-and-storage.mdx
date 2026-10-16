@@ -9,7 +9,7 @@ The sidebar's **Configuration** and **Storage** sections hold five lists:
 | List | Shortcut | Columns |
 | --- | --- | --- |
 | **ConfigMaps** | <kbd>G</kbd> <kbd>F</kbd> | Keys |
-| **Secrets** | <kbd>G</kbd> <kbd>X</kbd> | Type, Keys |
+| **Secrets** | <kbd>G</kbd> <kbd>X</kbd> | Type, Keys, Expires |
 | **Volume Claims** | <kbd>G</kbd> <kbd>L</kbd> | Capacity, Storage class, Volume |
 | **Volumes** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Capacity, Claim, Storage class, Reclaim |
 | **Storage Classes** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Default, Provisioner, Reclaim, Binding |
@@ -39,6 +39,18 @@ Secret values stay hidden until you ask for them.
 - **On a Lumovi server**, your [access](/clusters/your-access) may show you a namespace's Secrets' keys only: **Data** says "Only the keys", each value reads **Value hidden by your access**, and **YAML** says **Values hidden by your access**. Their values never reach your browser, not even in what a change answers with, and editing a Secret as YAML is off, since that writes it whole. Where your access hides Secrets, you can't open or change them, and lists across every namespace leave them out.
 - **The [audit log](/audit/overview)** records who opened a Secret, with its keys, never its values. Opening one counts, revealed or not: its values reach the page, hidden.
 - **YAML** hides values too, until you choose **Reveal values**. The `kubectl.kubernetes.io/last-applied-configuration` annotation holds a copy of the values, so it's hidden as well. Under **Annotations** in **Overview**, it reads *Hidden: it holds the secret's values*.
+
+### Certificates
+
+Where you may see a Secret's values, Lumovi says what the certificates in it say: a TLS Secret's `tls.crt`, and any other value that holds a PEM certificate, like a `ca.crt`. The certificates are read on the server, or in the desktop app's own process, and only what's below reaches the page. A private key is never read.
+
+- **In its panel**, **Certificate** comes before **Data**, with each key's: its **Subject**; the **Names** it's for, DNS names and then IP addresses; its **Issuer**, or *Self-signed*; when it's **Valid**, from and to; and its **Chain**, how many certificates follow it, and the one of them that ends first. A certificate that has expired, isn't valid yet, or ends within 14 days says so, *Expired*, *Not yet valid* or *Expires soon*, and so does the panel's top. A bundle of certificates that aren't one chain, like a set of roots, is only counted. A value Lumovi can't read as a certificate says so.
+- **The list** has an **Expires** column: how long until the first of a Secret's certificates ends, its chain's included, like *in 87d*, or how long ago. **Not valid** and **Expires soon**, above the list, show only those Secrets.
+- **Where your access shows a Secret's keys only**, or hides it, none of this shows, and nothing of it is read for you.
+- **The [audit log](/audit/events#access-access)** records it as reading the Secret: "Read the certificates of Secret storefront-tls", and, for a list, "Read the certificates of 14 Secrets in shop".
+- **If the cluster doesn't answer**, the panel says "Lumovi couldn't read the certificate just now. It's trying again.", and tries every 5 seconds for a minute or so. Then it offers **Try again**.
+
+A value is read for its first 64 KB and its first 8 certificates, and a certificate shows its first 50 names, with how many more there are.
 
 ### Editing a secret
 
