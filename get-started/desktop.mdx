@@ -120,6 +120,7 @@ The next time Lumovi starts, each window opens again where it was on the screen,
 - A window that was on a cluster that signs in through a program opens the start screen instead, and that cluster is read when you open it. So does one whose cluster has gone from your kubeconfig.
 - A [terminal](/debug/terminal) comes back ended: "The shell ended when Lumovi quit.", with "A terminal's shell can't outlive Lumovi. Its name, cluster and namespace are kept for a new one." Nothing runs until you choose **Start a new shell**: a shell runs your profile.
 - An object [kept below](/explore/details#keep-it-open-below) reads again as if just opened, on its overview if it was on its Shell, so no shell starts by itself. One on a cluster that signs in through a program waits, its tab saying *not read yet*, with a card: **Not read yet**, "production signs in through kubelogin, so Lumovi reads this when you ask.", and **Read it now**. It's read when you choose that, pick its tab, or open its cluster in that window.
+- A tab moved into a [window of its own](/debug/terminal#in-a-window-of-its-own) opens again in its window, where it was: a terminal ended, an object as above. If only such windows were open, each opens as a Lumovi window on its tab's cluster, with the tab below, unless that cluster signs in through a program: then on the start screen.
 
 <Columns cols={2}>
   <Card title="Take the tour" icon="map" href="/get-started/tour">
