@@ -111,6 +111,19 @@ Its tab in the bar has the kind's icon, its name (cut in the middle when it's lo
 
 Each window keeps its own, and they come back when Lumovi starts again: see [Opened again as it was](/get-started/desktop#opened-again-as-it-was). One on a cluster that signs in through a program waits there as *not read yet* until you ask. A server's web page and a phone have no tabs below, so nothing is kept there.
 
+## Compare with another
+
+**Compare with…**, in **More actions** and the [command palette](/explore/finding-things#the-command-palette), sets the object beside another of its kind: in another namespace, or another cluster. Pick a cluster, then a namespace, then the object; one with the same name is marked **Same name**. A cluster that signs in through a program says "Signs in when opened", and is read only when you choose **Open** on its row.
+
+The page shows what differs, each side as its YAML, with **Swap** to change sides. "No differences" says so.
+
+- **Left out until you ask**: the object's status, and what the cluster set itself: uids, versions, times, managed fields, owners, kubectl's and controllers' annotations, and what it was given, like a Service's address or a pod's node. **Show status and cluster-set fields** puts them back, and Lumovi remembers the choice.
+- **A workload's config**: the ConfigMaps and Secrets each side refers to are compared too, paired by where they're referred to (a volume, an env var, an image pull secret) rather than by name, which often differs between where they run.
+- **Secrets**: values are masked on both sides until **Reveal values**, and a changed value shows as a changed line with neither value. Where your access on either side shows a Secret's keys only, only keys are compared, and values say *not compared*.
+- **Withheld fields**: a field a plugin's file [withholds](/reference/plugin-format#param-withholds) reads *(withheld)* on both sides, never as a difference.
+
+Each side is read with your own access on its cluster, as opening it would be, and recorded in the [audit log](/audit/overview) the same way. Where a side can't be read, the page says why, and nothing is compared until it is.
+
 ## Right-click a row
 
 Every row has a menu with the object's actions, and:
