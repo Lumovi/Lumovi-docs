@@ -73,25 +73,25 @@ A plugin is for a tool's kinds, not Kubernetes' own:
 
 - **A kind Lumovi has a page for**, like Pods, Deployments, Secrets or Roles (see [Resource kinds](/reference/resource-kinds)), can't be in a plugin at all.
 - **A kind Lumovi shows itself**, like CustomResourceDefinitions, can't either. Lumovi has views of its own for a few of Kubernetes' kinds that have no page. They aren't plugins and aren't among the [included ones](/custom-resources/included-plugins); **Shown by** says **Lumovi** for them.
-- **Any other kind of Kubernetes'**, like a Lease or a LimitRange, a plugin can show, and only show. It names the kind under [`shows`](#spec), and its view of it has columns, status, details, links and related lists, but no actions. Such a kind can't be under the plugin's place in the sidebar.
+- **Any other kind of Kubernetes'**, like a Lease or a PodTemplate, a plugin can show, and only show. It names the kind under [`shows`](#spec), and its view of it has columns, status, details, links and related lists, but no actions. Such a kind can't be under the plugin's place in the sidebar.
 
-```yaml limits.yaml
+```yaml templates.yaml
 apiVersion: lumovi.dev/v1beta1
 kind: Plugin
 metadata:
-  name: limits
+  name: templates
 spec:
   version: 1.0.0
   needs:
     lumovi: 1.22.0
   groups: []
   shows:
-    - { kind: LimitRange }
+    - { kind: PodTemplate }
   views:
     - kinds:
-        - { kind: LimitRange }
+        - { kind: PodTemplate }
       columns:
-        - { name: Limits, path: '.spec.limits[*].type' }
+        - { name: Containers, path: '.template.spec.containers[*].name' }
 ```
 
 ## The document
@@ -787,7 +787,7 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `spec.views[0].actions: a view of Kubernetes’ own kind only shows it, so it can’t have actions` | Actions on a view of one of Kubernetes' kinds |
 | `spec.kinds[1]: Lease.coordination.k8s.io is Kubernetes’ own, so it can’t be under a plugin’s place in the sidebar` | One of Kubernetes' kinds among a plugin's `kinds` |
 | `spec.shows[0]: Database.platform.example.com isn’t Kubernetes’ own: a view names it once platform.example.com is in spec.groups` | A tool's kind under `shows` |
-| `spec.shows[0]: LimitRange isn’t shown by any of its views` | A kind under `shows` that no view shows |
+| `spec.shows[0]: PodTemplate isn’t shown by any of its views` | A kind under `shows` that no view shows |
 | `spec.category: should be one of cluster, network, config, storage, not "workloads"` | A sidebar section plugins can't sit in |
 | `spec.pages: a plugin of yours draws pages only from a folder of its own, for Developer mode: platform/plugin.yaml, with its plugin.js` | In a file of yours on its own, a field only a plugin with code uses: `pages`, `tabs`, `commands`, `reads`, `showsSecrets`, `changes`, `opens`, `links`, `logs` or `server`. The line names the field, and the folder by the plugin's name. See [Your own plugins with code](/custom-resources/plugins#your-own-plugins-with-code). |
 | `spec.pages: this server’s plugins are data: only the plugins that come with Lumovi draw pages here` | One of those fields in a [server's](/server/plugins) file |
