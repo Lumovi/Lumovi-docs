@@ -31,7 +31,7 @@ Most of what Lumovi does, at least one of these tools does too: Headlamp also ru
 
 - **An audit log of what's done through it.** Changes, shells, port forwards, Secrets and logs read, and Helm releases, each with who did it and the `kubectl` or `helm` command that does the same. It's [chained with hashes](/audit/verify), so you can check it against a copy you keep elsewhere. See [The audit log](/audit/overview).
 - **Team rules in an open-source tool.** On a server, [Access](/server/access) says who may do what through Lumovi, by group, cluster and namespace: never more than Kubernetes RBAC allows, and often less.
-- **An MCP server that agents can make changes through, with approval.** An assistant's change is checked by the cluster, then [waits with its diff](/assistants/approvals) until you approve it, unless your [permissions](/assistants/permissions) let it go ahead without asking, and the audit log records it.
+- **A built-in MCP server that agents can make changes through, with approval.** An assistant's change is checked by the cluster, then [waits with its diff](/assistants/approvals) until you approve it, unless your [permissions](/assistants/permissions) let it go ahead without asking, and the audit log records it.
 
 Lumovi is also the newest tool on this page, and a small project. The others have been used by far more people, for far longer.
 
