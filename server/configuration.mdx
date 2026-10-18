@@ -146,7 +146,7 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
 </ResponseField>
 
 <ResponseField name="LUMOVI_OIDC_GRAPH_URL" type="string">
-  Microsoft Graph's address, where Lumovi reads the groups of someone in too many for their ID token. It must be `https://` (plain `http://` only to this machine, like a stand-in for tests): otherwise Lumovi doesn't start, with "LUMOVI_OIDC_GRAPH_URL must be https (plain http only to this machine).". Unset, it's `https://graph.microsoft.com` for Microsoft Entra ID's global issuers, and none for any other. See [Microsoft Entra ID and many groups](/server/auth/single-sign-on#microsoft-entra-id-and-many-groups).
+  Microsoft Graph's address, where Lumovi reads the groups of someone in too many for their ID token. It must be `https://` (plain `http://` only to this machine, like a stand-in for tests). Otherwise Lumovi doesn't start, saying `LUMOVI_OIDC_GRAPH_URL must be an http or https URL.` for one that isn't a URL, or `LUMOVI_OIDC_GRAPH_URL must be https (plain http only to this machine).` Set, it's used with any issuer. Unset, it's `https://graph.microsoft.com` for Microsoft Entra ID's global issuers, and none for any other. See [Microsoft Entra ID and many groups](/server/auth/single-sign-on#microsoft-entra-id-and-many-groups).
 </ResponseField>
 
 <ResponseField name="LUMOVI_PROXY_USER_HEADER" type="string" default="X-Forwarded-User">
