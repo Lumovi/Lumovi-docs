@@ -1,0 +1,56 @@
+---
+title: "Search"
+description: "Find any object in the cluster by part of its name or by its labels, grouped by kind, and save the searches you run often."
+icon: "text-search"
+---
+
+**Search** finds objects of every kind you may list, in the namespaces picked, by part of their name or by their labels. The [command palette](/explore/finding-things#the-command-palette) goes to a page or an object you have in mind; Search is for "where is everything called `checkout`?" across Deployments, Services, ConfigMaps and the rest at once.
+
+Open it from **Search** in the sidebar, after **Helm releases**, or with <kbd>⌘</kbd><kbd>⇧</kbd><kbd>F</kbd> (<kbd>Ctrl</kbd><kbd>⇧</kbd><kbd>F</kbd> on Windows and Linux, where a [terminal](/debug/terminal) keeps it while it has the keyboard). In the desktop app, it's also **Go → Search the Cluster…**. In the palette, type, then press <kbd>⌘</kbd><kbd>↵</kbd> from any row, or pick **Search the cluster for "…"**, its last row. Pressed again on Search, the key selects what's in its field.
+
+## What you can type
+
+| Type | To find |
+| --- | --- |
+| `checkout` | Any part of a name, in any case |
+| `app=checkout` | A label with this value |
+| `tier!=db` | Not this value, or no such label |
+| `team=*` | Has this label, any value |
+| `!canary` | Doesn't have this label |
+| `checkout app=web` | Both: every term must match |
+
+Words are parts of a name, and every word must be in it. A term that isn't a label as Kubernetes writes one is a word. Before you type, Search shows these, and your saved searches.
+
+## What it finds
+
+What matches is grouped by kind, in the sidebar's order, then the cluster's own kinds by name. In each group, a name that's exactly what you typed comes first, then names that start with it, then the rest, by name. A group shows 50 rows, then **Show all**.
+
+A row has the object's name, with what you typed marked, its namespace and its age. A label search shows the labels it matched. Otherwise, a pod shows its restarts, and a workload how many of its pods are ready. Kinds that have a status, like pods and deployments, show it, as their lists do. Click a row to open the object.
+
+The line above the groups says how many objects matched, in how many kinds. When nothing does, Search says so, like "No object's name has "checkout"."
+
+## What it reads
+
+Search reads each kind's names, namespaces, labels and ages, never what its objects hold. So Secrets and ConfigMaps are found by name and label alone, never by a value. On a server, Secrets aren't found in a namespace where [your access](/clusters/your-access) hides them.
+
+- **Once.** Each kind is read when Search opens, when the namespaces change, and on **Refresh**. Typing matches against what was read, and reads nothing more. What's shown isn't kept up to date: once it's over a minute old, the line at the bottom says how old, with **Refresh**.
+- **In the namespaces picked.** Kinds outside namespaces, like Nodes, are searched only with **All namespaces**.
+- **Kinds you may list.** One your access doesn't let you list is named at the bottom as not searched. Events aren't searched: find them on the [Events](/explore/events) page, and on an object's own.
+- **A few at a time.** Each kind has 10 seconds to answer. One that doesn't says "didn't answer in time", and one that fails "couldn't be read", each with **Retry**. **Stop** lets go of the kinds not read yet, and **Search them** reads them after all.
+- **Up to the list limit.** A kind is read up to 5,000 objects (`LUMOVI_MAX_LIST_ITEMS`), as a [list](/explore/finding-things#label-selector) is. Past that, its group says "Searched the first 5,000 of 12,000", and that the rest weren't searched by name: choose fewer namespaces, or add a label. A label search asks such a kind again, for just those labels, so the cluster sends only the objects that have them, wherever they are in the kind.
+
+## In the command palette
+
+Once you've typed two characters, the palette's **Objects** group shows the objects whose names match, as Search finds them: up to eight, best first, across every kind, each with its status. Pages, views and actions that match come before them, so <kbd>↵</kbd> does what it did. <kbd>⌘</kbd><kbd>↵</kbd> searches the cluster for what you typed.
+
+## Saved searches
+
+**Save this search** keeps what you typed. Up to 50 can be saved, each up to 200 characters. They're yours in every cluster, run in the cluster you're in and its namespaces:
+
+- **On Search**, under the field, and before you type.
+- **In the palette**, with nothing typed, under **Saved searches**.
+- **With a key.** The first nine run with <kbd>⌥</kbd><kbd>⇧</kbd><kbd>1</kbd> to <kbd>⌥</kbd><kbd>⇧</kbd><kbd>9</kbd>: <kbd>Alt</kbd><kbd>⇧</kbd> on Linux, and <kbd>Ctrl</kbd><kbd>⇧</kbd> on Windows, where <kbd>Alt</kbd><kbd>⇧</kbd> switches the keyboard's language. Not while you type in a field, with a dialog or menu open, on a phone, or in a browser on Linux, which keeps those keys for itself, as it does [pins'](/explore/finding-things#pin-an-object).
+
+**Saved**, pressed again, removes it, as does the **×** beside it; **Undo** puts it back. Removing one moves those after it up a key, and Lumovi says so, like "Saved search 3 is now ⌥⇧2."
+
+In the desktop app, they're kept with your [settings](/explore/settings), on this computer. On a server, they're kept with who's signed in, where it keeps [pins and views](/explore/finding-things#where-pins-and-views-are-kept).

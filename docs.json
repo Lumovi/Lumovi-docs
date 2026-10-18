@@ -100,6 +100,7 @@
               "explore/map",
               "explore/health",
               "explore/finding-things",
+              "explore/search",
               "explore/settings"
             ]
           },
