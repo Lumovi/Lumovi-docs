@@ -109,6 +109,16 @@ Each cluster's settings are the server's, the same for everyone, and Lumovi's ad
 - Where its [usage history](/metrics/usage-history) comes from.
 - Where its [node shells](/debug/node-shell#settings-for-each-cluster) run.
 
+## Several clusters in one list
+
+Several clusters' Workloads, Pods, Nodes and Events can be listed together, with a **Cluster** column. On a server, pick them on this page. In the desktop app, choose **Several clusters** on the **Clusters** page: each row gets a box (<kbd>Space</kbd> ticks it), and a group's **Open together** opens its clusters at once. The set opened last is offered again at the top of the **Clusters** page, as **Last opened together**, with **Forget it**, and in the command palette, as **Open the last several clusters**.
+
+- **Each cluster is read with your own access on it.** One that doesn't answer within 10 seconds says "didn't answer in time" on its chip, with **Retry**, while the others are listed. One whose refresh fails keeps its last rows and says "couldn't refresh · showing the last data".
+- **Everything you do is on one cluster, and names it.** A row's actions are **Actions on staging**, the panel shows which cluster its object is on, **Open in staging** goes to that cluster's own page, and **Open a terminal on** asks which. Rows ticked on two clusters aren't acted on together: "They're on 2 clusters: pick rows on one to act on them together."
+- **A cluster that signs in through a program** says "Signs in when opened", and is read only when you open it.
+
+The command palette is on each cluster's own pages, not on the list of several.
+
 ## Move between clusters
 
 - **The cluster switcher**, at the top of the sidebar, shows the cluster you're in. Open it for every cluster you may see, each with a dot for whether it answers, and a check by the one you're in. Type to filter, and pick one. **All clusters**, at the end of the list, goes back to the page of every cluster.
