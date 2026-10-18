@@ -5,7 +5,7 @@ description: "The 24 kinds Lumovi has pages of its own for, what their lists sho
 icon: "boxes"
 ---
 
-Lumovi shows every kind your cluster serves. Twenty-four common kinds have pages of their own, with columns, a health status and actions made for them. Everything else, custom resources included, is found through API discovery and shown with the columns `kubectl get` prints.
+Lumovi shows every kind your cluster serves. Twenty-six common kinds have pages of their own, with columns, a health status and actions made for them. Everything else, custom resources included, is found through API discovery and shown with the columns `kubectl get` prints.
 
 ## At a glance
 
@@ -27,6 +27,8 @@ Lumovi shows every kind your cluster serves. Twenty-four common kinds have pages
 | Network Policies | `networking.k8s.io/v1` | Sidebar → Network | |
 | ConfigMaps | `v1` | Sidebar → Configuration | <kbd>G</kbd> <kbd>F</kbd> |
 | Secrets | `v1` | Sidebar → Configuration | <kbd>G</kbd> <kbd>X</kbd> |
+| Resource Quotas | `v1` | Sidebar → Configuration | |
+| Limit Ranges | `v1` | Sidebar → Configuration | |
 | Volume Claims (PersistentVolumeClaim) | `v1` | Sidebar → Storage | <kbd>G</kbd> <kbd>L</kbd> |
 | Volumes (PersistentVolume) | `v1` | Sidebar → Storage | |
 | Storage Classes | `storage.k8s.io/v1` | Sidebar → Storage | |
@@ -83,7 +85,9 @@ The CPU and Memory columns of nodes are meters of live usage. Without [metrics-s
 | Kind | Columns | Status | Actions |
 | --- | --- | --- | --- |
 | ConfigMaps | Keys | | |
-| Secrets | Type, Keys | | |
+| Secrets | Type, Keys, Expires | Not valid, Expires soon | |
+| Resource Quotas | Fullest | Within quota, Nearly full, Full | |
+| Limit Ranges | Types | | |
 
 Lists of Secrets carry only the names of their keys. Values are read when you open one, and stay hidden until you reveal them. See [Config and storage](/explore/config-and-storage).
 

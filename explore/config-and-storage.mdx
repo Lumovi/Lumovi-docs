@@ -10,6 +10,8 @@ The sidebar's **Configuration** and **Storage** sections hold five lists:
 | --- | --- | --- |
 | **ConfigMaps** | <kbd>G</kbd> <kbd>F</kbd> | Keys |
 | **Secrets** | <kbd>G</kbd> <kbd>X</kbd> | Type, Keys, Expires |
+| **Resource Quotas** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Fullest |
+| **Limit Ranges** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Types |
 | **Volume Claims** | <kbd>G</kbd> <kbd>L</kbd> | Capacity, Storage class, Volume |
 | **Volumes** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Capacity, Claim, Storage class, Reclaim |
 | **Storage Classes** | From the sidebar or <kbd>⌘</kbd><kbd>K</kbd> | Default, Provisioner, Reclaim, Binding |
@@ -55,6 +57,14 @@ A value is read for its first 64 KB and its first 8 certificates, and a certific
 ### Editing a secret
 
 When you edit a Secret's YAML, its text values appear decoded, under `stringData`, so you can read and change them as text. Values that aren't text stay base64-encoded under `data`. On save, everything is encoded back into `data`. See [Edit YAML](/changes/yaml).
+
+## Resource quotas and limit ranges
+
+A quota's row shows its fullest resource, with a meter and how full, like "93% · 3.75 Gi of 4 Gi". It's <span className="lumovi-status healthy">Within quota</span>, <span className="lumovi-status warning">Nearly full</span> from 90%, <span className="lumovi-status critical">Full</span> at its limit, each with an icon as well as a colour, or *Not counted yet* before the cluster has counted it. Its **Overview** has a meter for each resource it limits; a resource it forbids reads "Not allowed · 0 of 0", and a quota with a scope says whose pods it counts, like "Every pod in shop".
+
+A limit range says what it sets, a line for each kind of thing: "A container's default request 100m CPU, 64Mi memory", "A pod up to 4 CPU, 8Gi memory", "A volume claim from 1Gi to 100Gi".
+
+A namespace's **Overview** shows its quotas and limit ranges, a quota from 90% is in **Needs attention**, and a Deployment whose pods a quota keeps from being made says so, with the quota to open: "1 of its 3 pods can't be made: the namespace's quota compute has no room for its memory request.", and **Open quota compute**.
 
 ## Volume claims
 
