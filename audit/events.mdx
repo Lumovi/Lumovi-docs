@@ -154,6 +154,7 @@ Sign-ins that don't succeed are recorded too, each, up to 60 a minute. Past that
 | `session.sign-in` | Signed in | Signing in, with a token or single sign-on: "Signed in with a token". |
 | `session.sign-out` | Signed out | Someone signed out. |
 | `session.expired` | Session ended | A session ended by itself: "Signed out by Lumovi: the session ended", with why in `details.why`. |
+| `session.groups` | Groups changed | Someone's groups changed as the provider renewed their [single sign-on](/server/auth/single-sign-on#groups-that-follow-the-provider): "Their groups changed as the provider renewed their sign-in". |
 
 ### AI assistants (`assistant`)
 
@@ -244,8 +245,9 @@ What each action adds in `details`, when it applies:
 | `files.download`, `files.upload` | `container`, `path`, `direction` and `stage` (`began` or `ended`); on ending, `bytes`, `files`, `seconds`, and `leftOut` when links, devices or unusable names were left out. Never the files' contents, the names of files in a folder, or what the container wrote |
 | `logs.read` | `container`, `previous` and `follow`; for an assistant, `tailLines` and `previous` |
 | `secret.read` | `keys`: the Secret's keys, never their values (none when it was refused). For its certificates, `certificates`: the keys that hold them; for a list's, `secrets`: those Secrets, as `namespace/name` |
-| `session.sign-in`, `session.sign-out` | `method` (`token` or `oidc`), and `with`: `a token`, or the provider's name |
+| `session.sign-in`, `session.sign-out` | `method` (`token` or `oidc`), and `with`: `a token`, or the provider's name. On a sign-in whose groups couldn't be read, `groupsUnread`: why |
 | `session.expired` | `why` |
+| `session.groups` | `added` and `removed`: the groups, as the provider names them; and `groupsUnread`, why none could be read, where they couldn't |
 | `session.sign-in`, by Lumovi itself | `count` (sign-ins that didn't succeed, past the 60 a minute recorded each) and `from`: where they came from, with how many each, the most first, 20 at most, like `203.0.113.9: 240` |
 | `assistant.allowed`, `assistant.denied` | `assistant`, `client` (its ID with Lumovi), and `returnsTo`, the site it sends people back to |
 | `assistant.ended` | `how` (`signed out`, `let go`, `expired` or `reused`) and `since`, when it was allowed |

@@ -109,6 +109,40 @@ Prefixes keep your provider's names apart from the cluster's own. Without one, a
 
 Lumovi never acts as one of Kubernetes' own users or groups (`system:…`), whatever the provider says. It leaves out groups whose names start with `system:`, and refuses a user whose name does, with **Lumovi won't act as this account: names starting with system: are Kubernetes' own.**
 
+## Groups that follow the provider
+
+Add `offline_access` to the scopes (most providers give a refresh token only then), and people's groups stay as the provider says they are, for as long as they're signed in:
+
+```yaml values.yaml
+auth:
+  oidc:
+    scopes: openid email profile groups offline_access
+```
+
+- **Asked again before each ID token expires.** A minute before, Lumovi asks the provider again with the person's refresh token, and checks the new ID token as it did at sign-in: signed by the provider, for Lumovi, in date, and about the same person, under the same name. Their groups are read from it by the same rules, and apply from their next request.
+- **A change is recorded.** Groups added or taken away are in the [audit log](/audit/events#sign-ins-sign-in), as **Groups changed**, and in Lumovi's log: `alice@example.com’s groups changed as the provider renewed their sign-in: +platform, −on-call`.
+- **Someone the provider won't renew is signed out at once**: disabled, removed, or signed out at the provider. So is a renewal that doesn't check out.
+- **A provider that can't be reached is asked again**, more slowly each time, up to once a minute. If it hasn't answered by the time the last ID token expires, the session ends.
+- **A provider that renews without a new ID token** (some never send one then) says nothing new of anyone's groups. They hold until the last ID token expires, and then the session ends, and Lumovi's log says so once.
+- **After a restart**, a session whose last ID token expired while Lumovi was stopped has no groups until the provider answers, and it's asked at once.
+- **Signing out lets go of the refresh token at the provider**, where its discovery document has a `revocation_endpoint`. That's never waited for, and a failure is only logged.
+
+Without a refresh token, people's groups stay as they were when they signed in, until the session ends (`auth.sessionHours`).
+
+The refresh token is kept as the person's own token is: in memory, and [sealed](/server/security#across-restarts) for a restart, with a key only their browser's cookie gives. Lumovi sends it only to the token endpoint and revocation endpoint the issuer's discovery document names, over HTTPS when the issuer is, and never logs it, nor what the provider says back beyond its status and error code.
+
+## Microsoft Entra ID and many groups
+
+When someone is in more than 200 groups, Microsoft Entra ID puts none in their ID token, only a mark that there are too many to list. Lumovi then reads them from Microsoft Graph, as that person, at sign-in and at each renewal:
+
+- **Grant User.Read.** Give Lumovi's app registration Microsoft Graph's delegated **User.Read** permission, and add `User.Read` to the scopes. It's the least Graph needs to list someone's own memberships, and reads nobody else's.
+- **Security groups, by ID.** Graph gives the security groups the person is in, directly or through other groups, by object ID, as the ID token names them. Microsoft 365 groups aren't among them. Bind roles to those IDs.
+- **Their own token.** Lumovi asks Graph with the access token the person signed in with. Where that token is for something else, like the cluster, it asks the provider for one for Graph, with their refresh token.
+- **Only Microsoft Graph.** Lumovi reads groups there for Entra ID's global issuers (`login.microsoftonline.com` and `sts.windows.net`). For a national cloud, set Graph's address with `auth.oidc.graphUrl` (`LUMOVI_OIDC_GRAPH_URL`), like `https://graph.microsoft.us`. With any other issuer, groups put outside the ID token aren't read: those people have none, and the log says why. Lumovi never follows an address the token itself gives.
+- **None, rather than old ones.** Where Graph can't be read, the person has no groups, not the ones they had. Their account menu says "Lumovi couldn't read your groups, so you're signed in without them and may be able to do less than usual. If this stays, ask whoever runs Lumovi: its server's log says why." The log says why.
+
+This has been tried against a stand-in for Graph, not yet against an Entra ID tenant.
+
 ## Impersonation
 
 When Lumovi impersonates people, the chart gives its service account permission to impersonate users and groups, cluster-wide: a ClusterRole with `impersonate` on `users` and `groups`, bound to it. That's a powerful permission. Read [Security](/server/security#impersonation) before you turn this on, and keep Lumovi in a namespace only cluster administrators can exec into.
@@ -135,7 +169,7 @@ auth:
 - **The token must be a JWT that says when it expires**, in its `exp` claim, so Lumovi knows when to renew it. ID tokens always are. Some providers' access tokens aren't: with one of those, signing in ends with **Signing in didn't work. The Lumovi server's log says why.** Use `id` instead.
 - **Names in RBAC come from the API server.** The cluster checks the token itself, so the names and groups it applies RBAC to, and their prefixes, come from the API server's own settings, not Lumovi's. Bind roles to the names the cluster sees.
 - **Some things still come from Lumovi's settings.** The ID token still has to carry the `auth.oidc.usernameClaim` claim. Lumovi shows that name, and the groups in `auth.oidc.groupsClaim`, in its account menu and its log. And it still refuses a name that starts with `system:` once `auth.usernamePrefix` is put before it.
-- **Tokens are renewed.** Lumovi renews each person's token a minute before it expires, with the refresh token the provider gives it. Most providers give one only when `offline_access` is among the scopes. Without one, the session ends when the cluster stops accepting the token, and people sign in again. If renewing fails, the session ends too, and the person signs in again. One failed try is enough: Lumovi doesn't try a second time, so a moment when it can't reach the provider ends the session of whoever's token was due just then. Either way, a session lasts no longer than `auth.sessionHours`.
+- **Tokens are renewed.** Lumovi renews each person's token a minute before it expires, with the refresh token the provider gives it, as it renews their [groups](#groups-that-follow-the-provider). Most providers give one only when `offline_access` is among the scopes. Without one, the session ends when the cluster stops accepting the token, and people sign in again. A provider that refuses ends the session at once, and so does a renewal with no access token in it. One that can't be reached is asked again until the token expires. Either way, a session lasts no longer than `auth.sessionHours`.
 - **A restart signs nobody out.** Lumovi keeps each person's token and refresh token sealed, with a key only their browser's cookie gives, and unseals them when the browser next asks for something; it renews the token from then on. Their [AI assistants](/server/assistants#after-a-restart) wait for that. If Lumovi was down for longer than a token lasts, the first page someone opens can fail once while it's renewed: reload it. There's one exception, with a provider that gives a new refresh token at each renewal and refuses the old one: a token renewed in the moment Lumovi stops, or just before it dies, can be lost before it's kept, and that person signs in again after the restart. See [Across restarts](/server/security#across-restarts).
 - **The audit log names people directly**, instead of Lumovi's service account acting as them.
 
@@ -146,7 +180,7 @@ A [fleet](/server/fleet) signs people in the same way, once, for all its cluster
 - **Lumovi impersonates people** in each cluster, with the credentials it has for that cluster. The chart lets its own service account impersonate only in the cluster it runs in, when that's one of the fleet's.
 - **Each cluster where Lumovi impersonates people sees the same names**, from `auth.oidc.usernameClaim` and `auth.oidc.groupsClaim`, with `auth.usernamePrefix` and `auth.groupsPrefix` before them, unless the cluster has [its own](/server/fleet#settings-for-each-cluster). Bind roles in each cluster to the names it sees.
 - **Tokens are passed on cluster by cluster.** With `auth.oidc.forwardToken`, Lumovi keeps each person's token and renews it, but passes it on only to clusters with `forwardToken: true`, which name people by their API server's own settings. It impersonates people in the others, and always in the cluster it runs in.
-- **A cluster that refuses the token** says **Unauthorized** on its card, and the session goes on: the other clusters still work. It ends when renewing the token fails, or after `auth.sessionHours`.
+- **A cluster that refuses the token** says **Unauthorized** on its card, and the session goes on: the other clusters still work. It ends when the provider won't renew the token, or can't be reached before it expires, or after `auth.sessionHours`.
 - **A cluster's `groups`** decide who sees it: groups as the ID token has them, without prefixes.
 
 ## When signing in doesn't work
@@ -159,6 +193,13 @@ The sign-in page says what happened. The details go to Lumovi's log (`kubectl lo
 | **That sign-in took too long, or started in another browser. Try again.** | Signing in has to finish within 10 minutes, in the browser that started it. |
 | **Signing in didn't work. The Lumovi server's log says why.** | The provider couldn't be reached, the ID token didn't check out, it has no claim to name the person by, or the token to pass on isn't a JWT that says when it expires. |
 | **Lumovi won't act as this account: names starting with system: are Kubernetes' own.** | The user's name, with its prefix, starts with `system:`. |
+
+Signed in, two more things can happen:
+
+| What people see | What happened |
+| --- | --- |
+| **Your session ended. Sign in again** | The provider wouldn't renew their sign-in, or couldn't be reached before it expired. The audit log's **Session ended** says which, in `details.why`. |
+| “Lumovi couldn’t read your groups”, in their account menu | Their groups were outside the ID token, and Lumovi couldn't read them: see [Microsoft Entra ID and many groups](#microsoft-entra-id-and-many-groups). |
 
 <Columns cols={2}>
   <Card title="Security" icon="shield-check" href="/server/security">
