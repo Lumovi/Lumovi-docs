@@ -69,6 +69,8 @@ helm upgrade web ./web-1.4.2 --values values.yaml --namespace shop --kube-contex
 
 **Roll back…** lists every earlier revision with its status, age, chart and app version, and description. Pick one, and the dialog tells you what going back means: "Running now: revision 5. Going back to 3 changes 12 lines of its values and 40 of its manifest."
 
+**What changes** shows the values by key alone, changed, added or removed, never a value, and the manifest's differences, with Secrets' values masked until **Reveal values**: a changed value shows as a changed line with neither value. Where your access shows Secrets' keys only, it says "What it changes is hidden".
+
 It runs `helm rollback <release> <revision>`. Helm records a rollback as a new revision, so you can always go forward again the same way. A release with a single revision has nothing to roll back to, and doesn't offer it.
 
 <Tip>
