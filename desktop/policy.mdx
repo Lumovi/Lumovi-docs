@@ -107,6 +107,16 @@ It decides which files Lumovi reads, not what's in them: `~/.kube/config` is sti
 
 `"off"`: Lumovi opens no [`lumovi://` link](/explore/finding-things#links), and **Copy link** isn't offered. A link handed to Lumovi is let go, with no card, and on Windows Lumovi doesn't register itself for them. Leaving it out leaves links on.
 
+### settings
+
+A person's own [settings](/explore/settings), set and locked: Settings shows each with its value and **Set by your organization**, and it can't be changed. Any of `theme` (`"system"`, `"light"`, `"dark"`), `accent` (`"blue"`, `"cyan"`, `"violet"`, `"graphite"`), `density` (`"comfortable"`, `"compact"`), `textSize` (`90`, `100`, `110`, `125`), `timeZone` (`"local"`, `"UTC"` or an IANA zone like `"Europe/Budapest"`), `clock` (`"system"`, `"12"`, `"24"`), `terminalFont`, `terminalFontSize` (10 to 24), `copyOnSelect` (`true` or `false`), `shell` (a full path, or `""` for the login shell), `namespaces` (`{ "mode": "last" }`, `{ "mode": "all" }`, or `{ "mode": "named", "namespace": "shop" }`) and `autoUpdate`:
+
+```json
+"settings": { "theme": "dark", "shell": "/bin/bash" }
+```
+
+A value Lumovi doesn't take, like a shell that isn't a full path, makes the policy one that [can't be used](#when-it-can’t-be-used). Leaving a setting out leaves it to each person.
+
 ### metricsStack
 
 `false` turns [Lumovi’s metrics stack](/metrics/metrics-stack) off: where a cluster has no usage history, Lumovi doesn’t offer to install one, and it refuses to install or remove one. A stack that’s already installed keeps running, and Lumovi keeps charting from it. `true`, or leaving it out, leaves it to each person and their cluster’s RBAC.
