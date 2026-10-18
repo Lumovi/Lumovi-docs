@@ -55,6 +55,30 @@ helm install web nginx --repo https://charts.example.com --version 18.1.0 \
 
 Once it's installed, it shows in the list like any other release, with its resources' live status.
 
+## Waiting, undoing and a timeout
+
+Installing and upgrading can wait and undo, each off by default, with Helm's own flag beside it:
+
+- **Wait until it's ready** (`--wait`): Helm waits until what it made is ready, and fails if the timeout runs out first.
+- **Undo it if it fails** (`--rollback-on-failure`, or `--atomic` with Helm 3): an upgrade that fails, or isn't ready in time, is rolled back, and an install is uninstalled. It waits too, as undoing a failure has to.
+- **Timeout**: from 1 to 60 minutes (`--timeout`).
+
+While it waits, the dialog says how long, and closing it doesn't stop Helm. Quitting the desktop app while a Helm change runs asks first. Where Helm undid a failure, Lumovi says so first: "It wasn't ready within 5 minutes, so Helm rolled it back to revision 4."
+
+## Repositories
+
+The **Repositories** tab of **Helm releases** keeps chart repositories for Lumovi: an **HTTP repository** by its address, or an **OCI registry** with the charts in it to look for. Lumovi keeps them itself, not in Helm's own list, and reads them every 30 minutes and when the page opens. Each is tested as it's added: "Connected: its index lists 42 charts." **Charts** lists what they hold, with each chart's versions, and **Install** with it chosen.
+
+- **Signing in**: a repository can keep a username and password. They're sent only over https, only to that repository's own address and the paths under it, never on a redirect elsewhere; for a registry, to its token service on its own host too. Changing a repository's host removes its sign-in. In the desktop app, it's kept in the system's keychain, and none is kept without one; the page never reads it back.
+- **Helm never sees a sign-in**: Lumovi fetches the chart, checks it against the digest its repository lists (one without a digest isn't used), and gives Helm the file.
+- **Limits**: 50 repositories, 50 charts a registry, 20 MB an index or a chart, and 30 seconds a fetch.
+
+A release installed from a kept repository says **Update available** when there's a newer version there, and **Upgrade** opens with it: "A newer version from acme-charts". A release that wasn't is offered one only where its chart's name and home or sources match the one repository that has it. The [audit log](/audit/events) names the repository an install or upgrade came from.
+
+<Note>
+  **In your cluster:** repositories are kept on the server, sealed, for everyone who uses it, and only Lumovi's admins add, change or remove them; where it names none, nobody does. Each change is in the audit log, never with its password. Lumovi fetches from public addresses only, every redirect included.
+</Note>
+
 ## Artifact Hub
 
 Lumovi talks to [Artifact Hub](https://artifacthub.io) only when you search it. To search another instance, set `LUMOVI_ARTIFACT_HUB_URL` (the chart's `helm.artifactHubUrl` when it runs in your cluster).
