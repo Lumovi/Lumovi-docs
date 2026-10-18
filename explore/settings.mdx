@@ -1,0 +1,17 @@
+---
+title: "Settings"
+description: "How Lumovi looks, how it says times, its terminals, and which namespace a cluster opens in: each applied at once, and kept."
+icon: "settings"
+---
+
+**Settings** is the gear at the bottom of the sidebar, and **Settings** in the [command palette](/explore/finding-things#the-command-palette). In the desktop app, it's also <kbd>⌘</kbd><kbd>,</kbd> (<kbd>Ctrl</kbd><kbd>,</kbd> on Windows and Linux) and **Settings…** in the app menu. Each setting applies at once, in every window, and is kept: in the desktop app on this computer, in its settings file; on a server, for you, on every device you sign in from.
+
+| Section | Settings |
+| --- | --- |
+| **Appearance** | **Theme**: System, Light or Dark. **Accent**: Blue, Cyan, Violet or Graphite. **Density**: Comfortable, or Compact, whose rows are 36 pixels instead of 46 (on a phone, rows stay large enough for a finger). **Text size**: 90%, 100%, 110% or 125%, the same as the View menu's zoom. |
+| **Time** | **Time zone**: this device's, UTC, or any other. **Clock**: as the system has it, 12-hour or 24-hour. Ages, like "2h" and "3d", are the same everywhere. |
+| **Terminal** | **Font** and its size, from 10 to 24, for every terminal in the dock, the open ones too. **Copy on select**: what you select is copied at once. In the desktop app, **Shell**: your login shell, another one the computer lists, or **Another…** by its full path, like `/bin/bash`. See [Your own shell](/debug/terminal#your-own-shell). |
+| **Namespaces** | **When a cluster opens**: the namespace you picked last there (the default), **All namespaces**, or one you name. A cluster's own namespace setting comes first. |
+| **Updates** | The desktop app's: **Check for updates** automatically, and this version. |
+
+Where your organization sets one, it shows its value with **Set by your organization**, and can't be changed: in the desktop app, by its [policy file's `settings`](/desktop/policy#settings); on a server, by [`LUMOVI_SETTINGS`](/server/configuration).

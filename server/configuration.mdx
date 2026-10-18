@@ -245,6 +245,12 @@ Many clusters, rather than one: see [A fleet of clusters](/server/fleet). Lumovi
   The helm to run: `helm` on the `PATH` unless set. The image sets it to `/usr/local/bin/helm`, the helm it comes with.
 </ResponseField>
 
+## Settings for everyone
+
+<ResponseField name="LUMOVI_SETTINGS" type="JSON">
+  People's own [settings](/explore/settings), set for everyone and locked: Settings shows each with **Set by your organization**. The same keys as the desktop policy's [`settings`](/desktop/policy#settings), but `shell` and `autoUpdate`, like `{"theme": "dark", "clock": "24"}`. One that isn't JSON, or has a value Lumovi doesn't take, stops Lumovi, saying why: `LUMOVI_SETTINGS must be JSON: …`. What isn't set stays each person's, kept for them in the server's state, on every device they sign in from.
+</ResponseField>
+
 ## Access
 
 Who may do what through Lumovi, within what RBAC allows. See [Access for your team](/server/access).
