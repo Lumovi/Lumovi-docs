@@ -83,7 +83,7 @@ agent.hubUrl must be set: the address of the fleet's Lumovi, like https://lumovi
 </ResponseField>
 
 <ResponseField name="auth.oidc.scopes" type="string" default="openid email profile">
-  The scopes Lumovi asks for, separated by spaces. Add `groups` if your provider needs it to put groups in the ID token, and `offline_access` for refresh tokens when passing tokens on.
+  The scopes Lumovi asks for, separated by spaces. Add `groups` if your provider needs it to put groups in the ID token, `offline_access` for a refresh token, so that people's [groups follow the provider](/server/auth/single-sign-on#groups-that-follow-the-provider) and tokens passed on are renewed, and, with Microsoft Entra ID, `User.Read` for [many groups](/server/auth/single-sign-on#microsoft-entra-id-and-many-groups).
 </ResponseField>
 
 <ResponseField name="auth.oidc.usernameClaim" type="string" default="email">
@@ -100,6 +100,10 @@ agent.hubUrl must be set: the address of the fleet's Lumovi, like https://lumovi
 
 <ResponseField name="auth.oidc.forwardToken" type="string">
   `id` or `access`: the token people's requests carry, when the API server trusts the provider itself (its `--oidc-*` flags, a structured authentication configuration, EKS's OIDC identity providers…). Lumovi then needs no permissions, and renews tokens with refresh tokens. Unset, it impersonates people. See [When the API server trusts the provider](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider). In a fleet, only clusters with `forwardToken: true` get people's tokens, and Lumovi impersonates people in the others, and in its own cluster.
+</ResponseField>
+
+<ResponseField name="auth.oidc.graphUrl" type="string">
+  Where Lumovi reads the groups of someone in too many for their ID token: Microsoft Graph, over HTTPS. Unset, it's `https://graph.microsoft.com` for Microsoft Entra ID's global issuers, and none for any other. Set it for a national cloud, like `https://graph.microsoft.us`. See [Microsoft Entra ID and many groups](/server/auth/single-sign-on#microsoft-entra-id-and-many-groups).
 </ResponseField>
 
 <ResponseField name="auth.proxy.userHeader" type="string" default="X-Forwarded-User">

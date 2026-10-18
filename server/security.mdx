@@ -11,7 +11,7 @@ Lumovi never gives anyone more than their own permissions: every request reaches
 | --- | --- | --- |
 | [Token](/server/auth/tokens) | Each person's token, while they're signed in, kept for a restart [sealed](#across-restarts) with a key only their cookie gives | Nothing |
 | [Single sign-on, tokens passed on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) | Each person's token and refresh token, kept sealed the same way | Nothing |
-| [Single sign-on](/server/auth/single-sign-on) | Who people are | Impersonate any user or group |
+| [Single sign-on](/server/auth/single-sign-on) | Who people are, and with `offline_access`, each person's refresh token, kept sealed the same way | Impersonate any user or group |
 | [Authenticating proxy](/server/auth/proxy) | Nothing: it reads the proxy's headers on every request. For [AI assistants](#ai-assistants), who allowed each one | Impersonate any user or group |
 
 Besides, the chart lets it `get` and `patch` a few objects of its own in its namespace, and no others: the Secret that keeps sessions [across restarts](#across-restarts), and the ConfigMaps of people's AI rules and of [access](#access). The key that Secret is sealed with isn't among them: Kubernetes gives it to Lumovi's pod.
@@ -98,7 +98,7 @@ A restart, as an upgrade does, signs nobody out. Lumovi keeps what it needs for 
 - **The AI assistants people allowed**: whose, their names, and when each was last used, and their access and refresh tokens, by their SHA-256 hash. Refresh tokens used already are remembered for a day, so a copy that comes back is still caught.
 - **Each cluster's settings**: whether it's [read-only](/changes/read-only#in-your-cluster), who made it so and when, where its metrics come from, and where its node shells run, by the cluster's name, each with the count of the write that last set it, so that a change made outside Lumovi shows.
 - **People's pins and saved views**: each person's [pinned objects and saved views](/explore/finding-things#pin-an-object), for each cluster, by who signed in.
-- **A person's own token**, with [token](/server/auth/tokens) sign-in, or single sign-on that [passes it on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider) (with its refresh token), sealed with a key derived (HKDF) from the session's cookie, and bound to that session. Only the browser has the cookie, so what's kept holds nobody's token. After a restart, a session's token is unsealed when its browser next asks Lumovi anything, and its assistants wait for that: see [After a restart](/server/assistants#after-a-restart).
+- **A person's own token**, with [token](/server/auth/tokens) sign-in, or single sign-on that [passes it on](/server/auth/single-sign-on#when-the-api-server-trusts-the-provider), and with single sign-on [its refresh token](/server/auth/single-sign-on#groups-that-follow-the-provider), sealed with a key derived (HKDF) from the session's cookie, and bound to that session. Only the browser has the cookie, so what's kept holds nobody's token. After a restart, a session's token is unsealed when its browser next asks Lumovi anything, and its assistants wait for that: see [After a restart](/server/assistants#after-a-restart).
 
 Each entry is sealed (AES-256-GCM) with the state's key, and filed under an HMAC of what it is, which its seal is bound to. The key is kept apart from what it seals:
 
