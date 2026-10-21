@@ -201,11 +201,29 @@ Lumovi sends the credentials only to a server that answered: if its certificate 
 
 A cluster with a `proxy-url` says which proxy everything to it goes through, without the proxy's password.
 
+### From AWS
+
+**From AWS**, the third way in, finds your EKS clusters with your own `aws` command (the AWS CLI v2), run as you. Nothing of it runs until you choose **Find clusters**: not as Lumovi starts, and not on the start screen.
+
+1. **Find clusters** lists the profiles in your AWS config, each with the region it's set to, and ticks `default`, or the first. Tick the profiles to look with, and give each the regions to look in, like `eu-west-1, us-east-1`.
+2. **Find clusters** again lists the EKS clusters each profile has in each region, under its account and region, like **AWS · prod (123456789012) · eu-west-1**. Each shows its Kubernetes version, and its state when it isn't active: **Updating**, **Being created**, **Being deleted**, **Pending** or **Failed**. An active or updating one has **Add**; one you've added says **Added**.
+3. **Add** checks its kubeconfig as a pasted one is. It's the kubeconfig `aws eks update-kubeconfig` would write: it signs in by running `aws --region eu-west-1 eks get-token --cluster-name payments --output json` as its profile, a command you agree to first, as [below](#credentials-that-run-a-program-send-a-file-or-go-unverified). Ready, it's in a group named for its account and region, and **Close** goes back to what was found, to add another.
+
+Lumovi runs `aws` with the profile you ticked, and without the `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN` of its own environment, which would sign in instead; the command a cluster runs clears them too. Each run gets 30 seconds. A profile that signs in through a program of its own, like `credential_process`, runs that program as well. Lumovi reads nothing in `~/.aws` itself and keeps no credential: `aws` gets a token each time the cluster is signed in to.
+
+Where a profile can't look, it says why, with the command to run, ready to copy:
+
+- **Its SSO sign-in has run out:** `aws sso login --profile prod`, then **Find clusters** again.
+- **It has no credentials:** `aws configure --profile prod`.
+- **It may not list clusters in that region:** it needs `eks:ListClusters`.
+
+With no profiles at all, set one up with `aws configure` (or `aws configure sso`). Without the `aws` command, it says "Lumovi needs the aws command (AWS CLI v2), and this computer doesn’t have it." A cluster whose name EKS doesn't allow, or that EKS gave no https address or certificate authority for, is listed without **Add**, saying why.
+
 ### Credentials that run a program, send a file, or go unverified
 
 Some credentials do more than sign in, so the check stops before them, and shows exactly what:
 
-- **A [credential plugin](#credential-plugins)** (an `exec` user, or a `gcp` or `azure` auth provider's `cmd-path`) runs a program to sign in: "Signing in runs a program on this computer", with the command as it would run, and its environment.
+- **A [credential plugin](#credential-plugins)** (an `exec` user, or a `gcp` or `azure` auth provider's `cmd-path`) runs a program to sign in: "Signing in runs a program on this computer", with the command as it would run, the variables it sets, and under them those it clears.
 - **A token file** (`token-file`, or an auth provider's `tokenFile`) sends a file on your computer to the server: Lumovi names the file, and each server it goes to.
 - **A server that isn't verified** (`insecure-skip-tls-verify: true`) would get the credentials whoever answers at its address: Lumovi names the server. A server on [plain HTTP](#clusters-on-plain-http) is asked about the same way, with or without that flag, as anyone on the network in between could read what's sent to it, its credentials too. Lumovi itself connects to it only with the flag, but kubectl would either way, in a terminal or with the line for kubectl: without the flag, there's nothing Lumovi can check, so the button that allows it is **Add it anyway**, which keeps it for kubectl at once.
 
