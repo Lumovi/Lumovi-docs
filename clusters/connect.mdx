@@ -99,6 +99,18 @@ On macOS and Linux, apps opened from the Dock or a launcher don't get the `PATH`
 
 If a plugin isn't found, the start screen says **Couldn’t sign in**, and the cluster, opened, **Couldn’t get credentials**, with the message: *The credential plugin “gke-gcloud-auth-plugin” wasn’t found. Install it, or make sure it’s on your PATH.*
 
+### Signing in with OIDC
+
+A kubeconfig user with `auth-provider: oidc` signs in with its `id-token` while it lasts. Once it's 10 seconds from expiring, the next read of the cluster renews it from the issuer with the user's `refresh-token`, as kubectl does. Whatever reads the cluster can renew it, an [assistant](/assistants/overview) too, but nothing does as Lumovi starts, or as the start screen checks its clusters.
+
+The new tokens go back where kubectl keeps them: the kubeconfig file the user came from. Only that user's `id-token` and `refresh-token` change; comments and everything else stay as they were. Lumovi writes them as kubectl does, under kubectl's lock (`<file>.lock`), and where kubectl or another program renewed them first, takes theirs instead of writing over them. kubectl then signs in with the same tokens.
+
+Where the file can't be written, Lumovi keeps the new tokens until it quits, and says so once, **A renewed token wasn’t saved**, with why: another program is writing it, it isn't a regular file, it belongs to another user, it's read-only to you, it doesn't read as YAML now, or the tokens couldn't go in without changing anything else. kubectl may need to sign in again, and so may Lumovi next time it starts.
+
+When a renewal fails, the cluster says **Couldn’t sign in**, with why: the kubeconfig has no refresh token; the identity provider refused it, as it may have expired or been used elsewhere; the provider couldn't be reached, or its certificate isn't trusted (with `idp-certificate-authority` set, that's the only authority trusted); its issuer isn't on https; or it answered with a token Lumovi can't use. Sign in again with your identity provider's tool. A refresh token the provider refused isn't sent again for five minutes, unless the file has a new one by then; one the provider couldn't be reached for is tried again after 10 seconds.
+
+Lumovi [in your cluster](/server/overview) renews its own kubeconfig's oidc user the same way, but keeps the new tokens in memory only, and never writes its kubeconfig. After a restart, it starts again from the refresh token in the file, which the provider may have stopped taking. For a server, a service account's token or a token file lasts better.
+
 ### Clusters on plain HTTP
 
 A cluster served over `http://` (through `kubectl proxy`, for example) has to opt in to unencrypted connections, the same rule as the official JavaScript client. Set `insecure-skip-tls-verify: true` on the cluster in your kubeconfig:
