@@ -109,11 +109,23 @@ It decides which files Lumovi reads, not what's in them: `~/.kube/config` is sti
 
 ### settings
 
-A person's own [settings](/explore/settings), set and locked: Settings shows each with its value and **Set by your organization**, and it can't be changed. Any of `theme` (`"system"`, `"light"`, `"dark"`), `accent` (`"blue"`, `"cyan"`, `"violet"`, `"graphite"`), `density` (`"comfortable"`, `"compact"`), `textSize` (`90`, `100`, `110`, `125`), `timeZone` (`"local"`, `"UTC"` or an IANA zone like `"Europe/Budapest"`), `clock` (`"system"`, `"12"`, `"24"`), `terminalFont`, `terminalFontSize` (10 to 24), `copyOnSelect` (`true` or `false`), `shell` (a full path, or `""` for the login shell), `namespaces` (`{ "mode": "last" }`, `{ "mode": "all" }`, or `{ "mode": "named", "namespace": "shop" }`) and `autoUpdate`:
+A person's own [settings](/explore/settings), set and locked: Settings shows each with its value and **Set by your organization**, and it can't be changed. Any of `theme` (`"system"`, `"light"`, `"dark"`), `accent` (`"blue"`, `"cyan"`, `"violet"`, `"graphite"`), `density` (`"comfortable"`, `"compact"`), `textSize` (`90`, `100`, `110`, `125`), `timeZone` (`"local"`, `"UTC"` or an IANA zone like `"Europe/Budapest"`), `clock` (`"system"`, `"12"`, `"24"`), `terminalFont`, `terminalFontSize` (10 to 24), `copyOnSelect` (`true` or `false`), `shell` (a full path, or `""` for the login shell), `namespaces` (`{ "mode": "last" }`, `{ "mode": "all" }`, or `{ "mode": "named", "namespace": "shop" }`), `shortcuts` and `autoUpdate`:
 
 ```json
 "settings": { "theme": "dark", "shell": "/bin/bash" }
 ```
+
+`shortcuts` sets [commands' keys](/reference/keyboard-shortcuts#change-a-shortcut), and locks each command it names, that one alone. Each is a command's id with up to three keys, like `{ "palette": ["Mod+P"], "refresh": ["Mod+R", "F5"] }`. Keys are written as `Mod+Shift+K`: `Mod` (<kbd>⌘</kbd> on a Mac, <kbd>Ctrl</kbd> elsewhere), `Ctrl`, `Alt` and `Shift`, in that order, then the key: a capital letter, a digit, `F1` to `F12`, a sign like `[` or `/`, or one of `Escape`, `Enter`, `Backspace`, `Delete`, `Tab`, `Space`, `ArrowUp`, `ArrowDown`, `ArrowLeft`, `ArrowRight`, `Home`, `End`, `PageUp` and `PageDown`. Keys that Settings would refuse, or that two commands would have where both work, make it unusable, as any value Lumovi doesn't take does.
+
+| Id | Command |
+| --- | --- |
+| `palette`, `filter`, `refresh`, `back`, `forward`, `search` | Command palette, Filter the list, Refresh, Back, Forward, Search the cluster |
+| `shortcuts`, `settings`, `create`, `clusters`, `new-window` | Keyboard shortcuts, Settings, Create…, All clusters, New window |
+| `list.select`, `list.select-all` | In a list: select the row, select every row on the page |
+| `object.actions`, `object.delete`, `object.review`, `object.pin` | In an open object: its actions, Delete, Review a YAML edit, Pin or unpin it |
+| `clusters.actions`, `clusters.settings`, `clusters.add`, `clusters.remove` | On the start screen: a cluster's actions, its settings, Add a cluster, Remove one added in Lumovi |
+| `terminal`, `new-terminal` | Show or hide the terminal, New terminal |
+| `terminal.new`, `terminal.close`, `terminal.clear`, `terminal.next`, `terminal.previous` | In a terminal: New terminal, Close, Clear, Next and Previous terminal |
 
 A value Lumovi doesn't take, like a shell that isn't a full path, makes the policy one that [can't be used](#when-it-can’t-be-used). Leaving a setting out leaves it to each person.
 
