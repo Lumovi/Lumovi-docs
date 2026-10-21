@@ -16,6 +16,18 @@ Lumovi works from the keyboard as well as the mouse. Press <kbd>?</kbd> anywhere
   Shortcuts are written for macOS. On Windows and Linux, use <kbd>Ctrl</kbd> wherever you see <kbd>⌘</kbd>, and <kbd>Alt</kbd> wherever you see <kbd>⌥</kbd>. On a Mac, most shortcuts also work with <kbd>Ctrl</kbd>, but the ones that are only in the menus (<kbd>⌘</kbd><kbd>⇧</kbd><kbd>C</kbd>, <kbd>⌘</kbd><kbd>/</kbd>) and the editors' (<kbd>⌘</kbd><kbd>S</kbd>, <kbd>⌘</kbd><kbd>F</kbd>, <kbd>⌘</kbd><kbd>Z</kbd>) need <kbd>⌘</kbd>. The [terminals'](#terminals) keys differ more, so they're written out for both.
 </Note>
 
+These are Lumovi's own keys. Where you've changed one, the menus, the command palette, the shortcut sheet and tooltips show yours.
+
+## Change a shortcut
+
+In [Settings](/explore/settings), **Keyboard shortcuts** lists every command, grouped as the shortcut sheet is; search it by a command's name or its keys. Choose a command, and press its new keys. <kbd>Esc</kbd> cancels, and so does a click elsewhere, or the window losing the focus. A command you changed says **Changed**, with **↺** to put its own keys back. **Reset all…** puts back every command's, and is off while none is changed.
+
+- **Keys another command has** where both work are asked about first, like "⌘[ is Back’s. Use it here, and Back has no keys until you give it some." Keys a command has only in one place, like a list or a terminal, are asked about too: give them to a command that works everywhere, and in that place they stay the other command's while it has the keyboard.
+- **Refused**, saying why: the system's own keys, like <kbd>⌘</kbd><kbd>C</kbd>, <kbd>⌘</kbd><kbd>Q</kbd> or <kbd>⌘</kbd><kbd>W</kbd>, and on Windows and Linux the <kbd>⊞</kbd> keys; for a terminal's own commands, keys its program takes, a key with no <kbd>⌘</kbd> or <kbd>⌥</kbd> or <kbd>⌃</kbd>, and <kbd>⌃</kbd> and a letter; keys a command your organization set has; and the keys marked **Built in**, which can't be changed: moving through a list, <kbd>Esc</kbd>, the [go-to keys](#go-to-a-page), <kbd>⌥</kbd><kbd>1</kbd>–<kbd>9</kbd> and <kbd>⌥</kbd><kbd>⇧</kbd><kbd>1</kbd>–<kbd>9</kbd>, <kbd>⌘</kbd><kbd>1</kbd>–<kbd>6</kbd>, zoom, <kbd>F2</kbd> and <kbd>⌘</kbd><kbd>↵</kbd>.
+- **Putting back** a command's own keys, where another command has taken one since, asks first.
+
+Your keys are kept with your settings: in the desktop app on this computer, and on a server for you, on every device you sign in from. A phone has no keys to change. Your organization can set a command's keys, and lock that command: in the desktop app's [policy file](/desktop/policy#settings), or on a server with [`LUMOVI_SETTINGS`](/server/configuration).
+
 ## General
 
 | Shortcut | What it does |
