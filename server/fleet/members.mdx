@@ -101,6 +101,8 @@ Where the server allows it (the chart's `fleet.addFromPage`, off unless you set 
 - **Its server is `https`, checked against its certificate authority**: never `insecure-skip-tls-verify`.
 - **The server answers, and the credentials work**, and they may impersonate users and groups, so Lumovi acts as whoever signs in, as with the chart's.
 
+A check that fails says what's wrong, with what to do: a client certificate or key that isn't one; a server certificate for another name (with the names it gives, to connect to one of them or set `tls-server-name`), not signed by the certificate authority given (or, with none given, by one Lumovi's server trusts), expired, or not valid yet (check the server's clock). "The server doesn't answer" means only that it couldn't be reached in time.
+
 Two things are pointed out, but not refused: a cluster reached through a proxy (its `proxy-url`, shown by its host), and credentials that may do anything there, not only act as each person. A service account that may only impersonate, as the chart makes, is safer.
 
 The check reaches the address it's given over `https`, from inside the network Lumovi runs in, and shows what the server answers: only admins can ask it to.
