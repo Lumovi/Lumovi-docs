@@ -1,8 +1,38 @@
 ---
 title: "Map"
-description: "How an object is connected: what leads to it, from the gateway and the service in front of it, and what it uses and runs on, down to the nodes."
+description: "The whole cluster in one picture, from the traffic to the pods and what they use; and for one object, what leads to it and what it uses, down to the nodes."
 icon: "waypoints"
 ---
+
+**Map**, under **Workloads** in the sidebar, draws everything in the namespaces picked as one picture: what routes traffic, the services, the workloads, their pods, and the ConfigMaps, Secrets and claims they use, with lines between them. Each object also has a [map of its own](#an-object’s-map), a tab in its detail panel, of how that one object is connected, from the gateway in front of it to the nodes under it.
+
+## The Map page
+
+Open it from **Map** in the sidebar, after **Workloads**, with <kbd>G</kbd> then <kbd>Y</kbd>, or **Map** in the [command palette](/explore/finding-things#the-command-palette). It maps the namespaces picked in the namespace menu.
+
+The map has five columns, in the direction things flow: **Traffic** (gateways, routes and ingresses), **Services**, **Workloads**, **Pods**, and **Config and storage**. Lines run between the cards, as they connect in [an object's map](#what-it-connects). ConfigMaps and Secrets nothing uses aren't drawn.
+
+### Bands
+
+The map is in bands, one per namespace, node or app: choose which with **Group by**. By app is by the `app.kubernetes.io/name` label, else `app`. Each band's head counts what's failing or warning, like "2 failing · 1 warning", or says **All healthy**: a workload as its card says, anything outside a workload on its own, and by node, that node's pods and the node itself.
+
+### Cards
+
+Each card says how its object is, in words: its status, or how many of its pods are ready. A detail of its kind, like a Service's ports, shows where it fits whole. Point at a card and what isn't its chain dims. Click it to open its object in the detail panel, over the map, with the card lit above the shade and moved clear of the panel.
+
+### Find
+
+**Find on the map** dims every card that doesn't match, and folds the bands with no match; it says how many it found. <kbd>↵</kbd> moves to the next, <kbd>⇧</kbd><kbd>↵</kbd> to the one before, and <kbd>Esc</kbd> clears it.
+
+### A big cluster, or a narrow window
+
+Where there's over about 400 cards, or the window is narrower than 1,082 pixels, the **Pods** column goes, and each workload counts its pods instead, like "2 of 3 failing". A band that's all healthy folds to one row, and one with something unwell draws that, and folds its other healthy workloads to one card, with **Show them**. A namespace's pods that belong to no workload are one card.
+
+### As a list
+
+**As a list** shows a row for each workload, and each service, claim and pod of no workload: its status, its pods, what reaches it, and what it uses. Narrower than 728 pixels, and on a phone, the map is a list. Lumovi remembers the grouping, and map or list, for each cluster.
+
+## An object's map
 
 Every object's detail panel has a **Map** tab. It draws how the object is connected to the rest of the cluster. Above the object is what leads to it: the gateway, ingress and service in front of a workload, the autoscaler that scales it, the policies that apply to it. Below it is what it owns, uses and runs on: its pods, the ConfigMaps, Secrets and volumes they use, and the nodes they run on. What's missing or unwell stands out, so you can follow a problem from the traffic to the node in one picture.
 
@@ -11,13 +41,13 @@ Every object's detail panel has a **Map** tab. It draws how the object is connec
   <img className="hidden dark:block" loading="lazy" src="https://cdn.jsdelivr.net/gh/Lumovi/Lumovi@main/docs/screenshots/map-dark-1x.webp" alt="The Map tab of the storefront deployment: a gateway, an HTTP route and an ingress at the top, then two services, two network policies and an autoscaler, the deployment in the middle, then its pods, ConfigMap and service account, and at the bottom the two nodes its pods run on, one under memory pressure." />
 </Frame>
 
-## Open it
+### Open it
 
 [Open an object](/explore/details), and choose **Map**, just before **Events**. Every kind has one except events and namespaces, which relate to everything in their scope or to nothing.
 
 The map covers the object's own namespace, whatever the namespace menu shows. An object without a namespace, like a node or a volume, is mapped across the whole cluster. A route's gateway or service in another namespace is on the map too, without a status: see [In other namespaces](#in-other-namespaces). For more room, choose **Expand panel** in the panel's header.
 
-## Read the map
+### Read the map
 
 The line at the top says how it reads: *Above it, what leads to it; below, what it uses.* The object the map is about has a colored icon and outline.
 
@@ -32,7 +62,7 @@ The legend on the right tells the two kinds of line apart:
 
 A line to something that's failing or warning takes its color, so the way to a problem stands out.
 
-## What a card shows
+### What a card shows
 
 Each card has the object's kind, its name, and its status as the lists show it, like <span className="lumovi-status healthy">Ready</span> or <span className="lumovi-status warning">MemoryPressure</span>. Some kinds add a word about the object, next to the kind:
 
@@ -53,7 +83,7 @@ A Service's status is about the pods it selects: <span className="lumovi-status 
 
 For screen readers, each card also says what it's connected to, like "Selects Deployment storefront. Ingress storefront: routes to it."
 
-## What it connects
+### What it connects
 
 Lumovi reads the connections from the objects themselves:
 
@@ -77,13 +107,13 @@ Gateways and HTTPRoutes are on the map when the cluster has Gateway API installe
 
 A Deployment's ReplicaSets don't get cards: its pods hang off the Deployment, the way you think of them. Open a ReplicaSet to see its own map.
 
-## How far it goes
+### How far it goes
 
 The map follows connections a few steps out from the object: up to three steps up, to what leads to it, and up to five down, to what it uses. That's enough to go from a workload's gateway to the nodes it runs on, and it keeps a map the same size however big the cluster is. A node's map goes two steps up: the pods running on it, and the workloads they belong to. Their services are on the workloads' own maps.
 
 Only what's connected through the object is shown. If a Service selects two Deployments, the map of one doesn't show the other.
 
-## Pods, grouped
+### Pods, grouped
 
 A workload's pods are one card, **Pods**, however many replicas it runs. A Deployment gets a card per revision, named after it with its revision, like *storefront revision 4*, so a rollout in progress shows the old pods and the new ones side by side. A CronJob's pods are grouped by Job.
 
@@ -91,7 +121,7 @@ The card says how many are ready, like <span className="lumovi-status healthy">3
 
 The pod a map is about always has a card of its own.
 
-## Missing and unknown
+### Missing and unknown
 
 When an object refers to something that isn't there, like a ConfigMap that was never created, a Service an ingress routes to, or a node that's gone, the map still shows it, with a dashed red outline and <span className="lumovi-status critical">Not found</span>. The line to it is red, so it's hard to miss.
 
@@ -108,7 +138,7 @@ When nothing connects to the object and it connects to nothing, the map says **N
 
 These are good places to look for leftovers to clean up.
 
-### In other namespaces
+#### In other namespaces
 
 An HTTPRoute often names a gateway or a service in another namespace: a gateway shared by many teams, say, or a service a ReferenceGrant lets it use. The map lists only the object's own namespace, so Lumovi doesn't know how those are doing. Their cards show their kind and name without a status, rather than <span className="lumovi-status critical">Not found</span>, and the map doesn't go past them.
 
@@ -116,25 +146,25 @@ Click one to open it, on its own map, in its namespace. That needs `get` on it t
 
 A gateway's own map shows only the routes in its namespace, for the same reason.
 
-## Rows that don't fit
+### Rows that don't fit
 
 A row with more cards than the panel fits, like a node's hundreds of pods, ends in a card like **+ 12 more**. What shows first is the object itself, then what's unwell, then what goes by the object's name, like its Service and its autoscaler. Lines to the hidden cards go to that card.
 
 Click it to show the whole row, over as many lines as it takes. **Collapse** shrinks it again. **Expand panel** fits more cards in each row.
 
-## Trace a chain
+### Trace a chain
 
 Point at a card, or move to it with <kbd>Tab</kbd>, and the map traces its chain: everything it leads to and everything that leads to it, all the way. Its lines are highlighted and the rest of the map fades. It answers questions like "which ingress reaches these pods?" or "what ends up using this Secret?" at a glance.
 
-## Open another object
+### Open another object
 
 Click a card, or press <kbd>↵</kbd> on it, to open its object in the detail panel, on its own map. From there you can keep following the connections. The object the map is about, and cards that are missing, can't be opened. A card without a status opens like any other. A **Pods** card shows each pod instead.
 
-## Custom resources
+### Custom resources
 
 Custom resources have a map too. Lumovi connects them by their owner references, so a custom resource that creates pods or ReplicaSets leads to them, and by what their [view](/custom-resources/overview) relates them to. A Karpenter node pool's map, for example, shows the nodes it launched.
 
-## What it needs
+### What it needs
 
 The map is drawn from the lists Lumovi already reads, and refreshes with them while it's open. It lists:
 
