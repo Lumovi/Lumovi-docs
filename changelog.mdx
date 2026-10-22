@@ -7,6 +7,73 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 21, 2026" description="1.23.0" tags={["Desktop app", "In your cluster"]}>
+  ## Security fixes
+
+  1.23.0 has two: every object's name and namespace is checked before the cluster is asked, and an answer that isn't the object asked for is refused; and on a server, people's groups follow the sign-in provider, and someone it disables is signed out.
+
+  - **Single sign-on: groups follow the provider, and someone it disables is signed out.** Given a refresh token, a server keeps it, sealed, asks the provider again before each ID token expires, and revokes it at sign-out where the provider can. Someone's groups are as the provider says now, from their next request, and a provider that won't renew a sign-in ends the session at once. A change to someone's groups is in the audit log. See [Groups that follow the provider](/server/auth/single-sign-on#groups-that-follow-the-provider).
+  - **A name that isn't one could reach more than one object, or another one.** Asked for an object by a name like "." or "..", which no object can have, or for a pod by a name with a backslash, Lumovi could send the cluster an address that reaches more than that object, or something else.
+    - **Reads, on a server (1.6.0 to 1.22.1).** A read of one object could bring back every object of its kind in the namespace, handed back as if it were the one. Where your [access](/server/access) shows someone only a Secret's keys, the Secrets in that list came with their values.
+    - **Shells, attaching and file copies, on a server (1.6.0 to 1.22.1).** A pod's name with a backslash could open a shell in a container, attach to one, or copy files to or from one, in another namespace than the one Lumovi's access checked.
+    - **Deletes, on the desktop and on a server.** A delete by such a name could delete every object of its kind in the namespace (or, for a kind outside namespaces, like nodes, every one), or the namespace itself. Lumovi's own pages never asked for such a name: it took an assistant's delete or a plugin's proposed change, approved in a dialog that named "." or "..".
+
+    Each went to the cluster as the person signed in, so never past what the cluster lets them do. What they got past were Lumovi's own rules: where someone sees only a Secret's keys, and where they may open shells. The reads and deletes have been seen against a test cluster, not yet against a real API server.
+
+    Lumovi now refuses a name or namespace Kubernetes wouldn't accept, holds a pod's, a node's and a Service's name to Kubernetes' stricter rule, never sends an address that steps with "." or ".." or reads differently from what was written, and refuses an answer that isn't the object it asked for.
+
+    The [audit log](/audit/overview) recorded each of these by what was asked, like "Read Secret .", never by what it reached. Where a read was by someone shown only keys, change the values of the Secrets in that namespace. Where a shell, attach or copy was on a pod whose name has a backslash, it went to another namespace: the one that name leads to, read with each backslash as a /.
+
+  ## Finding and seeing
+
+  - **Search the cluster**, by part of a name or by labels, in the namespaces picked, grouped by kind; searches can be saved. See [Search](/explore/search).
+  - **Map, the whole cluster in one picture**: what routes traffic, the services, workloads, pods and what they use, in bands by namespace, node or app. See [The Map page](/explore/map#the-map-page).
+  - **Several clusters in one list**: their Workloads, Pods, Nodes and Events together, each read with your own access. See [Several clusters in one list](/clusters/fleet#several-clusters-in-one-list).
+  - **Compare with…** sets an object beside another of its kind, in another namespace or cluster, its ConfigMaps and Secrets too. See [Compare with another](/explore/details#compare-with-another).
+  - **Certificates in Secrets**: who each is for, its chain, and when it ends, with an Expires column in the list. See [Certificates](/explore/config-and-storage#certificates).
+  - **Quotas show how full they are**, and Resource Quotas and Limit Ranges have lists of their own. See [Resource quotas and limit ranges](/explore/config-and-storage#resource-quotas-and-limit-ranges).
+  - **Links to what you're looking at**, `lumovi://` links that only show and always ask first; a policy can turn them off. See [Links](/explore/finding-things#links).
+
+  ## Settings and the desktop app
+
+  - **Settings**: theme, accent, density, text size, time zone and clock, the terminal's font and shell, and which namespace a cluster opens in. An organization can set and lock them. See [Settings](/explore/settings).
+  - **Keyboard shortcuts of your own**, changed in Settings, or set by an organization. See [Change a shortcut](/reference/keyboard-shortcuts#change-a-shortcut).
+  - **A tab below moves to a window of its own**, a terminal's shell still running, and back below. See [In a window of its own](/debug/terminal#in-a-window-of-its-own).
+  - **Add EKS clusters from AWS**, found with your own `aws` command, only when you ask. See [From AWS](/clusters/connect#from-aws).
+  - **A kubeconfig user with `auth-provider: oidc` stays signed in**, renewing as kubectl does and writing its tokens back where kubectl keeps them. See [Signing in with OIDC](/clusters/connect#signing-in-with-oidc).
+
+  ## Helm
+
+  - **Repositories, a chart browser, and Update available**, a repository's sign-in sent only to it and kept in the keychain or sealed. See [Repositories](/helm/install#repositories).
+  - **Wait, undo and a timeout** on install and upgrade, and a rollback shows what it changes. See [Waiting, undoing and a timeout](/helm/install#waiting-undoing-and-a-timeout).
+
+  ## Plugins
+
+  - **A plugin's file can withhold fields** Lumovi then never shows or hands on, like the line around a secret Trivy found: trivy-operator 1.1.0 withholds it. See [`withholds`](/reference/plugin-format#param-withholds).
+  - **A plugin's tables download as CSV**, written from what Lumovi shows. See [The kit](/reference/plugin-kit).
+  - **Built with Lumovi-plugins 1.5.2.**
+
+  ## In your cluster
+
+  - **Microsoft Entra ID: someone in more than 200 groups signs in with their groups**, read from Microsoft Graph. See [Microsoft Entra ID and many groups](/server/auth/single-sign-on#microsoft-entra-id-and-many-groups).
+  - **Adding a cluster to a fleet says what's wrong** with its certificates, and what to do. See [Add a cluster to a fleet](/server/fleet/members).
+
+  ## Fixed
+
+  - Lists no longer scroll sideways: the least important columns give way first, and a list's bar keeps to its pane.
+  - A row of tabs no longer runs past its edge: the rest are under **More**, and the open tab always has a place.
+  - No view breaks on an object that leaves out a field the API doesn't require.
+  - The Overview draws for an account that may not list nodes, and says why there's no live usage where node metrics can't be read.
+  - The AI assistants page lists only the assistants connected now.
+  - A dialog that closes leaves the keyboard where you put it.
+  - On the events timeline, a mark's card stays with its own event, and a short bar's count no longer covers the next mark.
+  - A plugin's lists, tables and switches look and behave as Lumovi's own.
+  - On Windows, a terminal says when PowerShell is still starting, and what was typed meanwhile still reaches it.
+  - How long something has run reads in days past a day: "15d 17h".
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.23.0)
+</Update>
+
 <Update label="October 15, 2026" description="1.22.1" tags={["Desktop app", "In your cluster"]}>
   - **A plugin's page looks and works like Lumovi's own.** A page that is one list, such as Argo CD's **Applications**, is drawn as Lumovi's lists are, with their count, chips, filter and pages of rows. Every plugin's page is framed as Lumovi's are, named in the bar for the page that's open, and its tabs are words alone.
   - **What a plugin may do is in the bar's More** (⋯) and the command palette's **Actions**, as **What Argo CD may do** for Argo CD's. No line above the page says whose it is now, and Lumovi's own change dialog still names the plugin and its version. See [Pages drawn by a plugin's code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code).
