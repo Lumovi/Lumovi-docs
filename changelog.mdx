@@ -7,6 +7,24 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 22, 2026" description="1.23.1" tags={["Desktop app", "In your cluster"]}>
+  1.23.1 makes Lumovi for Linux start again. From 1.18.0 to 1.23.0, three to five of each version's six Linux downloads were packed with the other architecture's terminals, and stopped as they started: which ones is under Fixed below. It also keeps a log you're following at its newest line.
+
+  ## Fixed
+
+  - **A log you're following keeps its newest line in view.** Once a search, a level or a pod had narrowed the lines, showing them all again could leave the log at its top while new lines arrived unseen. Now only you stop following, by scrolling up or stepping to a match, and the Follow button shows as off whenever the newest line isn't held in view; press it to go back to the end. See [Read them](/debug/logs#read-them).
+  - **Lumovi for Linux starts again.** From 1.18.0 to 1.23.0, the downloads listed below stopped as they started, with "Failed to load native module: pty.node": each was packed with the other architecture's terminals. Every Linux download of 1.23.1 is packed with its own: the AppImage, .deb and .rpm, for x86_64 and for ARM. A copy that didn't start can't update itself, so download 1.23.1 from [GitHub](https://github.com/Lumovi/Lumovi/releases) and install it over it.
+    - 1.23.0: the x86_64 AppImage, .deb and .rpm, and the ARM AppImage and .rpm.
+    - 1.22.1: the x86_64 AppImage, .deb and .rpm, and the ARM AppImage.
+    - 1.22.0: the x86_64 AppImage and .deb, and the ARM AppImage, .deb and .rpm.
+    - 1.21.0: the x86_64 AppImage, .deb and .rpm.
+    - 1.20.0: the x86_64 AppImage and .deb, and the ARM AppImage, .deb and .rpm.
+    - 1.19.0: the x86_64 AppImage, and the ARM AppImage, .deb and .rpm.
+    - 1.18.0: the x86_64 AppImage, .deb and .rpm, and the ARM AppImage.
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.23.1)
+</Update>
+
 <Update label="October 21, 2026" description="1.23.0" tags={["Desktop app", "In your cluster"]}>
   ## Security fixes
 
