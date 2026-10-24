@@ -194,6 +194,12 @@ People choose where charts come from when they install or upgrade a Helm release
 | `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7` | Private networks |
 | `100.64.0.0/10` | Shared address space, used by some pod networks |
 | `169.254.0.0/16`, `fe80::/10` | Link-local, including cloud metadata endpoints |
+| `192.0.0.0/24`, `198.18.0.0/15`, `240.0.0.0/4` | Protocol assignments, benchmarking, and reserved and broadcast |
+| `64:ff9b:1::/48` | NAT64 inside a network of its own |
+
+An IPv6 address that carries an IPv4 one, NAT64's `64:ff9b::/96` and 6to4's `2002::/16`, is judged by the IPv4 address it carries.
+
+While it refuses them, Lumovi resolves each name once, checks every address it gives, and connects to those addresses alone, for a repository's index and charts, a registry's, a chart at a URL, a chart's icon, and each redirect, which it checks as it does the first. It fetches every chart itself and hands Helm the file, so Helm resolves no name: a chart from a repository is checked against the digest its index lists, and one whose index lists none is refused. Through a proxy (`HTTPS_PROXY`), the proxy resolves each name, so where it connects is the proxy's to limit.
 
 If your charts live in your own network, such as a ChartMuseum or Harbor, allow private addresses with `helm.allowPrivateCharts: true`. Anyone signed in can then make Lumovi reach services inside the cluster's network.
 

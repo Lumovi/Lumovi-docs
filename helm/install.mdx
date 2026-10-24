@@ -86,7 +86,7 @@ Lumovi talks to [Artifact Hub](https://artifacthub.io) only when you search it. 
 ## Where charts may come from
 
 <Note>
-  **In your cluster:** charts come from repositories, registries or URLs, never from files on the server. Lumovi fetches them only from public addresses, so that anyone signed in can't make it reach services inside the cluster's network. To install from a ChartMuseum or Harbor on your network, the administrator sets `helm.allowPrivateCharts: true`. See [Helm values](/server/helm-values).
+  **In your cluster:** charts come from repositories, registries or URLs, never from files on the server. Lumovi fetches them only from public addresses, so that anyone signed in can't make it reach services inside the cluster's network. While it does, it fetches every chart itself, from a repository, a registry or a URL, and gives Helm the file. A chart from a repository whose index lists no digest isn't installed: "acme's index lists no digest for web 1.2.0, so Lumovi can't check the chart it fetches." To install from a ChartMuseum or Harbor on your network, the administrator sets `helm.allowPrivateCharts: true`. See [Helm values](/server/helm-values).
 </Note>
 
 The desktop app installs from anywhere your computer can reach, your own network included.
