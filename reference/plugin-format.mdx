@@ -445,7 +445,7 @@ views:
 - **In the namespace of what it names**, so it has no `namespace`. What it names outside namespaces, like a node, is pointed at from anywhere.
 - **Only for kinds of its own**, named one by one: a view of one of Kubernetes' own kinds only shows it, and `kind: '*'` can't be listed.
 - **What it can point at**: the object you open; what controls it, and what controls that, like a pod's ReplicaSet and its Deployment, or a Job's CronJob; and, for a Deployment, its ReplicaSets that run pods, which is what Trivy scans.
-- A file that lists links where they lead needs Lumovi 1.23.3 or later in [`needs.lumovi`](#spec). An older Lumovi doesn't know the key, and refuses the whole file.
+- A file that lists links where they lead needs Lumovi 1.24.0 or later in [`needs.lumovi`](#spec). An older Lumovi doesn't know the key, and refuses the whole file.
 
 To find them, Lumovi lists each such kind by those labels, in the namespace of the object you open, as you. The [Plugins page](/custom-resources/plugins#what-a-plugin-asks-for) says so for each plugin. A list you can't read lists nothing. Where no plugin lists a link where it leads, nothing more is read.
 
