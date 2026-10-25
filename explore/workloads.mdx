@@ -26,9 +26,16 @@ Objects that only exist to run another are left out, so each workload appears on
 | **CPU**, **Memory** | Live usage added up over the workload's pods, when [metrics-server](/metrics/live-usage) is there |
 | **Images** | The container images it runs |
 | **Managed by** | What manages it, like a GitOps tool's object, which opens it. Only where a plugin says [what its kinds manage](/reference/plugin-format#what-it-manages) and the cluster runs that tool. |
+| **Findings** | The worst a plugin's reports say of it, like Trivy's <span className="lumovi-status critical">9 critical</span>, or a dash. Only where a plugin's link [counts](/reference/plugin-format#listed-where-they-lead). |
 | **Age** | How long ago it was created |
 
 Lists sort by status first, the most urgent at the top. Click a column's header to sort by it instead; every column but **Images** sorts.
+
+### Findings
+
+Where a plugin's link counts against what it leads to, like Trivy's reports, the workload lists, each kind's own included, get a **Findings** column after **Managed by**, its heading marked with a plug. It shows the worst critical or warning those reports say of each workload, and a dash where none says anything wrong. A Deployment's are those of the ReplicaSets it runs. Point at one to see them, grouped by plugin, worst first, with what each is about: the first five, then how many more. Sorted by it, the worst come first. On a phone, it's a **Findings** fact on the row.
+
+Where Lumovi couldn't read all of a plugin's reports, because you may not list them, some namespaces didn't answer, or there were more than Lumovi lists, the heading's plug becomes a warning, and pointing at it or focusing it says so: "Couldn’t read all of Trivy’s VulnerabilityReports here: what’s missing isn’t counted, so a dash may not mean none." On a phone, that line is above the list.
 
 ## One kind at a time
 

@@ -424,6 +424,10 @@ Links are listed under **Related** in the detail panel's **Overview**. Click one
   What this object is of, said beside its kind where it's listed, like `the {{ .metadata.labels['trivy-operator.container.name'] }} container`. Its kind alone where a placeholder finds nothing. Only with `listedThere`.
 </ResponseField>
 
+<ResponseField name="counts" type="boolean">
+  This view's status counts against the workload it leads to: the worst, critical or a warning, shows in the **Findings** column of Lumovi's workload lists. Only with `listedThere`. See [Counting against a workload](#counting-against-a-workload).
+</ResponseField>
+
 A link whose kind or name comes out empty isn't shown.
 
 ### Listed where they lead
@@ -448,6 +452,23 @@ views:
 - A file that lists links where they lead needs Lumovi 1.24.0 or later in [`needs.lumovi`](#spec). An older Lumovi doesn't know the key, and refuses the whole file.
 
 To find them, Lumovi lists each such kind by those labels, in the namespace of the object you open, as you. The [Plugins page](/custom-resources/plugins#what-a-plugin-asks-for) says so for each plugin. A list you can't read lists nothing. Where no plugin lists a link where it leads, nothing more is read.
+
+#### Counting against a workload
+
+With `counts: true` too, what such a link's objects say counts against the workload they name, in the [Findings column](/explore/workloads#findings) of Lumovi's workload lists: Trivy's reports say how many critical vulnerabilities each workload's images have.
+
+```yaml
+      - name: Workload
+        kind: "{{ .metadata.labels['trivy-operator.resource.kind'] }}"
+        objectName: "{{ .metadata.labels['trivy-operator.resource.name'] }}"
+        listedThere: true
+        counts: true
+```
+
+- **Only what's wrong counts**: an object whose status is critical or a warning. One that's fine, or has no status, leaves the workload's dash.
+- **What it can count against**: a Deployment, StatefulSet, DaemonSet, Job, CronJob, ReplicaSet or Pod, in the object's own namespace. A Deployment's are also those of the ReplicaSets it runs that have pods. A link whose kind is written out as another kind counts against nothing.
+
+To count them, Lumovi lists each such kind by those labels, with a workload's kind, in the whole cluster where you may list it, or else in the namespaces you're looking at, as you, with the ReplicaSets you're looking at. The Plugins page says so. Where no plugin's link counts, nothing more is read.
 
 ## Related
 
@@ -838,7 +859,7 @@ Lumovi checks every plugin before using it. One with a problem isn't used at all
 | `spec.label: is longer than 80 characters` | A [text](#texts) over its length |
 | `spec.label: holds a character that can’t be seen (U+202E)` | A text or a key with a character nobody can see |
 | `spec.views[0].related[0]: needs labels or a fieldSelector to find them` | A related list that would be every object of its kind |
-| `spec.views[0].links[0]: is listed where it leads, which finds it by its labels: its objectName should be a label, like {{ .metadata.labels['trivy-operator.resource.name'] }}` | A [link listed where it leads](#listed-where-they-lead) whose name isn't a label alone. Others say its kind should be a label or written out, that a key like `"a,b"` should be a label's key, that it can't name another namespace, or, for `about` without `listedThere`, to give it `listedThere: true` |
+| `spec.views[0].links[0]: is listed where it leads, which finds it by its labels: its objectName should be a label, like {{ .metadata.labels['trivy-operator.resource.name'] }}` | A [link listed where it leads](#listed-where-they-lead) whose name isn't a label alone. Others say its kind should be a label or written out, that a key like `"a,b"` should be a label's key, that it can't name another namespace, or, for `about` or `counts` without `listedThere`, to give it `listedThere: true` |
 | `spec.views[0].links[0].listedThere: its kinds should be named, not every kind of a group` | A link listed where it leads, in a view of `kind: '*'`, or of one of Kubernetes' own kinds |
 | `spec.views[0].actions[0]: needs a patch, or an object to create (not both)` | An action with neither, or both |
 | `spec.views[0].actions[0]: patches are an object for type merge, and a list for type json` | A patch of the wrong shape |
