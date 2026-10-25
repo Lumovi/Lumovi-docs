@@ -64,6 +64,10 @@ Then **Conditions**, **Labels** and **Annotations**, when it has them. Condition
 
 Names of related objects (a pod's node, a claim's volume, an owner) are links: click one to open it.
 
+#### Objects that point here
+
+Where a plugin [lists its links where they lead](/reference/plugin-format#listed-where-they-lead), **Objects that point here** comes after **Details**: the objects whose labels name this one or what controls it, or, for a Deployment, the ReplicaSets it runs, like Trivy's reports of a workload. They're grouped by plugin, under **From the plugin Trivy** and its version, each with its kind, what it's of ("VulnerabilityReport · the api container") and its status, worst first. Click one to open it, on its plugin's tab where it has one. Up to 50 are shown, then how many more: "12 more aren’t shown here." No plugin's code runs here: it's drawn from the plugin's file alone.
+
 ### Custom resources and other kinds
 
 For kinds without a page of their own, the Overview shows the object's **Spec**, **Status** and other fields as a tree. Short values are inline, nested ones are indented, and deep ones start folded.
