@@ -4,7 +4,7 @@
   "name": "Lumovi",
   "description": "A calm, fast Kubernetes dashboard, on your desktop or in your cluster.",
   "variables": {
-    "version": "1.23.1"
+    "version": "1.23.2"
   },
   "colors": {
     "primary": "#2675d3",

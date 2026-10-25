@@ -7,6 +7,23 @@ rss: true
 
 Lumovi follows [semantic versioning](https://semver.org): a fix is a patch release, anything new a minor one, and a change that breaks how people use it a major one. Every release, with its installers and checksums, is on [GitHub](https://github.com/Lumovi/Lumovi/releases). The full record is in [CHANGELOG.md](https://github.com/Lumovi/Lumovi/blob/main/CHANGELOG.md).
 
+<Update label="October 24, 2026" description="1.23.2" tags={["In your cluster"]}>
+  ## Security fixes
+
+  **A server could be made to fetch from inside its own network.** On a server that fetches charts from public addresses alone (the default, with `helm.allowPrivateCharts` off), the address a chart came from was checked apart from the fetch.
+
+  - **Redirects (1.0.0 to 1.23.0).** A chart given by a repository's URL, an `oci://` reference or a URL was fetched by Helm, which followed redirects without the check. So a public address that redirected to a private one reached it. Listing a repository's versions followed redirects unchecked too.
+  - **Names that change (1.0.0 to 1.23.0).** A name could give the check a public address and the fetch another, such as an address in the cluster's or your company's network, or a cloud metadata endpoint. In 1.23.0 this held for the repositories Lumovi keeps, and their icons, too.
+
+  Anyone who could sign in could have the server send such a request, by asking for a chart's versions or its default values. Installing needed permission to install charts. A reply came back only where it read as a chart or an index (its default values, its versions, or what was installed), and otherwise at most in part, quoted in an error message.
+
+  Lumovi now resolves each name once, checks every address it gives, and connects only to those, on every redirect. On such a server it fetches every chart itself and hands Helm the file. A chart from a repository whose index lists no digest is refused there. An IPv6 address that carries an IPv4 one (NAT64's well-known prefix, or 6to4) is judged by that IPv4 address, and NAT64's local-use prefix is refused. Reserved IPv4 ranges (`192.0.0.0/24`, `198.18.0.0/15` and `240.0.0.0/4`) are refused too. Through a proxy (`HTTPS_PROXY`), the proxy resolves each name, so what the server can reach through it is the proxy's to limit. See [Charts and private networks](/server/security#charts-and-private-networks).
+
+  The [audit log](/audit/overview) records an install or upgrade from a chart's URL, a repository's URL or an `oci://` reference, with that address and how it ended: look there for one from an address you don't know. Asking for a chart's versions or default values isn't recorded, so those requests leave nothing in Lumovi's log; your network's own records of the server's connections are where to look. Where the server's pod could reach a cloud metadata endpoint, or a service in your network that answers without a sign-in, treat what they answer as possibly read in part, and [limit where the server connects](/server/hardening#the-network).
+
+  [Release notes](https://github.com/Lumovi/Lumovi/releases/tag/v1.23.2)
+</Update>
+
 <Update label="October 22, 2026" description="1.23.1" tags={["Desktop app", "In your cluster"]}>
   1.23.1 makes Lumovi for Linux start again. From 1.18.0 to 1.23.0, three to five of each version's six Linux downloads were packed with the other architecture's terminals, and stopped as they started: which ones is under Fixed below. It also keeps a log you're following at its newest line.
 
