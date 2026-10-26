@@ -560,6 +560,18 @@ Reports are <span className="lumovi-status critical">2 critical</span> when they
 
 An ExposedSecretReport's line where Trivy found each secret (`report.secrets.match`) is never shown or handed on: Trivy stars the secret, not what's around it. Its file [withholds](/reference/plugin-format#param-withholds) it, so it's out of the YAML tab, lists and AI assistants' reads, and Lumovi doesn't edit such a report whole. See the plugin's own words on the report's YAML tab.
 
+Trivy's plugin draws a page and a tab of its own, with its [code](/custom-resources/plugins#pages-drawn-by-a-plugin’s-code):
+
+- **Security**: what to fix first. Four tiles: critical and high vulnerabilities, each with how many have a fix and in how many workloads; exposed secrets, with how many images; and misconfigured resources. Critical and High open the vulnerabilities by workload, filtered to that severity. Below them:
+  - **Vulnerabilities by workload**: each workload's images as Trivy last scanned them, added up, fixable first. Each row has its counts by severity, how many critical and high ones have a fix, the worst one with a fix and the version that fixes it, and when it was scanned. A row opens Lumovi's own list of its kind, showing only that workload. It's searched and filtered in Lumovi's own bar, and the plugin is never told what's typed or set there.
+  - **Vulnerabilities by image**: each image once, with the workloads that run it and its OS. A row opens its report.
+  - Critical and high **by namespace**, and fixable **by package**, each opening the workloads' table filtered to it.
+  - **Exposed secrets**: where Trivy found each one (the workload, its container and image, the file), what kind it is and its severity. Never the text that matched: Lumovi drops it before the page has it.
+  - **Misconfigurations** and **RBAC**: each resource or role with failed checks, by severity, and the worst one. Misconfigurations of cluster-wide objects (ClusterConfigAuditReports) aren't among them.
+- **Vulnerabilities**, a tab on each VulnerabilityReport: its image, OS, container and when it was scanned, then every vulnerability in it, those with a fix first: its ID, severity, package, the version installed and the one that fixes it, and Trivy's title.
+
+Trivy scans a Deployment's ReplicaSet, not the Deployment, so besides its own kinds the page reads ReplicaSets: their names, which Deployment made each, whether it runs pods and when it was made, never what they run. A ReplicaSet's report counts as its Deployment's, and an old ReplicaSet's, one that runs nothing while another of its Deployment's runs pods or is newer, isn't counted. Where it can't read them, the page says so, with **Try again**, and each ReplicaSet's report is its own row. Nothing is scanned, fixed or looked up anywhere: what Trivy wrote in the cluster is all there is. Wherever its pages don't run, its reports are still listed under **Trivy**.
+
 ## Velero
 
 [Velero](https://velero.io): backups of cluster resources and volumes.
